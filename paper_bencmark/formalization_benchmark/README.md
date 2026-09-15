@@ -29,7 +29,9 @@ For each attempt, the model-active interval begins immediately before the
 `turn/start` request and runs through contestant-process quiescence. The later
 candidate copy/hash is timed and charged as a separate component; validation,
 telemetry settling, and auditing stay off-clock. The two charged components are
-summed against an 18,000-second cumulative limit. Exact provider usage is
+summed against an 18,000-second cumulative termination threshold. A measured
+timer or final-freeze overshoot is retained and yields an unscored
+`ACTIVE_TIME_LIMIT`, never a faithful acceptance. Exact provider usage is
 metered and reported but does not stop the benchmark.
 
 ## Operator commands

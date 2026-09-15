@@ -108,8 +108,9 @@ their authenticated outputs jointly confirm all of the following:
   validator, audit policy, and feedback schema agree;
 - the candidate contract requires one designated root theorem with `by sorry`
   and prohibits every other `sorry`, `admit`, new axiom, or unsound substitute;
-- the run contract is four total submissions, 18,000 cumulative active seconds,
-  no benchmark token cap, and separate off-clock validator/audit ledgers;
+- the run contract is four total submissions, an 18,000-second cumulative
+  active-time termination threshold, no benchmark token cap, and separate
+  off-clock validator/audit ledgers;
 - the outer allocation enforces 32 GiB RAM, 512 tasks, no swap, and exactly
   eight assigned logical CPUs; the generated-command child enforces 24 GiB,
   384 tasks, no swap, and its frozen CPU weight, while the trusted-control child
@@ -139,13 +140,16 @@ Replace `P01-T2` only with the single allowlisted task requested by the user.
 Do not add a repetition count. The runner, not the operator, selects the frozen
 N/L order and creates the pair/run identities.
 
-Reissue this same command to inspect or continue an interrupted pair. Recovery
-is supported before a condition's first turn and between terminal, hash-sealed
-condition records. A frozen-feedback transition continues automatically only
-while that condition's original app-server process remains alive. A controller
-or process interruption after any submission cannot be cold-resumed without
-losing exact raw usage and therefore becomes a fail-closed pair incident. Never
-edit the event stream or state files to advance a run.
+Use the provider-free `status --task-id P01-T2` command to inspect a task. Do
+not reissue `run` merely to inspect it. Reissue the same authenticated `run`
+command only when intentionally continuing an advertised resumable transition
+or retrieving the already terminal result. Recovery is supported before a
+condition's first turn and between terminal, hash-sealed condition records. A
+frozen-feedback transition continues automatically only while that condition's
+original app-server process remains alive. A controller or process interruption
+after any submission cannot be cold-resumed without losing exact raw usage and
+therefore becomes a fail-closed pair incident. Never edit the event stream or
+state files to advance a run.
 
 ## Condition construction
 
@@ -218,9 +222,12 @@ unsafe escape, prohibited import, binary substitution, or undeclared external
 dependency is allowed.
 
 The run terminates at the first faithful candidate, the fourth submitted
-candidate, or 18,000 cumulative contestant-active seconds. The active-time
-limit never resets after feedback. There is no contestant-token termination
-rule.
+candidate, or the 18,000-second cumulative contestant-active termination
+threshold. The active-time threshold never resets after feedback. Any timer or
+final-candidate-freeze overshoot is measured rather than clamped and produces
+the unscored `ACTIVE_TIME_LIMIT` outcome; an accepted or otherwise scored
+condition can never exceed the threshold. There is no contestant-token
+termination rule.
 
 ## Validation, audit, and repair
 
@@ -287,6 +294,10 @@ cached input, cache-write input, output, reasoning output, and total tokens.
 Missing completed-turn usage is `telemetry_invalid`, never zero. Usage observed
 before an active-time interruption is retained as a clearly labeled lower
 bound; it does not replace the valid `ACTIVE_TIME_LIMIT` endpoint.
+If the controller or host dies before a complete turn or final-freeze duration
+is durably journaled, seal an unscored pair incident and label the affected
+token and/or active-time totals as incomplete observed lower bounds. Never
+present those partial totals as exact.
 
 Validation, audit, adjudication and feedback-rendering durations and tokens are
 recorded separately and excluded from contestant time/tokens. End-to-end
@@ -324,7 +335,9 @@ Preserve immutable run directories and their event streams. Do not delete,
 overwrite, merge, rename, or reuse an existing run ID. A hard-stop or
 interrupted run remains evidence. Continue only when the source-first CLI
 verifies its hash chain and advertises a pre-first-turn or between-condition
-transition; never cold-resume a submitted condition.
+transition; never cold-resume a submitted condition. Inspect with `status`;
+reissue `run` only to intentionally continue such a transition or retrieve the
+terminal result.
 
 For each condition report:
 
@@ -332,6 +345,8 @@ For each condition report:
 - number of submissions and failure class for each;
 - first-submission and cumulative contestant-active time;
 - first-submission and cumulative contestant tokens;
+- completeness/interpretation labels for both time and token totals, especially
+  for an unscored interrupted pair;
 - formalization size and dependency profile;
 - separate validation/audit time and token overhead;
 - end-to-end elapsed time and hardware/resource observations; and

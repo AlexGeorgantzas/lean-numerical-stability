@@ -326,12 +326,73 @@ class PairControllerDryRunTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    @staticmethod
+    def successful_driver(
+        model_active_seconds: float | list[float], timeouts: list[float]
+    ):
+        active_durations = (
+            [float(value) for value in model_active_seconds]
+            if isinstance(model_active_seconds, list)
+            else [float(model_active_seconds)]
+        )
+        turn_index = 0
+
+        class FakeDriver:
+            def run_turn(fake_self, **kwargs):
+                nonlocal turn_index
+                if turn_index >= len(active_durations):
+                    raise AssertionError("unexpected extra formalizer turn")
+                active_duration = active_durations[turn_index]
+                turn_index += 1
+                timeouts.append(float(kwargs["timeout_seconds"]))
+                artifact_dir = kwargs["artifact_dir"]
+                artifact_dir.mkdir(parents=True)
+                for name in (
+                    "turn.json",
+                    "events.jsonl",
+                    "stderr.log",
+                    "prompt.md",
+                    "last_message.txt",
+                    "network_violations.bin",
+                ):
+                    (artifact_dir / name).write_bytes(
+                        b'{}\n' if name == "turn.json" else b""
+                    )
+                active_started = 1_000_000_000
+                return types.SimpleNamespace(
+                    exit_code=0,
+                    timed_out=False,
+                    active_started_perf_ns=active_started,
+                    active_ended_perf_ns=(
+                        active_started + int(active_duration * 1_000_000_000)
+                    ),
+                    wall_seconds=active_duration,
+                    usage={
+                        "input_tokens": 10,
+                        "cached_input_tokens": 1,
+                        "cache_write_input_tokens": 0,
+                        "output_tokens": 3,
+                        "reasoning_output_tokens": 1,
+                        "total_tokens": 13,
+                    },
+                    usage_complete=True,
+                    thread_id="active-limit-thread",
+                    failure_kind=None,
+                )
+
+            def assert_safe_control_surfaces(fake_self, workspace, **kwargs):
+                return None
+
+        return FakeDriver()
+
     def test_release_manifest_and_provider_free_pair_staging(self) -> None:
         manifest, config = verify_manifest()
         self.assertEqual(manifest["task_ids"], config["task_ids"])
         controller = self.controller()
         first = controller.run("P01-T2", dry_run=True)
         self.assertEqual(first["status"], "DRY_RUN_COMPLETE")
+        self.assertTrue(first["contestant_active_time_complete"])
+        self.assertEqual(first["contestant_active_time_interpretation"], "exact")
         self.assertEqual(first["condition_order"], ["N", "L"])
         pair_root = Path(first["pair_root"])
         n_prompt = (pair_root / "conditions" / "N" / "prompt.txt").read_bytes()
@@ -395,6 +456,8 @@ class PairControllerDryRunTests(unittest.TestCase):
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [{"attempt": 1}],
             }
             state_path = (
@@ -437,6 +500,8 @@ class PairControllerDryRunTests(unittest.TestCase):
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [{"attempt": 1}],
             }
             state_path = (
@@ -452,6 +517,8 @@ class PairControllerDryRunTests(unittest.TestCase):
         controller._run_condition = types.MethodType(resumed_run_condition, controller)
         completed = controller.run("P01-T2")
         self.assertEqual(completed["status"], "COMPLETE")
+        self.assertTrue(completed["contestant_active_time_complete"])
+        self.assertEqual(completed["contestant_active_time_interpretation"], "exact")
         self.assertEqual(completed["run_id"], run_id)
         self.assertEqual(calls, ["N", "L", "L"])
         repeated = controller.run("P01-T2")
@@ -496,6 +563,8 @@ class PairControllerDryRunTests(unittest.TestCase):
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [{"attempt": 1}],
             }
             state_path = (
@@ -551,6 +620,8 @@ class PairControllerDryRunTests(unittest.TestCase):
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [{"attempt": 1}],
             }
             state_path = (
@@ -631,6 +702,8 @@ class PairControllerDryRunTests(unittest.TestCase):
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [{"attempt": 1}],
             }
             state_path = (
@@ -715,6 +788,8 @@ class PairControllerDryRunTests(unittest.TestCase):
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [{"attempt": 1}],
             }
             state_path = (
@@ -813,6 +888,8 @@ class PairControllerDryRunTests(unittest.TestCase):
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [{"attempt": 1}],
             }
             (condition_root / "condition_state.json").write_text(
@@ -838,6 +915,520 @@ class PairControllerDryRunTests(unittest.TestCase):
         self.assertEqual((moved / "oversized-sparse").stat().st_size, 2 * 1024**3)
         repeated = controller.run("P01-T2")
         self.assertEqual(repeated["pair_report_sha256"], incident["pair_report_sha256"])
+
+    def test_final_candidate_freeze_overshoot_is_measured_and_unscored(self) -> None:
+        controller = self.controller()
+        controller.config["contestant_active_time_limit_seconds"] = 2
+        pair_root = self.root / "freeze-overshoot-pair"
+        (pair_root / "conditions" / "N").mkdir(parents=True)
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        timeouts: list[float] = []
+        driver = self.successful_driver(1.9, timeouts)
+        import pair_controller as pair_module
+
+        real_freeze = pair_module.freeze_candidate
+        clock_ns = [10_000_000_000]
+
+        def freeze_with_elapsed_time(*args, **kwargs):
+            frozen = real_freeze(*args, **kwargs)
+            clock_ns[0] += 200_000_000
+            return frozen
+
+        with mock.patch(
+            "pair_controller.snapshot_hardware", return_value={"synthetic": True}
+        ), mock.patch(
+            "pair_controller.time.perf_counter_ns", side_effect=lambda: clock_ns[0]
+        ), mock.patch(
+            "pair_controller.freeze_candidate", side_effect=freeze_with_elapsed_time
+        ), mock.patch(
+            "pair_controller.validate_candidate",
+            side_effect=AssertionError("over-limit submission must not be validated"),
+        ):
+            state = controller._run_condition_impl(
+                pair_root=pair_root,
+                task_id="P01-T2",
+                condition="N",
+                paper_path=self.paper,
+                packet=packet,
+                driver=driver,
+            )
+
+        self.assertEqual(timeouts, [2.0])
+        self.assertEqual(state["status"], "ACTIVE_TIME_LIMIT")
+        self.assertAlmostEqual(state["active_seconds"], 2.1)
+        self.assertEqual(state["active_time_limit_threshold_seconds"], 2.0)
+        self.assertAlmostEqual(state["active_time_limit_overshoot_seconds"], 0.1)
+        self.assertEqual(len(state["attempts"]), 1)
+        attempt = state["attempts"][0]
+        self.assertEqual(attempt["status"], "ACTIVE_TIME_LIMIT")
+        self.assertAlmostEqual(attempt["model_active_seconds"], 1.9)
+        self.assertAlmostEqual(attempt["candidate_freeze_seconds"], 0.2)
+        self.assertAlmostEqual(attempt["active_seconds_cumulative"], 2.1)
+        self.assertAlmostEqual(attempt["active_time_limit_overshoot_seconds"], 0.1)
+        candidate = Path(attempt["candidate"]["path"])
+        self.assertTrue(candidate.is_file())
+        self.assertEqual(sha256_file(candidate), attempt["candidate"]["sha256"])
+        controller._verify_condition_active_time_contract(state)
+        condition_root = pair_root / "conditions" / "N"
+        self.write_fake_shutdown(condition_root)
+        summary = controller._summarize_condition(pair_root, "N", state)
+        controller._verify_condition_summary(pair_root, "N", summary)
+
+    def test_rule_violation_takes_precedence_over_freeze_overshoot(self) -> None:
+        controller = self.controller()
+        controller.config["contestant_active_time_limit_seconds"] = 2
+        pair_root = self.root / "violation-and-freeze-overshoot-pair"
+        (pair_root / "conditions" / "N").mkdir(parents=True)
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        timeouts: list[float] = []
+        driver = self.successful_driver(1.9, timeouts)
+        import pair_controller as pair_module
+
+        def unsafe_control_surface(fake_self, workspace, **kwargs):
+            raise BenchmarkError("synthetic protected-path mutation")
+
+        driver.assert_safe_control_surfaces = types.MethodType(
+            unsafe_control_surface, driver
+        )
+        real_freeze = pair_module.freeze_candidate
+        clock_ns = [15_000_000_000]
+
+        def freeze_with_elapsed_time(*args, **kwargs):
+            frozen = real_freeze(*args, **kwargs)
+            clock_ns[0] += 200_000_000
+            return frozen
+
+        with mock.patch(
+            "pair_controller.snapshot_hardware", return_value={"synthetic": True}
+        ), mock.patch(
+            "pair_controller.time.perf_counter_ns", side_effect=lambda: clock_ns[0]
+        ), mock.patch(
+            "pair_controller.freeze_candidate", side_effect=freeze_with_elapsed_time
+        ), mock.patch(
+            "pair_controller.validate_candidate",
+            side_effect=AssertionError("rule-violating submission must not be validated"),
+        ):
+            state = controller._run_condition_impl(
+                pair_root=pair_root,
+                task_id="P01-T2",
+                condition="N",
+                paper_path=self.paper,
+                packet=packet,
+                driver=driver,
+            )
+
+        self.assertEqual(timeouts, [2.0])
+        self.assertEqual(state["status"], "RULE_VIOLATION")
+        self.assertAlmostEqual(state["active_seconds"], 2.1)
+        self.assertEqual(len(state["attempts"]), 1)
+        attempt = state["attempts"][0]
+        self.assertEqual(attempt["status"], "RULE_VIOLATION")
+        self.assertAlmostEqual(attempt["active_seconds"], 2.1)
+        self.assertEqual(
+            attempt["control_surface_violation"],
+            "synthetic protected-path mutation",
+        )
+        self.assertNotIn("active_time_limit_overshoot_seconds", state)
+        controller._verify_condition_active_time_contract(state)
+        summary = controller._summarize_condition(pair_root, "N", state)
+        controller._verify_condition_summary(pair_root, "N", summary)
+
+    def test_active_timeout_takes_precedence_over_invalid_final_telemetry(self) -> None:
+        controller = self.controller()
+        controller.config["contestant_active_time_limit_seconds"] = 2
+        pair_root = self.root / "timeout-with-invalid-telemetry-pair"
+        (pair_root / "conditions" / "N").mkdir(parents=True)
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        timeouts: list[float] = []
+        driver = self.successful_driver(1.9, timeouts)
+        successful_turn = driver.run_turn
+
+        def timed_out_turn(**kwargs):
+            result = successful_turn(**kwargs)
+            result.timed_out = True
+            result.failure_kind = "telemetry_invalid"
+            result.usage_complete = False
+            return result
+
+        driver.run_turn = timed_out_turn
+        with mock.patch(
+            "pair_controller.snapshot_hardware", return_value={"synthetic": True}
+        ), mock.patch(
+            "pair_controller.validate_candidate",
+            side_effect=AssertionError("timed-out turn must not be validated"),
+        ):
+            state = controller._run_condition_impl(
+                pair_root=pair_root,
+                task_id="P01-T2",
+                condition="N",
+                paper_path=self.paper,
+                packet=packet,
+                driver=driver,
+            )
+
+        self.assertEqual(timeouts, [2.0])
+        self.assertEqual(state["status"], "ACTIVE_TIME_LIMIT")
+        self.assertAlmostEqual(state["active_seconds"], 1.9)
+        self.assertEqual(state["active_time_limit_threshold_seconds"], 2.0)
+        self.assertEqual(state["active_time_limit_overshoot_seconds"], 0.0)
+        self.assertFalse(state["contestant_usage_complete"])
+        self.assertEqual(state["contestant_usage_interpretation"], "observed lower bound")
+        self.assertEqual(len(state["attempts"]), 1)
+        attempt = state["attempts"][0]
+        self.assertEqual(attempt["status"], "ACTIVE_TIME_LIMIT")
+        self.assertEqual(attempt["formalizer_failure_kind"], "telemetry_invalid")
+        self.assertEqual(attempt["usage_interpretation"], "incomplete lower bound")
+
+    def test_exact_active_time_limit_submission_reaches_off_clock_validation(self) -> None:
+        controller = self.controller()
+        controller.config["contestant_active_time_limit_seconds"] = 2
+        pair_root = self.root / "exact-limit-pair"
+        condition_root = pair_root / "conditions" / "N"
+        condition_root.mkdir(parents=True)
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        timeouts: list[float] = []
+        driver = self.successful_driver(1.8, timeouts)
+        import pair_controller as pair_module
+
+        real_freeze = pair_module.freeze_candidate
+        clock_ns = [20_000_000_000]
+
+        def freeze_at_boundary(*args, **kwargs):
+            frozen = real_freeze(*args, **kwargs)
+            clock_ns[0] += 200_000_000
+            return frozen
+
+        with mock.patch(
+            "pair_controller.snapshot_hardware", return_value={"synthetic": True}
+        ), mock.patch(
+            "pair_controller.time.perf_counter_ns", side_effect=lambda: clock_ns[0]
+        ), mock.patch(
+            "pair_controller.freeze_candidate", side_effect=freeze_at_boundary
+        ), mock.patch(
+            "pair_controller.validate_candidate",
+            side_effect=KeyboardInterrupt("synthetic off-clock validation stop"),
+        ):
+            with self.assertRaises(KeyboardInterrupt):
+                controller._run_condition_impl(
+                    pair_root=pair_root,
+                    task_id="P01-T2",
+                    condition="N",
+                    paper_path=self.paper,
+                    packet=packet,
+                    driver=driver,
+                )
+
+        state = json.loads(
+            (condition_root / "condition_state.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(timeouts, [2.0])
+        self.assertEqual(state["status"], "VALIDATING")
+        self.assertEqual(state["active_seconds"], 2.0)
+        self.assertEqual(state["attempts"][0]["status"], "SUBMISSION_FROZEN")
+        self.assertEqual(state["attempts"][0]["active_seconds_cumulative"], 2.0)
+
+    def test_freeze_overshoot_uses_time_accumulated_across_repairs(self) -> None:
+        controller = self.controller()
+        controller.config["contestant_active_time_limit_seconds"] = 2
+        pair_root = self.root / "cumulative-freeze-overshoot-pair"
+        (pair_root / "conditions" / "N").mkdir(parents=True)
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        timeouts: list[float] = []
+        driver = self.successful_driver([1.0, 0.8], timeouts)
+        import pair_controller as pair_module
+
+        real_freeze = pair_module.freeze_candidate
+        clock_ns = [30_000_000_000]
+        freeze_count = 0
+
+        def two_freezes(*args, **kwargs):
+            nonlocal freeze_count
+            freeze_count += 1
+            if freeze_count == 1:
+                clock_ns[0] += 100_000_000
+                raise BenchmarkError("synthetic missing first candidate")
+            frozen = real_freeze(*args, **kwargs)
+            clock_ns[0] += 200_000_000
+            return frozen
+
+        with mock.patch(
+            "pair_controller.snapshot_hardware", return_value={"synthetic": True}
+        ), mock.patch(
+            "pair_controller.time.perf_counter_ns", side_effect=lambda: clock_ns[0]
+        ), mock.patch(
+            "pair_controller.freeze_candidate", side_effect=two_freezes
+        ), mock.patch(
+            "pair_controller.validate_candidate",
+            side_effect=AssertionError("over-limit submission must not be validated"),
+        ):
+            state = controller._run_condition_impl(
+                pair_root=pair_root,
+                task_id="P01-T2",
+                condition="N",
+                paper_path=self.paper,
+                packet=packet,
+                driver=driver,
+            )
+
+        self.assertEqual(len(timeouts), 2)
+        self.assertAlmostEqual(timeouts[0], 2.0)
+        self.assertAlmostEqual(timeouts[1], 0.9)
+        self.assertEqual(state["status"], "ACTIVE_TIME_LIMIT")
+        self.assertAlmostEqual(state["active_seconds"], 2.1)
+        self.assertAlmostEqual(state["active_time_limit_overshoot_seconds"], 0.1)
+        self.assertEqual(
+            [attempt["status"] for attempt in state["attempts"]],
+            ["CANDIDATE_MISSING", "ACTIVE_TIME_LIMIT"],
+        )
+        self.assertAlmostEqual(state["attempts"][0]["active_seconds"], 1.1)
+        self.assertAlmostEqual(state["attempts"][1]["active_seconds"], 1.0)
+        self.assertAlmostEqual(
+            state["attempts"][1]["active_seconds_cumulative"], 2.1
+        )
+
+    def test_condition_summary_rejects_accepted_result_over_active_limit(self) -> None:
+        controller = self.controller()
+        controller.config["contestant_active_time_limit_seconds"] = 2
+        pair_root = self.root / "over-limit-summary-pair"
+        condition_root = pair_root / "conditions" / "N"
+        condition_root.mkdir(parents=True)
+        state = {
+            "schema_version": "formalization-condition-state-1",
+            "task_id": "P01-T2",
+            "condition": "N",
+            "status": "ACCEPTED_FAITHFUL",
+            "active_seconds": 2.1,
+            "contestant_usage": {
+                "input_tokens": 1,
+                "cached_input_tokens": 0,
+                "cache_write_input_tokens": 0,
+                "output_tokens": 1,
+                "reasoning_output_tokens": 0,
+                "total_tokens": 2,
+            },
+            "contestant_usage_complete": True,
+            "contestant_usage_interpretation": "exact",
+            "contestant_active_time_complete": True,
+            "contestant_active_time_interpretation": "exact",
+            "attempts": [],
+        }
+        state_path = condition_root / "condition_state.json"
+        state_path.write_text(json.dumps(state), encoding="utf-8")
+        self.write_fake_shutdown(condition_root)
+        summary = controller._summarize_condition(pair_root, "N", state)
+        with self.assertRaisesRegex(
+            BenchmarkError, "exceeded the cumulative active-time limit"
+        ):
+            controller._verify_condition_summary(pair_root, "N", summary)
+
+    def test_interrupted_active_turn_without_safe_record_marks_measurements_incomplete(
+        self,
+    ) -> None:
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        for record_kind in ("missing", "symlink", "malformed"):
+            with self.subTest(record_kind=record_kind):
+                controller = self.controller()
+                pair_root = self.root / f"active-turn-{record_kind}-pair"
+                condition_root = pair_root / "conditions" / "N"
+                condition_root.mkdir(parents=True)
+                controller._stage_condition(
+                    task_id="P01-T2",
+                    condition="N",
+                    condition_root=condition_root,
+                    paper_path=self.paper,
+                    packet=packet,
+                )
+                formalizer_root = condition_root / "attempts" / "01" / "formalizer"
+                formalizer_root.mkdir(parents=True)
+                turn_path = formalizer_root / "turn.json"
+                if record_kind == "symlink":
+                    symlink_target = formalizer_root / "turn-target.json"
+                    symlink_target.write_text("{}\n", encoding="utf-8")
+                    turn_path.symlink_to(symlink_target.name)
+                elif record_kind == "malformed":
+                    turn_path.write_text("{not-json", encoding="utf-8")
+                state_path = condition_root / "condition_state.json"
+                state_path.write_text(
+                    json.dumps(
+                        {
+                            "schema_version": "formalization-condition-state-1",
+                            "task_id": "P01-T2",
+                            "condition": "N",
+                            "status": "CONTESTANT_ACTIVE",
+                            "thread_id": None,
+                            "active_seconds": 1.25,
+                            "attempt_wall_seconds": 0.0,
+                            "excluded_wall_seconds": 0.0,
+                            "contestant_usage": {
+                                "input_tokens": 4,
+                                "cached_input_tokens": 1,
+                                "cache_write_input_tokens": 0,
+                                "output_tokens": 2,
+                                "reasoning_output_tokens": 0,
+                                "total_tokens": 6,
+                            },
+                            "contestant_usage_complete": True,
+                            "contestant_usage_interpretation": "exact",
+                            "contestant_active_time_complete": True,
+                            "contestant_active_time_interpretation": "exact",
+                            "attempts": [],
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+
+                with self.assertRaisesRegex(
+                    BenchmarkError, "interrupted formalizer turn"
+                ):
+                    controller._run_condition_impl(
+                        pair_root=pair_root,
+                        task_id="P01-T2",
+                        condition="N",
+                        paper_path=self.paper,
+                        packet=packet,
+                        driver=object(),
+                    )
+
+                state = json.loads(state_path.read_text(encoding="utf-8"))
+                self.assertEqual(state["active_seconds"], 1.25)
+                self.assertEqual(state["contestant_usage"]["total_tokens"], 6)
+                self.assertFalse(state["contestant_usage_complete"])
+                self.assertEqual(
+                    state["contestant_usage_interpretation"],
+                    "observed lower bound",
+                )
+                self.assertFalse(state["contestant_active_time_complete"])
+                self.assertEqual(
+                    state["contestant_active_time_interpretation"],
+                    "observed lower bound",
+                )
+                partial = controller._summarize_partial_condition(
+                    pair_root, "N", state
+                )
+                controller._verify_partial_condition(pair_root, partial)
+                self.assertFalse(partial["contestant_active_time_complete"])
+
+    def test_freeze_journal_gap_preserves_usage_and_seals_active_lower_bound(
+        self,
+    ) -> None:
+        controller = self.controller()
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        pair_root = self.root / "freeze-journal-gap-pair"
+        condition_root = pair_root / "conditions" / "N"
+        condition_root.mkdir(parents=True)
+        controller._stage_condition(
+            task_id="P01-T2",
+            condition="N",
+            condition_root=condition_root,
+            paper_path=self.paper,
+            packet=packet,
+        )
+        turn_return_path = condition_root / "attempts" / "01" / "turn-return.json"
+        turn_return_path.parent.mkdir(parents=True)
+        turn_return_path.write_text('{"returned":true}\n', encoding="utf-8")
+        state_path = condition_root / "condition_state.json"
+        state_path.write_text(
+            json.dumps(
+                {
+                    "schema_version": "formalization-condition-state-1",
+                    "task_id": "P01-T2",
+                    "condition": "N",
+                    "status": "TURN_RETURNED",
+                    "thread_id": "freeze-gap-thread",
+                    "active_seconds": 1.5,
+                    "attempt_wall_seconds": 0.0,
+                    "excluded_wall_seconds": 0.0,
+                    "contestant_usage": {
+                        "input_tokens": 8,
+                        "cached_input_tokens": 2,
+                        "cache_write_input_tokens": 0,
+                        "output_tokens": 3,
+                        "reasoning_output_tokens": 1,
+                        "total_tokens": 12,
+                    },
+                    "contestant_usage_complete": True,
+                    "contestant_usage_interpretation": "exact",
+                    "contestant_active_time_complete": True,
+                    "contestant_active_time_interpretation": "exact",
+                    "attempts": [],
+                    "inflight_turn": {
+                        "attempt": 1,
+                        "turn_return_path": str(turn_return_path),
+                        "turn_return_sha256": sha256_file(turn_return_path),
+                        "model_active_seconds": 1.5,
+                        "usage_complete": True,
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
+        with self.assertRaisesRegex(BenchmarkError, "outside a resumable boundary"):
+            controller._run_condition_impl(
+                pair_root=pair_root,
+                task_id="P01-T2",
+                condition="N",
+                paper_path=self.paper,
+                packet=packet,
+                driver=object(),
+            )
+
+        state = json.loads(state_path.read_text(encoding="utf-8"))
+        self.assertTrue(state["contestant_usage_complete"])
+        self.assertEqual(state["contestant_usage_interpretation"], "exact")
+        self.assertFalse(state["contestant_active_time_complete"])
+        self.assertEqual(
+            state["contestant_active_time_interpretation"],
+            "observed lower bound",
+        )
+        partial = controller._summarize_partial_condition(pair_root, "N", state)
+        controller._verify_partial_condition(pair_root, partial)
+
+        admission_path = pair_root / "admission.json"
+        admission_path.write_text("{}\n", encoding="utf-8")
+        pair_state_path = pair_root / "pair_state.json"
+        pair_state = {
+            "schema_version": "formalization-pair-state-1",
+            "pilot_id": controller.config["pilot_id"],
+            "run_id": "freeze-gap-run",
+            "task_id": "P01-T2",
+            "created_at_utc": "2026-01-01T00:00:00Z",
+            "created_unix_ns": 1,
+            "pair_root": str(pair_root),
+            "pair_state_path": str(pair_state_path),
+            "status": "PAIR_INCIDENT",
+            "condition_order": ["N", "L"],
+            "conditions": {},
+            "partial_condition_evidence": partial,
+            "manifest_sha256": sha256_file(ROOT / "manifest.json"),
+            "admission_sha256": sha256_file(admission_path),
+            "dry_run": False,
+            "strict_hardware_enforced": True,
+            "measurement_admissible": True,
+            "incident": {
+                "condition": "N",
+                "classification": "synthetic_freeze_journal_gap",
+                "message": "Synthetic hard kill before freeze duration journaling.",
+                "recorded_at_utc": "2026-01-01T00:00:01Z",
+            },
+        }
+        pair_state_path.write_text(json.dumps(pair_state), encoding="utf-8")
+        sealed = controller._seal_pair_terminal(
+            pair_root=pair_root,
+            pair_state_path=pair_state_path,
+            pair_state=pair_state,
+        )
+        self.assertEqual(sealed["contestant_active_seconds_total"], 1.5)
+        self.assertFalse(sealed["contestant_active_time_complete"])
+        self.assertEqual(
+            sealed["contestant_active_time_interpretation"],
+            "observed lower bound",
+        )
+        controller._verify_pair_report(
+            pair_root / "pair_report.json",
+            sealed,
+            expected_sha256=sealed["pair_report_sha256"],
+        )
 
     def test_submission_is_journaled_before_off_clock_validation(self) -> None:
         controller = self.controller()
@@ -916,7 +1507,7 @@ class PairControllerDryRunTests(unittest.TestCase):
         controller._verify_partial_condition(pair_root, partial)
         self.assertEqual(partial["submission_count"], 1)
 
-    def test_turn_return_is_journaled_before_candidate_freeze(self) -> None:
+    def test_turn_return_and_freeze_time_are_journaled_when_freeze_is_interrupted(self) -> None:
         controller = self.controller()
         pair_root = self.root / "turn-return-pair"
         condition_root = pair_root / "conditions" / "N"
@@ -963,6 +1554,9 @@ class PairControllerDryRunTests(unittest.TestCase):
         with mock.patch(
             "pair_controller.snapshot_hardware", return_value={"synthetic": True}
         ), mock.patch(
+            "pair_controller.time.perf_counter_ns",
+            side_effect=[5_000_000_000, 6_000_000_000, 6_250_000_000],
+        ), mock.patch(
             "pair_controller.freeze_candidate",
             side_effect=KeyboardInterrupt("synthetic freeze interruption"),
         ):
@@ -981,9 +1575,13 @@ class PairControllerDryRunTests(unittest.TestCase):
         )
         self.assertEqual(state["status"], "TURN_RETURNED")
         self.assertEqual(state["attempts"], [])
-        self.assertEqual(state["active_seconds"], 1.5)
+        self.assertEqual(state["active_seconds"], 1.75)
+        self.assertTrue(state["contestant_active_time_complete"])
+        self.assertEqual(state["contestant_active_time_interpretation"], "exact")
         self.assertEqual(state["contestant_usage"]["total_tokens"], 15)
         inflight = state["inflight_turn"]
+        self.assertEqual(inflight["candidate_freeze_seconds"], 0.25)
+        self.assertIsNone(inflight["candidate"])
         record = Path(inflight["turn_return_path"])
         self.assertTrue(record.is_file())
         self.assertEqual(sha256_file(record), inflight["turn_return_sha256"])

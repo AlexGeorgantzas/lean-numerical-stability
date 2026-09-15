@@ -121,7 +121,7 @@ the frozen package closure, and—only for L—the frozen library objects.
 
 | Script | Responsibility |
 | --- | --- |
-| `tools/setup_titan.py` | Build and hash the private Titan deployment in a resumable, atomically published transaction without paid model calls. |
+| `tools/setup_titan.py` | Build and hash the private Titan deployment in an atomically published transaction with authenticated finalization resumption and no paid model calls. |
 | `tools/measure_library_build.py` | Clean and measure the full NumStability build under the fixed outer resource envelope, retaining authenticated build output and resource evidence. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary with provider-free sandboxed compilations. |
 | `tools/titan_envelope.py` | Enter the exact CPU, RAM, and swap cgroup. |
@@ -160,6 +160,9 @@ runs/
       condition_state.json
       codex-state/
       workspace/Candidate.lean
+      formalizer-session-close/
+        shutdown.json
+        stderr-after-last-turn.log
       attempts/01..04/
         Candidate.lean
         hardware.json
@@ -172,6 +175,26 @@ runs/
       roles/... fresh auditor transcripts and usage
       decision.json
 ```
+
+At the end of each condition, the driver closes the one persistent formalizer
+app-server and records `formalizer-session-close/shutdown.json` plus the
+credential-redacted `stderr-after-last-turn.log`. The shutdown record binds the
+stderr hash, return code, forced-signal state, stdout EOF drain, and count/hash
+of any protocol lines emitted after the final telemetry boundary. The pair
+controller authenticates both files and requires a graceful zero-exit shutdown,
+a fully drained protocol stream, and no late protocol lines before a
+non-incident condition is scoreable. A close failure preserves measured
+evidence in a fail-closed incident but cannot be promoted to a scored result.
+Likewise, a host/controller interruption before a complete turn or final-freeze
+duration is journaled seals an unscored partial incident; condition and pair
+records mark the affected active-time and/or token totals as incomplete
+observed lower bounds rather than exact measurements.
+
+Normal authenticated setup finalization can resume after interruption without
+rebuilding. That recovery is deliberately bounded: if the separate atomic skill
+installer retains a `skill-install-state.json` journal because exact restoration
+could not be established, later setup attempts fail closed and require exact
+manual recovery of the named transaction before retrying.
 
 The library build record is provisioning evidence and is never added to either
 condition's contestant clock. It identifies the clean project build after a

@@ -75,8 +75,12 @@ The installer creates a user-private deployment below
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
-is resumed on the next invocation. Incomplete or malformed sibling transactions
-are quarantined under unique names; an unrecognized existing destination or
+normally resumes on the next invocation. This is not a universal automatic-
+recovery promise: if skill installation retains a `skill-install-state.json`
+recovery journal because exact rollback could not be proved, subsequent setup
+fails closed and reports the transaction that requires exact manual recovery
+before retrying. Incomplete or malformed sibling deployment transactions are
+quarantined under unique names; an unrecognized existing destination or
 launcher is never overwritten. It:
 
 1. verifies the release and all five private PDF hashes;
@@ -135,8 +139,11 @@ existing pilot run for that task rather than creating a repetition.
 
 The five accepted task IDs are `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, and
 `P14-T2`. Each task has exactly one official N/L pair. Every condition uses one
-persistent formalizer conversation for up to four submissions, with a
-five-hour cumulative charged-time limit and no contestant token cap.
+persistent formalizer conversation for up to four submissions, with 18,000
+cumulative contestant-active seconds as its termination threshold and no
+contestant token cap. Any timer or final-candidate-freeze overshoot is recorded,
+not clamped, and yields an unscored `ACTIVE_TIME_LIMIT`; no scored condition can
+exceed the threshold.
 
 Status is provider-free:
 

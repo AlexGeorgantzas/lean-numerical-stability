@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import fcntl
 import json
+import math
 import os
 import secrets
 import shutil
@@ -84,6 +85,8 @@ SEALED_PAIR_REPORT_FIELDS = (
     "completed_unix_ns",
     "end_to_end_wall_seconds",
     "contestant_active_seconds_total",
+    "contestant_active_time_complete",
+    "contestant_active_time_interpretation",
     "excluded_end_to_end_wall_seconds",
 )
 
@@ -210,6 +213,60 @@ def _usage_add(total: dict[str, int], usage: Mapping[str, Any]) -> dict[str, int
     return result
 
 
+def _measured_active_seconds(value: Any, *, label: str) -> float:
+    if (
+        not isinstance(value, (int, float))
+        or isinstance(value, bool)
+        or not math.isfinite(float(value))
+        or float(value) < 0.0
+    ):
+        raise BenchmarkError(f"{label} is not a finite nonnegative duration")
+    return float(value)
+
+
+def _record_active_time_limit(state: dict[str, Any], limit: float) -> None:
+    active_seconds = _measured_active_seconds(
+        state.get("active_seconds"), label="condition active time"
+    )
+    state["status"] = "ACTIVE_TIME_LIMIT"
+    state["active_time_limit_threshold_seconds"] = limit
+    state["active_time_limit_overshoot_seconds"] = max(
+        0.0, active_seconds - limit
+    )
+
+
+def _active_time_is_complete(record: Mapping[str, Any], *, label: str) -> bool:
+    complete = record.get("contestant_active_time_complete")
+    interpretation = record.get("contestant_active_time_interpretation")
+    if (
+        not isinstance(complete, bool)
+        or interpretation not in {"exact", "observed lower bound"}
+        or complete != (interpretation == "exact")
+    ):
+        raise BenchmarkError(f"{label} active-time interpretation is malformed")
+    return complete
+
+
+def _mark_active_time_incomplete(state: dict[str, Any]) -> None:
+    state["contestant_active_time_complete"] = False
+    state["contestant_active_time_interpretation"] = "observed lower bound"
+
+
+def _mark_usage_incomplete(state: dict[str, Any]) -> None:
+    state["contestant_usage_complete"] = False
+    state["contestant_usage_interpretation"] = "observed lower bound"
+
+
+def _aggregate_active_time_completeness(
+    records: list[Mapping[str, Any]],
+) -> tuple[bool, str]:
+    complete = all(
+        _active_time_is_complete(record, label=f"pair component {index}")
+        for index, record in enumerate(records)
+    )
+    return complete, "exact" if complete else "observed lower bound"
+
+
 def _write_state(path: Path, state: dict[str, Any]) -> None:
     now_utc = utc_now()
     now_unix_ns = time.time_ns()
@@ -232,17 +289,28 @@ def _write_state(path: Path, state: dict[str, Any]) -> None:
             state["end_to_end_wall_seconds"] = (
                 now_unix_ns - created_unix_ns
             ) / 1_000_000_000
+            active_components = [
+                summary
+                for summary in state.get("conditions", {}).values()
+                if isinstance(summary, Mapping)
+            ]
+            partial = state.get("partial_condition_evidence")
+            if isinstance(partial, Mapping):
+                active_components.append(partial)
             measured_seconds = (
                 float(state.get("active_seconds", 0.0))
                 if terminal_condition
                 else sum(
                     float(summary.get("active_seconds", 0.0))
-                    for summary in state.get("conditions", {}).values()
-                    if isinstance(summary, Mapping)
+                    for summary in active_components
                 )
             )
             if terminal_pair:
                 state["contestant_active_seconds_total"] = measured_seconds
+                (
+                    state["contestant_active_time_complete"],
+                    state["contestant_active_time_interpretation"],
+                ) = _aggregate_active_time_completeness(active_components)
             state["excluded_end_to_end_wall_seconds"] = max(
                 0.0,
                 float(state["end_to_end_wall_seconds"])
@@ -361,6 +429,50 @@ class PairController:
             deployment.library_source,
             root_module,
         )
+
+    def _active_time_limit(self) -> float:
+        return _measured_active_seconds(
+            self.config.get("contestant_active_time_limit_seconds"),
+            label="contestant active-time limit",
+        )
+
+    def _verify_condition_active_time_contract(
+        self, state: Mapping[str, Any]
+    ) -> None:
+        active_time_complete = _active_time_is_complete(state, label="condition")
+        active_seconds = _measured_active_seconds(
+            state.get("active_seconds"), label="condition active time"
+        )
+        limit = self._active_time_limit()
+        status = state.get("status")
+        if not active_time_complete and status not in INCIDENT_CONDITION_STATES:
+            raise BenchmarkError(
+                "a scored condition may not contain incomplete active-time telemetry"
+            )
+        if (
+            active_seconds > limit
+            and status != "ACTIVE_TIME_LIMIT"
+            and status not in INCIDENT_CONDITION_STATES
+        ):
+            raise BenchmarkError(
+                "condition exceeded the cumulative active-time limit without "
+                "terminating as ACTIVE_TIME_LIMIT"
+            )
+        if status == "ACTIVE_TIME_LIMIT":
+            threshold = state.get("active_time_limit_threshold_seconds")
+            overshoot = state.get("active_time_limit_overshoot_seconds")
+            if (
+                not isinstance(threshold, (int, float))
+                or isinstance(threshold, bool)
+                or float(threshold) != limit
+                or not isinstance(overshoot, (int, float))
+                or isinstance(overshoot, bool)
+                or not math.isfinite(float(overshoot))
+                or float(overshoot) != max(0.0, active_seconds - limit)
+            ):
+                raise BenchmarkError(
+                    "active-time-limit evidence is missing or inconsistent"
+                )
 
     def _credential_scan(self, pair_root: Path) -> dict[str, Any]:
         return assert_no_credentials_in_tree(pair_root, self.deployment.auth_file)
@@ -1186,8 +1298,23 @@ class PairController:
                     / "formalizer"
                 )
                 recovered_turn_path = recovered_formalizer / "turn.json"
-                if recovered_turn_path.is_file() and not recovered_turn_path.is_symlink():
+                if not recovered_turn_path.is_file() or recovered_turn_path.is_symlink():
+                    _mark_usage_incomplete(state)
+                    _mark_active_time_incomplete(state)
+                    _write_state(state_path, state)
+                    raise BenchmarkError(
+                        "interrupted formalizer turn has no safe complete turn record"
+                    )
+                try:
                     recovered_turn = load_json(recovered_turn_path)
+                except BenchmarkError as error:
+                    _mark_usage_incomplete(state)
+                    _mark_active_time_incomplete(state)
+                    _write_state(state_path, state)
+                    raise BenchmarkError(
+                        "interrupted formalizer turn record is malformed"
+                    ) from error
+                else:
                     recovered_usage = recovered_turn.get("usage")
                     recovered_active = recovered_turn.get(
                         "active_seconds_through_quiescence"
@@ -1204,9 +1331,13 @@ class PairController:
                         )
                         or not isinstance(recovered_active, (int, float))
                         or isinstance(recovered_active, bool)
+                        or not math.isfinite(float(recovered_active))
                         or recovered_active < 0
                         or not isinstance(recovered_turn.get("usage_complete"), bool)
                     ):
+                        _mark_usage_incomplete(state)
+                        _mark_active_time_incomplete(state)
+                        _write_state(state_path, state)
                         raise BenchmarkError(
                             "interrupted formalizer turn record is malformed"
                         )
@@ -1230,9 +1361,9 @@ class PairController:
                     write_json_atomic(
                         recovered_return_path, recovered_return, mode=0o400
                     )
-                    state["active_seconds"] = float(state["active_seconds"]) + float(
-                        recovered_active
-                    )
+                    state["active_seconds"] = _measured_active_seconds(
+                        state.get("active_seconds"), label="condition active time"
+                    ) + float(recovered_active)
                     state["contestant_usage"] = _usage_add(
                         state["contestant_usage"], recovered_usage
                     )
@@ -1254,7 +1385,21 @@ class PairController:
                     }
                     state["status"] = "TURN_RETURNED"
                     _write_state(state_path, state)
+            inflight = state.get("inflight_turn")
+            if (
+                state.get("status") == "TURN_RETURNED"
+                and isinstance(inflight, Mapping)
+                and inflight.get("reconstructed_after_interruption") is not True
+                and "candidate_freeze_seconds" not in inflight
+            ):
+                # A hard kill may land after the model turn was journaled but
+                # before the final candidate hash/freeze duration was durable.
+                # The model usage remains independently complete; only charged
+                # active time becomes a known lower bound.
+                _mark_active_time_incomplete(state)
+                _write_state(state_path, state)
             if state.get("status") in TERMINAL_CONDITION_STATES:
+                self._verify_condition_active_time_contract(state)
                 return state
             if state.get("attempts"):
                 raise BenchmarkError(
@@ -1286,6 +1431,8 @@ class PairController:
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_active_time_complete": True,
+                "contestant_active_time_interpretation": "exact",
                 "attempts": [],
                 "created_at_utc": utc_now(),
                 "created_unix_ns": time.time_ns(),
@@ -1293,16 +1440,14 @@ class PairController:
             _write_state(state_path, state)
 
         maximum = int(self.config["submission_limit"])
-        limit = float(self.config["contestant_active_time_limit_seconds"])
+        limit = self._active_time_limit()
         while len(state["attempts"]) < maximum:
             attempt_number = len(state["attempts"]) + 1
-            remaining = limit - float(state["active_seconds"])
+            remaining = limit - _measured_active_seconds(
+                state.get("active_seconds"), label="condition active time"
+            )
             if remaining <= 0:
-                state["status"] = "ACTIVE_TIME_LIMIT"
-                state["active_time_limit_threshold_seconds"] = limit
-                state["active_time_limit_overshoot_seconds"] = max(
-                    0.0, float(state["active_seconds"]) - limit
-                )
+                _record_active_time_limit(state, limit)
                 _write_state(state_path, state)
                 return state
             attempt_root = condition_root / "attempts" / f"{attempt_number:02d}"
@@ -1342,6 +1487,9 @@ class PairController:
                 and result.active_ended_perf_ns is not None
                 else 0.0
             )
+            model_active_seconds = _measured_active_seconds(
+                model_active_seconds, label="model active time"
+            )
             turn_record_path = formalizer_root / "turn.json"
             if not turn_record_path.is_file() or turn_record_path.is_symlink():
                 raise BenchmarkError("formalizer returned without a safe turn record")
@@ -1361,7 +1509,10 @@ class PairController:
             }
             write_json_atomic(turn_return_path, turn_return, mode=0o400)
             state["active_seconds"] = (
-                float(state["active_seconds"]) + model_active_seconds
+                _measured_active_seconds(
+                    state.get("active_seconds"), label="condition active time"
+                )
+                + model_active_seconds
             )
             if any(value > 0 for value in result.usage.values()):
                 state["contestant_usage"] = _usage_add(
@@ -1409,23 +1560,36 @@ class PairController:
                     )
                 except (OSError, BenchmarkError) as error:
                     freeze_error = str(error)
-                candidate_freeze_seconds = (
-                    time.perf_counter_ns() - freeze_started
-                ) / 1_000_000_000
+                finally:
+                    candidate_freeze_seconds = _measured_active_seconds(
+                        (time.perf_counter_ns() - freeze_started) / 1_000_000_000,
+                        label="candidate freeze time",
+                    )
+                    state["active_seconds"] = (
+                        _measured_active_seconds(
+                            state.get("active_seconds"),
+                            label="condition active time",
+                        )
+                        + candidate_freeze_seconds
+                    )
+                    state["inflight_turn"]["candidate_freeze_seconds"] = (
+                        candidate_freeze_seconds
+                    )
+                    state["inflight_turn"]["candidate"] = frozen
+                    # Candidate hashing/freezing is the final charged phase.
+                    # Persist its actual duration even if an asynchronous
+                    # interruption prevents the submission from being scored.
+                    _write_state(state_path, state)
             active_seconds = model_active_seconds + candidate_freeze_seconds
             hardware_after = snapshot_hardware(strict=self.strict_hardware)
             self._verify_hardware_identity(hardware_after)
             write_json_atomic(
                 attempt_root / "hardware_after.json", hardware_after, mode=0o400
             )
-            state["active_seconds"] = (
-                float(state["active_seconds"]) + candidate_freeze_seconds
-            )
             usage_complete = result.usage_complete
-            state["inflight_turn"]["candidate_freeze_seconds"] = (
-                candidate_freeze_seconds
-            )
-            state["inflight_turn"]["candidate"] = frozen
+            if not may_submit:
+                state["inflight_turn"]["candidate_freeze_seconds"] = 0.0
+                state["inflight_turn"]["candidate"] = None
             _write_state(state_path, state)
             attempt: dict[str, Any] = {
                 "attempt": attempt_number,
@@ -1469,12 +1633,6 @@ class PairController:
                 state["status"] = "RULE_VIOLATION"
                 _write_state(state_path, state)
                 return state
-            if result.failure_kind == "telemetry_invalid":
-                attempt["status"] = "TELEMETRY_FAILURE"
-                _append_attempt(state, attempt, attempt_started_perf_ns)
-                state["status"] = "TELEMETRY_FAILURE"
-                _write_state(state_path, state)
-                return state
             if result.failure_kind in {
                 "workspace_limit",
                 "artifact_limit",
@@ -1498,11 +1656,13 @@ class PairController:
                 attempt["status"] = "ACTIVE_TIME_LIMIT"
                 attempt["usage_interpretation"] = "incomplete lower bound"
                 _append_attempt(state, attempt, attempt_started_perf_ns)
-                state["status"] = "ACTIVE_TIME_LIMIT"
-                state["active_time_limit_threshold_seconds"] = limit
-                state["active_time_limit_overshoot_seconds"] = max(
-                    0.0, float(state["active_seconds"]) - limit
-                )
+                _record_active_time_limit(state, limit)
+                _write_state(state_path, state)
+                return state
+            if result.failure_kind == "telemetry_invalid":
+                attempt["status"] = "TELEMETRY_FAILURE"
+                _append_attempt(state, attempt, attempt_started_perf_ns)
+                state["status"] = "TELEMETRY_FAILURE"
                 _write_state(state_path, state)
                 return state
             if result.exit_code != 0 or result.thread_id is None:
@@ -1517,14 +1677,16 @@ class PairController:
                 state["status"] = "TELEMETRY_FAILURE"
                 _write_state(state_path, state)
                 return state
-            if state["active_seconds"] >= limit:
+            if _measured_active_seconds(
+                state.get("active_seconds"), label="condition active time"
+            ) > limit:
                 attempt["status"] = "ACTIVE_TIME_LIMIT"
-                _append_attempt(state, attempt, attempt_started_perf_ns)
-                state["status"] = "ACTIVE_TIME_LIMIT"
-                state["active_time_limit_threshold_seconds"] = limit
-                state["active_time_limit_overshoot_seconds"] = max(
-                    0.0, float(state["active_seconds"]) - limit
+                attempt["active_time_limit_threshold_seconds"] = limit
+                attempt["active_time_limit_overshoot_seconds"] = (
+                    float(state["active_seconds"]) - limit
                 )
+                _append_attempt(state, attempt, attempt_started_perf_ns)
+                _record_active_time_limit(state, limit)
                 _write_state(state_path, state)
                 return state
             if frozen is None:
@@ -1809,6 +1971,12 @@ class PairController:
         return {
             "status": result["status"],
             "active_seconds": result["active_seconds"],
+            "contestant_active_time_complete": result[
+                "contestant_active_time_complete"
+            ],
+            "contestant_active_time_interpretation": result[
+                "contestant_active_time_interpretation"
+            ],
             "end_to_end_wall_seconds": result.get("end_to_end_wall_seconds"),
             "excluded_end_to_end_wall_seconds": result.get(
                 "excluded_end_to_end_wall_seconds"
@@ -1847,6 +2015,12 @@ class PairController:
             "condition": condition,
             "status": state.get("status"),
             "active_seconds": float(active_seconds),
+            "contestant_active_time_complete": state.get(
+                "contestant_active_time_complete"
+            ),
+            "contestant_active_time_interpretation": state.get(
+                "contestant_active_time_interpretation"
+            ),
             "contestant_usage": state.get("contestant_usage"),
             "contestant_usage_complete": state.get("contestant_usage_complete"),
             "contestant_usage_interpretation": state.get(
@@ -1881,6 +2055,10 @@ class PairController:
         if (
             state.get("status") != partial.get("status")
             or partial.get("scoreable") is not False
+            or state.get("contestant_active_time_complete")
+            != partial.get("contestant_active_time_complete")
+            or state.get("contestant_active_time_interpretation")
+            != partial.get("contestant_active_time_interpretation")
             or state.get("contestant_usage") != partial.get("contestant_usage")
             or state.get("contestant_usage_complete")
             != partial.get("contestant_usage_complete")
@@ -1896,6 +2074,7 @@ class PairController:
             not in {"exact", "observed lower bound"}
         ):
             raise BenchmarkError("partial condition usage interpretation is malformed")
+        _active_time_is_complete(partial, label="partial condition")
         state_active_seconds = state.get("active_seconds", 0.0)
         partial_active_seconds = partial.get("active_seconds", 0.0)
         if (
@@ -2033,9 +2212,8 @@ class PairController:
         if terminal.get("evidence_manifest") != audit_evidence_manifest(path.parent):
             raise BenchmarkError("condition attempt audit evidence closure changed")
 
-    @staticmethod
     def _verify_condition_summary(
-        pair_root: Path, condition: str, summary: Mapping[str, Any]
+        self, pair_root: Path, condition: str, summary: Mapping[str, Any]
     ) -> dict[str, Any]:
         expected_path = pair_root / "conditions" / condition / "condition_state.json"
         recorded_path = Path(str(summary.get("state_path", ""))).resolve()
@@ -2051,6 +2229,7 @@ class PairController:
         ):
             raise BenchmarkError("recorded condition state failed authentication")
         condition_state = load_json(expected_path)
+        self._verify_condition_active_time_contract(condition_state)
         expected_evidence = summary.get("evidence_manifest")
         if expected_evidence != tree_manifest(expected_path.parent):
             raise BenchmarkError("recorded condition evidence closure changed")
@@ -2076,6 +2255,10 @@ class PairController:
             or condition_state.get("status") not in TERMINAL_CONDITION_STATES
             or summary.get("status") != condition_state.get("status")
             or summary.get("active_seconds") != condition_state.get("active_seconds")
+            or summary.get("contestant_active_time_complete")
+            != condition_state.get("contestant_active_time_complete")
+            or summary.get("contestant_active_time_interpretation")
+            != condition_state.get("contestant_active_time_interpretation")
             or summary.get("end_to_end_wall_seconds")
             != condition_state.get("end_to_end_wall_seconds")
             or summary.get("excluded_end_to_end_wall_seconds")
@@ -2263,16 +2446,24 @@ class PairController:
             or completed_ns < created_ns
         ):
             raise BenchmarkError("terminal pair report has malformed wall-clock bounds")
-        expected_active = sum(
-            float(conditions[condition].get("active_seconds", 0.0))
-            for condition in observed_order
-        )
+        active_components = [conditions[condition] for condition in observed_order]
         if isinstance(partial, Mapping):
-            expected_active += float(partial.get("active_seconds", 0.0))
+            active_components.append(partial)
+        expected_active = sum(
+            float(component.get("active_seconds", 0.0))
+            for component in active_components
+        )
+        expected_active_complete, expected_active_interpretation = (
+            _aggregate_active_time_completeness(active_components)
+        )
         expected_wall = (completed_ns - created_ns) / 1_000_000_000
         expected_excluded = max(0.0, expected_wall - expected_active)
         if (
             sealed.get("contestant_active_seconds_total") != expected_active
+            or sealed.get("contestant_active_time_complete")
+            != expected_active_complete
+            or sealed.get("contestant_active_time_interpretation")
+            != expected_active_interpretation
             or sealed.get("end_to_end_wall_seconds") != expected_wall
             or sealed.get("excluded_end_to_end_wall_seconds") != expected_excluded
             or sealed.get("updated_at_utc") != sealed.get("completed_at_utc")
@@ -2305,16 +2496,22 @@ class PairController:
             pair_state["end_to_end_wall_seconds"] = (
                 int(pair_state["completed_unix_ns"]) - created_unix_ns
             ) / 1_000_000_000
-        pair_state["contestant_active_seconds_total"] = sum(
-            float(summary.get("active_seconds", 0.0))
+        active_components = [
+            summary
             for summary in pair_state.get("conditions", {}).values()
             if isinstance(summary, Mapping)
-        )
+        ]
         partial = pair_state.get("partial_condition_evidence")
         if isinstance(partial, Mapping):
-            pair_state["contestant_active_seconds_total"] += float(
-                partial.get("active_seconds", 0.0)
-            )
+            active_components.append(partial)
+        pair_state["contestant_active_seconds_total"] = sum(
+            float(component.get("active_seconds", 0.0))
+            for component in active_components
+        )
+        (
+            pair_state["contestant_active_time_complete"],
+            pair_state["contestant_active_time_interpretation"],
+        ) = _aggregate_active_time_completeness(active_components)
         if "end_to_end_wall_seconds" in pair_state:
             pair_state["excluded_end_to_end_wall_seconds"] = max(
                 0.0,
@@ -2777,6 +2974,8 @@ class PairController:
                     completed_unix_ns - int(pair_state["created_unix_ns"])
                 ) / 1_000_000_000
                 pair_state["contestant_active_seconds_total"] = 0.0
+                pair_state["contestant_active_time_complete"] = True
+                pair_state["contestant_active_time_interpretation"] = "exact"
                 pair_state["excluded_end_to_end_wall_seconds"] = pair_state[
                     "end_to_end_wall_seconds"
                 ]

@@ -7,8 +7,10 @@ code only verifies the resulting bytes and must not invoke this script.
 
 from __future__ import annotations
 
+import argparse
 import json
 from pathlib import Path
+import sys
 
 from common import load_json, sha256_file, write_json_atomic
 from manifest_control import (
@@ -98,7 +100,27 @@ def build() -> dict:
     return value
 
 
-if __name__ == "__main__":
+def make_parser() -> argparse.ArgumentParser:
+    return argparse.ArgumentParser(description=__doc__)
+
+
+def main(argv: list[str] | None = None) -> int:
+    raw_arguments = list(sys.argv[1:] if argv is None else argv)
+    parser = make_parser()
+    if len(raw_arguments) > 1 and any(
+        argument in {"-h", "--help"} for argument in raw_arguments
+    ):
+        parser.error("--help must be used by itself")
+    parser.parse_args(raw_arguments)
+    # argparse consumes a bare `--`, so retain an explicit raw-argument check:
+    # this release-authoring command intentionally has no operational options.
+    if raw_arguments:
+        parser.error("this command accepts no arguments")
     manifest = build()
     write_json_atomic(MANIFEST_PATH, manifest, mode=0o644)
     print(manifest["manifest_payload_sha256"])
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

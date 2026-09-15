@@ -90,11 +90,14 @@ attempt-blind faithfulness audit. If rejected and a submission remains, freeze
 condition-neutral feedback and deliver it to the same formalizer conversation;
 resume metering immediately before delivery.
 
-Charge at most 18,000 cumulative contestant-active seconds across all four
-submissions. There is no benchmark token cap: record contestant tokens as an
-outcome and never stop a run because of their count. Validator, audit,
-adjudication, and feedback-rendering time and tokens belong to separate
-overhead ledgers and do not affect the contestant metrics.
+Use 18,000 cumulative contestant-active seconds across all four submissions as
+the termination threshold. Any timer or final-candidate-freeze overshoot is
+measured rather than clamped and yields the unscored `ACTIVE_TIME_LIMIT`
+outcome; no accepted or otherwise scored condition may exceed the threshold.
+There is no benchmark token cap: record contestant tokens as an outcome and
+never stop a run because of their count. Validator, audit, adjudication, and
+feedback-rendering time and tokens belong to separate overhead ledgers and do
+not affect the contestant metrics.
 
 ## Execute fail closed
 
@@ -106,9 +109,10 @@ continuation, and terminal state. Do not simulate these boundaries with manual
 timestamps or copied chat messages.
 
 Do not overwrite, delete, reuse, or hand-edit run directories, snapshots,
-hashes, ledgers, attempt counters, audit decisions, or active markers. Reissue
-the same authenticated source-first `run` command only to return an existing
-terminal result or continue before the first turn or between sealed conditions.
+hashes, ledgers, attempt counters, audit decisions, or active markers. Use the
+provider-free `status` command for inspection. Reissue the same authenticated
+source-first `run` command only to intentionally retrieve an existing terminal
+result or continue before the first turn or between sealed conditions.
 A submitted condition cannot be cold-resumed because its exact raw usage stream
 belongs to its live app-server process. Stop on
 missing telemetry, a hash mismatch, source ambiguity, an evaluator incident,

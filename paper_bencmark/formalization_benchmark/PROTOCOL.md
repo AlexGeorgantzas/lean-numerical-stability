@@ -12,7 +12,9 @@ of a paper result. It does not measure proof construction.
 - Replication count: one N/L pair per task.
 - Formalizer model and reasoning effort are frozen in `config.json`.
 - Maximum submissions per condition: four (initial plus three repairs).
-- Cumulative contestant-active limit per condition: 18,000 seconds.
+- Cumulative contestant-active termination threshold per condition: 18,000
+  seconds. Actual timer or final-freeze overshoot is retained and makes the
+  condition unscored `ACTIVE_TIME_LIMIT`; it is never clamped or accepted.
 - Benchmark token cap: none. Provider usage is still measured at every turn.
 - Hardware envelope: the complete condition process tree runs in a transient
   user service with systemd-enforced affinity to exactly eight logical CPUs and
@@ -105,9 +107,13 @@ and verification that no contestant background terminal remains. The runner
 then pauses that interval while it settles ordered telemetry and writes trusted
 bookkeeping. It separately times and charges the stable candidate copy/hash.
 The contestant-active total is the sum of the model-active and candidate-freeze
-components, not the intervening off-clock work. App-server teardown, transcript
-writing, compilation, and auditing are off-clock. The submitted artifact is the
-single `Candidate.lean`; mutable scratch and object files are not submissions.
+components, not the intervening off-clock work. The 18,000-second value is the
+termination threshold rather than a claim that operating-system timer delivery
+has zero latency: any measured overshoot is retained in full and terminates the
+condition unscored before validation or auditing. App-server teardown,
+transcript writing, compilation, and auditing are off-clock. The submitted
+artifact is the single `Candidate.lean`; mutable scratch and object files are
+not submissions.
 
 One raw-event-enabled app-server process remains alive for all submissions in a
 condition. Repair prompts therefore continue the exact same conversation and
@@ -117,6 +123,12 @@ observed usage as a labeled lower bound and remains an `ACTIVE_TIME_LIMIT`
 outcome. Because a cold `thread/resume` cannot preserve that raw event stream,
 an interruption after a submission is fail-closed; recovery is supported only
 before the first turn or between sealed condition records.
+
+If the controller or host stops before a complete turn record or candidate-
+freeze duration becomes durable, the pair is sealed as an unscored incident.
+The recorded contestant time and token totals remain useful lower bounds, but
+their completeness fields explicitly label whichever measurements are no
+longer exact.
 
 Compilation, semantic-dossier construction, faithfulness auditing, and feedback
 rendering are recorded separately and excluded from contestant-active time and
