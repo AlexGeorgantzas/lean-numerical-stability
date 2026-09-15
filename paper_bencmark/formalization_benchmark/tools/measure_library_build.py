@@ -30,6 +30,8 @@ from hardware import snapshot_hardware
 SCHEMA_VERSION = "numstability-setup-build-1"
 BUILD_TIMEOUT_SECONDS = 18_000.0
 MAX_BUILD_OUTPUT_BYTES = 64 * 1024 * 1024
+DEPENDENCY_CACHE_TIMEOUT_SECONDS = 1_800.0
+MAX_DEPENDENCY_CACHE_OUTPUT_BYTES = 64 * 1024 * 1024
 DEPENDENCY_MANIFEST_MAX_BYTES = 4 * 1024 * 1024
 GIT_BINARY = "/usr/bin/git"
 REQUIRED_CPU_STAT_KEYS = ("usage_usec", "user_usec", "system_usec")
@@ -462,15 +464,27 @@ def validate_build_record(
     before = cache.get("dependency_closure_before")
     after = cache.get("dependency_closure_after")
     prebuild = cache.get("prebuild_project_tree")
+    post_clean = cache.get("post_clean_project_tree")
+    preparation = cache.get("dependency_cache_preparation")
     if (
         cache.get("dependency_cache_prepared_before_measurement") is not True
-        or cache.get("project_cleaned_immediately_before_measurement") is not True
+        or cache.get("project_cleaned_before_cache_preparation") is not True
+        or cache.get("root_project_empty_immediately_before_measurement") is not True
         or cache.get("dependency_closure_unchanged") is not True
         or not isinstance(before, Mapping)
         or before != after
         or not isinstance(prebuild, Mapping)
         or prebuild.get("file_count") != 0
         or prebuild.get("bytes") != 0
+        or not isinstance(post_clean, Mapping)
+        or post_clean.get("file_count") != 0
+        or post_clean.get("bytes") != 0
+        or not isinstance(preparation, Mapping)
+        or preparation.get("logical_command") != ["lake", "exe", "cache", "get"]
+        or preparation.get("returncode") != 0
+        or preparation.get("timed_out") is not False
+        or preparation.get("output_limit_exceeded") is not False
+        or preparation.get("resource_limit_exceeded") is not False
     ):
         raise BenchmarkError("NumStability build cache provenance is not admissible")
     packages = before.get("packages")
@@ -694,11 +708,31 @@ def measure_build(args: argparse.Namespace) -> Path:
     )
     if clean["returncode"] != 0 or clean["timed_out"] or clean["output_limit_exceeded"]:
         raise BenchmarkError("could not clean the NumStability project before measurement")
+    post_clean_project_tree = _optional_file_tree_fingerprint(
+        checkout / ".lake" / "build"
+    )
+    if post_clean_project_tree["file_count"] != 0:
+        raise BenchmarkError("NumStability project build tree remained after lake clean")
+    cache_command = [str(lake), "exe", "cache", "get"]
+    cache_preparation = run_bounded_command(
+        cache_command,
+        cwd=checkout,
+        environment=environment,
+        timeout_seconds=DEPENDENCY_CACHE_TIMEOUT_SECONDS,
+        maximum_output_bytes=MAX_DEPENDENCY_CACHE_OUTPUT_BYTES,
+    )
+    if (
+        cache_preparation["returncode"] != 0
+        or cache_preparation["timed_out"]
+        or cache_preparation["output_limit_exceeded"]
+        or cache_preparation["resource_limit_exceeded"]
+    ):
+        raise BenchmarkError("could not prepare dependency cache before measured build")
     prebuild_project_tree = _optional_file_tree_fingerprint(
         checkout / ".lake" / "build"
     )
     if prebuild_project_tree["file_count"] != 0:
-        raise BenchmarkError("NumStability project build tree remained after lake clean")
+        raise BenchmarkError("dependency cache preparation populated root build outputs")
     root_git_before = _git_state(checkout, environment=environment)
     source_inputs_before = _source_input_fingerprint(checkout)
     project_configuration_before = _project_configuration_fingerprint(checkout)
@@ -832,8 +866,25 @@ def measure_build(args: argparse.Namespace) -> Path:
         "benchmark_charged": False,
         "cache_state": {
             "dependency_cache_prepared_before_measurement": True,
-            "project_cleaned_immediately_before_measurement": True,
+            "project_cleaned_before_cache_preparation": True,
+            "root_project_empty_immediately_before_measurement": True,
+            "post_clean_project_tree": post_clean_project_tree,
             "prebuild_project_tree": prebuild_project_tree,
+            "dependency_cache_preparation": {
+                "logical_command": ["lake", "exe", "cache", "get"],
+                "returncode": cache_preparation["returncode"],
+                "timed_out": cache_preparation["timed_out"],
+                "timeout_seconds": DEPENDENCY_CACHE_TIMEOUT_SECONDS,
+                "output_limit_exceeded": cache_preparation[
+                    "output_limit_exceeded"
+                ],
+                "output_limit_bytes": MAX_DEPENDENCY_CACHE_OUTPUT_BYTES,
+                "resource_limit_exceeded": cache_preparation[
+                    "resource_limit_exceeded"
+                ],
+                "output_sha256": cache_preparation["output_sha256"],
+                "output_bytes_observed": cache_preparation["output_bytes_observed"],
+            },
             "dependency_closure_before": dependency_closure_before,
             "dependency_closure_after": dependency_closure_after,
             "dependency_closure_unchanged": True,

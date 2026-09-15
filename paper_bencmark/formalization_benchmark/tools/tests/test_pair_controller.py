@@ -155,12 +155,26 @@ class PairControllerDryRunTests(unittest.TestCase):
                     },
                     "cache_state": {
                         "dependency_cache_prepared_before_measurement": True,
-                        "project_cleaned_immediately_before_measurement": True,
+                        "project_cleaned_before_cache_preparation": True,
+                        "root_project_empty_immediately_before_measurement": True,
+                        "post_clean_project_tree": {
+                            "present": False,
+                            "file_count": 0,
+                            "bytes": 0,
+                            "tree_sha256": "f" * 64,
+                        },
                         "prebuild_project_tree": {
                             "present": False,
                             "file_count": 0,
                             "bytes": 0,
                             "tree_sha256": "f" * 64,
+                        },
+                        "dependency_cache_preparation": {
+                            "logical_command": ["lake", "exe", "cache", "get"],
+                            "returncode": 0,
+                            "timed_out": False,
+                            "output_limit_exceeded": False,
+                            "resource_limit_exceeded": False,
                         },
                         "dependency_closure_before": dependency_closure,
                         "dependency_closure_after": dependency_closure,

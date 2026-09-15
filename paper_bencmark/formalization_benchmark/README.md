@@ -55,9 +55,11 @@ protected capacity for the trusted controller. The outer service denies
 affinity changes throughout its process tree, every strict hardware snapshot
 tests that denial, and the generated-command seccomp policy repeats it.
 
-Setup also performs one clean full build of the frozen NumStability snapshot
-after preparing its dependency cache. That build runs in the same fixed outer
-hardware envelope but is never charged to either contestant. Its wall/CPU
+Setup also performs one clean full build of the frozen NumStability snapshot.
+It cleans the workspace, rehydrates the frozen dependency cache off-clock, and
+proves the root project build tree is empty immediately before measurement.
+The build runs in the same fixed outer hardware envelope but is never charged
+to either contestant. Its wall/CPU
 time, peak memory and other GNU `time` statistics, hardware/cgroup snapshots,
 sanitized environment, source/configuration and dependency-cache digests,
 source/object counts, complete build output, and hashes are retained under

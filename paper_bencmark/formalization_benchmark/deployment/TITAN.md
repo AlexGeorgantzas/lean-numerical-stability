@@ -81,10 +81,11 @@ launcher is never overwritten. It:
 
 1. verifies the release and all five private PDF hashes;
 2. prepares the frozen Lean 4.29.0-rc3 and Mathlib environment;
-3. checks out NumStability commit `45813a95...` separately, prepares only the
-   dependency cache, runs `lake clean`, and measures a full
-   `lake build NumStability` inside the same eight-CPU/32-GiB/512-task/no-swap
-   outer envelope before publishing read-only source/object snapshots;
+3. checks out NumStability commit `45813a95...` separately, runs `lake clean`,
+   rehydrates only the frozen dependency cache, verifies the root build tree is
+   empty, and measures a full `lake build NumStability` inside the same
+   eight-CPU/32-GiB/512-task/no-swap outer envelope before publishing read-only
+   source/object snapshots;
 4. compiles the no-network shell wrapper;
 5. hashes and treatment-scans every non-frozen host runtime mount visible in N;
 6. runs provider-free command canaries proving the shell can edit and compile

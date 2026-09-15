@@ -174,8 +174,9 @@ runs/
 ```
 
 The library build record is provisioning evidence and is never added to either
-condition's contestant clock. It identifies the clean project build after the
-frozen dependency cache is prepared, the exact toolchain and source commits,
+condition's contestant clock. It identifies the clean project build after a
+workspace clean, off-clock dependency-cache rehydration, and proof that the
+root build tree remains empty, together with the exact toolchain and source commits,
 all dependency commits and compiled OLean cache digests, clean source and
 project-configuration digests before and after, and the complete sanitized
 subprocess environment. It also records the enforced

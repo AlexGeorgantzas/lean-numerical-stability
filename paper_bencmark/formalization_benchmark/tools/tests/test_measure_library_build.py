@@ -138,6 +138,17 @@ class GnuTimeParsingTests(unittest.TestCase):
                         "timed_out": False,
                         "output_limit_exceeded": False,
                     }
+                if command[-3:] == ["exe", "cache", "get"]:
+                    output = b"cache prepared\n"
+                    return {
+                        "returncode": 0,
+                        "output": output.decode("utf-8"),
+                        "output_sha256": hashlib.sha256(output).hexdigest(),
+                        "output_bytes_observed": len(output),
+                        "output_limit_exceeded": False,
+                        "timed_out": False,
+                        "resource_limit_exceeded": False,
+                    }
                 time_path = Path(command[command.index("-o") + 1])
                 time_path.write_text(GNU_TIME_FIXTURE, encoding="utf-8")
                 built = checkout / ".lake" / "build" / "lib" / "lean"

@@ -26,11 +26,12 @@ of a paper result. It does not measure proof construction.
   admission and at both ends of every attempt.
 - Pair concurrency: one measured N/L pair at a time on Titan, enforced by a
   deployment-wide nonblocking lock so pilot runs cannot contend with each other.
-- Library provisioning: after dependency-cache preparation, setup cleans and
-  fully builds the frozen NumStability target once inside the same outer
-  eight-CPU/32-GiB/512-task/no-swap envelope. Its wall/CPU/resource data and
-  complete output are authenticated deployment evidence and are never charged
-  to a contestant.
+- Library provisioning: setup runs `lake clean`, rehydrates the frozen
+  dependency cache off-clock, proves that the root project build tree is still
+  empty, and fully builds the frozen NumStability target once inside the same
+  outer eight-CPU/32-GiB/512-task/no-swap envelope. Its wall/CPU/resource data
+  and complete output are authenticated deployment evidence and are never
+  charged to a contestant.
 
 The existing 51 accepted HighamBench tasks establish only that the selected
 paper results can be formalized faithfully. They do not pre-approve any
