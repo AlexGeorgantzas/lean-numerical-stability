@@ -14,6 +14,7 @@ from unittest import mock
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
+from common import BenchmarkError  # noqa: E402
 from setup_titan import (  # noqa: E402
     INSTALL_TRANSACTION,
     _load_transaction,
@@ -25,11 +26,56 @@ from setup_titan import (  # noqa: E402
     measured_build_command,
     measured_build_service_environment,
     remove_owned_deployment_root,
+    run_command_sandbox_canary,
     write_launcher,
 )
 
 
 class SkillInstallTests(unittest.TestCase):
+    def test_command_canary_preserves_early_failure_with_missing_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            staging = root / ".deployment.install-fixture"
+            packages = root / "packages"
+            staging.mkdir()
+            packages.mkdir()
+            deployment = SimpleNamespace(
+                path=staging / "deployment.json",
+                bwrap_binary=root / "bwrap",
+                offline_shell=root / "offline-shell",
+                toolchain_root=root / "toolchain",
+                packages_root=packages,
+                library_source=root / "library" / "source" / "NumStability",
+                library_olean=root / "library" / "olean",
+            )
+            output = "discarded-prefix-" + "x" * 2500 + "-sandbox-root-cause"
+            completed = SimpleNamespace(returncode=125, stdout=output)
+
+            with mock.patch(
+                "setup_titan.subprocess.run", return_value=completed
+            ), self.assertRaisesRegex(
+                BenchmarkError, "command sandbox canary failed"
+            ) as raised:
+                run_command_sandbox_canary(deployment, "N")
+
+            message = str(raised.exception)
+            self.assertIn("returncode=125", message)
+            self.assertIn("sandbox-root-cause", message)
+            self.assertNotIn("discarded-prefix", message)
+            for check in (
+                "command_succeeded",
+                "workspace_write_succeeded",
+                "lean_compile_succeeded",
+                "x32_syscalls_denied",
+                "native_socket_syscall_denied",
+                "signal_and_metadata_syscalls_denied",
+                "control_auth_unchanged",
+                "control_config_absent",
+                "special_workspace_nodes_denied",
+                "network_attempt_marked",
+            ):
+                self.assertIn(repr(check), message)
+
     def test_measured_build_command_uses_bounded_service_and_only_explicit_paths(self) -> None:
         with mock.patch("hardware.host_cpu_allowlist", return_value="0-7"):
             command = measured_build_command(

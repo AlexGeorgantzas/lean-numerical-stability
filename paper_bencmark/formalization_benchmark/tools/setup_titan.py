@@ -352,6 +352,42 @@ def remove_owned_deployment_root(
     fsync_directory(path.parent)
 
 
+def _regular_file_equals(path: Path, expected: bytes) -> bool:
+    """Return false, rather than masking a canary failure, for a missing artifact."""
+
+    try:
+        metadata = path.lstat()
+        if stat.S_ISLNK(metadata.st_mode) or not stat.S_ISREG(metadata.st_mode):
+            return False
+        return stable_regular_bytes(path, maximum_bytes=len(expected)) == expected
+    except (BenchmarkError, OSError):
+        return False
+
+
+def _regular_file_present(path: Path) -> bool:
+    """Check for a non-symlink regular artifact without raising on absence."""
+
+    try:
+        metadata = path.lstat()
+    except OSError:
+        return False
+    return stat.S_ISREG(metadata.st_mode) and not stat.S_ISLNK(metadata.st_mode)
+
+
+def _regular_file_nonempty(path: Path) -> bool:
+    """Check a canary marker without replacing the originating sandbox error."""
+
+    try:
+        metadata = path.lstat()
+    except OSError:
+        return False
+    return (
+        stat.S_ISREG(metadata.st_mode)
+        and not stat.S_ISLNK(metadata.st_mode)
+        and metadata.st_size > 0
+    )
+
+
 def run_command_sandbox_canary(deployment: Deployment, condition: str) -> dict:
     """Exercise Landlock, seccomp, control isolation, and Lean through Bash."""
 
@@ -562,31 +598,34 @@ if exec 9<>/dev/tcp/127.0.0.1/9; then exit 47; fi
         )
         checks = {
             "command_succeeded": completed.returncode == 0,
-            "workspace_write_succeeded": (workspace / "write-ok").read_bytes()
-            == b"workspace-ok\n",
-            "lean_compile_succeeded": (workspace / "Canary.olean").is_file(),
-            "x32_syscalls_denied": (workspace / "x32-ok").read_bytes()
-            == b"x32-denied\n",
-            "native_socket_syscall_denied": (
-                workspace / "network-ok"
-            ).read_bytes()
-            == b"socket-denied\n",
-            "signal_and_metadata_syscalls_denied": (
-                workspace / "isolation-ok"
-            ).read_bytes()
-            == b"signals-resources-scheduling-and-metadata-denied\n",
-            "control_auth_unchanged": fake_auth.read_bytes() == fake_secret,
-            "control_config_absent": not (control / "config.toml").exists(),
+            "workspace_write_succeeded": _regular_file_equals(
+                workspace / "write-ok", b"workspace-ok\n"
+            ),
+            "lean_compile_succeeded": _regular_file_present(
+                workspace / "Canary.olean"
+            ),
+            "x32_syscalls_denied": _regular_file_equals(
+                workspace / "x32-ok", b"x32-denied\n"
+            ),
+            "native_socket_syscall_denied": _regular_file_equals(
+                workspace / "network-ok", b"socket-denied\n"
+            ),
+            "signal_and_metadata_syscalls_denied": _regular_file_equals(
+                workspace / "isolation-ok",
+                b"signals-resources-scheduling-and-metadata-denied\n",
+            ),
+            "control_auth_unchanged": _regular_file_equals(fake_auth, fake_secret),
+            "control_config_absent": not os.path.lexists(control / "config.toml"),
             "special_workspace_nodes_denied": not os.path.lexists(
                 workspace / "control-link"
             )
             and not os.path.lexists(workspace / "generated-fifo"),
-            "network_attempt_marked": marker.stat().st_size > 0,
+            "network_attempt_marked": _regular_file_nonempty(marker),
         }
         if not all(checks.values()):
             raise BenchmarkError(
                 f"condition {condition} command sandbox canary failed: {checks}; "
-                f"output={completed.stdout[-2000:]}"
+                f"returncode={completed.returncode}; output={completed.stdout[-2000:]}"
             )
         return {
             "condition": condition,
