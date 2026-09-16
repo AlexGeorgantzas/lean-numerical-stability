@@ -430,16 +430,87 @@ class PairControllerDryRunTests(unittest.TestCase):
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
 
-    def test_global_campaign_lock_serializes_releases_and_predecessor(self) -> None:
+    def test_global_campaign_lock_serializes_releases_and_both_predecessors(self) -> None:
         registry = self.root / "account-registry"
-        predecessor = self.root / "pilot-1-runs"
-        with _campaign_lock(self.deployment.run_root, registry, predecessor):
+        predecessor = self.root / "pilot-2-runs"
+        legacy_predecessor = self.root / "pilot-1-runs"
+        with _campaign_lock(
+            self.deployment.run_root, registry, predecessor, legacy_predecessor
+        ):
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", registry):
                     pass
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", None, predecessor):
                     pass
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(self.root / "another-release", None, legacy_predecessor):
+                    pass
+
+    def test_official_pair_rejects_downgraded_qualification_binding(self) -> None:
+        from provider_capability_canary import ROLES, SCHEMA
+
+        controller = object.__new__(PairController)
+        controller.deployment = replace(
+            self.deployment, global_registry_root=self.root / "registry"
+        )
+        controller.manifest = {}
+        controller.config = {}
+        roles = {role[0] for role in ROLES}
+        identity = {
+            "roles": {
+                role: {
+                    "model": "fixture-model",
+                    "reasoning_effort": "high",
+                    "output_schema_sha256": "a" * 64,
+                }
+                for role in roles
+            }
+        }
+        qualification_root = (
+            self.deployment.run_root / "qualifications"
+            / sha256_file(ROOT / "manifest.json")
+        )
+        roles_root = qualification_root / "roles"
+        roles_root.mkdir(parents=True)
+        (roles_root / "fixture.txt").write_text("role artifacts\n", encoding="utf-8")
+        record_path = qualification_root / "qualification.json"
+        record = {
+            "schema_version": SCHEMA,
+            "status": "PASSED",
+            "identity": identity,
+            "provider_turns": len(ROLES),
+            "role_outcomes": {
+                role: dict(identity["roles"][role]) for role in roles
+            },
+            "charged_to_contestant": False,
+            "roles_manifest": tree_manifest(roles_root),
+        }
+
+        def verify(candidate: dict[str, object]) -> None:
+            record_path.write_text(json.dumps(candidate), encoding="utf-8")
+            binding = {
+                "provider_qualification": {
+                    "record_path": str(record_path),
+                    "record_sha256": sha256_file(record_path),
+                    "charged_to_contestant": False,
+                }
+            }
+            with mock.patch(
+                "provider_capability_canary.qualification_identity",
+                return_value=identity,
+            ):
+                controller._verify_qualification_binding(binding)
+
+        verify(record)
+        with self.assertRaisesRegex(BenchmarkError, "evidence changed"):
+            verify({**record, "schema_version": "formalization-provider-qualification-1"})
+        with self.assertRaisesRegex(BenchmarkError, "evidence changed"):
+            verify({**record, "role_outcomes": {}})
+        bad_outcomes = {name: dict(value) for name, value in record["role_outcomes"].items()}
+        bad_outcomes["audit-schema-blind-translation"]["output_schema_sha256"] = "b" * 64
+        with self.assertRaisesRegex(BenchmarkError, "role evidence changed"):
+            verify({**record, "role_outcomes": bad_outcomes})
 
     def test_account_global_reservation_prevents_a_second_local_pair(self) -> None:
         controller = self.controller()

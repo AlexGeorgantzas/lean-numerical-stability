@@ -4,10 +4,10 @@
   "additionalProperties": false,
   "required": ["role", "paper_sha256", "candidate_semantic_sha256", "verdict", "mismatches", "remaining_uncertainties", "rationale"],
   "properties": {
-    "role": {"const": "adjudicator"},
+    "role": {"type": "string", "enum": ["adjudicator"]},
     "paper_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "candidate_semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "verdict": {"enum": ["faithful", "unfaithful", "unclear"]},
+    "verdict": {"type": "string", "enum": ["faithful", "unfaithful", "unclear"]},
     "mismatches": {
       "type": "array",
       "items": {
@@ -17,7 +17,7 @@
         "properties": {
           "paper_requirement": {"type": "string", "minLength": 1},
           "candidate_mismatch": {"type": "string", "minLength": 1},
-          "severity": {"enum": ["critical", "major", "minor"]}
+          "severity": {"type": "string", "enum": ["critical", "major", "minor"]}
         }
       }
     },

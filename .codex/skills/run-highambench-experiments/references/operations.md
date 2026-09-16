@@ -3,10 +3,13 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
-The active release is pilot-2. The sealed pilot-1 P01-T2 incident is unscored
-predecessor evidence, not an observation or a run to resume. Do not pool data
-across pilots. The pilot-2 deployment, launcher, task index, and account-global
-pilot/task registry are distinct and authenticated.
+The active release is pilot-3. Pilot-1 and pilot-2 are sealed, unscored
+predecessor evidence, not observations or runs to resume. Pilot-2 P01-T2
+(`P01-T2-20260916T084145Z-6dad064a`) stopped after N submitted one compiling
+candidate because the provider rejected the blind-translation response schema;
+there was no faithfulness verdict and L never started. Do not pool data across
+pilots. Pilot-3 has distinct deployment, launcher, task indices, and
+account-global pilot/task reservations; all five task slots are fresh.
 
 ## Canonical surfaces
 
@@ -83,14 +86,14 @@ On Titan, authenticate the installed release through its location-independent
 launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-2-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-3-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-2-r1 doctor \
+~/.local/bin/run-highambench-formalization-pilot-3-r1 doctor \
   --task-id P01-T2
 ```
 
@@ -128,8 +131,8 @@ their authenticated outputs jointly confirm all of the following:
   interface starts through the exact sandbox, attests effective
   `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
   and stops without model inference or writing secrets to logs;
-- the predecessor incident hashes and account-global campaign lock/registry
-  match the pilot-2 deployment record.
+- the sealed pilot-1 and pilot-2 predecessor incident lineage and the
+  account-global campaign lock/registry match the pilot-3 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -140,7 +143,7 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-2-r1 run \
+~/.local/bin/run-highambench-formalization-pilot-3-r1 run \
   --task-id P01-T2
 ```
 
@@ -149,12 +152,22 @@ Do not add a repetition count. The runner, not the operator, selects the frozen
 N/L order and creates the pair/run identities.
 
 Before creating a fresh official pair ID or task index, the runner must pass
-the exact-model/effort provider-backed single-agent qualification for both
-roles. It is outside the contestant clock and task slot; its separate time and
-tokens are retained as overhead. A failed or missing qualification stops
-without consuming a slot. The deprecated `multiAgentMode` response is not an
-attestation. Collaboration or foreign-thread events are provider
-infrastructure incompatibilities, never contestant rule violations.
+the exact-model/effort provider-backed single-agent capability probes and live
+output-schema probes for every frozen audit role: blind translation, direct
+judgment, round-trip judgment, and adjudication. The latter use the exact
+schemas that production auditing will submit, with synthetic checkable
+outputs. Static JSON-schema checks or a generic auditor probe do not establish
+provider acceptance of those schemas. Qualification is outside the contestant
+clock and task slot; its separate time and tokens are retained as overhead. A
+failed or missing qualification stops without consuming a slot. The deprecated
+`multiAgentMode` response is not an attestation. Collaboration or
+foreign-thread events are provider infrastructure incompatibilities, never
+contestant rule violations.
+
+The explicit `qualify-provider --task-id P01-T2` command may establish this
+readiness without starting a benchmark. After setup or repair, inspect all
+five task statuses with provider-free `status`. Do not invoke official `run`
+until the user explicitly asks to start that task.
 
 Use the provider-free `status --task-id P01-T2` command to inspect a task. Do
 not reissue `run` merely to inspect it. Reissue the same authenticated `run`

@@ -4,7 +4,7 @@
   "additionalProperties": false,
   "required": ["role", "semantic_sha256", "translation", "ambiguities", "vacuity_risks"],
   "properties": {
-    "role": {"const": "blind-translation"},
+    "role": {"type": "string", "enum": ["blind-translation"]},
     "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "translation": {"type": "string", "minLength": 1},
     "ambiguities": {"type": "array", "items": {"type": "string", "minLength": 1}},

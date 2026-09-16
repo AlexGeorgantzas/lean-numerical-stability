@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-"""One paid, off-benchmark qualification turn for each frozen Codex role.
+"""One paid, off-benchmark qualification turn for each frozen provider surface.
 
 The qualification has its own namespace, never creates a pair or task index,
 and is deliberately one-shot for a release manifest. An interrupted or failed
@@ -18,9 +18,11 @@ from common import (
     assert_no_credentials_in_tree,
     canonical_json_bytes,
     load_json,
+    sha256_bytes,
     sha256_file,
     tree_manifest,
     utc_now,
+    write_bytes_atomic,
     write_json_atomic,
 )
 from deployment import Deployment
@@ -28,7 +30,9 @@ from hardware import snapshot_hardware, verify_frozen_hardware_identity
 from manifest_control import MANIFEST_PATH, verify_manifest
 
 
-SCHEMA = "formalization-provider-qualification-1"
+SCHEMA = "formalization-provider-qualification-2"
+ROOT = Path(__file__).resolve().parents[1]
+AUDIT_SCHEMAS = ROOT / "audit" / "schemas"
 PROMPT = (
     "This is an off-benchmark interface check, not a benchmark task. "
     "Complete these two independent small checks: "
@@ -46,9 +50,81 @@ OUTPUT_SCHEMA = {
         "reversed_text": {"type": "string"},
     },
 }
+SYNTHETIC_SEMANTIC_SHA256 = "0" * 64
+SYNTHETIC_PAPER_SHA256 = "1" * 64
+AUDIT_SCHEMA_PROBES = (
+    (
+        "blind-translation",
+        "blind_translation.schema.json",
+        {
+            "role": "blind-translation",
+            "semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
+            "translation": "Synthetic identity statement: each natural number equals itself.",
+            "ambiguities": [],
+            "vacuity_risks": [],
+        },
+    ),
+    (
+        "direct-judge",
+        "judgment.schema.json",
+        {
+            "role": "direct-judge",
+            "paper_sha256": SYNTHETIC_PAPER_SHA256,
+            "candidate_semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
+            "verdict": "faithful",
+            "mismatches": [],
+            "uncertainties": [],
+            "rationale": "Synthetic interface check only.",
+        },
+    ),
+    (
+        "roundtrip-judge",
+        "judgment.schema.json",
+        {
+            "role": "roundtrip-judge",
+            "paper_sha256": SYNTHETIC_PAPER_SHA256,
+            "candidate_semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
+            "verdict": "faithful",
+            "mismatches": [],
+            "uncertainties": [],
+            "rationale": "Synthetic interface check only.",
+        },
+    ),
+    (
+        "adjudicator",
+        "adjudication.schema.json",
+        {
+            "role": "adjudicator",
+            "paper_sha256": SYNTHETIC_PAPER_SHA256,
+            "candidate_semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
+            "verdict": "faithful",
+            "mismatches": [],
+            "remaining_uncertainties": [],
+            "rationale": "Synthetic interface check only.",
+        },
+    ),
+)
 ROLES = (
-    ("formalizer", "formalizer_model", "formalizer_reasoning_effort", True, False),
-    ("auditor", "audit_model", "audit_reasoning_effort", False, True),
+    (
+        "formalizer", "formalizer_model", "formalizer_reasoning_effort",
+        True, False, None, EXPECTED_OUTPUT,
+    ),
+    (
+        "auditor", "audit_model", "audit_reasoning_effort",
+        False, True, None, EXPECTED_OUTPUT,
+    ),
+    *(
+        (
+            f"audit-schema-{audit_role}",
+            "audit_model",
+            "audit_reasoning_effort",
+            False,
+            True,
+            schema_name,
+            expected_output,
+        )
+        for audit_role, schema_name, expected_output in AUDIT_SCHEMA_PROBES
+    ),
 )
 USAGE_FIELDS = (
     "input_tokens",
@@ -97,6 +173,7 @@ def _check_turn(
     result: TurnResult,
     turn: Any,
     *,
+    expected_output: Mapping[str, Any],
     ephemeral: bool,
     command_envelope: Mapping[str, Any],
 ) -> None:
@@ -122,8 +199,11 @@ def _check_turn(
         raise BenchmarkError("provider qualification returned non-JSON output") from error
     if (
         not isinstance(output, dict)
-        or output != EXPECTED_OUTPUT
-        or type(output.get("weighted_sum")) is not int
+        or output != expected_output
+        or (
+            "weighted_sum" in expected_output
+            and type(output.get("weighted_sum")) is not int
+        )
     ):
         raise BenchmarkError("provider qualification returned the wrong checkable output")
     if not isinstance(turn, Mapping):
@@ -198,7 +278,9 @@ def _check_shutdown(root: Path, thread_id: str) -> None:
         raise BenchmarkError("provider qualification formalizer shutdown was not clean")
 
 
-def _identity(deployment: Deployment, manifest: Mapping[str, Any], config: Mapping[str, Any]) -> dict[str, Any]:
+def qualification_identity(
+    deployment: Deployment, manifest: Mapping[str, Any], config: Mapping[str, Any]
+) -> dict[str, Any]:
     if not deployment.strict_hardware:
         raise BenchmarkError("provider qualification requires a strict-hardware deployment")
     deployment_record = load_json(deployment.path)
@@ -227,8 +309,15 @@ def _identity(deployment: Deployment, manifest: Mapping[str, Any], config: Mappi
                 "reasoning_effort": str(config[effort_key]),
                 "workspace_writable": writable,
                 "ephemeral": ephemeral,
+                "output_schema_sha256": (
+                    sha256_file(AUDIT_SCHEMAS / schema_name)
+                    if schema_name is not None
+                    else sha256_bytes(canonical_json_bytes(OUTPUT_SCHEMA))
+                ),
             }
-            for role, model_key, effort_key, writable, ephemeral in ROLES
+            for (
+                role, model_key, effort_key, writable, ephemeral, schema_name, _expected
+            ) in ROLES
         },
     }
 
@@ -258,7 +347,7 @@ def _sealed_result(root: Path, identity: Mapping[str, Any], auth_file: Path) -> 
 def run_provider_capability_canary(
     deployment: Deployment, *, timeout_seconds: float = 180.0
 ) -> dict[str, Any]:
-    """Qualify both frozen roles before any official pair/index is allocated.
+    """Qualify both frozen models and every auditor response schema before a pair.
 
     Call under the campaign lock and Titan envelope, after provider-free doctor.
     A sealed result is reused without another provider call. The caller must
@@ -268,7 +357,7 @@ def run_provider_capability_canary(
     if timeout_seconds <= 0:
         raise BenchmarkError("provider qualification timeout must be positive")
     manifest, config = verify_manifest()
-    identity = _identity(deployment, manifest, config)
+    identity = qualification_identity(deployment, manifest, config)
     deployment_record = load_json(deployment.path)
     hardware_before = snapshot_hardware(strict=True)
     verify_frozen_hardware_identity(
@@ -294,12 +383,33 @@ def run_provider_capability_canary(
     roles_root.mkdir(mode=0o700)
     outcomes: dict[str, Any] = {}
     try:
-        for role, model_key, effort_key, writable, ephemeral in ROLES:
+        for (
+            role, model_key, effort_key, writable, ephemeral, schema_name, expected
+        ) in ROLES:
             role_root = roles_root / role
             workspace = role_root / "workspace"
             workspace.mkdir(parents=True, mode=0o700)
             schema_path = role_root / "output_schema.json"
-            write_json_atomic(schema_path, OUTPUT_SCHEMA, mode=0o400)
+            if schema_name is None:
+                write_json_atomic(schema_path, OUTPUT_SCHEMA, mode=0o400)
+                prompt = PROMPT
+            else:
+                source_schema = AUDIT_SCHEMAS / schema_name
+                if not source_schema.is_file() or source_schema.is_symlink():
+                    raise BenchmarkError(
+                        f"auditor response schema is unsafe: {source_schema}"
+                    )
+                write_bytes_atomic(schema_path, source_schema.read_bytes(), mode=0o400)
+                prompt = (
+                    "This is an off-benchmark structured-output interface check, "
+                    "not a paper audit. Copy the following JSON object exactly, "
+                    "with no explanatory text: "
+                    + json.dumps(expected, sort_keys=True, separators=(",", ":"))
+                )
+            if sha256_file(schema_path) != identity["roles"][role]["output_schema_sha256"]:
+                raise BenchmarkError(
+                    "provider qualification schema changed after identity freeze"
+                )
             driver = CodexDriver(
                 codex_binary=deployment.codex_binary,
                 model=str(config[model_key]),
@@ -315,12 +425,13 @@ def run_provider_capability_canary(
             result: TurnResult | None = None
             try:
                 result = driver.run_turn(
-                    prompt=PROMPT,
+                    prompt=prompt,
                     workspace=workspace,
                     artifact_dir=role_root / "turn",
                     timeout_seconds=timeout_seconds,
                     output_schema=schema_path,
                     ephemeral=ephemeral,
+                    sandbox="read-only" if ephemeral else "workspace-write",
                 )
             finally:
                 driver.close(artifact_dir=role_root / "session-close")
@@ -332,6 +443,7 @@ def run_provider_capability_canary(
             _check_turn(
                 result,
                 turn,
+                expected_output=expected,
                 ephemeral=ephemeral,
                 command_envelope=config["command_resource_envelope"],
             )

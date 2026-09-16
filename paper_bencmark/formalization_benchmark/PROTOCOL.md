@@ -8,10 +8,13 @@ of a paper result. It does not measure proof construction.
 
 ## Frozen pilot
 
-- Release identity: `formalization-benchmark-t2-pilot-2`, one exact Git commit,
-  manifest-file SHA-256, and manifest-payload SHA-256. The sealed pilot-1 P01
-  incident is predecessor provenance, not a scored observation. All five tasks
-  restart under pilot-2; no cross-pilot pooling or replacement within pilot-1.
+- Release identity: `formalization-benchmark-t2-pilot-3`, one exact Git commit,
+  manifest-file SHA-256, and manifest-payload SHA-256. The sealed pilot-1 and
+  pilot-2 P01 incidents are predecessor provenance, not scored observations.
+  Pilot-2 P01-T2 (`P01-T2-20260916T084145Z-6dad064a`) had one compiling N
+  candidate but no faithfulness verdict because the provider rejected an audit
+  response schema; L did not start. All five tasks restart under pilot-3; no
+  cross-pilot pooling or replacement within either older pilot.
 - Tasks: P01-T2, P02-T2, P03-T2, P13-T2, and P14-T2.
 - Replication count: one N/L pair per task.
 - Formalizer model and reasoning effort are frozen in `config.json`.
@@ -50,9 +53,17 @@ single-agent capability contract. The effective app-server configuration must
 report `agents.enabled=false`, `multi_agent=false`, and
 `multi_agent_v2=false` globally and for each thread. Collaboration tool events
 or foreign-thread notifications are infrastructure incompatibilities, never
-contestant rule violations. Provider-free doctor and dry-run remain free of
-model inference; the canary's separate usage is never included in contestant
-metrics. The deprecated `multiAgentMode` response is not capability evidence.
+contestant rule violations. The same paid, off-benchmark qualification must
+also submit each exact frozen audit output schema (blind translation, direct
+judgment, round-trip judgment, and adjudication) to the provider and verify
+checkable synthetic outputs. Local schema validation or a generic auditor
+probe is insufficient: pilot-2 passed the latter but the real blind auditor
+was rejected before inference. Provider-free doctor and dry-run remain free of
+model inference; qualification usage is never included in contestant metrics.
+The deprecated `multiAgentMode` response is not capability evidence.
+
+Repair and qualification do not consume an official task slot and do not
+authorize an official pair. Launch one only on an explicit task-run request.
 
 ## Conditions
 

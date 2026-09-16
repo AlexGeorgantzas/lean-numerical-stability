@@ -10,7 +10,8 @@ installed run-highambench-experiments skill
         |
         +--> verify-release (complete frozen-file closure)
         +--> Titan doctor (PDF/runtime/executable/hardware identities)
-        +--> off-benchmark provider qualification (before a new pair ID)
+        +--> off-benchmark provider capability and exact audit-schema
+        |    qualification (before a new pair ID)
         |
         v
 transient systemd user service: fixed 8 CPUs / 32 GiB / 512 tasks / no swap
@@ -32,9 +33,13 @@ run command returns a terminal pair or continues before the first turn or
 between sealed conditions. An interruption after a condition has submitted is
 not cold-resumed, because that would lose its exact raw-event stream; it fails
 closed as an incident. An account-global pilot/task reservation and campaign
-lock prevent duplicates across deployment roots. Pilot-2 also acquires the
-old pilot-1 launcher's lock to avoid contending for Titan's fixed allocation.
-Pilot-1 remains an unscored predecessor and is never pooled with pilot-2.
+lock prevent duplicates across deployment roots. Pilot-3 also acquires its
+predecessors' launcher locks to avoid contending for Titan's fixed allocation.
+The sealed pilot-1 and pilot-2 P01 incidents remain unscored predecessor
+evidence and are never pooled with pilot-3. Pilot-2 P01 stopped after one
+compiling N candidate when the provider rejected the blind-auditor response
+schema; no audit verdict or L run exists for that pair. All five pilot-3 task
+slots are fresh.
 
 ## Per-condition loop
 
@@ -105,10 +110,14 @@ The driver checks effective configuration and global/thread features before
 any model turn and rechecks thread features before repairs. Any collaboration
 event, foreign-thread event, or failed attestation is a release-blocking
 provider infrastructure incident. An off-benchmark provider canary exercises
-the exact formalizer and auditor models/efforts before a new pair consumes its
-slot; its usage is logged separately. The app-server has no generic
-pre-execution built-in-tool allowlist, so event rejection is an additional
-fail-closed check, not a claim that every unused tool was impossible to call.
+the exact formalizer and auditor models/efforts and sends the exact frozen
+blind-translation, direct-judge, round-trip-judge, and adjudicator response
+schemas in live calls with checkable synthetic outputs before a new pair
+consumes its slot; its usage is logged separately. Static schema checks alone
+would not have caught the pilot-2 provider rejection. The app-server has no
+generic pre-execution built-in-tool allowlist, so event rejection is an
+additional fail-closed check, not a claim that every unused tool was impossible
+to call.
 
 The waited, piped transient systemd user service applies the frozen eight-CPU
 affinity and limits the whole benchmark process tree to 32 GiB, 512 tasks, and
@@ -137,9 +146,9 @@ the frozen package closure, and—only for L—the frozen library objects.
 | `tools/setup_titan.py` | Build and hash the private Titan deployment in an atomically published transaction with authenticated finalization resumption and no paid model calls. |
 | `tools/measure_library_build.py` | Clean and measure the full NumStability build under the fixed outer resource envelope, retaining authenticated build output and resource evidence. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary with provider-free sandboxed compilations. |
-| `tools/provider_capability_canary.py` | Qualify the exact single-agent provider roles off-benchmark before a new official pair. |
+| `tools/provider_capability_canary.py` | Qualify the exact single-agent provider roles and frozen audit output schemas off-benchmark before a new official pair. |
 | `tools/titan_envelope.py` | Enter the exact CPU, RAM, and swap cgroup. |
-| `tools/run_benchmark.py` | Expose `verify-release`, `doctor`, `run`, and `status`. |
+| `tools/run_benchmark.py` | Expose `verify-release`, `doctor`, `qualify-provider`, `run`, and `status`. |
 | `tools/pair_controller.py` | Own pair uniqueness, ordering, state transitions, clocks, freezing, and repair continuation. |
 | `tools/codex_driver.py` | Own fresh/persistent Codex conversations, tool isolation, raw events, and provider usage. |
 | `tools/formalization_validator.py` | Enforce the one-root/one-`sorry` source contract. |
@@ -163,7 +172,7 @@ runtime/library/
     build-output.log
     gnu-time.txt
 runs/
-  qualification/<manifest-sha256>/... off-benchmark provider evidence
+  qualifications/<manifest-sha256>/... off-benchmark provider evidence
   index/P01-T2.json
   pairs/<run-id>/
     admission.json
@@ -191,7 +200,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-t2-pilot-2/P01-T2.json
+  index/formalization-benchmark-t2-pilot-3/P01-T2.json
 ```
 
 At the end of each condition, the driver closes the one persistent formalizer

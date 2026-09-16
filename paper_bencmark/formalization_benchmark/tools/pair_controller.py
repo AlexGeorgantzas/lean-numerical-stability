@@ -401,14 +401,17 @@ def _campaign_lock(
     run_root: Path,
     global_registry_root: Path | None = None,
     predecessor_run_root: Path | None = None,
+    legacy_predecessor_run_root: Path | None = None,
 ) -> Iterator[None]:
-    """Serialize this release, all new releases, and the predecessor launcher."""
+    """Serialize this release, all new releases, and both predecessor launchers."""
 
     paths = [run_root / "locks" / "formalization-pilot.lock"]
     if global_registry_root is not None:
         paths.append(global_registry_root / "locks" / "campaign.lock")
     if predecessor_run_root is not None:
         paths.append(predecessor_run_root / "locks" / "formalization-pilot.lock")
+    if legacy_predecessor_run_root is not None:
+        paths.append(legacy_predecessor_run_root / "locks" / "formalization-pilot.lock")
     descriptors: list[int] = []
     try:
         for path in sorted(set(paths)):
@@ -452,6 +455,7 @@ class PairController:
             self.deployment.run_root,
             getattr(self.deployment, "global_registry_root", None),
             getattr(self.deployment, "predecessor_run_root", None),
+            getattr(self.deployment, "legacy_predecessor_run_root", None),
         )
 
     def _qualify_provider(self) -> dict[str, Any]:
@@ -462,6 +466,8 @@ class PairController:
     def _verify_qualification_binding(self, admission: Mapping[str, Any]) -> None:
         if self.deployment.global_registry_root is None:
             return  # Non-admissible synthetic fixtures have no account registry.
+        from provider_capability_canary import ROLES, SCHEMA, qualification_identity
+
         binding = admission.get("provider_qualification")
         expected = (
             self.deployment.run_root
@@ -480,18 +486,32 @@ class PairController:
             raise BenchmarkError("official pair lost its provider qualification binding")
         record = load_json(expected)
         identity = record.get("identity")
+        expected_identity = qualification_identity(
+            self.deployment, self.manifest, self.config
+        )
+        role_names = {role[0] for role in ROLES}
+        outcomes = record.get("role_outcomes")
         if (
-            record.get("status") != "PASSED"
-            or not isinstance(identity, Mapping)
-            or identity.get("pilot_id") != self.config["pilot_id"]
-            or identity.get("manifest_sha256") != sha256_file(MANIFEST_PATH)
-            or identity.get("manifest_payload_sha256")
-            != self.manifest["manifest_payload_sha256"]
-            or identity.get("deployment_sha256") != sha256_file(self.deployment.path)
+            record.get("schema_version") != SCHEMA
+            or record.get("status") != "PASSED"
+            or identity != expected_identity
+            or record.get("provider_turns") != len(ROLES)
+            or not isinstance(outcomes, Mapping)
+            or set(outcomes) != role_names
             or record.get("charged_to_contestant") is not False
             or record.get("roles_manifest") != tree_manifest(expected.parent / "roles")
         ):
             raise BenchmarkError("official pair provider qualification evidence changed")
+        for role in role_names:
+            outcome = outcomes[role]
+            expected_role = expected_identity["roles"][role]
+            if (
+                not isinstance(outcome, Mapping)
+                or any(outcome.get(field) != value for field, value in expected_role.items())
+            ):
+                raise BenchmarkError(
+                    "official pair provider qualification role evidence changed"
+                )
 
     def _active_time_limit(self) -> float:
         return _measured_active_seconds(
@@ -901,8 +921,9 @@ class PairController:
             if (
                 self.deployment.global_registry_root is None
                 or self.deployment.predecessor_run_root is None
+                or self.deployment.legacy_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-2 registry or predecessor lock is missing")
+                raise BenchmarkError("pilot-3 registry or predecessor locks are missing")
             from setup_titan import predecessor_lineage
 
             lineage = predecessor_lineage(

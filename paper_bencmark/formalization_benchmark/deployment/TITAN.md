@@ -4,10 +4,14 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-2 is a side-by-side release. The pilot-1 deployment, its P01-T2 sealed
-unscored incident, and its launcher must remain unchanged. Pilot-2 restarts
-all five tasks; never combine pilot-1 data with pilot-2 results. Setup
-authenticates the predecessor incident report and hashes before publication.
+Pilot-3 is a side-by-side release. The pilot-1 and pilot-2 deployments,
+launchers, and sealed P01-T2 incidents must remain unchanged. Pilot-2 P01-T2
+(`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
+stopped before a faithfulness verdict because the provider rejected the
+blind-translation audit response schema; L never started. Pilot-3 restarts all
+five tasks with fresh slots. Never combine observations across pilots. Setup
+authenticates the direct pilot-2 predecessor and its retained pilot-1 lineage
+before publication.
 
 ## Security first
 
@@ -73,11 +77,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-2-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-3-r1
 ```
 
-The installer creates a user-private pilot-2 deployment below
-`~/.local/share/highambench-formalization-pilot-2-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-3 deployment below
+`~/.local/share/highambench-formalization-pilot-3-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -135,24 +140,35 @@ committed to Git.
 
 ## Run
 
-The installed pilot-2 operator command is:
+The installed pilot-3 operator command is:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-2-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-2-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-3-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-3-r1 run --task-id P01-T2
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
 pair controller. Before a fresh official pair ID or index exists, the exact
-formalizer and auditor roles pass an off-benchmark provider-backed
-single-agent qualification. Its usage is separately recorded and never
-charged to N or L. A missing or unsafe capability blocks the release without
-consuming that task's official slot. The repository skill maps the natural-language request
-`Run benchmark for P01-T2` to this command. Repeating the request returns the
-existing pilot run for that task rather than creating a repetition.
+formalizer and auditor roles pass off-benchmark provider-backed single-agent
+qualification. The same qualification submits the exact frozen response
+schemas for blind translation, direct judgment, round-trip judgment, and
+adjudication through live provider calls and verifies checkable synthetic
+outputs. This guards against the schema rejection that occurred after the
+pilot-2 capability canary. Its sealed, one-shot usage is separately recorded
+and never charged to N or L. A missing or failed qualification blocks the
+release without consuming that task's official slot. The repository skill maps
+the natural-language request `Run benchmark for P01-T2` to this command.
+Repeating the request returns the existing pilot run for that task rather than
+creating a repetition.
 The explicit `qualify-provider` command can be run immediately after setup to
 establish live provider readiness without starting a benchmark; a later fresh
-`run` authenticates and reuses the sealed qualification record.
+`run` authenticates and reuses the sealed qualification record. A failed live
+probe remains failed evidence for this release; do not silently retry it or
+bypass the gate.
+
+Installation and qualification are preparation only. Check all five statuses
+after setup; do not start an official `run` as part of repair. A separate,
+explicit task-run request is required.
 
 The five accepted task IDs are `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, and
 `P14-T2`. Each task has exactly one official N/L pair. Every condition uses one
@@ -165,7 +181,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-2-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-3-r1 status --task-id P01-T2
 ```
 
 ## Storage separation

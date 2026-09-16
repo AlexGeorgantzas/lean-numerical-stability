@@ -18,6 +18,9 @@ sys.path.insert(0, str(TOOLS))
 from common import BenchmarkError, sha256_file  # noqa: E402
 from setup_titan import (  # noqa: E402
     INSTALL_TRANSACTION,
+    LEGACY_INCIDENT_RUN_ID,
+    LEGACY_MANIFEST_PAYLOAD_SHA256,
+    LEGACY_RELEASE_COMMIT,
     PREDECESSOR_INCIDENT_RUN_ID,
     PREDECESSOR_MANIFEST_PAYLOAD_SHA256,
     PREDECESSOR_RELEASE_COMMIT,
@@ -41,19 +44,80 @@ from setup_titan import (  # noqa: E402
 
 
 class SkillInstallTests(unittest.TestCase):
-    def test_pilot2_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+    def test_pilot3_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
         parser = make_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(["--pdf-source-dir", "/tmp"])
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-2-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-2-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-3-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-3-r1"))
 
-    def test_predecessor_incident_is_read_only_and_hash_bound(self) -> None:
+    def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = (Path(temporary) / "deployment").resolve()
+            legacy_root = (Path(temporary) / "pilot-1-deployment").resolve()
+            legacy_run_root = legacy_root / "runs"
+            legacy_manifest = (
+                legacy_root / "release" / "paper_bencmark"
+                / "formalization_benchmark" / "manifest.json"
+            )
+            legacy_manifest.parent.mkdir(parents=True)
+            legacy_manifest.write_text(
+                json.dumps({
+                    "pilot_id": "formalization-benchmark-t2-pilot-1",
+                    "manifest_payload_sha256": LEGACY_MANIFEST_PAYLOAD_SHA256,
+                }),
+                encoding="utf-8",
+            )
+            legacy_pair_root = legacy_run_root / "pairs" / LEGACY_INCIDENT_RUN_ID
+            legacy_pair_root.mkdir(parents=True)
+            legacy_report = legacy_pair_root / "pair_report.json"
+            legacy_state = legacy_pair_root / "pair_state.json"
+            legacy_report.write_text(
+                json.dumps({
+                    "pilot_id": "formalization-benchmark-t2-pilot-1",
+                    "task_id": "P01-T2",
+                    "status": "PAIR_INCIDENT",
+                    "run_id": LEGACY_INCIDENT_RUN_ID,
+                    "manifest_sha256": sha256_file(legacy_manifest),
+                    "pair_root": str(legacy_pair_root),
+                    "pair_state_path": str(legacy_state),
+                }),
+                encoding="utf-8",
+            )
+            legacy_state.write_text(
+                json.dumps({
+                    "status": "PAIR_INCIDENT",
+                    "run_id": LEGACY_INCIDENT_RUN_ID,
+                    "pair_root": str(legacy_pair_root),
+                    "pair_state_path": str(legacy_state),
+                    "pair_report_sha256": sha256_file(legacy_report),
+                }),
+                encoding="utf-8",
+            )
+            legacy_index = legacy_run_root / "index" / "P01-T2.json"
+            legacy_index.parent.mkdir()
+            legacy_index.write_text(
+                json.dumps({
+                    "task_id": "P01-T2",
+                    "run_id": LEGACY_INCIDENT_RUN_ID,
+                    "pair_root": str(legacy_pair_root),
+                    "pair_state_path": str(legacy_state),
+                }),
+                encoding="utf-8",
+            )
+            legacy_deployment = legacy_root / "deployment.json"
+            legacy_deployment.write_text(
+                json.dumps({
+                    "schema_version": "formalization-deployment-1",
+                    "release_commit": LEGACY_RELEASE_COMMIT,
+                    "release_manifest_sha256": sha256_file(legacy_manifest),
+                    "run_root": str(legacy_run_root),
+                }),
+                encoding="utf-8",
+            )
             manifest = (
                 root / "release" / "paper_bencmark" / "formalization_benchmark" / "manifest.json"
             )
@@ -61,7 +125,7 @@ class SkillInstallTests(unittest.TestCase):
             manifest.write_text(
                 json.dumps(
                     {
-                        "pilot_id": "formalization-benchmark-t2-pilot-1",
+                        "pilot_id": "formalization-benchmark-t2-pilot-2",
                         "manifest_payload_sha256": PREDECESSOR_MANIFEST_PAYLOAD_SHA256,
                     }
                 ),
@@ -75,7 +139,7 @@ class SkillInstallTests(unittest.TestCase):
             report.write_text(
                 json.dumps(
                     {
-                        "pilot_id": "formalization-benchmark-t2-pilot-1",
+                        "pilot_id": "formalization-benchmark-t2-pilot-2",
                         "task_id": "P01-T2",
                         "status": "PAIR_INCIDENT",
                         "run_id": PREDECESSOR_INCIDENT_RUN_ID,
@@ -116,16 +180,27 @@ class SkillInstallTests(unittest.TestCase):
                 json.dumps(
                     {
                         "schema_version": "formalization-deployment-1",
+                        "pilot_id": "formalization-benchmark-t2-pilot-2",
                         "release_commit": PREDECESSOR_RELEASE_COMMIT,
                         "release_manifest_sha256": sha256_file(manifest),
                         "run_root": str(run_root),
+                        "predecessor_pilot_id": "formalization-benchmark-t2-pilot-1",
+                        "predecessor_run_root": str(legacy_run_root),
+                        "predecessor_deployment_record": str(legacy_deployment),
+                        "predecessor_deployment_record_sha256": sha256_file(legacy_deployment),
+                        "predecessor_pair_report": str(legacy_report),
+                        "predecessor_pair_report_sha256": sha256_file(legacy_report),
                     }
                 ),
                 encoding="utf-8",
             )
             before = {
                 path: sha256_file(path)
-                for path in (deployment, manifest, index, report, state_path)
+                for path in (
+                    deployment, manifest, index, report, state_path,
+                    legacy_deployment, legacy_manifest, legacy_index,
+                    legacy_report, legacy_state,
+                )
             }
             with mock.patch.multiple(
                 "setup_titan",
@@ -134,12 +209,29 @@ class SkillInstallTests(unittest.TestCase):
                 PREDECESSOR_MANIFEST_FILE_SHA256=before[manifest],
                 PREDECESSOR_INDEX_SHA256=before[index],
                 PREDECESSOR_STATE_SHA256=before[state_path],
+                LEGACY_DEPLOYMENT_SHA256=before[legacy_deployment],
+                LEGACY_MANIFEST_FILE_SHA256=before[legacy_manifest],
+                LEGACY_INDEX_SHA256=before[legacy_index],
+                LEGACY_INCIDENT_REPORT_SHA256=before[legacy_report],
+                LEGACY_STATE_SHA256=before[legacy_state],
             ):
                 lineage = predecessor_lineage(str(root))
                 self.assertEqual(lineage["predecessor_run_root"], str(run_root.resolve()))
+                self.assertEqual(lineage["legacy_predecessor_run_root"], str(legacy_run_root))
                 self.assertEqual(lineage["predecessor_pair_report_sha256"], before[report])
+                self.assertEqual(lineage["predecessor_pair_state_sha256"], before[state_path])
+                self.assertEqual(lineage["predecessor_task_index_sha256"], before[index])
+                self.assertEqual(lineage["legacy_predecessor_pair_report_sha256"], before[legacy_report])
                 self.assertEqual(before, {path: sha256_file(path) for path in before})
                 verify_predecessor_lineage(str(root), lineage)
+
+                original_legacy_report = legacy_report.read_bytes()
+                legacy_altered = json.loads(legacy_report.read_text(encoding="utf-8"))
+                legacy_altered["status"] = "COMPLETE"
+                legacy_report.write_text(json.dumps(legacy_altered), encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "pilot-1 incident evidence changed"):
+                    predecessor_lineage(str(root))
+                legacy_report.write_bytes(original_legacy_report)
 
                 altered = json.loads(report.read_text(encoding="utf-8"))
                 altered["status"] = "COMPLETE"
@@ -297,7 +389,7 @@ class SkillInstallTests(unittest.TestCase):
     def test_dependency_preparation_uses_private_cache_and_tmp(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
-            deployment = root / "deployment-pilot-2-r1"
+            deployment = root / "deployment-pilot-3-r1"
             private_bin = root / "tooling" / "elan" / "bin"
             private_bin.mkdir(parents=True, mode=0o700)
             private_bin.parent.parent.chmod(0o700)

@@ -1,14 +1,16 @@
 # HighamBench source-first formalization pilot
 
-This directory is the control plane for the source-first HighamBench pilot-2. It
+This directory is the control plane for the source-first HighamBench pilot-3. It
 does not use the legacy fixed-target proof runner in
 `paper_bencmark/highambench/tools/runner.py`.
 
-Pilot-1 is preserved as an aborted, unscored predecessor: its P01-T2 run was
-sealed after a provider multi-agent capability incident, before a candidate
-or audit and before L began. Pilot-2 starts all five tasks anew under one
-release identity. Do not pool a pilot-1 result with pilot-2 data or use the
-pilot-1 launcher for a replacement run.
+Pilots 1 and 2 are preserved as sealed, unscored predecessors. Pilot-1 P01-T2
+stopped on a provider multi-agent capability incident. Pilot-2 P01-T2
+(`P01-T2-20260916T084145Z-6dad064a`) stopped after N submitted one compiling
+candidate: the provider rejected the blind-translation audit response schema,
+so no faithfulness verdict was produced and L never started. Pilot-3 starts all
+five tasks anew under its own release identity. Do not pool observations across
+pilots, alter the old evidence, or use an older launcher for a replacement run.
 
 The pilot accepts exactly these tasks:
 
@@ -46,10 +48,10 @@ On Titan, use the installed launcher so every command enters the fixed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-2-r1 doctor --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-2-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-2-r1 run --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-2-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-3-r1 doctor --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-3-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-3-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-3-r1 status --task-id P01-T2
 ```
 
 Use `--dry-run` with `run` to exercise admission, staging, condition isolation,
@@ -61,10 +63,19 @@ The exact app-server configuration disables agent delegation through
 attests the effective configuration and features before model inference and
 fails closed on any collaboration or foreign-thread event. A paid but
 off-benchmark provider canary qualifies this capability before a fresh
-official pair is indexed; its time and tokens never enter contestant totals.
+official pair is indexed. It also submits the exact frozen schemas for blind
+translation, direct judgment, round-trip judgment, and adjudication through
+live provider calls with synthetic checkable outputs. This closes the pilot-2
+gap: provider acceptance of the real audit schemas was not established by the
+earlier generic auditor probe. Qualification time and tokens never enter
+contestant totals.
 Provider-free `doctor` and `--dry-run` do not make this inference call.
-`qualify-provider` runs the two-role paid check without consuming an official
-task slot; a later `run` verifies and reuses its sealed record.
+`qualify-provider` runs these paid checks without consuming an official task
+slot; a later `run` verifies and reuses its sealed record.
+
+Release repair, installation, and qualification are preparation, not an
+instruction to start an official pair. Check all five statuses after setup;
+issue `run` only when explicitly requested for that task.
 
 Every real run enters a transient user service with systemd-enforced affinity
 to the setup-frozen eight logical CPUs and cgroup limits of 32 GiB RAM, 512

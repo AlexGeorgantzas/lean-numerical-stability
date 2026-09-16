@@ -16,7 +16,7 @@ DEFAULT_DEPLOYMENT = (
     Path.home()
     / ".local"
     / "share"
-    / "highambench-formalization-pilot-2-r1"
+    / "highambench-formalization-pilot-3-r1"
     / "deployment.json"
 )
 GLOBAL_REGISTRY_ROOT = (
@@ -49,6 +49,7 @@ class Deployment:
     manifest_payload_sha256: str | None = None
     global_registry_root: Path | None = None
     predecessor_run_root: Path | None = None
+    legacy_predecessor_run_root: Path | None = None
 
 
 def deployment_path(explicit: Path | None = None) -> Path:
@@ -91,8 +92,8 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     value = load_json(path)
     if value.get("schema_version") != "formalization-deployment-1":
         raise BenchmarkError("unsupported deployment record")
-    if value.get("pilot_id") != "formalization-benchmark-t2-pilot-2":
-        raise BenchmarkError("deployment does not identify the pilot-2 release")
+    if value.get("pilot_id") != "formalization-benchmark-t2-pilot-3":
+        raise BenchmarkError("deployment does not identify the pilot-3 release")
     for field, length in (
         ("release_commit", 40),
         ("release_manifest_sha256", 64),
@@ -106,8 +107,15 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     if global_registry_root != GLOBAL_REGISTRY_ROOT.resolve():
         raise BenchmarkError("deployment global_registry_root is not the account registry")
     predecessor_run_root = _optional_directory_target(value, "predecessor_run_root")
-    if predecessor_run_root is not None and not predecessor_run_root.is_dir():
+    if predecessor_run_root is None or not predecessor_run_root.is_dir():
         raise BenchmarkError("deployment predecessor_run_root is missing")
+    legacy_predecessor_run_root = _optional_directory_target(
+        value, "legacy_predecessor_run_root"
+    )
+    if legacy_predecessor_run_root is None or not legacy_predecessor_run_root.is_dir():
+        raise BenchmarkError("deployment legacy_predecessor_run_root is missing")
+    if legacy_predecessor_run_root == predecessor_run_root:
+        raise BenchmarkError("deployment predecessor run roots must be distinct")
     run_root_raw = value.get("run_root")
     if not isinstance(run_root_raw, str) or not run_root_raw:
         raise BenchmarkError("deployment run_root is missing")
@@ -136,6 +144,7 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
         manifest_payload_sha256=value["manifest_payload_sha256"],
         global_registry_root=global_registry_root,
         predecessor_run_root=predecessor_run_root,
+        legacy_predecessor_run_root=legacy_predecessor_run_root,
     )
 
 

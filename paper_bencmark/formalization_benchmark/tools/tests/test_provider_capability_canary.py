@@ -13,6 +13,11 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from codex_driver import TurnResult  # noqa: E402
+from audit_controller import (  # noqa: E402
+    _validate_adjudication,
+    _validate_judgment,
+    _validate_translation,
+)
 from common import BenchmarkError, sha256_file, write_json_atomic  # noqa: E402
 from deployment import Deployment  # noqa: E402
 import provider_capability_canary as canary  # noqa: E402
@@ -45,6 +50,7 @@ class FakeDriver:
     calls: list[dict] = []
     turn_overrides: dict = {}
     result_overrides: dict = {}
+    role_result_overrides: dict = {}
 
     def __init__(self, **options):
         self.options = options
@@ -55,6 +61,8 @@ class FakeDriver:
         self.calls.append({"driver": self.options, "turn": options})
         self.ephemeral = options["ephemeral"]
         artifact_dir = options["artifact_dir"]
+        role = artifact_dir.parent.name
+        expected = next(item[-1] for item in canary.ROLES if item[0] == role)
         artifact_dir.mkdir(parents=True)
         (artifact_dir / "events.jsonl").write_text("{}\n", encoding="utf-8")
         result_options = {
@@ -64,7 +72,7 @@ class FakeDriver:
             "wall_seconds": 0.5,
             "usage": dict(USAGE),
             "usage_complete": True,
-            "final_message": json.dumps(canary.EXPECTED_OUTPUT),
+            "final_message": json.dumps(expected),
             "event_count": 1,
             "command": ["fake-codex"],
             "active_started_perf_ns": 10,
@@ -72,6 +80,7 @@ class FakeDriver:
             "failure_kind": None,
         }
         result_options.update(self.result_overrides)
+        result_options.update(self.role_result_overrides.get(role, {}))
         result = TurnResult(**result_options)
         record = {
             "schema_version": 3,
@@ -185,6 +194,7 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
         FakeDriver.calls = []
         FakeDriver.turn_overrides = {}
         FakeDriver.result_overrides = {}
+        FakeDriver.role_result_overrides = {}
         self.patches = [
             mock.patch.object(canary, "CodexDriver", FakeDriver),
             mock.patch.object(canary, "MANIFEST_PATH", self.manifest_path),
@@ -210,8 +220,8 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
     def test_qualifies_exact_roles_off_benchmark_and_reuses_sealed_result(self) -> None:
         first = canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(first["status"], "PASSED")
-        self.assertEqual(len(FakeDriver.calls), 2)
-        formalizer, auditor = FakeDriver.calls
+        self.assertEqual(len(FakeDriver.calls), len(canary.ROLES))
+        formalizer, auditor, *audit_schemas = FakeDriver.calls
         self.assertEqual(
             (formalizer["driver"]["model"], formalizer["driver"]["reasoning_effort"]),
             ("exact-formalizer", "ultra"),
@@ -231,13 +241,50 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
             json.loads(formalizer["turn"]["output_schema"].read_text()),
             canary.OUTPUT_SCHEMA,
         )
-        self.assertEqual(first["record"]["provider_calls"], 2)
+        self.assertEqual(len(audit_schemas), 4)
+        for audit_role, schema_name, expected in canary.AUDIT_SCHEMA_PROBES:
+            call = next(
+                item
+                for item in audit_schemas
+                if item["turn"]["artifact_dir"].parent.name
+                == f"audit-schema-{audit_role}"
+            )
+            self.assertEqual(call["driver"]["model"], "exact-auditor")
+            self.assertTrue(call["turn"]["ephemeral"])
+            self.assertEqual(
+                call["turn"]["output_schema"].read_bytes(),
+                (canary.AUDIT_SCHEMAS / schema_name).read_bytes(),
+            )
+            self.assertIn(
+                json.dumps(expected, sort_keys=True, separators=(",", ":")),
+                call["turn"]["prompt"],
+            )
+        self.assertEqual(first["record"]["provider_turns"], 6)
+        self.assertEqual(first["record"]["provider_calls"], 6)
         self.assertFalse(first["record"]["charged_to_contestant"])
         self.assertFalse((self.run_root / "pairs").exists())
         self.assertFalse((self.run_root / "index").exists())
         second = canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(second["record_sha256"], first["record_sha256"])
-        self.assertEqual(len(FakeDriver.calls), 2)
+        self.assertEqual(len(FakeDriver.calls), 6)
+
+    def test_auditor_schema_probes_satisfy_audit_contracts(self) -> None:
+        for role, _schema, expected in canary.AUDIT_SCHEMA_PROBES:
+            if role == "blind-translation":
+                _validate_translation(expected, canary.SYNTHETIC_SEMANTIC_SHA256)
+            elif role == "adjudicator":
+                _validate_adjudication(
+                    expected,
+                    paper_sha256=canary.SYNTHETIC_PAPER_SHA256,
+                    semantic_sha256=canary.SYNTHETIC_SEMANTIC_SHA256,
+                )
+            else:
+                _validate_judgment(
+                    expected,
+                    role=role,
+                    paper_sha256=canary.SYNTHETIC_PAPER_SHA256,
+                    semantic_sha256=canary.SYNTHETIC_SEMANTIC_SHA256,
+                )
 
     def test_incomplete_telemetry_fails_closed_and_does_not_retry(self) -> None:
         FakeDriver.turn_overrides = {"usage_complete": False}
@@ -295,7 +342,22 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
         artifact.write_text("tampered\n", encoding="utf-8")
         with self.assertRaisesRegex(BenchmarkError, "sealed evidence changed"):
             canary.run_provider_capability_canary(self.deployment)
-        self.assertEqual(len(FakeDriver.calls), 2)
+        self.assertEqual(len(FakeDriver.calls), 6)
+
+    def test_auditor_schema_probe_fails_closed_without_an_official_pair(self) -> None:
+        FakeDriver.role_result_overrides = {
+            "audit-schema-blind-translation": {"exit_code": 70, "final_message": ""}
+        }
+        with self.assertRaisesRegex(BenchmarkError, "did not complete exactly"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 3)
+        record = next((self.run_root / "qualifications").rglob("qualification.json"))
+        self.assertEqual(json.loads(record.read_text())["status"], "FAILED")
+        self.assertFalse((self.run_root / "pairs").exists())
+        self.assertFalse((self.run_root / "index").exists())
+        with self.assertRaisesRegex(BenchmarkError, "failed"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 3)
 
     def test_deployment_release_mismatch_blocks_paid_calls(self) -> None:
         self.manifest_path.write_text('{"changed":true}\n', encoding="utf-8")
