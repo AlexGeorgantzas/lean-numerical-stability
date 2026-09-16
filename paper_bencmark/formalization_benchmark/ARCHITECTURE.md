@@ -10,6 +10,7 @@ installed run-highambench-experiments skill
         |
         +--> verify-release (complete frozen-file closure)
         +--> Titan doctor (PDF/runtime/executable/hardware identities)
+        +--> off-benchmark provider qualification (before a new pair ID)
         |
         v
 transient systemd user service: fixed 8 CPUs / 32 GiB / 512 tasks / no swap
@@ -25,14 +26,15 @@ one authenticated pair controller
 ```
 
 The pair controller pre-stages and byte-compares both condition inputs before
-the first provider call. It then follows the condition order frozen per task in
+the first contestant provider call. It then follows the condition order frozen per task in
 `config.json`. A task index permits one official pair only. Reissuing the same
 run command returns a terminal pair or continues before the first turn or
 between sealed conditions. An interruption after a condition has submitted is
 not cold-resumed, because that would lose its exact raw-event stream; it fails
-closed as an incident. A deployment-wide lock admits only one pilot pair at a
-time, preventing concurrent pilot tasks from contending for Titan's fixed CPU
-and memory allocation.
+closed as an incident. An account-global pilot/task reservation and campaign
+lock prevent duplicates across deployment roots. Pilot-2 also acquires the
+old pilot-1 launcher's lock to avoid contending for Titan's fixed allocation.
+Pilot-1 remains an unscored predecessor and is never pooled with pilot-2.
 
 ## Per-condition loop
 
@@ -97,6 +99,17 @@ prompt appendix points to `/library/NumStability` and
 `LEAN_PATH`, and gives concrete `find`, `rg`, and `import NumStability`
 discovery/import examples.
 
+The app-server launch and thread configuration both disable agent delegation
+with `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`.
+The driver checks effective configuration and global/thread features before
+any model turn and rechecks thread features before repairs. Any collaboration
+event, foreign-thread event, or failed attestation is a release-blocking
+provider infrastructure incident. An off-benchmark provider canary exercises
+the exact formalizer and auditor models/efforts before a new pair consumes its
+slot; its usage is logged separately. The app-server has no generic
+pre-execution built-in-tool allowlist, so event rejection is an additional
+fail-closed check, not a claim that every unused tool was impossible to call.
+
 The waited, piped transient systemd user service applies the frozen eight-CPU
 affinity and limits the whole benchmark process tree to 32 GiB, 512 tasks, and
 zero swap. A service-wide syscall filter prevents the controller, Codex, build
@@ -124,6 +137,7 @@ the frozen package closure, and—only for L—the frozen library objects.
 | `tools/setup_titan.py` | Build and hash the private Titan deployment in an atomically published transaction with authenticated finalization resumption and no paid model calls. |
 | `tools/measure_library_build.py` | Clean and measure the full NumStability build under the fixed outer resource envelope, retaining authenticated build output and resource evidence. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary with provider-free sandboxed compilations. |
+| `tools/provider_capability_canary.py` | Qualify the exact single-agent provider roles off-benchmark before a new official pair. |
 | `tools/titan_envelope.py` | Enter the exact CPU, RAM, and swap cgroup. |
 | `tools/run_benchmark.py` | Expose `verify-release`, `doctor`, `run`, and `status`. |
 | `tools/pair_controller.py` | Own pair uniqueness, ordering, state transitions, clocks, freezing, and repair continuation. |
@@ -149,6 +163,7 @@ runtime/library/
     build-output.log
     gnu-time.txt
 runs/
+  qualification/<manifest-sha256>/... off-benchmark provider evidence
   index/P01-T2.json
   pairs/<run-id>/
     admission.json
@@ -174,6 +189,9 @@ runs/
     audits/<semantic-sha256>/
       roles/... fresh auditor transcripts and usage
       decision.json
+~/.local/share/highambench-formalization-registry/
+  locks/campaign.lock
+  index/formalization-benchmark-t2-pilot-2/P01-T2.json
 ```
 
 At the end of each condition, the driver closes the one persistent formalizer

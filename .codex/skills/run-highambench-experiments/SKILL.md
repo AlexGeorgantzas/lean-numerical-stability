@@ -7,6 +7,11 @@ description: Operate the source-first HighamBench faithful-formalization pilot f
 
 ## Scope
 
+This is pilot-2 (`formalization-benchmark-t2-pilot-2`). Pilot-1 is an aborted,
+unscored predecessor with a sealed P01-T2 provider incident. Never use its
+launcher for a replacement, reuse its run ID, or pool its data with pilot-2.
+All five pilot-2 tasks begin as fresh single pairs under one frozen release.
+
 Treat a command such as `Run benchmark for P01-T2` as authorization to run
 exactly one Condition N run and one Condition L run for that named task.
 The pilot allowlist is exactly:
@@ -32,20 +37,31 @@ placeholder in the complete candidate.
 Before any provider call or benchmark-state mutation on Titan:
 
 1. Read [the operations reference](references/operations.md) completely.
-2. Use only the installed `~/.local/bin/run-highambench-formalization`
+2. Use only the installed `~/.local/bin/run-highambench-formalization-pilot-2-r1`
    launcher. Its deployment record binds the exact release checkout, so the
    command works regardless of the current directory.
 3. Run the launcher's provider-free `verify-release` command.
 4. Authenticate the selected packet, prompts, runtime snapshots, executable
    identities, deployment record, and hardware through the installed
    launcher's `doctor` gate.
-5. Stop if either gate is absent or fails. Never use legacy
+5. Require the pilot-2 predecessor lineage and account-global registry to
+   authenticate. A fresh official `run` performs an off-benchmark
+   provider-backed single-agent qualification before any pair slot is created.
+6. Stop if any gate is absent or fails. Never use legacy
    `paper_bencmark/highambench/tools/runner.py` or `tools/run_matrix.py` as a
    substitute.
 
 The installed release's protocol and frozen manifests are authoritative. Treat command-line values
 as equality assertions, not experimental knobs. Never repair, refresh, or
 silently regenerate controlled inputs during admission or measurement.
+
+The exact provider capability contract disables `agents.enabled`,
+`multi_agent`, and `multi_agent_v2`. Require effective global/thread
+attestations and reject collaboration or foreign-thread events as provider
+infrastructure incompatibility, not contestant misconduct. The deprecated
+`multiAgentMode` value is not evidence of this capability. `doctor` and
+`run --dry-run` remain provider-free; the qualification usage is never charged
+to N or L.
 
 ## Preserve the N/L treatment
 

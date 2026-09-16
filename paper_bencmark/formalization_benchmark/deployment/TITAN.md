@@ -4,6 +4,11 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
+Pilot-2 is a side-by-side release. The pilot-1 deployment, its P01-T2 sealed
+unscored incident, and its launcher must remain unchanged. Pilot-2 restarts
+all five tasks; never combine pilot-1 data with pilot-2 results. Setup
+authenticates the predecessor incident report and hashes before publication.
+
 ## Security first
 
 Use SSH key authentication and verify Titan's host-key fingerprint out of band.
@@ -67,11 +72,12 @@ From the exact release checkout:
 
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
-  --pdf-source-dir /private/path/to/reference_papers
+  --pdf-source-dir /private/path/to/reference_papers \
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment
 ```
 
-The installer creates a user-private deployment below
-`~/.local/share/highambench-formalization`, unless `--deployment-root` says
+The installer creates a user-private pilot-2 deployment below
+`~/.local/share/highambench-formalization-pilot-2-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -98,9 +104,9 @@ launcher is never overwritten. It:
    and logged;
 7. runs provider-free compiler canaries proving Mathlib works in N,
    NumStability fails to import in N, and succeeds in L;
-8. starts the exact sandboxed Codex app-server through `thread/start`, then
-   stops before `turn/start`, proving interface compatibility without model
-   inference;
+8. starts the exact sandboxed Codex app-server through `thread/start`, attests
+   effective `agents.enabled=false` and both disabled multi-agent features,
+   then stops before `turn/start` without model inference;
 9. writes the private deployment record and a source-only, read-only copy of
    the exact release in the sibling transaction;
 10. atomically publishes that ready transaction at the deployment path;
@@ -126,16 +132,24 @@ committed to Git.
 
 ## Run
 
-The installed operator command is:
+The installed pilot-2 operator command is:
 
 ```bash
-~/.local/bin/run-highambench-formalization run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-2-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-2-r1 run --task-id P01-T2
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
-pair controller. The repository skill maps the natural-language request
+pair controller. Before a fresh official pair ID or index exists, the exact
+formalizer and auditor roles pass an off-benchmark provider-backed
+single-agent qualification. Its usage is separately recorded and never
+charged to N or L. A missing or unsafe capability blocks the release without
+consuming that task's official slot. The repository skill maps the natural-language request
 `Run benchmark for P01-T2` to this command. Repeating the request returns the
 existing pilot run for that task rather than creating a repetition.
+The explicit `qualify-provider` command can be run immediately after setup to
+establish live provider readiness without starting a benchmark; a later fresh
+`run` authenticates and reuses the sealed qualification record.
 
 The five accepted task IDs are `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, and
 `P14-T2`. Each task has exactly one official N/L pair. Every condition uses one
@@ -148,7 +162,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-2-r1 status --task-id P01-T2
 ```
 
 ## Storage separation

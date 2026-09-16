@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Any, Iterator, Mapping
 
 from audit_controller import AuditController, audit_evidence_manifest
-from codex_driver import CodexDriver, command_cgroup_snapshot
+from codex_driver import CodexDriver, ProviderCapabilityError, command_cgroup_snapshot
 from common import (
     BenchmarkError,
     assert_no_credentials_in_bytes,
@@ -397,26 +397,43 @@ def _task_lock(run_root: Path, task_id: str) -> Iterator[None]:
 
 
 @contextmanager
-def _campaign_lock(run_root: Path) -> Iterator[None]:
-    """Prevent two measured pairs from contending for Titan's fixed envelope."""
+def _campaign_lock(
+    run_root: Path,
+    global_registry_root: Path | None = None,
+    predecessor_run_root: Path | None = None,
+) -> Iterator[None]:
+    """Serialize this release, all new releases, and the predecessor launcher."""
 
-    lock_root = run_root / "locks"
-    lock_root.mkdir(parents=True, exist_ok=True, mode=0o700)
-    path = lock_root / "formalization-pilot.lock"
-    descriptor = os.open(path, os.O_RDWR | os.O_CREAT | os.O_CLOEXEC, 0o600)
+    paths = [run_root / "locks" / "formalization-pilot.lock"]
+    if global_registry_root is not None:
+        paths.append(global_registry_root / "locks" / "campaign.lock")
+    if predecessor_run_root is not None:
+        paths.append(predecessor_run_root / "locks" / "formalization-pilot.lock")
+    descriptors: list[int] = []
     try:
-        try:
-            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
-        except BlockingIOError as error:
-            raise BenchmarkError(
-                "another formalization benchmark pair is already active on Titan"
-            ) from error
+        for path in sorted(set(paths)):
+            path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+            if path.parent.is_symlink() or path.is_symlink():
+                raise BenchmarkError(f"unsafe benchmark lock path: {path}")
+            descriptor = os.open(
+                path,
+                os.O_RDWR | os.O_CREAT | os.O_CLOEXEC | os.O_NOFOLLOW,
+                0o600,
+            )
+            descriptors.append(descriptor)
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            except BlockingIOError as error:
+                raise BenchmarkError(
+                    "another formalization benchmark pair is already active on Titan"
+                ) from error
         yield
     finally:
-        try:
-            fcntl.flock(descriptor, fcntl.LOCK_UN)
-        finally:
-            os.close(descriptor)
+        for descriptor in reversed(descriptors):
+            try:
+                fcntl.flock(descriptor, fcntl.LOCK_UN)
+            finally:
+                os.close(descriptor)
 
 
 class PairController:
@@ -429,6 +446,52 @@ class PairController:
             deployment.library_source,
             root_module,
         )
+
+    def _campaign_lock(self) -> Iterator[None]:
+        return _campaign_lock(
+            self.deployment.run_root,
+            getattr(self.deployment, "global_registry_root", None),
+            getattr(self.deployment, "predecessor_run_root", None),
+        )
+
+    def _qualify_provider(self) -> dict[str, Any]:
+        from provider_capability_canary import run_provider_capability_canary
+
+        return run_provider_capability_canary(self.deployment)
+
+    def _verify_qualification_binding(self, admission: Mapping[str, Any]) -> None:
+        if self.deployment.global_registry_root is None:
+            return  # Non-admissible synthetic fixtures have no account registry.
+        binding = admission.get("provider_qualification")
+        expected = (
+            self.deployment.run_root
+            / "qualifications"
+            / sha256_file(MANIFEST_PATH)
+            / "qualification.json"
+        )
+        if (
+            not isinstance(binding, Mapping)
+            or binding.get("record_path") != str(expected)
+            or not expected.is_file()
+            or expected.is_symlink()
+            or binding.get("record_sha256") != sha256_file(expected)
+            or binding.get("charged_to_contestant") is not False
+        ):
+            raise BenchmarkError("official pair lost its provider qualification binding")
+        record = load_json(expected)
+        identity = record.get("identity")
+        if (
+            record.get("status") != "PASSED"
+            or not isinstance(identity, Mapping)
+            or identity.get("pilot_id") != self.config["pilot_id"]
+            or identity.get("manifest_sha256") != sha256_file(MANIFEST_PATH)
+            or identity.get("manifest_payload_sha256")
+            != self.manifest["manifest_payload_sha256"]
+            or identity.get("deployment_sha256") != sha256_file(self.deployment.path)
+            or record.get("charged_to_contestant") is not False
+            or record.get("roles_manifest") != tree_manifest(expected.parent / "roles")
+        ):
+            raise BenchmarkError("official pair provider qualification evidence changed")
 
     def _active_time_limit(self) -> float:
         return _measured_active_seconds(
@@ -829,6 +892,24 @@ class PairController:
             expected_release_hash = deployment_record.get("release_manifest_sha256")
             if expected_release_hash != sha256_file(MANIFEST_PATH):
                 raise BenchmarkError("deployment was prepared from a different release manifest")
+            if (
+                deployment_record.get("pilot_id") != self.config["pilot_id"]
+                or deployment_record.get("manifest_payload_sha256")
+                != self.manifest["manifest_payload_sha256"]
+            ):
+                raise BenchmarkError("deployment pilot or manifest payload identity changed")
+            if (
+                self.deployment.global_registry_root is None
+                or self.deployment.predecessor_run_root is None
+            ):
+                raise BenchmarkError("pilot-2 registry or predecessor lock is missing")
+            from setup_titan import predecessor_lineage
+
+            lineage = predecessor_lineage(
+                str(self.deployment.predecessor_run_root.parent)
+            )
+            if any(deployment_record.get(key) != value for key, value in lineage.items()):
+                raise BenchmarkError("predecessor incident provenance changed")
             expected_codex_hash = deployment_record.get("codex_binary_sha256")
             if expected_codex_hash != codex["sha256"]:
                 raise BenchmarkError("Codex binary changed after deployment")
@@ -982,8 +1063,36 @@ class PairController:
     def doctor_when_idle(self, task_id: str) -> dict[str, Any]:
         """Run the heavy release doctor only when no measured pair is active."""
 
-        with _campaign_lock(self.deployment.run_root):
+        with self._campaign_lock():
             return self.doctor(task_id)
+
+    def qualify_provider_when_idle(self, task_id: str) -> dict[str, Any]:
+        """Paid off-benchmark qualification; never allocates a pair or task slot."""
+
+        if not self.strict_hardware:
+            raise BenchmarkError("provider qualification requires strict hardware")
+        with self._campaign_lock():
+            self.doctor(task_id)
+            qualification = self._qualify_provider()
+            if qualification.get("status") != "PASSED":
+                raise BenchmarkError("provider qualification did not pass")
+            self._verify_qualification_binding(
+                {
+                    "provider_qualification": {
+                        "record_path": qualification.get("record_path"),
+                        "record_sha256": qualification.get("record_sha256"),
+                        "charged_to_contestant": False,
+                    }
+                }
+            )
+            return {
+                "status": "PASSED",
+                "pilot_id": self.config["pilot_id"],
+                "record_path": qualification["record_path"],
+                "record_sha256": qualification["record_sha256"],
+                "benchmark_charged": False,
+                "official_slot_consumed": False,
+            }
 
     def _stage_condition(
         self,
@@ -1549,6 +1658,7 @@ class PairController:
                 and not result.timed_out
                 and result.active_started_perf_ns is not None
                 and result.active_ended_perf_ns is not None
+                and result.failure_kind != "provider_capability_violation"
             )
             if may_submit:
                 freeze_started = time.perf_counter_ns()
@@ -1621,6 +1731,18 @@ class PairController:
                 "repair_feedback": None,
             }
             marker = attempt_root / "formalizer" / "network_violations.bin"
+            if result.failure_kind == "provider_capability_violation":
+                # A missing or unsafe provider capability is a release failure,
+                # not misconduct by the contestant. Preserve any secondary
+                # network/control evidence without letting it mask the cause.
+                attempt["status"] = "INFRASTRUCTURE_FAILURE"
+                attempt["incident_classification"] = (
+                    "provider_capability_incompatibility"
+                )
+                _append_attempt(state, attempt, attempt_started_perf_ns)
+                state["status"] = "INFRASTRUCTURE_FAILURE"
+                _write_state(state_path, state)
+                return state
             if control_surface_violation is not None:
                 attempt["status"] = "RULE_VIOLATION"
                 _append_attempt(state, attempt, attempt_started_perf_ns)
@@ -1825,6 +1947,11 @@ class PairController:
                 audit_wall_seconds = (
                     time.perf_counter_ns() - audit_started_perf_ns
                 ) / 1_000_000_000
+                audit_classification = (
+                    "provider_capability_incompatibility"
+                    if isinstance(error, ProviderCapabilityError)
+                    else "audit_system_infrastructure"
+                )
                 incident = audit.seal_incident(
                     audit_root=audit_root,
                     task_id=task_id,
@@ -1832,6 +1959,7 @@ class PairController:
                     semantic_sha256=semantic_sha256,
                     error=str(error),
                     wall_seconds=audit_wall_seconds,
+                    classification=audit_classification,
                 )
                 incident_path = audit_root / "incident.json"
                 attempt["audit"] = {
@@ -1843,8 +1971,10 @@ class PairController:
                     "tokens_excluded": True,
                     "usage": incident["usage"],
                     "usage_complete": incident["usage_complete"],
+                    "classification": audit_classification,
                 }
                 attempt["status"] = "AUDIT_SYSTEM_INCIDENT"
+                attempt["incident_classification"] = audit_classification
                 attempt["infrastructure_error"] = str(error)
                 _append_attempt(state, attempt, attempt_started_perf_ns)
                 state["status"] = "AUDIT_SYSTEM_INCIDENT"
@@ -2284,6 +2414,74 @@ class PairController:
     def _index_path(self, task_id: str) -> Path:
         return self.deployment.run_root / "index" / f"{task_id}.json"
 
+    def _registry_index_path(self, task_id: str) -> Path | None:
+        root = getattr(self.deployment, "global_registry_root", None)
+        if root is None:
+            return None
+        return root / "index" / str(self.config["pilot_id"]) / f"{task_id}.json"
+
+    def _index_identity(self) -> dict[str, Any]:
+        deployment = load_json(self.deployment.path)
+        return {
+            "pilot_id": self.config["pilot_id"],
+            "release_commit": deployment.get("release_commit"),
+            "manifest_sha256": sha256_file(MANIFEST_PATH),
+            "manifest_payload_sha256": self.manifest["manifest_payload_sha256"],
+            "deployment_sha256": sha256_file(self.deployment.path),
+        }
+
+    def _reconcile_global_reservation(self, task_id: str) -> None:
+        """Finish a torn two-file index commit without allocating a new pair."""
+
+        registry_path = self._registry_index_path(task_id)
+        index_path = self._index_path(task_id)
+        if registry_path is None or not registry_path.exists() or index_path.exists():
+            return
+        if not registry_path.is_file() or registry_path.is_symlink():
+            raise BenchmarkError("account-global pilot/task reservation is unsafe")
+        index = load_json(registry_path)
+        if (
+            index.get("schema_version") != "formalization-task-index-2"
+            or index.get("task_id") != task_id
+            or any(index.get(key) != value for key, value in self._index_identity().items())
+        ):
+            raise BenchmarkError("account-global pilot/task reservation identity changed")
+        pair_root_raw = index.get("pair_root")
+        state_path_raw = index.get("pair_state_path")
+        if not isinstance(pair_root_raw, str) or not isinstance(state_path_raw, str):
+            raise BenchmarkError("account-global pilot/task reservation paths are malformed")
+        pair_root_path = Path(pair_root_raw)
+        pair_root = pair_root_path.resolve()
+        if (
+            pair_root_path.is_symlink()
+            or pair_root.parent != (self.deployment.run_root / "pairs").resolve()
+            or Path(state_path_raw).resolve() != pair_root / "pair_state.json"
+        ):
+            raise BenchmarkError("account-global reservation escaped this deployment")
+        state_path = pair_root / "pair_state.json"
+        staging = pair_root / "pair_staging.json"
+        admission = pair_root / "admission.json"
+        if any(
+            not path.is_file() or path.is_symlink()
+            for path in (state_path, staging, admission)
+        ):
+            raise BenchmarkError("reserved pair has incomplete immutable staging")
+        state = load_json(state_path)
+        if (
+            state.get("task_id") != task_id
+            or state.get("run_id") != index.get("run_id")
+            or state.get("pilot_id") != self.config["pilot_id"]
+            or state.get("manifest_sha256") != sha256_file(MANIFEST_PATH)
+            or state.get("admission_sha256") != sha256_file(admission)
+            or state.get("dry_run") is not False
+        ):
+            raise BenchmarkError("reserved pair failed its state/admission binding")
+        self._verify_qualification_binding(load_json(admission))
+        index_path.parent.mkdir(parents=True, exist_ok=True)
+        if index_path.exists() or index_path.is_symlink():
+            raise BenchmarkError("task index appeared during reservation recovery")
+        write_json_atomic(index_path, index, mode=0o600)
+
     def _verify_pair_report(
         self,
         report: Path,
@@ -2388,6 +2586,7 @@ class PairController:
             or sealed.get("admission_sha256") != sha256_file(admission)
         ):
             raise BenchmarkError("terminal pair report lost its admission binding")
+        self._verify_qualification_binding(load_json(admission))
 
         order = sealed["condition_order"]
         conditions = sealed.get("conditions")
@@ -2568,13 +2767,30 @@ class PairController:
 
     def _load_indexed_pair(self, task_id: str) -> tuple[Path, Path, dict[str, Any]] | None:
         index_path = self._index_path(task_id)
+        registry_path = self._registry_index_path(task_id)
+        if registry_path is not None and registry_path.exists() and not index_path.exists():
+            raise BenchmarkError(
+                "pilot/task already reserved in the account-global registry"
+            )
         if not index_path.exists():
             return None
         if not index_path.is_file() or index_path.is_symlink():
             raise BenchmarkError(f"unsafe task index: {index_path}")
         index = load_json(index_path)
-        if index.get("task_id") != task_id:
+        if (
+            index.get("schema_version") != "formalization-task-index-2"
+            or index.get("task_id") != task_id
+            or any(
+                index.get(key) != value
+                for key, value in self._index_identity().items()
+            )
+        ):
             raise BenchmarkError("task index identity mismatch")
+        if registry_path is not None:
+            if not registry_path.is_file() or registry_path.is_symlink():
+                raise BenchmarkError("account-global pilot/task reservation is missing or unsafe")
+            if load_json(registry_path) != index:
+                raise BenchmarkError("account-global pilot/task reservation differs from index")
         pair_root_raw = index.get("pair_root")
         state_path_raw = index.get("pair_state_path")
         if not isinstance(pair_root_raw, str) or not isinstance(state_path_raw, str):
@@ -2593,6 +2809,7 @@ class PairController:
         state = load_json(state_path)
         if (
             state.get("task_id") != task_id
+            or state.get("pilot_id") != self.config["pilot_id"]
             or state.get("run_id") != index.get("run_id")
             or Path(str(state.get("pair_root", ""))).resolve() != pair_root
             or state.get("manifest_sha256") != sha256_file(MANIFEST_PATH)
@@ -2611,6 +2828,7 @@ class PairController:
             or state.get("admission_sha256") != sha256_file(admission)
         ):
             raise BenchmarkError("indexed pair admission record failed authentication")
+        self._verify_qualification_binding(load_json(admission))
         if state.get("status") in {"COMPLETE", "PAIR_INCIDENT"}:
             report = pair_root / "pair_report.json"
             expected_report_sha256 = state.get("pair_report_sha256")
@@ -2632,7 +2850,7 @@ class PairController:
         # Full status authentication hashes sealed evidence. Refuse it while a
         # measured pair owns the campaign instead of competing for its CPUs or
         # racing a mutable workspace.
-        with _campaign_lock(self.deployment.run_root):
+        with self._campaign_lock():
             indexed = self._load_indexed_pair(task_id)
             if indexed is None:
                 return {"task_id": task_id, "status": "NOT_STARTED"}
@@ -2870,7 +3088,13 @@ class PairController:
                 packet=packet,
             )
             if quarantine is not None:
-                result["status"] = "RULE_VIOLATION"
+                capability_incident = any(
+                    attempt.get("incident_classification")
+                    == "provider_capability_incompatibility"
+                    for attempt in result.get("attempts", [])
+                )
+                if not capability_incident:
+                    result["status"] = "RULE_VIOLATION"
                 result["workspace_quarantine"] = quarantine
                 _write_state(
                     pair_root / "conditions" / condition / "condition_state.json",
@@ -2885,9 +3109,18 @@ class PairController:
             _write_state(pair_state_path, pair_state)
             if result["status"] in INCIDENT_CONDITION_STATES:
                 pair_state["status"] = "PAIR_INCIDENT"
+                capability_incident = any(
+                    attempt.get("incident_classification")
+                    == "provider_capability_incompatibility"
+                    for attempt in result.get("attempts", [])
+                )
                 pair_state["incident"] = {
                     "condition": condition,
-                    "classification": "sealed_condition_incident",
+                    "classification": (
+                        "provider_capability_incompatibility"
+                        if capability_incident
+                        else "sealed_condition_incident"
+                    ),
                     "message": "The condition ended in a sealed unscored incident state.",
                     "recorded_at_utc": utc_now(),
                 }
@@ -2915,9 +3148,11 @@ class PairController:
             raise BenchmarkError(
                 "official measured runs require strict hardware and release enforcement"
             )
-        with _campaign_lock(self.deployment.run_root), _task_lock(
+        with self._campaign_lock(), _task_lock(
             self.deployment.run_root, task_id
         ):
+            if not dry_run:
+                self._reconcile_global_reservation(task_id)
             indexed = self._load_indexed_pair(task_id)
             if indexed is not None:
                 if dry_run:
@@ -2928,6 +3163,25 @@ class PairController:
                     pair_root=indexed[0], pair_state_path=indexed[1], pair_state=indexed[2]
                 )
             admission = self.doctor(task_id)
+            if not dry_run:
+                qualification = self._qualify_provider()
+                if qualification.get("status") != "PASSED":
+                    raise BenchmarkError("provider qualification did not pass")
+                qualification_path = Path(str(qualification.get("record_path", "")))
+                if (
+                    not qualification_path.is_file()
+                    or qualification_path.is_symlink()
+                    or qualification.get("record_sha256")
+                    != sha256_file(qualification_path)
+                ):
+                    raise BenchmarkError("provider qualification record failed authentication")
+                admission = dict(admission)
+                admission["provider_qualification"] = {
+                    "record_path": str(qualification_path),
+                    "record_sha256": qualification["record_sha256"],
+                    "charged_to_contestant": False,
+                }
+                self._verify_qualification_binding(admission)
             timestamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
             run_id = f"{task_id}-{timestamp}-{secrets.token_hex(4)}"
             root_kind = "preflights" if dry_run else "pairs"
@@ -2996,14 +3250,23 @@ class PairController:
             index_path.parent.mkdir(parents=True, exist_ok=True)
             if index_path.exists():
                 raise BenchmarkError("task index appeared during locked pair creation")
+            index = {
+                "schema_version": "formalization-task-index-2",
+                **self._index_identity(),
+                "task_id": task_id,
+                "run_id": run_id,
+                "pair_root": str(pair_root),
+                "pair_state_path": str(pair_state_path),
+            }
+            registry_path = self._registry_index_path(task_id)
+            if registry_path is not None:
+                registry_path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+                if registry_path.parent.is_symlink() or registry_path.exists():
+                    raise BenchmarkError("pilot/task already reserved in the account-global registry")
+                write_json_atomic(registry_path, index, mode=0o600)
             write_json_atomic(
                 index_path,
-                {
-                    "task_id": task_id,
-                    "run_id": run_id,
-                    "pair_root": str(pair_root),
-                    "pair_state_path": str(pair_state_path),
-                },
+                index,
                 mode=0o600,
             )
             return self._continue_pair(

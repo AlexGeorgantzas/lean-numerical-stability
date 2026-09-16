@@ -64,6 +64,13 @@ def verify_manifest() -> tuple[dict[str, Any], dict[str, Any]]:
         raise BenchmarkError("manifest payload self-hash mismatch")
     config_path = verify_file_ref(manifest.get("config"), label="config")
     config = load_json(config_path)
+    pilot_id = config.get("pilot_id")
+    if (
+        not isinstance(pilot_id, str)
+        or not pilot_id
+        or pilot_id != manifest.get("pilot_id")
+    ):
+        raise BenchmarkError("manifest/config pilot identities disagree")
     task_ids = config.get("task_ids")
     if task_ids != manifest.get("task_ids") or manifest.get("task_count") != len(task_ids or []):
         raise BenchmarkError("manifest/config task sets disagree")

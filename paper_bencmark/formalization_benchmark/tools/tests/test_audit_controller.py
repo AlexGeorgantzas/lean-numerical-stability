@@ -5,6 +5,8 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
+from types import SimpleNamespace
+from unittest import mock
 
 
 TOOLS = Path(__file__).resolve().parents[1]
@@ -12,6 +14,7 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 from audit_controller import AuditController, _validate_judgment  # noqa: E402
+from codex_driver import ProviderCapabilityError  # noqa: E402
 from common import BenchmarkError, sha256_file  # noqa: E402
 
 
@@ -200,6 +203,61 @@ class AuditControllerPolicyTests(unittest.TestCase):
         judgment_path.write_text("{}\n", encoding="utf-8")
         with self.assertRaisesRegex(BenchmarkError, "nonempty or incomplete"):
             self.run_audit(FakeAuditController([]), "mutable")
+
+    def test_provider_capability_failure_never_retries_a_fresh_auditor(self) -> None:
+        for raises_early in (True, False):
+            with self.subTest(raises_early=raises_early):
+                calls: list[int] = []
+
+                class IncompatibleDriver:
+                    def __init__(self, **kwargs):
+                        del kwargs
+
+                    def run_turn(self, **kwargs):
+                        del kwargs
+                        calls.append(1)
+                        if raises_early:
+                            raise ProviderCapabilityError("single-agent gate missing")
+                        return SimpleNamespace(
+                            failure_kind="provider_capability_violation",
+                            exit_code=70,
+                            timed_out=False,
+                            final_message="",
+                            wall_seconds=0.01,
+                            usage={"total_tokens": 1},
+                            usage_complete=False,
+                            thread_id="unsafe-thread",
+                        )
+
+                    def close(self, **kwargs):
+                        del kwargs
+
+                controller = AuditController(
+                    codex_binary=self.root / "codex",
+                    auth_file=self.root / "auth",
+                    model="test",
+                    reasoning_effort="high",
+                    timeout_seconds=10,
+                    maximum_infrastructure_retries=3,
+                )
+                role_root = self.root / f"capability-{raises_early}"
+                with mock.patch("audit_controller.CodexDriver", IncompatibleDriver):
+                    with self.assertRaisesRegex(
+                        ProviderCapabilityError, "provider capability incompatibility"
+                    ):
+                        controller._fresh_role(
+                            role="direct-judge",
+                            prompt="test",
+                            workspace=self.root,
+                            role_root=role_root,
+                            schema=self.root / "schema.json",
+                            validate=lambda value: None,
+                        )
+                self.assertEqual(len(calls), 1)
+                telemetry = json.loads(
+                    (role_root / "telemetry.json").read_text(encoding="utf-8")
+                )
+                self.assertEqual(len(telemetry["tries"]), 1)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,11 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
+The active release is pilot-2. The sealed pilot-1 P01-T2 incident is unscored
+predecessor evidence, not an observation or a run to resume. Do not pool data
+across pilots. The pilot-2 deployment, launcher, task index, and account-global
+pilot/task registry are distinct and authenticated.
+
 ## Canonical surfaces
 
 | Purpose | Path |
@@ -78,14 +83,14 @@ On Titan, authenticate the installed release through its location-independent
 launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization verify-release
+~/.local/bin/run-highambench-formalization-pilot-2-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization doctor \
+~/.local/bin/run-highambench-formalization-pilot-2-r1 doctor \
   --task-id P01-T2
 ```
 
@@ -120,8 +125,11 @@ their authenticated outputs jointly confirm all of the following:
   pair; official staging performs the final byte-for-byte N/L check before any
   provider call; and
 - the private authentication file is present and the frozen Codex app-server
-  interface starts through the exact sandbox without beginning model activity
-  or writing secrets to logs.
+  interface starts through the exact sandbox, attests effective
+  `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
+  and stops without model inference or writing secrets to logs;
+- the predecessor incident hashes and account-global campaign lock/registry
+  match the pilot-2 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -132,13 +140,21 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization run \
+~/.local/bin/run-highambench-formalization-pilot-2-r1 run \
   --task-id P01-T2
 ```
 
 Replace `P01-T2` only with the single allowlisted task requested by the user.
 Do not add a repetition count. The runner, not the operator, selects the frozen
 N/L order and creates the pair/run identities.
+
+Before creating a fresh official pair ID or task index, the runner must pass
+the exact-model/effort provider-backed single-agent qualification for both
+roles. It is outside the contestant clock and task slot; its separate time and
+tokens are retained as overhead. A failed or missing qualification stops
+without consuming a slot. The deprecated `multiAgentMode` response is not an
+attestation. Collaboration or foreign-thread events are provider
+infrastructure incompatibilities, never contestant rule violations.
 
 Use the provider-free `status --task-id P01-T2` command to inspect a task. Do
 not reissue `run` merely to inspect it. Reissue the same authenticated `run`
@@ -180,7 +196,7 @@ supporting definitions before submitting.
 Use fresh workspaces, caches, process namespaces, Codex homes, and formalizer
 conversations for N and L. Nothing learned from one condition, task, or run may
 enter another. Keep both conditions of the pair on the same authenticated
-hardware allocation. The deployment-wide lock must admit only one pilot pair
+hardware allocation. The account-global and predecessor locks must admit only one pilot pair
 at a time; do not bypass it to run separate tasks concurrently.
 
 ## Candidate state machine

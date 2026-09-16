@@ -34,7 +34,7 @@ def make_parser() -> argparse.ArgumentParser:
         help="provider-free local development only; results are never measurement-admissible",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
-    for name in ("doctor", "status"):
+    for name in ("doctor", "status", "qualify-provider"):
         child = subparsers.add_parser(name)
         child.add_argument("--task-id", required=True, type=normalized_task_id)
     run = subparsers.add_parser("run")
@@ -83,6 +83,18 @@ def main() -> int:
         result = controller.doctor_when_idle(args.task_id)
     elif args.command == "status":
         result = controller.status(args.task_id)
+    elif args.command == "qualify-provider":
+        if (
+            args.development_no_hardware_enforcement
+            or not deployment.strict_hardware
+            or os.environ.get("HIGHAMBENCH_TITAN_ENVELOPE") != "1"
+            or not bound_path
+            or not bound_sha256
+        ):
+            raise BenchmarkError(
+                "provider qualification requires the digest-bound strict Titan launcher"
+            )
+        result = controller.qualify_provider_when_idle(args.task_id)
     else:
         if args.development_no_hardware_enforcement and not args.dry_run:
             raise BenchmarkError(

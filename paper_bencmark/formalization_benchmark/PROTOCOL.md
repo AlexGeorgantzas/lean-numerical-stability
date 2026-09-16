@@ -8,6 +8,10 @@ of a paper result. It does not measure proof construction.
 
 ## Frozen pilot
 
+- Release identity: `formalization-benchmark-t2-pilot-2`, one exact Git commit,
+  manifest-file SHA-256, and manifest-payload SHA-256. The sealed pilot-1 P01
+  incident is predecessor provenance, not a scored observation. All five tasks
+  restart under pilot-2; no cross-pilot pooling or replacement within pilot-1.
 - Tasks: P01-T2, P02-T2, P03-T2, P13-T2, and P14-T2.
 - Replication count: one N/L pair per task.
 - Formalizer model and reasoning effort are frozen in `config.json`.
@@ -26,8 +30,9 @@ of a paper result. It does not measure proof construction.
   snapshot verifies that syscall denial. Setup freezes the Titan host identity,
   CPU model, and exact eight-CPU set; the controller verifies that identity at
   admission and at both ends of every attempt.
-- Pair concurrency: one measured N/L pair at a time on Titan, enforced by a
-  deployment-wide nonblocking lock so pilot runs cannot contend with each other.
+- Pair concurrency: one measured N/L pair at a time on Titan, enforced by an
+  account-global nonblocking lock and the predecessor launcher's existing lock.
+  An account-global registry reserves each `(pilot_id, task_id)` exactly once.
 - Library provisioning: setup runs `lake clean`, rehydrates the frozen
   dependency cache off-clock, proves that the root project build tree is still
   empty, and fully builds the frozen NumStability target once inside the same
@@ -38,6 +43,16 @@ of a paper result. It does not measure proof construction.
 The existing 51 accepted HighamBench tasks establish only that the selected
 paper results can be formalized faithfully. They do not pre-approve any
 candidate generated in this pilot.
+
+Before a new official pair is created, the provider is qualified outside the
+contestant clock and task slot using the exact frozen role/model/effort and
+single-agent capability contract. The effective app-server configuration must
+report `agents.enabled=false`, `multi_agent=false`, and
+`multi_agent_v2=false` globally and for each thread. Collaboration tool events
+or foreign-thread notifications are infrastructure incompatibilities, never
+contestant rule violations. Provider-free doctor and dry-run remain free of
+model inference; the canary's separate usage is never included in contestant
+metrics. The deprecated `multiAgentMode` response is not capability evidence.
 
 ## Conditions
 
@@ -82,6 +97,7 @@ validation failure. The proposition is not compared to an old Lean target.
 
 ```text
 admitted
+  -> single-agent configuration and feature attestation (off-clock)
   -> model-active interval through terminal cleanup/quiescence
   -> telemetry settle and artifact bookkeeping (off-clock)
   -> candidate copy/hash (separately timed and charged)
@@ -94,7 +110,8 @@ admitted
 
 A complete immutable submission consumes one of the four submission slots even
 when compilation fails. Audit infrastructure failures do not consume an
-additional slot and are retried off-clock. The condition terminates on faithful
+additional slot and are retried off-clock, except a provider capability
+incompatibility, which blocks the release. The condition terminates on faithful
 acceptance, the fourth rejected submission, the 18,000-second cumulative active
 limit, or a fail-closed infrastructure outcome.
 

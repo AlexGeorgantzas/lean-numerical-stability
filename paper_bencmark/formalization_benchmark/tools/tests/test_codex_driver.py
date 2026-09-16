@@ -16,6 +16,7 @@ if str(TOOLS) not in sys.path:
 
 from codex_driver import (  # noqa: E402
     CodexDriver,
+    ProviderCapabilityError,
     _normalize_raw_usage,
     _normalize_usage_breakdown,
 )
@@ -55,9 +56,73 @@ assert initialize["method"] == "initialize"
 send({"id": initialize["id"], "result": {"serverInfo": {"name": "fake"}}})
 initialized = receive()
 assert initialized is not None and initialized["method"] == "initialized"
+assert "agents.enabled=false" in sys.argv
+assert "multi_agent" in sys.argv and "multi_agent_v2" in sys.argv
+config_read_count = 0
+global_feature_count = 0
+thread_feature_count = 0
+
+def capability_response(request):
+    global config_read_count, global_feature_count, thread_feature_count
+    method = request["method"]
+    if method == "config/read":
+        config_read_count += 1
+        assert request["params"]["includeLayers"] is True
+        enabled = (workspace / "capability-config-drift").exists()
+        origin_type = (
+            "user" if (workspace / "capability-origin-drift").exists()
+            else "sessionFlags"
+        )
+        flags = {
+            "agents": {"enabled": enabled},
+            "features": {"multi_agent": False, "multi_agent_v2": False},
+        }
+        send({"id": request["id"], "result": {
+            "config": flags,
+            "origins": {
+                key: {"name": {"type": origin_type}, "version": "1"}
+                for key in (
+                    "agents.enabled", "features.multi_agent", "features.multi_agent_v2"
+                )
+            },
+            "layers": [{
+                "name": {"type": "sessionFlags"}, "version": "1", "config": flags,
+            }],
+        }})
+        return True
+    if method == "experimentalFeature/list":
+        scoped = request["params"].get("threadId")
+        if scoped is None:
+            global_feature_count += 1
+        else:
+            assert scoped == "thread-test"
+            thread_feature_count += 1
+        enabled = (
+            (workspace / "capability-feature-enabled").exists()
+            or (scoped is not None and (workspace / "capability-thread-feature-enabled").exists())
+        )
+        entries = [
+            {"name": name, "stage": "stable", "enabled": enabled and name == "multi_agent",
+             "defaultEnabled": name == "multi_agent"}
+            for name in ("multi_agent", "multi_agent_v2")
+        ]
+        if (workspace / "capability-feature-missing").exists():
+            entries.pop()
+        if (workspace / "capability-feature-duplicate").exists():
+            entries.append(dict(entries[0]))
+        send({"id": request["id"], "result": {"data": entries, "nextCursor": None}})
+        return True
+    return False
+
 thread_request = receive()
+while thread_request is not None and capability_response(thread_request):
+    thread_request = receive()
 assert thread_request is not None
 assert thread_request["method"] == "thread/start"
+assert thread_request["params"]["config"] == {
+    "agents": {"enabled": False},
+    "features": {"multi_agent": False, "multi_agent_v2": False},
+}
 assert (state / "auth.json").is_file()
 thread_id = "thread-test"
 ephemeral = bool(thread_request["params"].get("ephemeral", False))
@@ -88,6 +153,8 @@ while True:
             send({"method": "rawResponse/completed", "params": {"late": True}})
         print("stderr emitted at app-server shutdown", file=sys.stderr, flush=True)
         raise SystemExit(exit_code_on_eof)
+    if capability_response(turn_request):
+        continue
     if turn_request["method"] == "thread/backgroundTerminals/clean":
         send({"id": turn_request["id"], "result": {}})
         list_request = receive()
@@ -148,6 +215,10 @@ while True:
             "experimental_raw_events": thread_request["params"].get("experimentalRawEvents"),
             "history_mode": thread_request["params"].get("historyMode"),
             "turn_sandbox_policy": turn_request["params"].get("sandboxPolicy"),
+            "thread_start_config": thread_request["params"].get("config"),
+            "config_read_count": config_read_count,
+            "global_feature_count": global_feature_count,
+            "thread_feature_count": thread_feature_count,
         }) + "\n")
     if not auth_present:
         raise SystemExit(9)
@@ -161,6 +232,26 @@ while True:
         "params": {"threadId": thread_id, "turn": {"id": turn_id}},
     })
     send({"id": turn_request["id"], "result": {"turn": {"id": turn_id}}})
+    if prompt_text == "collab-started":
+        send({"method": "item/started", "params": {
+            "threadId": thread_id, "turnId": turn_id,
+            "item": {"id": "subagent", "type": "collabAgentToolCall", "tool": "spawnAgent"},
+        }})
+    if prompt_text == "collab-raw":
+        send({"method": "rawResponseItem/completed", "params": {
+            "threadId": thread_id, "turnId": turn_id,
+            "item": {"type": "function_call", "namespace": "functions.collaboration",
+                     "name": "spawn_agent"},
+        }})
+    if prompt_text == "foreign-thread":
+        send({"method": "item/started", "params": {
+            "threadId": "another-thread", "turnId": turn_id,
+            "item": {"type": "agentMessage", "text": "foreign"},
+        }})
+    if prompt_text == "foreign-thread-started":
+        send({"method": "thread/started", "params": {
+            "thread": {"id": "child-thread", "ephemeral": False},
+        }})
     send({
         "method": "item/completed",
         "params": {
@@ -300,6 +391,9 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertTrue(first.usage_complete)
         self.assertTrue((self.root / "state" / "auth.json").is_file())
         self.assertEqual(first.command[1:3], ["app-server", "--stdio"])
+        self.assertIn("agents.enabled=false", first.command)
+        self.assertIn("multi_agent", first.command)
+        self.assertIn("multi_agent_v2", first.command)
 
         second = driver.run_turn(
             prompt="repair",
@@ -331,6 +425,9 @@ class CodexDriverProtocolTests(unittest.TestCase):
         ]
         self.assertEqual([item["thread_method"] for item in observations], ["thread/start", "thread/start"])
         self.assertEqual([item["turn_number"] for item in observations], [1, 2])
+        self.assertEqual([item["config_read_count"] for item in observations], [1, 2])
+        self.assertEqual([item["global_feature_count"] for item in observations], [1, 2])
+        self.assertEqual([item["thread_feature_count"] for item in observations], [1, 2])
         self.assertEqual(len({item["server_pid"] for item in observations}), 1)
         self.assertTrue(all(item["auth_present_at_turn_start"] for item in observations))
         self.assertTrue(all(item["experimental_raw_events"] for item in observations))
@@ -347,6 +444,11 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertTrue(turn_record["private_auth_retained_for_refresh"])
         self.assertEqual(turn_record["transport"], "codex-app-server-stdio")
         self.assertEqual(turn_record["raw_response_count"], 1)
+        self.assertTrue(turn_record["capability_attestation"]["passed"])
+        self.assertEqual(
+            turn_record["capability_attestation"]["thread_start_config"],
+            observations[0]["thread_start_config"],
+        )
         self.assertGreaterEqual(turn_record["event_trace_redactions"], 2)
         events_text = (self.root / "artifacts-1" / "events.jsonl").read_text(
             encoding="utf-8"
@@ -363,6 +465,8 @@ class CodexDriverProtocolTests(unittest.TestCase):
             (self.root / "artifacts-2" / "turn.json").read_text(encoding="utf-8")
         )
         self.assertTrue(second_record["app_server_process_reused"])
+        self.assertTrue(second_record["capability_attestation"]["passed"])
+        self.assertTrue(second_record["capability_attestation"]["reused_thread"])
         self.assertTrue(second_record["background_terminal_cleanup"]["verified_empty"])
         self.assertTrue(
             second_record["post_terminal_telemetry_settle"][
@@ -525,8 +629,84 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertFalse(record["turn_start_sent"])
         self.assertTrue(record["temporary_auth_removed_after_thread_start"])
         self.assertEqual(record["thread_id"], "thread-test")
+        self.assertTrue(record["capability_attestation"]["passed"])
+        self.assertEqual(
+            set(record["capability_attestation"]["thread_features"]["features"]),
+            {"multi_agent", "multi_agent_v2"},
+        )
         self.assertFalse((self.root / "state" / "auth.json").exists())
         self.assertFalse((self.workspace / "observations.jsonl").exists())
+
+    def test_preflight_rejects_unattested_capabilities_before_provider_turn(self) -> None:
+        for index, marker in enumerate((
+            "capability-config-drift",
+            "capability-origin-drift",
+            "capability-feature-enabled",
+            "capability-feature-missing",
+            "capability-feature-duplicate",
+            "capability-thread-feature-enabled",
+        )):
+            with self.subTest(marker=marker):
+                flag = self.workspace / marker
+                flag.touch()
+                artifact_dir = self.root / f"rejected-preflight-{index}"
+                driver = self.driver(state_root=self.root / f"rejected-state-{index}")
+                with self.assertRaisesRegex(ProviderCapabilityError, "preflight failed"):
+                    driver.preflight(
+                        workspace=self.workspace,
+                        artifact_dir=artifact_dir,
+                        timeout_seconds=5,
+                    )
+                record = json.loads((artifact_dir / "preflight.json").read_text())
+                self.assertEqual(record["failure_kind"], "provider_capability_violation")
+                self.assertFalse(record["turn_start_sent"])
+                self.assertFalse((self.workspace / "observations.jsonl").exists())
+                flag.unlink()
+                driver.close()
+
+    def test_repair_rechecks_capabilities_and_stops_before_turn_start(self) -> None:
+        driver = self.driver()
+        first = driver.run_turn(
+            prompt="first", workspace=self.workspace,
+            artifact_dir=self.root / "capability-first", timeout_seconds=5,
+        )
+        self.assertEqual(first.exit_code, 0)
+        (self.workspace / "capability-thread-feature-enabled").touch()
+        second = driver.run_turn(
+            prompt="repair", workspace=self.workspace,
+            artifact_dir=self.root / "capability-repair", timeout_seconds=5,
+            thread_id=first.thread_id,
+        )
+        self.assertEqual(second.failure_kind, "provider_capability_violation")
+        self.assertEqual(second.exit_code, 70)
+        self.assertIsNone(second.active_started_perf_ns)
+        self.assertEqual(
+            len((self.workspace / "observations.jsonl").read_text().splitlines()), 1
+        )
+        record = json.loads((self.root / "capability-repair" / "turn.json").read_text())
+        self.assertFalse(record["capability_attestation"].get("passed", False))
+        driver.close()
+
+    def test_collaboration_and_foreign_threads_are_provider_capability_failures(self) -> None:
+        for index, prompt in enumerate((
+            "collab-started", "collab-raw", "foreign-thread", "foreign-thread-started"
+        )):
+            with self.subTest(prompt=prompt):
+                driver = self.driver(state_root=self.root / f"violation-state-{index}")
+                artifacts = self.root / f"violation-{index}"
+                result = driver.run_turn(
+                    prompt=prompt, workspace=self.workspace,
+                    artifact_dir=artifacts, timeout_seconds=5,
+                )
+                self.assertEqual(result.failure_kind, "provider_capability_violation")
+                self.assertEqual(result.exit_code, 70)
+                record = json.loads((artifacts / "turn.json").read_text())
+                self.assertTrue(record["capability_attestation"]["passed"])
+                self.assertIn(
+                    "thread" if "foreign" in prompt else "collaboration",
+                    record["protocol_error"].lower(),
+                )
+                driver.close()
 
     def test_bwrap_shape_forces_controlled_passwd_and_clears_environment(self) -> None:
         toolchain = self.root / "toolchain"

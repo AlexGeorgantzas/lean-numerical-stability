@@ -15,9 +15,12 @@ from unittest import mock
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from common import BenchmarkError  # noqa: E402
+from common import BenchmarkError, sha256_file  # noqa: E402
 from setup_titan import (  # noqa: E402
     INSTALL_TRANSACTION,
+    PREDECESSOR_INCIDENT_RUN_ID,
+    PREDECESSOR_MANIFEST_PAYLOAD_SHA256,
+    PREDECESSOR_RELEASE_COMMIT,
     _load_transaction,
     _remove_skill_transaction_tree,
     _transaction_record,
@@ -27,6 +30,9 @@ from setup_titan import (  # noqa: E402
     isolated_runner_command,
     measured_build_command,
     measured_build_service_environment,
+    make_parser,
+    predecessor_lineage,
+    verify_predecessor_lineage,
     remove_owned_deployment_root,
     run_command_sandbox_canary,
     write_launcher,
@@ -34,6 +40,117 @@ from setup_titan import (  # noqa: E402
 
 
 class SkillInstallTests(unittest.TestCase):
+    def test_pilot2_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+        parser = make_parser()
+        with self.assertRaises(SystemExit):
+            parser.parse_args(["--pdf-source-dir", "/tmp"])
+        parsed = parser.parse_args(
+            ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
+        )
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-2-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-2-r1"))
+
+    def test_predecessor_incident_is_read_only_and_hash_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = (Path(temporary) / "deployment").resolve()
+            manifest = (
+                root / "release" / "paper_bencmark" / "formalization_benchmark" / "manifest.json"
+            )
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                json.dumps(
+                    {
+                        "pilot_id": "formalization-benchmark-t2-pilot-1",
+                        "manifest_payload_sha256": PREDECESSOR_MANIFEST_PAYLOAD_SHA256,
+                    }
+                ),
+                encoding="utf-8",
+            )
+            run_root = root / "runs"
+            pair_root = run_root / "pairs" / PREDECESSOR_INCIDENT_RUN_ID
+            pair_root.mkdir(parents=True)
+            report = pair_root / "pair_report.json"
+            state_path = pair_root / "pair_state.json"
+            report.write_text(
+                json.dumps(
+                    {
+                        "pilot_id": "formalization-benchmark-t2-pilot-1",
+                        "task_id": "P01-T2",
+                        "status": "PAIR_INCIDENT",
+                        "run_id": PREDECESSOR_INCIDENT_RUN_ID,
+                        "manifest_sha256": sha256_file(manifest),
+                        "pair_root": str(pair_root),
+                        "pair_state_path": str(state_path),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            state_path.write_text(
+                json.dumps(
+                    {
+                        "status": "PAIR_INCIDENT",
+                        "run_id": PREDECESSOR_INCIDENT_RUN_ID,
+                        "pair_root": str(pair_root),
+                        "pair_state_path": str(state_path),
+                        "pair_report_sha256": sha256_file(report),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            index = run_root / "index" / "P01-T2.json"
+            index.parent.mkdir()
+            index.write_text(
+                json.dumps(
+                    {
+                        "task_id": "P01-T2",
+                        "run_id": PREDECESSOR_INCIDENT_RUN_ID,
+                        "pair_root": str(pair_root),
+                        "pair_state_path": str(state_path),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            deployment = root / "deployment.json"
+            deployment.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "formalization-deployment-1",
+                        "release_commit": PREDECESSOR_RELEASE_COMMIT,
+                        "release_manifest_sha256": sha256_file(manifest),
+                        "run_root": str(run_root),
+                    }
+                ),
+                encoding="utf-8",
+            )
+            before = {
+                path: sha256_file(path)
+                for path in (deployment, manifest, index, report, state_path)
+            }
+            with mock.patch.multiple(
+                "setup_titan",
+                PREDECESSOR_INCIDENT_REPORT_SHA256=before[report],
+                PREDECESSOR_DEPLOYMENT_SHA256=before[deployment],
+                PREDECESSOR_MANIFEST_FILE_SHA256=before[manifest],
+                PREDECESSOR_INDEX_SHA256=before[index],
+                PREDECESSOR_STATE_SHA256=before[state_path],
+            ):
+                lineage = predecessor_lineage(str(root))
+                self.assertEqual(lineage["predecessor_run_root"], str(run_root.resolve()))
+                self.assertEqual(lineage["predecessor_pair_report_sha256"], before[report])
+                self.assertEqual(before, {path: sha256_file(path) for path in before})
+                verify_predecessor_lineage(str(root), lineage)
+
+                altered = json.loads(report.read_text(encoding="utf-8"))
+                altered["status"] = "COMPLETE"
+                report.write_text(json.dumps(altered), encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "hash chain changed"):
+                    predecessor_lineage(str(root))
+                altered["status"] = "PAIR_INCIDENT"
+                altered["incident"] = {"tampered": True}
+                report.write_text(json.dumps(altered), encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "hash chain changed"):
+                    verify_predecessor_lineage(str(root), lineage)
+
     @staticmethod
     def _write_read_only_skill(root: Path, contents: str) -> None:
         references = root / "references"

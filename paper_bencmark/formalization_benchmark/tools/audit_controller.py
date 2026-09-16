@@ -8,7 +8,7 @@ import time
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
-from codex_driver import CodexDriver, TurnResult
+from codex_driver import CodexDriver, ProviderCapabilityError, TurnResult
 from common import (
     BenchmarkError,
     load_json,
@@ -278,6 +278,7 @@ class AuditController:
             result: TurnResult | None = None
             value: dict[str, Any] | None = None
             retry_error: str | None = None
+            capability_exception = False
             retry_started = time.perf_counter_ns()
             try:
                 result = driver.run_turn(
@@ -291,6 +292,9 @@ class AuditController:
                 )
                 value = _parse_agent_json(result, artifacts)
                 validate(value)
+            except ProviderCapabilityError as error:
+                retry_error = str(error)
+                capability_exception = True
             except BenchmarkError as error:
                 retry_error = str(error)
             finally:
@@ -314,6 +318,7 @@ class AuditController:
                     "usage": result.usage if result is not None else None,
                     "usage_complete": bool(result is not None and result.usage_complete),
                     "thread_id": result.thread_id if result is not None else None,
+                    "failure_kind": result.failure_kind if result is not None else None,
                     "error": retry_error,
                 }
             )
@@ -324,6 +329,13 @@ class AuditController:
                 return value, telemetry
             errors.append(retry_error or "auditor retry failed without a diagnostic")
             write_json_atomic(role_root / "telemetry.json", aggregate(), mode=0o400)
+            if capability_exception or (
+                result is not None and result.failure_kind == "provider_capability_violation"
+            ):
+                raise ProviderCapabilityError(
+                    f"fresh {role} encountered a release-blocking provider "
+                    "capability incompatibility; no infrastructure retry permitted"
+                )
         raise BenchmarkError(f"fresh {role} failed after retries: {' | '.join(errors)}")
 
     def seal_incident(
@@ -335,6 +347,7 @@ class AuditController:
         semantic_sha256: str,
         error: str,
         wall_seconds: float,
+        classification: str = "audit_system_infrastructure",
     ) -> dict[str, Any]:
         """Bind every completed role retry to a terminal audit-system incident."""
 
@@ -385,6 +398,7 @@ class AuditController:
             "paper_sha256": paper_sha256,
             "candidate_semantic_sha256": semantic_sha256,
             "status": "AUDIT_SYSTEM_INCIDENT",
+            "classification": classification,
             "completed_at_utc": utc_now(),
             "error": error,
             "audit_wall_seconds": wall_seconds,

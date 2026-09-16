@@ -2,8 +2,10 @@ from __future__ import annotations
 
 from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
+import json
 from pathlib import Path
 import sys
+import tempfile
 import unittest
 from unittest import mock
 
@@ -13,9 +15,32 @@ if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
 import freeze_manifest  # noqa: E402
+import manifest_control  # noqa: E402
+from common import BenchmarkError  # noqa: E402
 
 
 class FreezeManifestCliTests(unittest.TestCase):
+    def test_manifest_rejects_different_config_pilot_even_with_valid_self_hash(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            config = root / "config.json"
+            config.write_text(json.dumps({"pilot_id": "pilot-2"}), encoding="utf-8")
+            manifest = {
+                "schema_version": "formalization-benchmark-manifest-1",
+                "base_commit": manifest_control.EXPECTED_BASE_COMMIT,
+                "pilot_id": "pilot-1",
+                "config": {"relative_path": "config.json", "sha256": "0" * 64},
+            }
+            manifest["manifest_payload_sha256"] = manifest_control.manifest_payload_sha256(manifest)
+            manifest_path = root / "manifest.json"
+            manifest_path.write_text(json.dumps(manifest), encoding="utf-8")
+            with (
+                mock.patch.object(manifest_control, "MANIFEST_PATH", manifest_path),
+                mock.patch.object(manifest_control, "verify_file_ref", return_value=config),
+                self.assertRaisesRegex(BenchmarkError, "pilot identities disagree"),
+            ):
+                manifest_control.verify_manifest()
+
     def test_help_is_side_effect_free(self) -> None:
         with (
             mock.patch.object(freeze_manifest, "build") as build,

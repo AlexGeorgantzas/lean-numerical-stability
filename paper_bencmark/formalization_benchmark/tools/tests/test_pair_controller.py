@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from dataclasses import replace
 from pathlib import Path
 import stat
 import sys
@@ -28,6 +29,7 @@ from common import (  # noqa: E402
 from deployment import Deployment  # noqa: E402
 from manifest_control import verify_manifest  # noqa: E402
 from pair_controller import PairController  # noqa: E402
+from pair_controller import _campaign_lock  # noqa: E402
 
 
 class PairControllerDryRunTests(unittest.TestCase):
@@ -299,6 +301,20 @@ class PairControllerDryRunTests(unittest.TestCase):
             return self.paper, packet_path, packet
 
         controller._paper_and_packet = types.MethodType(fixture_inputs, controller)
+
+        def fake_provider_qualification(_self: PairController):
+            record = self.root / "synthetic-provider-qualification.json"
+            if not record.exists():
+                record.write_text('{"status":"PASSED","charged_to_contestant":false}\n')
+            return {
+                "status": "PASSED",
+                "record_path": str(record),
+                "record_sha256": sha256_file(record),
+            }
+
+        controller._qualify_provider = types.MethodType(
+            fake_provider_qualification, controller
+        )
         return controller
 
     @staticmethod
@@ -413,6 +429,89 @@ class PairControllerDryRunTests(unittest.TestCase):
         self.assertEqual(
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
+
+    def test_global_campaign_lock_serializes_releases_and_predecessor(self) -> None:
+        registry = self.root / "account-registry"
+        predecessor = self.root / "pilot-1-runs"
+        with _campaign_lock(self.deployment.run_root, registry, predecessor):
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(self.root / "another-release", registry):
+                    pass
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(self.root / "another-release", None, predecessor):
+                    pass
+
+    def test_account_global_reservation_prevents_a_second_local_pair(self) -> None:
+        controller = self.controller()
+        registry = self.root / "account-registry"
+        controller.deployment = replace(
+            controller.deployment, global_registry_root=registry
+        )
+        index = controller._registry_index_path("P01-T2")
+        self.assertIsNotNone(index)
+        index.parent.mkdir(parents=True)
+        index.write_text('{"pilot_id":"reserved"}\n', encoding="utf-8")
+        with self.assertRaisesRegex(BenchmarkError, "already reserved"):
+            controller.status("P01-T2")
+
+    def test_failed_provider_qualification_consumes_no_official_pair_slot(self) -> None:
+        controller = self.controller()
+        controller.strict_hardware = True
+        controller.doctor = types.MethodType(
+            lambda _self, task_id: {"task_id": task_id, "condition_order": ["N", "L"]},
+            controller,
+        )
+
+        def incompatible_provider(_self):
+            raise BenchmarkError("provider capability incompatibility")
+
+        controller._qualify_provider = types.MethodType(
+            incompatible_provider, controller
+        )
+        with self.assertRaisesRegex(BenchmarkError, "provider capability"):
+            controller.run("P01-T2")
+        self.assertFalse((self.deployment.run_root / "pairs").exists())
+        self.assertFalse((self.deployment.run_root / "index").exists())
+
+    def test_torn_global_reservation_recovers_the_same_pair(self) -> None:
+        controller = self.controller()
+        controller.deployment = replace(
+            controller.deployment, global_registry_root=self.root / "account-registry"
+        )
+        controller.strict_hardware = True
+        controller.doctor = types.MethodType(
+            lambda _self, task_id: {"task_id": task_id, "condition_order": ["N", "L"]},
+            controller,
+        )
+        controller._verify_qualification_binding = types.MethodType(
+            lambda _self, admission: None, controller
+        )
+
+        def interrupted_after_index(_self, **kwargs):
+            raise KeyboardInterrupt("synthetic crash after global reservation")
+
+        controller._continue_pair = types.MethodType(
+            interrupted_after_index, controller
+        )
+        with self.assertRaises(KeyboardInterrupt):
+            controller.run("P01-T2")
+        index_path = controller._index_path("P01-T2")
+        registry_path = controller._registry_index_path("P01-T2")
+        self.assertIsNotNone(registry_path)
+        expected = json.loads(registry_path.read_text(encoding="utf-8"))
+        index_path.unlink()  # Simulate a crash between the two index writes.
+        with self.assertRaisesRegex(BenchmarkError, "already reserved"):
+            controller.status("P01-T2")
+
+        def recovered_pair(_self, **kwargs):
+            return kwargs["pair_state"]
+
+        controller._continue_pair = types.MethodType(recovered_pair, controller)
+        resumed = controller.run("P01-T2")
+        self.assertEqual(resumed["run_id"], expected["run_id"])
+        self.assertEqual(json.loads(index_path.read_text(encoding="utf-8")), expected)
+        self.assertEqual(json.loads(registry_path.read_text(encoding="utf-8")), expected)
+        self.assertEqual(len(list((self.deployment.run_root / "pairs").iterdir())), 1)
 
     def test_doctor_rejects_mutated_library_build_output(self) -> None:
         output = self.deployment.library_snapshot_record.parent / "build" / "build-output.log"
@@ -1032,6 +1131,63 @@ class PairControllerDryRunTests(unittest.TestCase):
         controller._verify_condition_active_time_contract(state)
         summary = controller._summarize_condition(pair_root, "N", state)
         controller._verify_condition_summary(pair_root, "N", summary)
+
+    def test_provider_capability_failure_precedes_secondary_rule_markers(self) -> None:
+        controller = self.controller()
+        pair_root = self.root / "provider-capability-incident-pair"
+        (pair_root / "conditions" / "N").mkdir(parents=True)
+        packet = json.loads((ROOT / "packets" / "P01-T2.json").read_text())
+        driver = self.successful_driver(0.25, [])
+        original_run = driver.run_turn
+
+        def incompatible_turn(**kwargs):
+            result = original_run(**kwargs)
+            (kwargs["artifact_dir"] / "network_violations.bin").write_bytes(
+                b"secondary blocked network attempt"
+            )
+            result.failure_kind = "provider_capability_violation"
+            result.exit_code = 1
+            result.usage_complete = False
+            return result
+
+        def unsafe_control_surface(fake_self, workspace, **kwargs):
+            raise BenchmarkError("secondary protected-path mutation")
+
+        driver.run_turn = incompatible_turn
+        driver.assert_safe_control_surfaces = types.MethodType(
+            unsafe_control_surface, driver
+        )
+        with mock.patch(
+            "pair_controller.snapshot_hardware", return_value={"synthetic": True}
+        ), mock.patch(
+            "pair_controller.freeze_candidate",
+            side_effect=AssertionError("capability incident must not freeze"),
+        ), mock.patch(
+            "pair_controller.validate_candidate",
+            side_effect=AssertionError("capability incident must not validate"),
+        ):
+            state = controller._run_condition_impl(
+                pair_root=pair_root,
+                task_id="P01-T2",
+                condition="N",
+                paper_path=self.paper,
+                packet=packet,
+                driver=driver,
+            )
+        self.assertEqual(state["status"], "INFRASTRUCTURE_FAILURE")
+        self.assertEqual(len(state["attempts"]), 1)
+        attempt = state["attempts"][0]
+        self.assertEqual(attempt["status"], "INFRASTRUCTURE_FAILURE")
+        self.assertEqual(
+            attempt["incident_classification"],
+            "provider_capability_incompatibility",
+        )
+        self.assertEqual(
+            attempt["control_surface_violation"],
+            "secondary protected-path mutation",
+        )
+        self.assertIsNone(attempt["candidate"])
+        self.assertFalse(attempt["usage_complete"])
 
     def test_active_timeout_takes_precedence_over_invalid_final_telemetry(self) -> None:
         controller = self.controller()

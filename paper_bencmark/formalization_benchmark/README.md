@@ -1,8 +1,14 @@
 # HighamBench source-first formalization pilot
 
-This directory is the control plane for the source-first HighamBench pilot. It
+This directory is the control plane for the source-first HighamBench pilot-2. It
 does not use the legacy fixed-target proof runner in
 `paper_bencmark/highambench/tools/runner.py`.
+
+Pilot-1 is preserved as an aborted, unscored predecessor: its P01-T2 run was
+sealed after a provider multi-agent capability incident, before a candidate
+or audit and before L began. Pilot-2 starts all five tasks anew under one
+release identity. Do not pool a pilot-1 result with pilot-2 data or use the
+pilot-1 launcher for a replacement run.
 
 The pilot accepts exactly these tasks:
 
@@ -40,14 +46,25 @@ On Titan, use the installed launcher so every command enters the fixed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization doctor --task-id P01-T2
-~/.local/bin/run-highambench-formalization run --task-id P01-T2
-~/.local/bin/run-highambench-formalization status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-2-r1 doctor --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-2-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-2-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-2-r1 status --task-id P01-T2
 ```
 
 Use `--dry-run` with `run` to exercise admission, staging, condition isolation,
 and hashing without making provider calls or consuming the task's one official
 pair slot.
+
+The exact app-server configuration disables agent delegation through
+`agents.enabled=false` and both multi-agent feature flags. The controller
+attests the effective configuration and features before model inference and
+fails closed on any collaboration or foreign-thread event. A paid but
+off-benchmark provider canary qualifies this capability before a fresh
+official pair is indexed; its time and tokens never enter contestant totals.
+Provider-free `doctor` and `--dry-run` do not make this inference call.
+`qualify-provider` runs the two-role paid check without consuming an official
+task slot; a later `run` verifies and reuses its sealed record.
 
 Every real run enters a transient user service with systemd-enforced affinity
 to the setup-frozen eight logical CPUs and cgroup limits of 32 GiB RAM, 512

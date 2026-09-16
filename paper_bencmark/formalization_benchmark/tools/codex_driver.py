@@ -17,7 +17,7 @@ import threading
 import time
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping, TextIO
+from typing import Any, Callable, Mapping, TextIO
 
 from common import (
     BenchmarkError,
@@ -51,6 +51,11 @@ MAX_STDERR_ARCHIVE_BYTES = 8 * 1024 * 1024
 COMMAND_CGROUP_VARIABLE = "HIGHAMBENCH_COMMAND_CGROUP_PROCS"
 APP_SERVER_CLIENT_NAME = "highambench-formalization"
 APP_SERVER_CLIENT_VERSION = "1"
+SINGLE_AGENT_FEATURES = ("multi_agent", "multi_agent_v2")
+COLLABORATION_TOOL_NAMES = {
+    "spawnagent", "sendinput", "resumeagent", "waitagent", "closeagent",
+            "sendmessage", "followuptask", "interruptagent", "listagents",
+}
 CONTROL_PROTECTED_TOP_LEVEL = {
     ".mcp.json",
     "agents.md",
@@ -62,6 +67,42 @@ CONTROL_PROTECTED_TOP_LEVEL = {
     "rules",
     "skills",
 }
+
+
+class ProviderCapabilityError(BenchmarkError):
+    """The provider-visible single-agent boundary could not be established."""
+
+
+ProviderCapabilityViolation = ProviderCapabilityError
+
+
+def _normalized_identifier(value: Any) -> str:
+    return (
+        "".join(character for character in value.casefold() if character.isalnum())
+        if isinstance(value, str)
+        else ""
+    )
+
+
+def _reject_collaboration_item(item: Any) -> None:
+    if not isinstance(item, Mapping):
+        return
+    kind = _normalized_identifier(item.get("type"))
+    if "collabagent" in kind or "subagent" in kind:
+        raise ProviderCapabilityViolation("Codex emitted a collaboration item")
+    if kind in ("functioncall", "customtoolcall"):
+        namespace = _normalized_identifier(item.get("namespace"))
+        name = item.get("name")
+        if isinstance(name, str):
+            parts = name.replace("::", ".").replace("/", ".").split(".")
+            normalized_name = _normalized_identifier(parts[-1])
+        else:
+            normalized_name = ""
+        if (
+            normalized_name in COLLABORATION_TOOL_NAMES
+            or ("collaboration" in namespace or "multiagent" in namespace)
+        ):
+            raise ProviderCapabilityViolation("Codex emitted a collaboration tool call")
 
 
 def _linux_filesystem_type(path: Path) -> str | None:
@@ -762,11 +803,13 @@ class CodexDriver:
             "in_app_browser",
             "memories",
             "multi_agent",
+            "multi_agent_v2",
             "plugins",
             "remote_plugin",
             "skill_search",
             "standalone_web_search",
         ]
+        self.disable_features = list(dict.fromkeys([*self.disable_features, *SINGLE_AGENT_FEATURES]))
         self.bwrap_binary = bwrap_binary
         self.offline_shell = offline_shell
         self.toolchain_root = toolchain_root
@@ -1052,6 +1095,8 @@ class CodexDriver:
             "memories.use_memories=false",
             "--config",
             "memories.generate_memories=false",
+            "--config",
+            "agents.enabled=false",
         ]
         for feature in self.disable_features:
             command.extend(["--disable", feature])
@@ -1322,6 +1367,115 @@ class CodexDriver:
             raise BenchmarkError("Codex app-server returned no turn id")
         return candidate
 
+    @staticmethod
+    def _thread_config() -> dict[str, Any]:
+        return {
+            "agents": {"enabled": False},
+            "features": {"multi_agent": False, "multi_agent_v2": False},
+        }
+
+    @staticmethod
+    def _attest_config_read(result: Any) -> dict[str, Any]:
+        if not isinstance(result, Mapping):
+            raise ProviderCapabilityViolation("Codex config/read returned no configuration")
+        config = result.get("config")
+        origins = result.get("origins")
+        layers = result.get("layers")
+        if not isinstance(config, Mapping) or not isinstance(origins, Mapping) or not isinstance(layers, list):
+            raise ProviderCapabilityViolation("Codex config/read omitted layered configuration")
+        agents = config.get("agents")
+        features = config.get("features")
+        if (
+            not isinstance(agents, Mapping)
+            or agents.get("enabled") is not False
+            or not isinstance(features, Mapping)
+            or any(features.get(name) is not False for name in SINGLE_AGENT_FEATURES)
+        ):
+            raise ProviderCapabilityViolation("Codex single-agent configuration is not disabled")
+        expected_keys = ("agents.enabled", "features.multi_agent", "features.multi_agent_v2")
+        for key in expected_keys:
+            origin = origins.get(key)
+            # The v2 feature is represented as a nested .enabled origin by
+            # app-server 0.154, while its effective config is a plain bool.
+            if origin is None and key == "features.multi_agent_v2":
+                origin = origins.get(f"{key}.enabled")
+            name = origin.get("name") if isinstance(origin, Mapping) else None
+            if not isinstance(name, Mapping) or name.get("type") != "sessionFlags":
+                raise ProviderCapabilityViolation(
+                    f"Codex single-agent config origin is not session flags: {key}"
+                )
+        session_layers = [
+            layer.get("config") for layer in layers
+            if isinstance(layer, Mapping)
+            and isinstance(layer.get("name"), Mapping)
+            and layer["name"].get("type") == "sessionFlags"
+        ]
+        if len(session_layers) != 1 or not isinstance(session_layers[0], Mapping):
+            raise ProviderCapabilityViolation("Codex session-flags layer is ambiguous")
+        session_config = session_layers[0]
+        session_agents = session_config.get("agents")
+        session_features = session_config.get("features")
+        if (
+            not isinstance(session_agents, Mapping)
+            or session_agents.get("enabled") is not False
+            or not isinstance(session_features, Mapping)
+            or any(session_features.get(name) is not False for name in SINGLE_AGENT_FEATURES)
+        ):
+            raise ProviderCapabilityViolation("Codex session flags omitted the single-agent gates")
+        return {
+            "effective_config": CodexDriver._thread_config(),
+            "session_flag_origins": list(expected_keys),
+            "session_flags_layer": CodexDriver._thread_config(),
+        }
+
+    @staticmethod
+    def _attest_feature_list(
+        request: Callable[[str, dict[str, Any]], Any], *, thread_id: str | None
+    ) -> dict[str, Any]:
+        features: dict[str, dict[str, Any]] = {}
+        cursor: str | None = None
+        seen_cursors: set[str] = set()
+        for _ in range(16):
+            params: dict[str, Any] = {"limit": 1000}
+            if thread_id is not None:
+                params["threadId"] = thread_id
+            if cursor is not None:
+                params["cursor"] = cursor
+            result = request("experimentalFeature/list", params)
+            if not isinstance(result, Mapping) or not isinstance(result.get("data"), list):
+                raise ProviderCapabilityViolation("Codex feature list is malformed")
+            for entry in result["data"]:
+                if not isinstance(entry, Mapping):
+                    raise ProviderCapabilityViolation("Codex feature list contains a malformed item")
+                name = entry.get("name")
+                if name in SINGLE_AGENT_FEATURES:
+                    if (
+                        name in features
+                        or entry.get("enabled") is not False
+                        or not isinstance(entry.get("defaultEnabled"), bool)
+                        or not isinstance(entry.get("stage"), str)
+                    ):
+                        raise ProviderCapabilityViolation(
+                            f"Codex collaboration feature is enabled or duplicated: {name}"
+                        )
+                    features[name] = {
+                        "enabled": False,
+                        "default_enabled": entry.get("defaultEnabled"),
+                        "stage": entry.get("stage"),
+                    }
+            next_cursor = result.get("nextCursor")
+            if next_cursor is None:
+                break
+            if not isinstance(next_cursor, str) or not next_cursor or next_cursor in seen_cursors:
+                raise ProviderCapabilityViolation("Codex feature pagination is malformed")
+            seen_cursors.add(next_cursor)
+            cursor = next_cursor
+        else:
+            raise ProviderCapabilityViolation("Codex feature list exceeded the pagination limit")
+        if set(features) != set(SINGLE_AGENT_FEATURES):
+            raise ProviderCapabilityViolation("Codex collaboration feature attestations are missing")
+        return {"request_thread_id": thread_id, "features": features}
+
     def preflight(
         self,
         *,
@@ -1392,6 +1546,12 @@ class CodexDriver:
         auth_removed = False
         background_terminal_methods_canary = False
         failure: str | None = None
+        capability_attestation: dict[str, Any] = {
+            "schema_version": 1,
+            "thread_start_config": self._thread_config(),
+            "off_contestant_clock": True,
+        }
+        capability_violation = False
         stderr_capture = _BoundedStderrCapture()
 
         def next_message(reader: _ProtocolReader) -> dict[str, Any]:
@@ -1425,10 +1585,17 @@ class CodexDriver:
                 notification_method = message.get("method")
                 if not isinstance(notification_method, str):
                     raise BenchmarkError("Codex app-server emitted malformed preflight notification")
+                params = message.get("params")
+                if isinstance(params, Mapping):
+                    if "threadId" in params and observed_thread_id is not None and params["threadId"] != observed_thread_id:
+                        raise ProviderCapabilityViolation("Codex preflight emitted a foreign-thread notification")
+                    if notification_method.startswith("item/") or notification_method.startswith("rawResponseItem/"):
+                        _reject_collaboration_item(params.get("item"))
                 if notification_method == "model/rerouted":
                     raise BenchmarkError("Codex preflight rerouted the frozen model")
                 if notification_method.startswith("turn/") or notification_method in (
-                    "item/completed",
+                    "item/started", "item/updated", "item/completed",
+                    "rawResponse/completed", "rawResponseItem/completed",
                     "thread/tokenUsage/updated",
                 ):
                     raise BenchmarkError(
@@ -1441,8 +1608,25 @@ class CodexDriver:
                     if not isinstance(candidate, str) or not candidate:
                         raise BenchmarkError("Codex app-server emitted malformed thread/started")
                     if observed_thread_id is not None and observed_thread_id != candidate:
-                        raise BenchmarkError("Codex preflight emitted inconsistent thread ids")
+                        raise ProviderCapabilityViolation("Codex preflight emitted a foreign thread")
                     observed_thread_id = candidate
+
+        next_request_id = TURN_REQUEST_ID
+
+        def request_capability(reader: _ProtocolReader, method: str, params: dict[str, Any]) -> Any:
+            nonlocal next_request_id
+            request_id = next_request_id
+            next_request_id += 1
+            assert process is not None and process.stdin is not None
+            try:
+                self._write_rpc(
+                    process.stdin, {"id": request_id, "method": method, "params": params}
+                )
+                return await_result(reader, request_id, method)
+            except (BenchmarkError, TimeoutError, BrokenPipeError, OSError) as error:
+                raise ProviderCapabilityViolation(
+                    f"Codex capability attestation failed at {method}: {error}"
+                ) from error
 
         try:
             staged_auth = self._stage_auth()
@@ -1478,6 +1662,16 @@ class CodexDriver:
             if not isinstance(initialized, Mapping):
                 raise BenchmarkError("Codex app-server returned malformed initialize result")
             self._write_rpc(process.stdin, {"method": "initialized"})
+            cwd = "/workspace" if self.externally_sandboxed else str(workspace)
+            capability_attestation["process_config"] = self._attest_config_read(
+                request_capability(
+                    reader, "config/read", {"cwd": cwd, "includeLayers": True}
+                )
+            )
+            capability_attestation["global_features"] = self._attest_feature_list(
+                lambda method, params: request_capability(reader, method, params),
+                thread_id=None,
+            )
             self._write_rpc(
                 process.stdin,
                 {
@@ -1485,7 +1679,8 @@ class CodexDriver:
                     "method": "thread/start",
                     "params": {
                         "approvalPolicy": "never",
-                        "cwd": "/workspace" if self.externally_sandboxed else str(workspace),
+                        "config": self._thread_config(),
+                        "cwd": cwd,
                         "ephemeral": True,
                         "experimentalRawEvents": True,
                         "historyMode": "legacy",
@@ -1501,11 +1696,16 @@ class CodexDriver:
                 thread_result, expected=None, expected_ephemeral=True
             )
             if observed_thread_id is not None and observed_thread_id != resolved_thread_id:
-                raise BenchmarkError("Codex preflight thread notification/result mismatch")
+                raise ProviderCapabilityViolation("Codex preflight thread notification/result mismatch")
             observed_thread_id = resolved_thread_id
             returned_model = thread_record.get("model")
             if returned_model is not None and returned_model != self.model:
                 raise BenchmarkError("Codex preflight selected the wrong model")
+            capability_attestation["thread_features"] = self._attest_feature_list(
+                lambda method, params: request_capability(reader, method, params),
+                thread_id=observed_thread_id,
+            )
+            capability_attestation["passed"] = True
             self._sync_private_auth_to_storage()
             self._remove_auth(staged_auth)
             staged_auth = None
@@ -1514,14 +1714,14 @@ class CodexDriver:
             self._write_rpc(
                 process.stdin,
                 {
-                    "id": TURN_REQUEST_ID,
+                    "id": next_request_id,
                     "method": "thread/backgroundTerminals/clean",
                     "params": {"threadId": observed_thread_id},
                 },
             )
             cleanup_result = await_result(
                 reader,
-                TURN_REQUEST_ID,
+                next_request_id,
                 "thread/backgroundTerminals/clean",
             )
             if not isinstance(cleanup_result, Mapping):
@@ -1529,14 +1729,14 @@ class CodexDriver:
             self._write_rpc(
                 process.stdin,
                 {
-                    "id": TURN_REQUEST_ID + 1,
+                    "id": next_request_id + 1,
                     "method": "thread/backgroundTerminals/list",
                     "params": {"threadId": observed_thread_id, "limit": 100},
                 },
             )
             list_result = await_result(
                 reader,
-                TURN_REQUEST_ID + 1,
+                next_request_id + 1,
                 "thread/backgroundTerminals/list",
             )
             if (
@@ -1546,6 +1746,9 @@ class CodexDriver:
             ):
                 raise BenchmarkError("Codex preflight background terminals were not empty")
             background_terminal_methods_canary = True
+        except ProviderCapabilityViolation as error:
+            capability_violation = True
+            failure = str(error)
         except (BenchmarkError, BrokenPipeError, OSError, TimeoutError) as error:
             failure = str(error)
         finally:
@@ -1612,6 +1815,8 @@ class CodexDriver:
             "provider_call_permitted": False,
             "turn_start_sent": False,
             "background_terminal_methods_canary": background_terminal_methods_canary,
+            "capability_attestation": capability_attestation,
+            "failure_kind": "provider_capability_violation" if capability_violation else None,
             "command": command,
             "app_server_command": inner,
             "thread_id": observed_thread_id,
@@ -1637,7 +1842,10 @@ class CodexDriver:
             os.chmod(marker, 0o400)
         write_json_atomic(artifact_dir / "preflight.json", record, mode=0o400)
         if failure is not None or not auth_removed or observed_thread_id is None:
-            raise BenchmarkError(f"Codex app-server preflight failed: {failure or 'incomplete'}")
+            message = f"Codex app-server preflight failed: {failure or 'incomplete'}"
+            if capability_violation:
+                raise ProviderCapabilityViolation(message)
+            raise BenchmarkError(message)
         return record
 
     @staticmethod
@@ -1885,6 +2093,13 @@ class CodexDriver:
         artifact_limit_violation = False
         post_terminal_telemetry_settle: dict[str, Any] | None = None
         protocol_error: str | None = None
+        capability_violation = False
+        capability_attestation: dict[str, Any] = {
+            "schema_version": 1,
+            "thread_start_config": self._thread_config(),
+            "off_contestant_clock": True,
+            "reused_thread": self._live_session is not None,
+        }
         telemetry_invalid = False
         timed_out = False
         private_auth_ready_before_turn_start = False
@@ -2046,6 +2261,24 @@ class CodexDriver:
                     return self._response_result(message, request_id, method)
                 notification(message)
 
+        def request_capability(method: str, params: dict[str, Any]) -> Any:
+            request_id = self._next_turn_request_id
+            self._next_turn_request_id += 1
+            assert process is not None and process.stdin is not None
+            try:
+                self._write_rpc(
+                    process.stdin, {"id": request_id, "method": method, "params": params}
+                )
+                return await_response(
+                    request_id=request_id,
+                    method=method,
+                    notification=startup_notification,
+                )
+            except (BenchmarkError, TimeoutError, BrokenPipeError, OSError) as error:
+                raise ProviderCapabilityViolation(
+                    f"Codex capability attestation failed at {method}: {error}"
+                ) from error
+
         def startup_notification(message: Mapping[str, Any]) -> None:
             nonlocal observed_thread_id
             method = message.get("method")
@@ -2053,6 +2286,12 @@ class CodexDriver:
                 raise BenchmarkError("Codex app-server emitted a malformed notification")
             if method == "model/rerouted":
                 raise BenchmarkError("Codex app-server rerouted the frozen model")
+            params = message.get("params")
+            if isinstance(params, Mapping):
+                if "threadId" in params and observed_thread_id is not None and params["threadId"] != observed_thread_id:
+                    raise ProviderCapabilityViolation("Codex emitted a foreign-thread notification")
+                if method.startswith("item/") or method.startswith("rawResponseItem/"):
+                    _reject_collaboration_item(params.get("item"))
             if method.startswith("turn/") or method in (
                 "thread/tokenUsage/updated",
                 "rawResponse/completed",
@@ -2066,7 +2305,7 @@ class CodexDriver:
                 if not isinstance(candidate, str) or not candidate:
                     raise BenchmarkError("Codex app-server emitted malformed thread/started")
                 if observed_thread_id is not None and observed_thread_id != candidate:
-                    raise BenchmarkError("Codex app-server emitted inconsistent thread ids")
+                    raise ProviderCapabilityViolation("Codex app-server emitted a foreign thread")
                 observed_thread_id = candidate
 
         def turn_notification(message: Mapping[str, Any]) -> None:
@@ -2081,10 +2320,19 @@ class CodexDriver:
                 raise BenchmarkError("Codex app-server emitted a malformed notification")
             if method == "model/rerouted":
                 raise BenchmarkError("Codex app-server rerouted the frozen model")
+            if method == "thread/started":
+                raise ProviderCapabilityViolation("Codex started a child thread during a turn")
+            if isinstance(params, Mapping):
+                if "threadId" in params and params["threadId"] != observed_thread_id:
+                    raise ProviderCapabilityViolation("Codex emitted a foreign-thread notification")
+                if method.startswith("item/") or method.startswith("rawResponseItem/"):
+                    _reject_collaboration_item(params.get("item"))
             if method in (
                 "turn/started",
                 "turn/completed",
                 "thread/tokenUsage/updated",
+                "item/started",
+                "item/updated",
                 "item/completed",
                 "rawResponse/completed",
                 "rawResponseItem/completed",
@@ -2261,9 +2509,19 @@ class CodexDriver:
                 if not isinstance(initialized, Mapping):
                     raise BenchmarkError("Codex app-server returned malformed initialize result")
                 self._write_rpc(process.stdin, {"method": "initialized"})
+                cwd = "/workspace" if self.externally_sandboxed else str(workspace)
+                capability_attestation["process_config"] = self._attest_config_read(
+                    request_capability(
+                        "config/read", {"cwd": cwd, "includeLayers": True}
+                    )
+                )
+                capability_attestation["global_features"] = self._attest_feature_list(
+                    request_capability, thread_id=None
+                )
                 thread_params: dict[str, Any] = {
                     "approvalPolicy": "never",
-                    "cwd": "/workspace" if self.externally_sandboxed else str(workspace),
+                    "config": self._thread_config(),
+                    "cwd": cwd,
                     "ephemeral": ephemeral,
                     "experimentalRawEvents": True,
                     "historyMode": "legacy",
@@ -2287,11 +2545,14 @@ class CodexDriver:
                     thread_result, expected=None, expected_ephemeral=ephemeral
                 )
                 if observed_thread_id is not None and observed_thread_id != resolved_thread_id:
-                    raise BenchmarkError("Codex thread notification/result mismatch")
+                    raise ProviderCapabilityViolation("Codex thread notification/result mismatch")
                 observed_thread_id = resolved_thread_id
                 returned_model = thread_record.get("model")
                 if returned_model is not None and returned_model != self.model:
                     raise BenchmarkError("Codex app-server selected the wrong model")
+                capability_attestation["thread_features"] = self._attest_feature_list(
+                    request_capability, thread_id=observed_thread_id
+                )
                 private_auth_ready_before_turn_start = (
                     self._assert_private_auth_file() == staged_auth
                 )
@@ -2319,6 +2580,20 @@ class CodexDriver:
                     staged_auth = None
             assert process is not None and process.stdin is not None and reader is not None
             assert observed_thread_id is not None
+            if reused_session:
+                cwd = "/workspace" if self.externally_sandboxed else str(workspace)
+                capability_attestation["process_config"] = self._attest_config_read(
+                    request_capability(
+                        "config/read", {"cwd": cwd, "includeLayers": True}
+                    )
+                )
+                capability_attestation["global_features"] = self._attest_feature_list(
+                    request_capability, thread_id=None
+                )
+                capability_attestation["thread_features"] = self._attest_feature_list(
+                    request_capability, thread_id=observed_thread_id
+                )
+            capability_attestation["passed"] = True
             if not private_auth_ready_before_turn_start:
                 raise BenchmarkError(
                     "refreshable private Codex authentication was unavailable before turn/start"
@@ -2516,6 +2791,11 @@ class CodexDriver:
                 timed_out = timeout_kind == "active" or active_was_first
             if timeout_kind == "telemetry":
                 telemetry_invalid = True
+            protocol_error = str(error)
+        except ProviderCapabilityViolation as error:
+            capability_violation = True
+            if active_started_perf_ns is not None and active_ended_perf_ns is None:
+                active_ended_perf_ns = time.perf_counter_ns()
             protocol_error = str(error)
         except (BenchmarkError, BrokenPipeError, OSError) as error:
             if active_started_perf_ns is not None and active_ended_perf_ns is None:
@@ -2734,7 +3014,9 @@ class CodexDriver:
             active_started_perf_ns=active_started_perf_ns,
             active_ended_perf_ns=active_ended_perf_ns,
             failure_kind=(
-                "workspace_limit"
+                "provider_capability_violation"
+                if capability_violation
+                else "workspace_limit"
                 if workspace_limit_violation
                 else (
                     "artifact_limit"
@@ -2776,6 +3058,7 @@ class CodexDriver:
             "usage": result.usage,
             "usage_complete": result.usage_complete,
             "usage_measurement": "exact deduplicated app-server rawResponse/completed usage",
+            "capability_attestation": capability_attestation,
             "usage_field_semantics": {
                 "cache_write_input_tokens": (
                     "Codex app-server TokenUsageBreakdown schema default 0 is applied "
