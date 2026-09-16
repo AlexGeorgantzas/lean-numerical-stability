@@ -182,10 +182,13 @@ def fsync_directory(path: Path) -> None:
         os.close(descriptor)
 
 
-def run(command: list[str], *, cwd: Path | None = None) -> str:
+def run(
+    command: list[str], *, cwd: Path | None = None, env: Mapping[str, str] | None = None
+) -> str:
     completed = subprocess.run(
         command,
         cwd=cwd,
+        env=env,
         text=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
@@ -225,6 +228,18 @@ def measured_build_service_environment(deployment_root: Path) -> dict[str, str]:
         ):
             raise BenchmarkError(f"measured-build tooling path is unsafe: {path.name}")
     return {key: str(path.resolve()) for key, path in sorted(paths.items())}
+
+
+def private_provisioning_environment(deployment_root: Path) -> dict[str, str]:
+    """Keep Lake cache downloads and temporary clones off the home filesystem."""
+
+    environment = dict(os.environ)
+    environment.update(measured_build_service_environment(deployment_root))
+    environment["PATH"] = environment.get("PATH", "/usr/bin:/bin")
+    private_tooling_bin = deployment_root.parent / "tooling" / "elan" / "bin"
+    if private_tooling_bin.is_dir() and not private_tooling_bin.is_symlink():
+        environment["PATH"] = f"{private_tooling_bin}:{environment['PATH']}"
+    return environment
 
 
 def measured_build_command(
@@ -277,8 +292,10 @@ def copy_tree_read_only(source: Path, destination: Path) -> None:
             path.chmod((mode & 0o555) or 0o400)
 
 
-def find_toolchain_root(*, cwd: Path) -> Path:
-    lean = Path(run(["elan", "which", "lean"], cwd=cwd)).resolve()
+def find_toolchain_root(
+    *, cwd: Path, env: Mapping[str, str] | None = None
+) -> Path:
+    lean = Path(run(["elan", "which", "lean"], cwd=cwd, env=env)).resolve()
     if lean.name != "lean" or lean.parent.name != "bin":
         raise BenchmarkError(f"could not derive Lean toolchain root from {lean}")
     return lean.parent.parent
@@ -1115,6 +1132,7 @@ def _install_once(
     manifest, config = verify_manifest()
     if sys.version_info < (3, 11):
         raise BenchmarkError("Titan requires Python 3.11 or newer")
+    provisioning_environment = private_provisioning_environment(deployment_root)
     for name in (
         "git",
         "cc",
@@ -1127,7 +1145,11 @@ def _install_once(
         "rg",
         "time",
     ):
-        command_path(name)
+        if name in {"elan", "lake"}:
+            if shutil.which(name, path=provisioning_environment["PATH"]) is None:
+                raise BenchmarkError(f"required Titan command is missing: {name}")
+        else:
+            command_path(name)
     if command_path("rg") != Path("/usr/bin/rg"):
         raise BenchmarkError("Titan requires ripgrep at /usr/bin/rg for the L sandbox")
     if command_path("time") != Path("/usr/bin/time"):
@@ -1226,10 +1248,12 @@ def _install_once(
     common_project.mkdir(parents=True, exist_ok=True)
     for name in ("lakefile.toml", "lake-manifest.json", "lean-toolchain"):
         shutil.copyfile(release_root / name, common_project / name)
-    run(["elan", "toolchain", "install", FROZEN_TOOLCHAIN])
-    toolchain_root = find_toolchain_root(cwd=common_project)
-    run(["lake", "update"], cwd=common_project)
-    run(["lake", "exe", "cache", "get"], cwd=common_project)
+    run(["elan", "toolchain", "install", FROZEN_TOOLCHAIN], env=provisioning_environment)
+    toolchain_root = find_toolchain_root(
+        cwd=common_project, env=provisioning_environment
+    )
+    run(["lake", "update"], cwd=common_project, env=provisioning_environment)
+    run(["lake", "exe", "cache", "get"], cwd=common_project, env=provisioning_environment)
     packages_root = common_project / ".lake" / "packages"
     if not (packages_root / "mathlib" / ".lake" / "build" / "lib" / "lean").is_dir():
         raise BenchmarkError("Mathlib compiled cache was not prepared")
@@ -1249,15 +1273,18 @@ def _install_once(
     write_json_atomic(runtime_record_path, runtime_record, mode=0o400)
 
     library_root = deployment_root / "runtime" / "library"
-    with tempfile.TemporaryDirectory(prefix="highambench-library-") as temporary:
+    with tempfile.TemporaryDirectory(
+        prefix="highambench-library-",
+        dir=provisioning_environment["TMPDIR"],
+    ) as temporary:
         checkout = Path(temporary) / "checkout"
         run(["git", "clone", "--no-checkout", str(REPOSITORY_ROOT), str(checkout)])
         run(["git", "checkout", "--detach", FROZEN_LIBRARY_COMMIT], cwd=checkout)
         actual_commit = run(["git", "rev-parse", "HEAD"], cwd=checkout)
         if actual_commit != FROZEN_LIBRARY_COMMIT:
             raise BenchmarkError("NumStability checkout resolved to the wrong commit")
-        run(["lake", "update"], cwd=checkout)
-        run(["lake", "exe", "cache", "get"], cwd=checkout)
+        run(["lake", "update"], cwd=checkout, env=provisioning_environment)
+        run(["lake", "exe", "cache", "get"], cwd=checkout, env=provisioning_environment)
         build_root = library_root / "build"
         build_runner = frozen_benchmark_root / "tools" / "measure_library_build.py"
         if not build_runner.is_file() or build_runner.is_symlink():

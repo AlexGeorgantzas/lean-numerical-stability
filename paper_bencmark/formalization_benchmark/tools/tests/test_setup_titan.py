@@ -30,6 +30,7 @@ from setup_titan import (  # noqa: E402
     isolated_runner_command,
     measured_build_command,
     measured_build_service_environment,
+    private_provisioning_environment,
     make_parser,
     predecessor_lineage,
     verify_predecessor_lineage,
@@ -292,6 +293,28 @@ class SkillInstallTests(unittest.TestCase):
             (tooling / "tmp").chmod(0o755)
             with self.assertRaisesRegex(Exception, "tooling path is unsafe"):
                 measured_build_service_environment(deployment)
+
+    def test_dependency_preparation_uses_private_cache_and_tmp(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary).resolve()
+            deployment = root / "deployment-pilot-2-r1"
+            private_bin = root / "tooling" / "elan" / "bin"
+            private_bin.mkdir(parents=True, mode=0o700)
+            private_bin.parent.parent.chmod(0o700)
+            private_bin.parent.chmod(0o700)
+            with mock.patch.dict(
+                os.environ,
+                {"XDG_CACHE_HOME": "/home/old-cache", "TMPDIR": "/tmp"},
+            ):
+                environment = private_provisioning_environment(deployment)
+            self.assertEqual(
+                environment["XDG_CACHE_HOME"], str(root / "tooling" / "cache")
+            )
+            self.assertEqual(
+                environment["TMPDIR"], str(root / "tooling" / "tmp")
+            )
+            self.assertEqual(environment["ELAN_HOME"], str(private_bin.parent))
+            self.assertEqual(environment["PATH"].split(":", 1)[0], str(private_bin))
 
     def test_failed_install_cleanup_refuses_substituted_root(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
