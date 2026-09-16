@@ -1,6 +1,6 @@
 # HighamBench source-first formalization pilot
 
-This directory is the control plane for the source-first HighamBench pilot-5. It
+This directory is the control plane for the source-first HighamBench pilot-6. It
 does not use the legacy fixed-target proof runner in
 `paper_bencmark/highambench/tools/runner.py`.
 
@@ -18,9 +18,13 @@ but its six-role, one-shot provider qualification failed after the formalizer
 role completed with exact output and a checked workspace write, before any
 auditor role: an overly broad Code Mode warning detector matched unrelated
 text in a truncated tool catalog. Pilot-4 created no official pair or task
-index. Pilot-5 narrows that detector and starts all five tasks anew under its
-own release identity. Do not pool observations across pilots, alter the old
-evidence, or use an older launcher for a replacement run.
+index. Pilot-5 narrowed that detector and produced sealed P01-T2 and P02-T2
+pairs under its original three-way audit policy. P02-T2 ended when L's audit
+returned `unclear`; N did not start. Pilot-6 is a separate binary-verdict
+successor, not a reinterpretation or continuation of either sealed pair. Its
+installation and provider qualification must be authenticated before any
+official pilot-6 run. Do not pool observations across pilots, alter old
+evidence, or use an older launcher as a substitute.
 
 The pilot accepts exactly these tasks:
 
@@ -43,6 +47,13 @@ root declaration is deliberately left as `by sorry`; proof search is outside
 the outcome. A condition may submit at most four times in one persistent Codex
 conversation and one live raw-event-enabled app-server process. Validation and
 fresh-agent faithfulness auditing happen while the contestant clock is paused.
+For an integrity-valid candidate with an admissible source task, the pilot-6
+semantic audit returns only `faithful` or `unfaithful`. Acceptance requires
+affirmative coverage of the paper's full domain. An unsupported extra
+successful-operation, run-existence, or other domain restriction is
+`unfaithful` and produces concrete, condition-neutral feedback for repair in
+the same conversation. Provider, tool, or malformed-output failures remain
+unscored operational incidents, not a third faithfulness verdict.
 For each attempt, the model-active interval begins immediately before the
 `turn/start` request and runs through contestant-process quiescence. The later
 candidate copy/hash is timed and charged as a separate component; validation,
@@ -54,14 +65,16 @@ metered and reported but does not stop the benchmark.
 
 ## Operator commands
 
-On Titan, use the installed launcher so every command enters the fixed hardware
-envelope:
+After pilot-6 is installed on Titan, use its dedicated launcher so every
+command enters the fixed hardware envelope. These commands describe the
+successor release; they do not assert that it has already been installed:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-5-r1 doctor --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-5-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-5-r1 run --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-5-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-6-r1 doctor --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 status --task-id P01-T2
 ```
 
 Use `--dry-run` with `run` to exercise admission, staging, condition isolation,

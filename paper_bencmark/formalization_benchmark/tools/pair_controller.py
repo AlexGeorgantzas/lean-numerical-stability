@@ -404,8 +404,9 @@ def _campaign_lock(
     legacy_predecessor_run_root: Path | None = None,
     ancestral_predecessor_run_root: Path | None = None,
     great_ancestral_predecessor_run_root: Path | None = None,
+    fifth_ancestral_predecessor_run_root: Path | None = None,
 ) -> Iterator[None]:
-    """Serialize this release, the account registry, and all four predecessors."""
+    """Serialize this release, the account registry, and all five predecessors."""
 
     paths = [run_root / "locks" / "formalization-pilot.lock"]
     if global_registry_root is not None:
@@ -418,6 +419,8 @@ def _campaign_lock(
         paths.append(ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     if great_ancestral_predecessor_run_root is not None:
         paths.append(great_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
+    if fifth_ancestral_predecessor_run_root is not None:
+        paths.append(fifth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     descriptors: list[int] = []
     try:
         for path in sorted(set(paths)):
@@ -464,6 +467,7 @@ class PairController:
             getattr(self.deployment, "legacy_predecessor_run_root", None),
             getattr(self.deployment, "ancestral_predecessor_run_root", None),
             getattr(self.deployment, "great_ancestral_predecessor_run_root", None),
+            getattr(self.deployment, "fifth_ancestral_predecessor_run_root", None),
         )
 
     def _qualify_provider(self) -> dict[str, Any]:
@@ -932,12 +936,19 @@ class PairController:
                 or self.deployment.legacy_predecessor_run_root is None
                 or self.deployment.ancestral_predecessor_run_root is None
                 or self.deployment.great_ancestral_predecessor_run_root is None
+                or self.deployment.fifth_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-5 registry or predecessor locks are missing")
-            from setup_titan import predecessor_lineage
+                raise BenchmarkError("pilot-6 registry or predecessor locks are missing")
+            from setup_titan import pilot5_lineage
 
-            lineage = predecessor_lineage(
-                str(self.deployment.predecessor_run_root.parent)
+            # doctor is called under the pilot-6 campaign lock (including the
+            # predecessor and account-global locks). The frozen pilot-5 status
+            # verifier would try to reacquire them in another process. Setup
+            # performs that full status check before publication; here compare
+            # the pinned release, qualification, index, state and report bytes.
+            lineage = pilot5_lineage(
+                str(self.deployment.predecessor_run_root.parent),
+                verify_status=False,
             )
             if any(deployment_record.get(key) != value for key, value in lineage.items()):
                 raise BenchmarkError("predecessor incident provenance changed")
@@ -2060,7 +2071,7 @@ class PairController:
                 "usage": audit_usage,
                 "usage_complete": audit_usage_complete,
             }
-            if decision.get("audit_incident") or decision["verdict"] == "unclear":
+            if decision.get("audit_incident"):
                 attempt["status"] = "AUDIT_SYSTEM_INCIDENT"
                 _append_attempt(state, attempt, attempt_started_perf_ns)
                 state["status"] = "AUDIT_SYSTEM_INCIDENT"

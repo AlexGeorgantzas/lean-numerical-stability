@@ -22,6 +22,10 @@ from common import (  # noqa: E402
 
 
 class RepairFeedbackTests(unittest.TestCase):
+    def test_requires_concrete_mismatch(self) -> None:
+        with self.assertRaisesRegex(BenchmarkError, "concrete mismatch"):
+            make_repair_feedback([])
+
     def test_removes_formal_code_and_provenance(self) -> None:
         feedback = make_repair_feedback(
             [

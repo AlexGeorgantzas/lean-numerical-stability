@@ -1,5 +1,11 @@
 # Source-first formalization protocol
 
+> Pilot-6 release policy: a valid candidate has exactly two semantic audit
+> verdicts, `faithful` and `unfaithful`. Pilot-5 and its sealed runs remain
+> governed by the original three-way audit and must not be reinterpreted or
+> resumed under this policy. The pilot-6 identity must be frozen, deployed,
+> and qualified before any official pair starts.
+
 ## Purpose
 
 This pilot measures whether access to, and explicit encouragement to use, a
@@ -8,10 +14,9 @@ of a paper result. It does not measure proof construction.
 
 ## Frozen pilot
 
-- Release identity: `formalization-benchmark-t2-pilot-5`, one exact Git commit,
-  manifest-file SHA-256, and manifest-payload SHA-256. The sealed pilot-1,
-  pilot-2, and pilot-3 P01 incidents and pilot-4 qualification failure are
-  predecessor provenance, not scored observations.
+- Release identity: `formalization-benchmark-t2-pilot-6`, one exact Git commit,
+  manifest-file SHA-256, and manifest-payload SHA-256. Earlier pilots and their
+  sealed incidents are predecessor provenance, not scored pilot-6 observations.
   Pilot-2 P01-T2 (`P01-T2-20260916T084145Z-6dad064a`) had one compiling N
   candidate but no faithfulness verdict because the provider rejected an audit
   response schema; L did not start. Pilot-3 P01-T2
@@ -24,8 +29,11 @@ of a paper result. It does not measure proof construction.
   nevertheless failed after the formalizer completed with exact output and a
   checked workspace write, before any auditor role, because an overly broad
   warning detector matched unrelated truncated tool-catalog text. It created
-  no official pair or task index. All five tasks restart under pilot-5; no
-  cross-pilot pooling or replacement within an older pilot.
+  no official pair or task index. Pilot-5 then created sealed P01-T2 and
+  P02-T2 pairs under its three-way policy; P02-T2 stopped when L's audit
+  returned `unclear`. Those pairs retain their original disposition. All five
+  pilot-6 task slots are fresh; no cross-pilot pooling or replacement within an
+  older pilot.
 - Tasks: P01-T2, P02-T2, P03-T2, P13-T2, and P14-T2.
 - Replication count: one N/L pair per task.
 - Formalizer model and reasoning effort are frozen in `config.json`.
@@ -45,7 +53,7 @@ of a paper result. It does not measure proof construction.
   CPU model, and exact eight-CPU set; the controller verifies that identity at
   admission and at both ends of every attempt.
 - Pair concurrency: one measured N/L pair at a time on Titan, enforced by an
-  account-global nonblocking lock and all four predecessors' existing locks.
+  account-global nonblocking lock and all five predecessors' existing locks.
   An account-global registry reserves each `(pilot_id, task_id)` exactly once.
 - Library provisioning: setup runs `lake clean`, rehydrates the frozen
   dependency cache off-clock, proves that the root project build tree is still
@@ -187,6 +195,32 @@ outputs, and concise API-exposed reasoning summaries. Hidden chain-of-thought is
 neither available nor requested or claimed.
 
 ## Faithfulness audit
+
+### Binary verdict policy
+
+For a compiling, integrity-valid candidate with an admissible source task, the
+semantic verdict has exactly two values: `faithful` or `unfaithful`. Accept as
+`faithful` only when the candidate's elaborated proposition and reached
+definitions establish every material requirement of the selected paper result,
+including the full paper-permitted domain. The burden is on the candidate to
+encode any equivalence on which its scope depends. If, for example, the
+candidate assumes successful partial operations but the paper assumes no
+overflow, and the candidate does not establish that the former covers every
+no-overflow execution, classify it `unfaithful` and identify that domain gap as
+a concrete mismatch. Do not accept a narrower theorem merely because its
+conclusion is true on the restricted domain.
+
+An `unfaithful` verdict requires a concrete paper requirement and corresponding
+candidate mismatch in condition-neutral language. It triggers the ordinary
+frozen feedback and same-conversation repair loop if a submission slot remains.
+Auditor disagreement is resolved against the paper and candidate semantics,
+not by majority vote or a third semantic verdict. Provider failures, malformed
+auditor responses, unavailable tools, and dossier failures remain unscored
+operational incidents, not faithfulness tags. A genuinely underdetermined
+paper/source contract must be resolved or excluded at source-admissibility
+review before a candidate is scored; it must not be silently labeled a
+contestant error. This binary rule applies to pilot-6 only; pilot-5 remains
+sealed under its frozen policy.
 
 Every new semantic statement hash receives a new audit. An exact duplicate may
 reuse the already frozen verdict for that same pair run.

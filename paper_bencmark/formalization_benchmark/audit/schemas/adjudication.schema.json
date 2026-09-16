@@ -7,7 +7,7 @@
     "role": {"type": "string", "enum": ["adjudicator"]},
     "paper_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "candidate_semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "verdict": {"type": "string", "enum": ["faithful", "unfaithful", "unclear"]},
+    "verdict": {"type": "string", "enum": ["faithful", "unfaithful"]},
     "mismatches": {
       "type": "array",
       "items": {

@@ -4,8 +4,8 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-5 is a side-by-side release. The pilot-1, pilot-2, pilot-3, and pilot-4 deployments,
-launchers, and sealed P01-T2 incidents must remain unchanged. Pilot-2 P01-T2
+Pilot-6 is a side-by-side binary-verdict successor. The pilot-1 through pilot-5
+deployments, launchers, and sealed runs must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
 blind-translation audit response schema; L never started. Pilot-3 P01-T2
@@ -18,10 +18,30 @@ qualification then failed after the formalizer completed with exact output
 and a checked workspace write, before any auditor role, because a broad
 warning detector mistook unrelated text in a giant truncated tool catalog
 for a Code Mode startup warning. Pilot-4 created no official pair or index.
-Pilot-5 narrows that warning check and restarts all five tasks with fresh
-slots. Never combine observations across pilots. Setup authenticates the
-direct pilot-4 predecessor and its retained pilot-3/pilot-2/pilot-1 lineage
-before publication.
+Pilot-5 narrowed that warning check and produced sealed P01-T2 and P02-T2
+pairs under its original three-way audit policy. P02-T2 ended after L received
+`unclear`; N did not start. Pilot-6 gives each of the five tasks a fresh slot
+under a binary `faithful`/`unfaithful` semantic policy; it neither relabels nor
+resumes pilot-5 evidence. Never combine observations across pilots. Setup
+authenticates the direct pilot-5 predecessor, its two sealed pairs, and the
+retained pilot-4/3/2/1 lineage before publication.
+
+The sealed pilot-5 deployment SHA-256 is
+`41632d90da27b5d5edda4bcaad6648264bfb2d042d551858c0d62f89a363404f`;
+its qualification record is
+`0c0c4ccb252b432e41025fa1f4e17dfa1df78c1f6f8c9a54801a32bd5ee97e16`
+and its library build record is
+`d9abf28dfa5444a78fc88ce6818fc4c0e4ed166296d922f5b53b46476f4316db`.
+These identify the direct predecessor, not pilot-6 measurements.
+
+Pilot-6 must not be treated as ready merely because these repository files
+exist. Its own clean release, separate installation, provider-free gates, and
+live provider qualification must pass before an official pair starts. An
+integrity-valid candidate receives exactly one semantic verdict, `faithful`
+or `unfaithful`: unsupported candidate-added restrictions on the paper's
+domain receive a concrete mismatch and same-conversation repair feedback.
+Provider, tool, or malformed-output failures remain unscored operational
+incidents, not a third faithfulness verdict.
 
 The sealed pilot-4 deployment SHA-256 is
 `bd9dbc1c1f7576399c767d9dc7cae19732965e5e21989d195720bb884b31a749`;
@@ -29,7 +49,7 @@ its failed qualification record is
 `930a69c9a059f8e00590a6689ea9d15177e27b435e901e724e57861a1db79c9a`
 and its library build record is
 `42d1a09980a908d4b4757b174dff0239d20f9cc35e0e67dd7499a0bec60580ec`.
-These authenticate predecessor evidence, not pilot-5 measurements.
+These authenticate older predecessor evidence, not pilot-6 measurements.
 
 ## Security first
 
@@ -96,12 +116,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-4-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-5-r1
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-5-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-6-r1
 ```
 
-The installer creates a user-private pilot-5 deployment below
-`~/.local/share/highambench-formalization-pilot-5-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-6 deployment below
+`~/.local/share/highambench-formalization-pilot-6-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -160,11 +180,13 @@ committed to Git.
 
 ## Run
 
-The installed pilot-5 operator command is:
+Once pilot-6 is installed and authenticated, its operator commands are:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-5-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-5-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-6-r1 doctor --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 run --task-id P01-T2
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -204,7 +226,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-5-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-6-r1 status --task-id P01-T2
 ```
 
 ## Storage separation

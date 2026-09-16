@@ -1,5 +1,10 @@
 # Formalization benchmark architecture
 
+> Pilot-6 has a binary faithfulness-verdict policy. The installed pilot-5
+> release and its sealed runs retain their hash-frozen three-way policy. A
+> pilot-6 run requires its own authenticated deployment and qualification;
+> these source files alone do not authorize a measured run.
+
 ## Operator path
 
 ```text
@@ -33,10 +38,10 @@ run command returns a terminal pair or continues before the first turn or
 between sealed conditions. An interruption after a condition has submitted is
 not cold-resumed, because that would lose its exact raw-event stream; it fails
 closed as an incident. An account-global pilot/task reservation and campaign
-lock prevent duplicates across deployment roots. Pilot-5 also acquires all
-four predecessors' launcher locks to avoid contending for Titan's fixed allocation.
+lock prevent duplicates across deployment roots. Pilot-6 also acquires all
+five predecessors' launcher locks to avoid contending for Titan's fixed allocation.
 The sealed pilot-1, pilot-2, and pilot-3 P01 incidents remain unscored predecessor
-evidence and are never pooled with pilot-5. Pilot-2 P01 stopped after one
+evidence and are never pooled with pilot-6. Pilot-2 P01 stopped after one
 compiling N candidate when the provider rejected the blind-auditor response
 schema; no audit verdict or L run exists for that pair. Pilot-3 P01 stopped
 after an unchanged placeholder when the Code Mode command host was absent
@@ -46,8 +51,10 @@ seconds under eight CPUs and 32 GiB RAM; its isolated one-turn tool probe
 passed, but the six-role, one-shot qualification failed after the formalizer
 completed with exact output and a checked workspace write, before any auditor
 role, because a broad warning detector matched unrelated truncated
-tool-catalog text. It created no official pair or index. All five pilot-5
-task slots are fresh.
+tool-catalog text. It created no official pair or index. Pilot-5's P01-T2 and
+P02-T2 pairs are sealed under its three-way audit, including the P02-T2 L
+`unclear` incident. Pilot-6 starts five fresh task slots and never rewrites
+their pilot-5 evidence.
 
 ## Per-condition loop
 
@@ -74,11 +81,21 @@ pseudonymized semantic dependency dossier
 fresh blind translator + direct judge + round-trip judge
         |
         +--> faithful: accept and stop
-        +--> unclear: unscored audit-system incident
         `--> unfaithful: fixed neutral feedback
                               |
                               `--> same conversation; next turn restarts metering
 ```
+
+Under the pilot-6 binary audit, a valid candidate receives only
+`faithful` or `unfaithful`. If an added restriction lacks a semantic bridge
+showing that it covers the paper's domain, that is a concrete `unfaithful`
+mismatch, not an `unclear` outcome. An `unfaithful` verdict follows the existing
+feedback/repair edge. Provider, tool, schema, and dossier failures remain
+unscored operational incidents outside the semantic-verdict branch. A source
+statement that is genuinely underdetermined must be resolved or excluded at
+source-admissibility review before scoring, not charged to the contestant.
+Pilot-5 retains a legacy `unclear` semantic branch that sealed
+an unscored audit-system incident.
 
 There are at most four immutable submissions: one initial submission and three
 repairs. One app-server process remains alive through the condition, including
@@ -216,7 +233,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-t2-pilot-5/P01-T2.json
+  index/formalization-benchmark-t2-pilot-6/P01-T2.json
 ```
 
 At the end of each condition, the driver closes the one persistent formalizer

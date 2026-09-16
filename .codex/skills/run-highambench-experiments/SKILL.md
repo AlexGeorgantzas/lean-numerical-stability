@@ -7,17 +7,15 @@ description: Operate the source-first HighamBench faithful-formalization pilot f
 
 ## Scope
 
-This is pilot-5 (`formalization-benchmark-t2-pilot-5`). Pilots 1–4 are sealed,
-unscored predecessors. Pilot-2 P01-T2 stopped on an audit response-schema
-rejection; pilot-3 P01-T2 stopped because the command host was absent inside
-the sandbox, leaving an unchanged placeholder candidate and no faithfulness
-verdict. L never started in either pair. Pilot-4 had no official pair or index:
-its six-role, one-shot qualification stopped after a successful formalizer
-turn and checked workspace write, before any auditor role, because a broad
-warning detector matched unrelated text in a truncated tool catalog.
-Preserve all older deployments and incidents; never reuse their launchers or
-run IDs, resume their P01-T2 pairs, or pool their data with pilot-5. All five
-pilot-5 tasks begin as fresh single pairs under one frozen release.
+Pilot-6 (`formalization-benchmark-t2-pilot-6`) is the separate binary-verdict
+successor being prepared. Pilots 1–5 and their runs, incidents, and deployment
+records are predecessor evidence, not pilot-6 observations. Pilot-5 remains
+hash-frozen with its original three-way audit, including `unclear`; never
+reinterpret one of its decisions, manufacture repair feedback for it, resume a
+sealed condition, or pool its results with pilot-6. Pilot-6 is **not ready for
+measurement** until its own clean release, installation, provider-free gates,
+and live provider qualification have been verified. Do not fall back to the
+installed pilot-5 launcher if any pilot-6 gate is absent or fails.
 
 Preparing or qualifying a repaired release does not authorize an official
 pair. Run one only in response to an explicit task-run request.
@@ -47,15 +45,17 @@ placeholder in the complete candidate.
 Before any provider call or benchmark-state mutation on Titan:
 
 1. Read [the operations reference](references/operations.md) completely.
-2. Use only the installed `~/.local/bin/run-highambench-formalization-pilot-5-r1`
-   launcher. Its deployment record binds the exact release checkout, so the
-   command works regardless of the current directory.
+2. Require the dedicated
+   `~/.local/bin/run-highambench-formalization-pilot-6-r1` launcher and its
+   distinct deployment record. If absent, stop before a provider call or task
+   slot creation. Its deployment record must bind the exact release checkout;
+   never use the pilot-5 launcher as a substitute.
 3. Run the launcher's provider-free `verify-release` command.
 4. Authenticate the selected packet, prompts, runtime snapshots, executable
    identities, deployment record, and hardware through the installed
    launcher's `doctor` gate.
-5. Require the pilot-1/pilot-2/pilot-3/pilot-4 predecessor lineage and account-global registry
-   to authenticate. A fresh official `run` requires an off-benchmark
+5. Require the pilot-1 through pilot-5 predecessor lineage and account-global
+   registry to authenticate. A fresh official `run` requires an off-benchmark
    provider-backed qualification before any pair slot is created. Besides
    single-agent capability, it must exercise the exact frozen output schemas
    for blind translation, direct judgment, round-trip judgment, and
@@ -114,6 +114,17 @@ Use one fresh persistent formalizer conversation per condition. Each condition
 allows at most four total submissions: the initial candidate plus at most three
 repairs. Every submission consumes a slot, including a compile- or
 integrity-invalid candidate.
+
+Under pilot-6's binary policy, a valid candidate's semantic verdict must be
+either `faithful` or `unfaithful`. If the candidate does not
+establish coverage of every paper-permitted case—for example, an assumed
+successful operation is not shown to follow from the paper's no-overflow
+premise—that is a concrete `unfaithful` mismatch. Freeze neutral feedback and
+offer the normal same-conversation repair when a slot remains. Provider/tool
+failures are still unscored operational incidents; genuinely underdetermined
+source tasks need source-admissibility resolution before scoring. This policy
+applies only after the pilot-6 release is installed and authenticated; it never
+changes a pilot-5 decision.
 
 For each attempt, start the model-active interval immediately before the
 `turn/start` RPC and stop it after post-terminal cleanup proves the contestant

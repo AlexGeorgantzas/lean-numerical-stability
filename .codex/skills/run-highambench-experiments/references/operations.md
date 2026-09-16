@@ -3,23 +3,16 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
-The active release is pilot-5. Pilots 1, 2, 3, and 4 are sealed, unscored
-predecessor evidence, not observations or runs to resume. Pilot-2 P01-T2
-(`P01-T2-20260916T084145Z-6dad064a`) stopped after N submitted one compiling
-candidate because the provider rejected the blind-translation response schema;
-there was no faithfulness verdict and L never started. Do not pool data across
-pilots. Pilot-3 P01-T2 (`P01-T2-20260916T150151Z-40b3a1dd`) stopped after
-the command host was absent inside Bubblewrap: N submitted the unchanged
-placeholder, the paper-facing auditors could not inspect workspace files,
-no faithfulness verdict was produced, and L never started. Pilot-4's clean
-library build took 1307.425 seconds under eight CPUs/32 GiB and an isolated
-one-turn workspace-tool probe passed. In its six-role, one-shot qualification,
-the formalizer completed with its exact output and checked workspace write;
-then a broad warning detector misread a giant truncated tool-catalog output
-as a Code Mode startup warning. Qualification failed before any auditor role,
-and no official pair or task index was created. Pilot-5 narrows the detector,
-has a distinct deployment, launcher, task indices, and account-global
-pilot/task reservations; all five task slots are fresh.
+Pilot-6 is the separate binary-verdict successor being prepared. Pilots 1–5
+are predecessor evidence, not pilot-6 observations or runs to resume. The
+installed pilot-5 release retains its three-way audit and sealed P01-T2 and
+P02-T2 records; its `unclear` decisions must not be relabeled or supplied with
+manufactured feedback. Do not pool data across pilots or use pilot-5 task slots
+to satisfy a pilot-6 request. Pilot-6 must have its own pilot ID, deployment,
+launcher, task indices, and account-global reservations; it is not ready
+for measurement until its clean release and installation are authenticated and
+provider qualification passes. If any of these are missing, stop before an
+official pair; never substitute the pilot-5 runner.
 
 ## Canonical surfaces
 
@@ -92,18 +85,19 @@ every distinct semantic candidate still needs its own audit.
 
 ## Admission
 
-On Titan, authenticate the installed release through its location-independent
-launcher:
+On Titan, first require the dedicated pilot-6 launcher and deployment. If
+either is absent, stop with `source_first_runner_not_ready`; do not run pilot-5.
+Once installed, authenticate pilot-6 through its location-independent launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-5-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-6-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-5-r1 doctor \
+~/.local/bin/run-highambench-formalization-pilot-6-r1 doctor \
   --task-id P01-T2
 ```
 
@@ -142,8 +136,8 @@ their authenticated outputs jointly confirm all of the following:
   `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
   and stops without model inference or writing secrets to logs; the matching
   Code Mode host is hash-pinned and mounted read-only beside `/codex`;
-- the sealed pilot-1, pilot-2, pilot-3, and pilot-4 predecessor lineage and the
-  account-global campaign lock/registry match the pilot-5 deployment record.
+- the sealed pilot-1 through pilot-5 predecessor lineage and the
+  account-global campaign lock/registry match the pilot-6 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -154,7 +148,7 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-5-r1 run \
+~/.local/bin/run-highambench-formalization-pilot-6-r1 run \
   --task-id P01-T2
 ```
 
@@ -303,12 +297,28 @@ library provenance wherever de-identification is reliable. The dossier
 contains candidate semantics under the explicit closure/frontier policy; paper
 and packet are supplied separately only to paper-facing roles.
 
-Acceptance requires the frozen audit's `faithful` verdict: every material
+Acceptance requires the pilot-6 audit's `faithful` verdict: every material
 binder, premise, restriction, quantifier dependency, and conclusion must match
 the selected paper result without vacuity, unsupported assumptions, or narrower
-applicability. An evaluator failure, unresolved evaluator disagreement, or
-source ambiguity not caused by the candidate is an unscored audit-system
-incident; it does not consume a new contestant slot.
+applicability. Auditor disagreement is resolved by adjudication against the
+paper and candidate semantics. Provider failure, malformed auditor output,
+unavailable tools, or dossier failure is an unscored operational incident;
+it is not a semantic verdict.
+
+The only semantic verdicts for a valid pilot-6 candidate are `faithful` and
+`unfaithful`. A candidate must encode enough semantics to
+cover the paper's full domain. If coverage depends on an equivalence it does
+not establish—such as successful partial arithmetic operations versus the
+paper's no-overflow assumption—the verdict is `unfaithful` with a concrete
+paper-requirement/candidate-mismatch pair, followed by ordinary repair if a
+slot remains. An auditor must not turn that candidate-caused gap into a third
+verdict or accept it on an unsupported assumption. Provider failures,
+malformed outputs, unavailable tools, and dossier failures stay unscored
+operational incidents, not candidate verdicts. A genuinely underdetermined
+source contract requires source-admissibility resolution or exclusion before
+scoring and must not be attributed to a candidate. This policy becomes
+operative only after the pilot-6 release and provider qualification pass;
+the installed pilot-5 release remains historically unchanged.
 
 For an unfaithful candidate with a slot remaining, render feedback only through
 the frozen condition-neutral schema. It identifies each missing paper

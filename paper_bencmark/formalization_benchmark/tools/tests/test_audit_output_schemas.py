@@ -58,6 +58,15 @@ class AuditorOutputSchemaTests(unittest.TestCase):
                 schema = json.loads((SCHEMAS / name).read_text(encoding="utf-8"))
                 assert_strict_output_schema(self, schema, name)
 
+    def test_semantic_verdicts_are_binary(self) -> None:
+        for name in ("judgment.schema.json", "adjudication.schema.json"):
+            with self.subTest(schema=name):
+                schema = json.loads((SCHEMAS / name).read_text(encoding="utf-8"))
+                self.assertEqual(
+                    schema["properties"]["verdict"]["enum"],
+                    ["faithful", "unfaithful"],
+                )
+
     def test_regression_catches_untyped_role_before_provider_call(self) -> None:
         schema = json.loads(
             (SCHEMAS / "blind_translation.schema.json").read_text(encoding="utf-8")

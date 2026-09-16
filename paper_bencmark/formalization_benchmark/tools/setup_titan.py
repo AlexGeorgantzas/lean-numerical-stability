@@ -46,6 +46,40 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = ROOT.parents[1]
 FROZEN_LIBRARY_COMMIT = "45813a95dacf577461bae13f033af0dbc985a225"
 FROZEN_TOOLCHAIN = "leanprover/lean4:v4.29.0-rc3"
+PILOT5_PILOT_ID = "formalization-benchmark-t2-pilot-5"
+PILOT5_RELEASE_COMMIT = "131baed049dc97e114fbd420ee14b3239633a13d"
+PILOT5_MANIFEST_PAYLOAD_SHA256 = (
+    "78d056271ab96d96ab2282d40f7bbabeaa64daf0e3bcf5a620138f95d02d4ab6"
+)
+PILOT5_MANIFEST_FILE_SHA256 = (
+    "12794fd4c622adcfde82972ce0eb94644dcec6bfaf92a5bcde175326d97d5d90"
+)
+PILOT5_DEPLOYMENT_SHA256 = (
+    "41632d90da27b5d5edda4bcaad6648264bfb2d042d551858c0d62f89a363404f"
+)
+PILOT5_BUILD_RECORD_SHA256 = (
+    "d9abf28dfa5444a78fc88ce6818fc4c0e4ed166296d922f5b53b46476f4316db"
+)
+PILOT5_QUALIFICATION_SHA256 = (
+    "0c0c4ccb252b432e41025fa1f4e17dfa1df78c1f6f8c9a54801a32bd5ee97e16"
+)
+PILOT5_QUALIFICATION_ROLES_TREE_SHA256 = (
+    "ec615f4b8b7914829942283b689441343e22e744a57ac17006bb46316b04dedf"
+)
+PILOT5_SEALED_PAIRS = {
+    "P01-T2": {
+        "run_id": "P01-T2-20260916T170046Z-91f2e89d",
+        "index_sha256": "d2db1271f9710f5d3ff94284256492e822e9ea60b382882d0eb8f447dd913302",
+        "state_sha256": "7641f60e23fdde4d1ff84c4bdf925a8883cbc875e382bb34de70b10e32cc7f3b",
+        "report_sha256": "ff4666528a69b39d5522463073c0282164c0df3c6e1881ae5477695d7e4cc56d",
+    },
+    "P02-T2": {
+        "run_id": "P02-T2-20260916T184927Z-3172f243",
+        "index_sha256": "058cf470fc2d8397d0713b4bc3beb64447307bf906dfc6e9f434dad8805d7faa",
+        "state_sha256": "fa6fbcefa301a26c2e94d9a2491b62c22f95edaed3c0f8e5afb5b57d0403d3b0",
+        "report_sha256": "0ff7368b428dab9c0862f40e090fff8a618ebd70a78287036951764443ed619c",
+    },
+}
 PILOT4_PILOT_ID = "formalization-benchmark-t2-pilot-4"
 PILOT4_RELEASE_COMMIT = "09bb21292eba57d2390efe2e00e7e2063dfc7669"
 PILOT4_MANIFEST_PAYLOAD_SHA256 = (
@@ -628,10 +662,319 @@ def predecessor_lineage(root_argument: str) -> dict[str, str]:
     }
 
 
+def _pilot5_release_closure(root: Path, manifest: Mapping[str, Any]) -> None:
+    """Authenticate old executable bytes before invoking their read-only status."""
+
+    release_root = root / "release"
+    benchmark_root = release_root / "paper_bencmark" / "formalization_benchmark"
+
+    def checked_file(base: Path, relative: str, expected: str) -> Path:
+        candidate = Path(relative)
+        if (
+            not relative
+            or candidate.is_absolute()
+            or ".." in candidate.parts
+            or len(expected) != 64
+        ):
+            raise BenchmarkError("pilot-5 release closure has an unsafe file reference")
+        path = base / candidate
+        if not path.resolve().is_relative_to(base.resolve()):
+            raise BenchmarkError("pilot-5 release closure escapes its root")
+        ancestors = (
+            base,
+            *(base / Path(*candidate.parts[:index]) for index in range(1, len(candidate.parts) + 1)),
+        )
+        for ancestor in ancestors:
+            if ancestor.is_symlink():
+                raise BenchmarkError("pilot-5 release closure contains a symlink")
+        if not path.is_file() or sha256_file(path) != expected:
+            raise BenchmarkError(f"pilot-5 release closure changed: {path}")
+        return path
+
+    release_files = manifest.get("release_files")
+    repository_files = manifest.get("repository_files")
+    if not isinstance(release_files, list) or not isinstance(repository_files, list):
+        raise BenchmarkError("pilot-5 release closure is missing")
+    recorded_paths: set[str] = set()
+    for record in release_files:
+        if not isinstance(record, Mapping):
+            raise BenchmarkError("pilot-5 release closure is malformed")
+        relative, expected = record.get("relative_path"), record.get("sha256")
+        if not isinstance(relative, str) or not isinstance(expected, str):
+            raise BenchmarkError("pilot-5 release closure is malformed")
+        checked_file(benchmark_root, relative, expected)
+        recorded_paths.add(relative)
+    actual_paths = {
+        path.relative_to(benchmark_root).as_posix()
+        for path in benchmark_root.rglob("*")
+        if path.is_file() and path != benchmark_root / "manifest.json"
+    }
+    if recorded_paths != actual_paths:
+        raise BenchmarkError("pilot-5 release closure gained or lost a file")
+    for record in repository_files:
+        if not isinstance(record, Mapping):
+            raise BenchmarkError("pilot-5 repository closure is malformed")
+        relative, expected = record.get("repository_relative_path"), record.get("sha256")
+        if not isinstance(relative, str) or not isinstance(expected, str):
+            raise BenchmarkError("pilot-5 repository closure is malformed")
+        checked_file(release_root, relative, expected)
+
+
+def _pilot5_status(root: Path, deployment_record: Path, task_id: str) -> Mapping[str, Any]:
+    """Use the pinned pilot-5 verifier without provider calls or state changes."""
+
+    runner = (
+        root / "release" / "paper_bencmark" / "formalization_benchmark"
+        / "tools" / "run_benchmark.py"
+    )
+    environment = os.environ.copy()
+    environment.pop("HIGHAMBENCH_COMMAND_CGROUP_PROCS", None)
+    environment["HIGHAMBENCH_FORMALIZATION_DEPLOYMENT"] = str(deployment_record)
+    environment["HIGHAMBENCH_FORMALIZATION_DEPLOYMENT_SHA256"] = PILOT5_DEPLOYMENT_SHA256
+    completed = run_bounded_command(
+        isolated_runner_command(
+            runner, "--deployment", str(deployment_record), "status", "--task-id", task_id
+        ),
+        cwd=root,
+        environment=environment,
+        timeout_seconds=600,
+        maximum_output_bytes=16 * 1024 * 1024,
+    )
+    if (
+        completed["timed_out"]
+        or completed["output_limit_exceeded"]
+        or completed["returncode"] != 0
+    ):
+        raise BenchmarkError(f"frozen pilot-5 status authentication failed for {task_id}")
+    try:
+        result = json.loads(completed["output"])
+    except json.JSONDecodeError as error:
+        raise BenchmarkError("frozen pilot-5 status output is malformed") from error
+    if not isinstance(result, Mapping):
+        raise BenchmarkError("frozen pilot-5 status output is malformed")
+    return result
+
+
+def pilot5_lineage(root_argument: str, *, verify_status: bool = True) -> dict[str, str]:
+    """Pin pilot-5; optionally verify full attempt closure outside campaign locks.
+
+    Setup invokes the frozen pilot-5 status verifier before publication. Pilot-6
+    doctor already holds the shared campaign lock, so it must use the pinned
+    byte/identity checks only; invoking pilot-5 status there would reacquire the
+    same lock from a second process.
+    """
+
+    root = Path(root_argument).expanduser()
+    if not root.is_absolute() or root.is_symlink() or not root.is_dir():
+        raise BenchmarkError("pilot-5 predecessor deployment root is missing or unsafe")
+    root = root.resolve()
+    record_path = root / "deployment.json"
+    manifest_path = (
+        root / "release" / "paper_bencmark" / "formalization_benchmark" / "manifest.json"
+    )
+    build_path = root / "runtime" / "library" / "build" / "build-record.json"
+    run_root = root / "runs"
+    qualification_path = (
+        run_root / "qualifications" / PILOT5_MANIFEST_FILE_SHA256 / "qualification.json"
+    )
+    for path, expected in (
+        (record_path, PILOT5_DEPLOYMENT_SHA256),
+        (manifest_path, PILOT5_MANIFEST_FILE_SHA256),
+        (build_path, PILOT5_BUILD_RECORD_SHA256),
+        (qualification_path, PILOT5_QUALIFICATION_SHA256),
+    ):
+        if not path.is_file() or path.is_symlink() or sha256_file(path) != expected:
+            raise BenchmarkError(f"sealed pilot-5 evidence is missing or changed: {path}")
+    previous = load_json(record_path)
+    previous_manifest = load_json(manifest_path)
+    if (
+        previous.get("schema_version") != "formalization-deployment-1"
+        or previous.get("pilot_id") != PILOT5_PILOT_ID
+        or previous.get("release_commit") != PILOT5_RELEASE_COMMIT
+        or previous.get("release_manifest_sha256") != PILOT5_MANIFEST_FILE_SHA256
+        or previous.get("manifest_payload_sha256") != PILOT5_MANIFEST_PAYLOAD_SHA256
+        or previous.get("library_build_record") != str(build_path)
+        or previous.get("library_build_record_sha256") != PILOT5_BUILD_RECORD_SHA256
+        or previous.get("run_root") != str(run_root)
+        or previous_manifest.get("pilot_id") != PILOT5_PILOT_ID
+        or previous_manifest.get("manifest_payload_sha256")
+        != PILOT5_MANIFEST_PAYLOAD_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-5 release identity changed")
+    _pilot5_release_closure(root, previous_manifest)
+    pilot4_run_root_raw = previous.get("predecessor_run_root")
+    if not isinstance(pilot4_run_root_raw, str):
+        raise BenchmarkError("pilot-5 deployment is missing its pilot-4 run root")
+    pilot4_run_root = Path(pilot4_run_root_raw)
+    if (
+        not pilot4_run_root.is_absolute()
+        or pilot4_run_root.is_symlink()
+        or not pilot4_run_root.is_dir()
+        or pilot4_run_root.resolve() == run_root
+    ):
+        raise BenchmarkError("pilot-5 pilot-4 predecessor run root is unsafe")
+    old_lineage = predecessor_lineage(str(pilot4_run_root.parent))
+    if any(previous.get(key) != value for key, value in old_lineage.items()):
+        raise BenchmarkError("pilot-5 record does not bind the sealed pilot-4/3/2/1 lineage")
+    qualification = load_json(qualification_path)
+    roles_root = qualification_path.parent / "roles"
+    roles_manifest = tree_manifest(roles_root)
+    identity = qualification.get("identity")
+    if (
+        set(qualification_path.parent.iterdir()) != {qualification_path, roles_root}
+        or qualification.get("schema_version") != "formalization-provider-qualification-4"
+        or qualification.get("status") != "PASSED"
+        or qualification.get("classification") != "off_benchmark_provider_qualification"
+        or qualification.get("charged_to_contestant") is not False
+        or qualification.get("roles_manifest") != roles_manifest
+        or roles_manifest.get("tree_sha256") != PILOT5_QUALIFICATION_ROLES_TREE_SHA256
+        or not isinstance(identity, Mapping)
+        or identity.get("pilot_id") != PILOT5_PILOT_ID
+        or identity.get("manifest_sha256") != PILOT5_MANIFEST_FILE_SHA256
+        or identity.get("manifest_payload_sha256") != PILOT5_MANIFEST_PAYLOAD_SHA256
+        or identity.get("deployment_path") != str(record_path)
+        or identity.get("deployment_sha256") != PILOT5_DEPLOYMENT_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-5 qualification identity changed")
+
+    index_root = run_root / "index"
+    pairs_root = run_root / "pairs"
+    registry_index_root = GLOBAL_REGISTRY_ROOT / "index" / PILOT5_PILOT_ID
+    expected_tasks = set(PILOT5_SEALED_PAIRS)
+    expected_runs = {record["run_id"] for record in PILOT5_SEALED_PAIRS.values()}
+    for directory, expected_names in (
+        (index_root, {f"{task}.json" for task in expected_tasks}),
+        (pairs_root, expected_runs),
+        (registry_index_root, {f"{task}.json" for task in expected_tasks}),
+    ):
+        if (
+            not directory.is_dir()
+            or directory.is_symlink()
+            or {entry.name for entry in directory.iterdir()} != expected_names
+        ):
+            raise BenchmarkError("pilot-5 official pair namespace changed")
+
+    if verify_status:
+        # The frozen status verifier acquires these existing locks with O_CREAT,
+        # so fail before invoking it if any path would otherwise be created.
+        lock_paths = [
+            run_root / "locks" / "formalization-pilot.lock",
+            GLOBAL_REGISTRY_ROOT / "locks" / "campaign.lock",
+            *(
+                old_roots / "locks" / "formalization-pilot.lock"
+                for old_roots in (
+                    pilot4_run_root,
+                    Path(old_lineage["legacy_predecessor_run_root"]),
+                    Path(old_lineage["ancestral_predecessor_run_root"]),
+                    Path(old_lineage["great_ancestral_predecessor_run_root"]),
+                )
+            ),
+        ]
+        if any(not path.is_file() or path.is_symlink() for path in lock_paths):
+            raise BenchmarkError("pilot-5 status would create a predecessor lock")
+
+    pair_lineage: dict[str, str] = {}
+    for task_id, seal in PILOT5_SEALED_PAIRS.items():
+        run_id = seal["run_id"]
+        pair_root = pairs_root / run_id
+        index_path = index_root / f"{task_id}.json"
+        registry_path = registry_index_root / f"{task_id}.json"
+        state_path = pair_root / "pair_state.json"
+        report_path = pair_root / "pair_report.json"
+        for path, expected in (
+            (index_path, seal["index_sha256"]),
+            (registry_path, seal["index_sha256"]),
+            (state_path, seal["state_sha256"]),
+            (report_path, seal["report_sha256"]),
+        ):
+            if not path.is_file() or path.is_symlink() or sha256_file(path) != expected:
+                raise BenchmarkError(f"sealed pilot-5 pair evidence changed: {path}")
+        index = load_json(index_path)
+        state = load_json(state_path)
+        report = load_json(report_path)
+        if (
+            load_json(registry_path) != index
+            or index.get("schema_version") != "formalization-task-index-2"
+            or index.get("pilot_id") != PILOT5_PILOT_ID
+            or index.get("release_commit") != PILOT5_RELEASE_COMMIT
+            or index.get("manifest_sha256") != PILOT5_MANIFEST_FILE_SHA256
+            or index.get("manifest_payload_sha256") != PILOT5_MANIFEST_PAYLOAD_SHA256
+            or index.get("deployment_sha256") != PILOT5_DEPLOYMENT_SHA256
+            or index.get("task_id") != task_id
+            or index.get("run_id") != run_id
+            or index.get("pair_root") != str(pair_root)
+            or index.get("pair_state_path") != str(state_path)
+            or state.get("status") != "PAIR_INCIDENT"
+            or report.get("status") != "PAIR_INCIDENT"
+            or state.get("pair_report_sha256") != seal["report_sha256"]
+            or any(
+                candidate.get(key) != value
+                for candidate in (state, report)
+                for key, value in (
+                    ("pilot_id", PILOT5_PILOT_ID),
+                    ("task_id", task_id),
+                    ("run_id", run_id),
+                    ("manifest_sha256", PILOT5_MANIFEST_FILE_SHA256),
+                    ("pair_root", str(pair_root)),
+                    ("pair_state_path", str(state_path)),
+                )
+            )
+        ):
+            raise BenchmarkError(f"sealed pilot-5 {task_id} hash chain changed")
+        if verify_status:
+            status = _pilot5_status(root, record_path, task_id)
+            if (
+                status.get("task_id") != task_id
+                or status.get("run_id") != run_id
+                or status.get("status") != "PAIR_INCIDENT"
+                or status.get("pair_report_sha256") != seal["report_sha256"]
+            ):
+                raise BenchmarkError(f"frozen pilot-5 {task_id} status changed")
+        suffix = task_id.lower().replace("-", "_")
+        pair_lineage.update({
+            f"predecessor_{suffix}_task_index": str(index_path),
+            f"predecessor_{suffix}_task_index_sha256": seal["index_sha256"],
+            f"predecessor_{suffix}_pair_state": str(state_path),
+            f"predecessor_{suffix}_pair_state_sha256": seal["state_sha256"],
+            f"predecessor_{suffix}_pair_report": str(report_path),
+            f"predecessor_{suffix}_pair_report_sha256": seal["report_sha256"],
+        })
+    return {
+        "predecessor_pilot_id": PILOT5_PILOT_ID,
+        "predecessor_deployment_record": str(record_path),
+        "predecessor_deployment_record_sha256": PILOT5_DEPLOYMENT_SHA256,
+        "predecessor_release_manifest": str(manifest_path),
+        "predecessor_release_manifest_sha256": PILOT5_MANIFEST_FILE_SHA256,
+        "predecessor_library_build_record": str(build_path),
+        "predecessor_library_build_record_sha256": PILOT5_BUILD_RECORD_SHA256,
+        "predecessor_run_root": str(run_root),
+        "predecessor_qualification": str(qualification_path),
+        "predecessor_qualification_sha256": PILOT5_QUALIFICATION_SHA256,
+        "predecessor_qualification_roles_tree_sha256": (
+            PILOT5_QUALIFICATION_ROLES_TREE_SHA256
+        ),
+        **pair_lineage,
+        **{
+            (
+                "legacy_predecessor_" + key.removeprefix("predecessor_")
+                if key.startswith("predecessor_")
+                else "ancestral_predecessor_" + key.removeprefix("legacy_predecessor_")
+                if key.startswith("legacy_predecessor_")
+                else "great_ancestral_predecessor_"
+                + key.removeprefix("ancestral_predecessor_")
+                if key.startswith("ancestral_predecessor_")
+                else "fifth_ancestral_predecessor_"
+                + key.removeprefix("great_ancestral_predecessor_")
+            ): value
+            for key, value in old_lineage.items()
+        },
+    }
+
+
 def verify_predecessor_lineage(root_argument: str, deployment_record: Mapping[str, Any]) -> None:
-    observed = predecessor_lineage(root_argument)
+    observed = pilot5_lineage(root_argument)
     if any(deployment_record.get(field) != value for field, value in observed.items()):
-        raise BenchmarkError("predecessor evidence changed during pilot-5 setup")
+        raise BenchmarkError("predecessor evidence changed during pilot-6 setup")
 
 
 def fsync_directory(path: Path) -> None:
@@ -1654,17 +1997,19 @@ def _install_once(
     )
     if ancestry.returncode != 0:
         raise BenchmarkError("release branch is not descended from the frozen benchmark base")
-    if config.get("pilot_id") != "formalization-benchmark-t2-pilot-5":
-        raise BenchmarkError("this installer requires the frozen pilot-5 identity")
-    predecessor = predecessor_lineage(args.predecessor_deployment_root)
+    if config.get("pilot_id") != "formalization-benchmark-t2-pilot-6":
+        raise BenchmarkError("this installer requires the frozen pilot-6 identity")
+    predecessor = pilot5_lineage(args.predecessor_deployment_root)
     if published_root == Path(predecessor["predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-5 must not overwrite the pilot-4 deployment")
+        raise BenchmarkError("pilot-6 must not overwrite the pilot-5 deployment")
     if published_root == Path(predecessor["legacy_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-5 must not overwrite the pilot-3 deployment")
+        raise BenchmarkError("pilot-6 must not overwrite the pilot-4 deployment")
     if published_root == Path(predecessor["ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-5 must not overwrite the pilot-2 deployment")
+        raise BenchmarkError("pilot-6 must not overwrite the pilot-3 deployment")
     if published_root == Path(predecessor["great_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-5 must not overwrite the pilot-1 deployment")
+        raise BenchmarkError("pilot-6 must not overwrite the pilot-2 deployment")
+    if published_root == Path(predecessor["fifth_ancestral_predecessor_run_root"]).parent:
+        raise BenchmarkError("pilot-6 must not overwrite the pilot-1 deployment")
     if GLOBAL_REGISTRY_ROOT.is_symlink() or (
         GLOBAL_REGISTRY_ROOT.exists() and not GLOBAL_REGISTRY_ROOT.is_dir()
     ):
@@ -1942,6 +2287,9 @@ def _install_once(
         ancestral_predecessor_run_root=Path(predecessor["ancestral_predecessor_run_root"]),
         great_ancestral_predecessor_run_root=Path(
             predecessor["great_ancestral_predecessor_run_root"]
+        ),
+        fifth_ancestral_predecessor_run_root=Path(
+            predecessor["fifth_ancestral_predecessor_run_root"]
         ),
     )
     command_canary = {
@@ -2287,17 +2635,17 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pdf-source-dir", required=True)
     parser.add_argument(
         "--deployment-root",
-        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-5-r1"),
+        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-6-r1"),
     )
     parser.add_argument(
         "--predecessor-deployment-root",
         required=True,
-        help="read-only path to sealed pilot-4 deployment for four-predecessor lineage and locking",
+        help="read-only path to sealed pilot-5 deployment for five-predecessor lineage and locking",
     )
     parser.add_argument("--auth-file", default=str(Path.home() / ".codex" / "auth.json"))
     parser.add_argument("--codex-binary")
     parser.add_argument(
-        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-5-r1")
+        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-6-r1")
     )
     return parser
 

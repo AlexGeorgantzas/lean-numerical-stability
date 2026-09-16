@@ -845,6 +845,8 @@ def neutralize_feedback_text(
 def make_repair_feedback(
     mismatches: list[Mapping[str, Any]], *, forbidden_identifiers: Iterable[str] = ()
 ) -> dict[str, Any]:
+    if not mismatches:
+        raise BenchmarkError("repair feedback requires a concrete mismatch")
     issues: list[dict[str, str]] = []
     for item in mismatches[:8]:
         requirement = neutralize_feedback_text(
@@ -859,19 +861,6 @@ def make_repair_feedback(
             {
                 "missing_paper_requirement": requirement,
                 "candidate_mismatch": mismatch,
-            }
-        )
-    if not issues:
-        issues.append(
-            {
-                "missing_paper_requirement": (
-                    "The paper's complete selected result must be represented without "
-                    "unresolved semantic uncertainty."
-                ),
-                "candidate_mismatch": (
-                    "The audit could not establish that the submitted proposition is "
-                    "faithful to every material part of the selected result."
-                ),
             }
         )
     return {"status": "repair-required", "issues": issues}

@@ -35,6 +35,10 @@ from setup_titan import (  # noqa: E402
     PILOT3_RELEASE_COMMIT,
     PILOT4_MANIFEST_PAYLOAD_SHA256,
     PILOT4_RELEASE_COMMIT,
+    PILOT5_MANIFEST_PAYLOAD_SHA256,
+    PILOT5_RELEASE_COMMIT,
+    PILOT5_SEALED_PAIRS,
+    _pilot5_release_closure,
     _load_transaction,
     _remove_skill_transaction_tree,
     _transaction_record,
@@ -48,6 +52,7 @@ from setup_titan import (  # noqa: E402
     make_parser,
     pilot2_lineage,
     pilot3_lineage,
+    pilot5_lineage,
     predecessor_lineage,
     verify_predecessor_lineage,
     remove_owned_deployment_root,
@@ -57,15 +62,44 @@ from setup_titan import (  # noqa: E402
 
 
 class SkillInstallTests(unittest.TestCase):
-    def test_pilot5_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+    def test_pilot5_release_closure_rejects_changed_and_unlisted_executable(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            release = root / "release"
+            benchmark = release / "paper_bencmark" / "formalization_benchmark"
+            runner = benchmark / "tools" / "run_benchmark.py"
+            runner.parent.mkdir(parents=True)
+            runner.write_text("print('old verifier')\n", encoding="utf-8")
+            dependency = release / "lakefile.toml"
+            dependency.write_text("name = 'fixture'\n", encoding="utf-8")
+            manifest = {
+                "release_files": [{
+                    "relative_path": "tools/run_benchmark.py",
+                    "sha256": sha256_file(runner),
+                }],
+                "repository_files": [{
+                    "repository_relative_path": "lakefile.toml",
+                    "sha256": sha256_file(dependency),
+                }],
+            }
+            _pilot5_release_closure(root, manifest)
+            runner.write_text("print('changed')\n", encoding="utf-8")
+            with self.assertRaisesRegex(BenchmarkError, "closure changed"):
+                _pilot5_release_closure(root, manifest)
+            runner.write_text("print('old verifier')\n", encoding="utf-8")
+            (runner.parent / "injected.py").write_text("pass\n", encoding="utf-8")
+            with self.assertRaisesRegex(BenchmarkError, "gained or lost"):
+                _pilot5_release_closure(root, manifest)
+
+    def test_pilot6_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
         parser = make_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(["--pdf-source-dir", "/tmp"])
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-5-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-5-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-6-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-6-r1"))
 
     def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -491,7 +525,7 @@ class SkillInstallTests(unittest.TestCase):
                 self.assertEqual(lineage["predecessor_qualification_sha256"], before[qualification])
                 self.assertEqual(lineage["predecessor_library_build_record_sha256"], before[build])
                 older.assert_called_with(str(pilot3_run_root.parent))
-                verify_predecessor_lineage(str(root), lineage)
+                self.assertEqual(predecessor_lineage(str(root)), lineage)
                 self.assertEqual(before, {path: sha256_file(path) for path in before})
 
                 with mock.patch("setup_titan.pilot3_lineage", return_value={
@@ -526,6 +560,199 @@ class SkillInstallTests(unittest.TestCase):
                 build.write_text('{"returncode":1}', encoding="utf-8")
                 with self.assertRaisesRegex(BenchmarkError, "pilot-4 evidence"):
                     predecessor_lineage(str(root))
+
+    def test_pilot5_sealed_pairs_and_five_pilot_lineage_are_read_only(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = (Path(temporary) / "pilot-5-deployment").resolve()
+            run_root = root / "runs"
+            registry = (Path(temporary) / "account-registry").resolve()
+            old_roots = {
+                "predecessor_run_root": Path(temporary) / "pilot-4-deployment" / "runs",
+                "legacy_predecessor_run_root": Path(temporary) / "pilot-3-deployment" / "runs",
+                "ancestral_predecessor_run_root": Path(temporary) / "pilot-2-deployment" / "runs",
+                "great_ancestral_predecessor_run_root": Path(temporary) / "pilot-1-deployment" / "runs",
+            }
+            for path in old_roots.values():
+                path.mkdir(parents=True)
+                lock = path / "locks" / "formalization-pilot.lock"
+                lock.parent.mkdir()
+                lock.touch()
+            for lock in (
+                run_root / "locks" / "formalization-pilot.lock",
+                registry / "locks" / "campaign.lock",
+            ):
+                lock.parent.mkdir(parents=True, exist_ok=True)
+                lock.touch()
+            old_lineage = {
+                "predecessor_pilot_id": "formalization-benchmark-t2-pilot-4",
+                **{name: str(path) for name, path in old_roots.items()},
+            }
+            manifest = (
+                root / "release" / "paper_bencmark" / "formalization_benchmark"
+                / "manifest.json"
+            )
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                json.dumps({
+                    "pilot_id": "formalization-benchmark-t2-pilot-5",
+                    "manifest_payload_sha256": PILOT5_MANIFEST_PAYLOAD_SHA256,
+                }),
+                encoding="utf-8",
+            )
+            build = root / "runtime" / "library" / "build" / "build-record.json"
+            build.parent.mkdir(parents=True)
+            build.write_text('{"returncode":0}', encoding="utf-8")
+            deployment = root / "deployment.json"
+            deployment.write_text(
+                json.dumps({
+                    "schema_version": "formalization-deployment-1",
+                    "pilot_id": "formalization-benchmark-t2-pilot-5",
+                    "release_commit": PILOT5_RELEASE_COMMIT,
+                    "release_manifest_sha256": sha256_file(manifest),
+                    "manifest_payload_sha256": PILOT5_MANIFEST_PAYLOAD_SHA256,
+                    "library_build_record": str(build),
+                    "library_build_record_sha256": sha256_file(build),
+                    "run_root": str(run_root),
+                    **old_lineage,
+                }),
+                encoding="utf-8",
+            )
+            qualification = (
+                run_root / "qualifications" / sha256_file(manifest)
+                / "qualification.json"
+            )
+            qualification.parent.mkdir(parents=True)
+            roles_root = qualification.parent / "roles"
+            roles_root.mkdir()
+            (roles_root / "role.json").write_text('{"passed":true}', encoding="utf-8")
+            roles_manifest = tree_manifest(roles_root)
+            qualification.write_text(
+                json.dumps({
+                    "schema_version": "formalization-provider-qualification-4",
+                    "status": "PASSED",
+                    "classification": "off_benchmark_provider_qualification",
+                    "charged_to_contestant": False,
+                    "roles_manifest": roles_manifest,
+                    "identity": {
+                        "pilot_id": "formalization-benchmark-t2-pilot-5",
+                        "manifest_sha256": sha256_file(manifest),
+                        "manifest_payload_sha256": PILOT5_MANIFEST_PAYLOAD_SHA256,
+                        "deployment_path": str(deployment),
+                        "deployment_sha256": sha256_file(deployment),
+                    },
+                }),
+                encoding="utf-8",
+            )
+            seals: dict[str, dict[str, str]] = {}
+            evidence_paths = [deployment, manifest, build, qualification]
+            for task_id, original in PILOT5_SEALED_PAIRS.items():
+                run_id = original["run_id"]
+                pair_root = run_root / "pairs" / run_id
+                pair_root.mkdir(parents=True)
+                report = pair_root / "pair_report.json"
+                state = pair_root / "pair_state.json"
+                pair_fields = {
+                    "pilot_id": "formalization-benchmark-t2-pilot-5",
+                    "task_id": task_id,
+                    "run_id": run_id,
+                    "status": "PAIR_INCIDENT",
+                    "manifest_sha256": sha256_file(manifest),
+                    "pair_root": str(pair_root),
+                    "pair_state_path": str(state),
+                }
+                report.write_text(json.dumps(pair_fields), encoding="utf-8")
+                state.write_text(
+                    json.dumps({**pair_fields, "pair_report_sha256": sha256_file(report)}),
+                    encoding="utf-8",
+                )
+                index = run_root / "index" / f"{task_id}.json"
+                index.parent.mkdir(exist_ok=True)
+                index.write_text(
+                    json.dumps({
+                        "schema_version": "formalization-task-index-2",
+                        "pilot_id": "formalization-benchmark-t2-pilot-5",
+                        "release_commit": PILOT5_RELEASE_COMMIT,
+                        "manifest_sha256": sha256_file(manifest),
+                        "manifest_payload_sha256": PILOT5_MANIFEST_PAYLOAD_SHA256,
+                        "deployment_sha256": sha256_file(deployment),
+                        "task_id": task_id,
+                        "run_id": run_id,
+                        "pair_root": str(pair_root),
+                        "pair_state_path": str(state),
+                    }),
+                    encoding="utf-8",
+                )
+                registry_index = (
+                    registry / "index" / "formalization-benchmark-t2-pilot-5"
+                    / f"{task_id}.json"
+                )
+                registry_index.parent.mkdir(parents=True, exist_ok=True)
+                registry_index.write_bytes(index.read_bytes())
+                evidence_paths.extend((index, registry_index, state, report))
+                seals[task_id] = {
+                    "run_id": run_id,
+                    "index_sha256": sha256_file(index),
+                    "state_sha256": sha256_file(state),
+                    "report_sha256": sha256_file(report),
+                }
+            before = {path: sha256_file(path) for path in evidence_paths}
+            with mock.patch.multiple(
+                "setup_titan",
+                PILOT5_DEPLOYMENT_SHA256=before[deployment],
+                PILOT5_MANIFEST_FILE_SHA256=before[manifest],
+                PILOT5_BUILD_RECORD_SHA256=before[build],
+                PILOT5_QUALIFICATION_SHA256=before[qualification],
+                PILOT5_QUALIFICATION_ROLES_TREE_SHA256=roles_manifest["tree_sha256"],
+                PILOT5_SEALED_PAIRS=seals,
+                GLOBAL_REGISTRY_ROOT=registry,
+            ), mock.patch(
+                "setup_titan.predecessor_lineage", return_value=old_lineage
+            ) as older, mock.patch("setup_titan._pilot5_release_closure"), mock.patch(
+                "setup_titan._pilot5_status",
+                side_effect=lambda _root, _record, task: {
+                    "task_id": task,
+                    "run_id": seals[task]["run_id"],
+                    "status": "PAIR_INCIDENT",
+                    "pair_report_sha256": seals[task]["report_sha256"],
+                },
+            ):
+                lineage = pilot5_lineage(str(root))
+                self.assertEqual(lineage["predecessor_run_root"], str(run_root))
+                self.assertEqual(
+                    lineage["legacy_predecessor_run_root"], str(old_roots["predecessor_run_root"])
+                )
+                self.assertEqual(
+                    lineage["fifth_ancestral_predecessor_run_root"],
+                    str(old_roots["great_ancestral_predecessor_run_root"]),
+                )
+                self.assertEqual(
+                    lineage["predecessor_p02_t2_pair_report_sha256"],
+                    seals["P02-T2"]["report_sha256"],
+                )
+                older.assert_called_with(str(old_roots["predecessor_run_root"].parent))
+                verify_predecessor_lineage(str(root), lineage)
+                self.assertEqual(before, {path: sha256_file(path) for path in before})
+
+                # Pilot-6 doctor already holds the shared campaign lock. It
+                # must authenticate the pinned predecessor bytes without
+                # launching the frozen status command under that same lock.
+                with mock.patch(
+                    "setup_titan._pilot5_status",
+                    side_effect=AssertionError("status must not reacquire the lock"),
+                ):
+                    self.assertEqual(
+                        pilot5_lineage(str(root), verify_status=False), lineage
+                    )
+
+                with mock.patch("setup_titan.predecessor_lineage", return_value={
+                    **old_lineage, "predecessor_pilot_id": "tampered"
+                }), self.assertRaisesRegex(BenchmarkError, "does not bind"):
+                    pilot5_lineage(str(root))
+
+                report = run_root / "pairs" / seals["P02-T2"]["run_id"] / "pair_report.json"
+                report.write_text('{"status":"COMPLETE"}', encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "pair evidence changed"):
+                    pilot5_lineage(str(root))
 
     @staticmethod
     def _write_read_only_skill(root: Path, contents: str) -> None:

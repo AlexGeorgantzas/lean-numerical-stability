@@ -13,7 +13,11 @@ TOOLS = Path(__file__).resolve().parents[1]
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from audit_controller import AuditController, _validate_judgment  # noqa: E402
+from audit_controller import (  # noqa: E402
+    AuditController,
+    _validate_adjudication,
+    _validate_judgment,
+)
 from codex_driver import ProviderCapabilityError  # noqa: E402
 from common import BenchmarkError, sha256_file  # noqa: E402
 
@@ -26,6 +30,7 @@ class FakeAuditController(AuditController):
     def __init__(self, outputs: list[dict]):
         self.outputs = list(outputs)
         self.roles: list[str] = []
+        self.forbidden_feedback_identifiers: set[str] = set()
 
     def _fresh_role(self, *, role, validate, **kwargs):
         del kwargs
@@ -68,15 +73,24 @@ def judgment(role: str) -> dict:
     }
 
 
-def unclear_adjudication() -> dict:
+def unfaithful_adjudication() -> dict:
     return {
         "role": "adjudicator",
         "paper_sha256": PAPER_HASH,
         "candidate_semantic_sha256": SEMANTIC_HASH,
-        "verdict": "unclear",
-        "mismatches": [],
-        "remaining_uncertainties": ["The primary source does not resolve the domain."],
-        "rationale": "The ambiguity cannot be attributed to the candidate.",
+        "verdict": "unfaithful",
+        "mismatches": [
+            {
+                "paper_requirement": "The result covers every no-overflow execution.",
+                "candidate_mismatch": (
+                    "Successful partial operations are an extra premise without a "
+                    "bridge from no overflow."
+                ),
+                "severity": "major",
+            }
+        ],
+        "remaining_uncertainties": [],
+        "rationale": "The candidate does not establish the paper's full domain coverage.",
     }
 
 
@@ -114,21 +128,49 @@ class AuditControllerPolicyTests(unittest.TestCase):
         self.assertFalse(decision["adjudicated"])
         self.assertEqual(controller.roles, ["blind-translation", "direct-judge", "roundtrip-judge"])
 
-    def test_blind_ambiguity_forces_adjudication_and_unclear_is_incident(self) -> None:
+    def test_blind_ambiguity_forces_adjudication_and_domain_gap_gets_feedback(self) -> None:
         controller = FakeAuditController(
             [
                 translation(ambiguous=True),
                 judgment("direct-judge"),
                 judgment("roundtrip-judge"),
-                unclear_adjudication(),
+                unfaithful_adjudication(),
             ]
         )
         decision = self.run_audit(controller, "ambiguous")
         self.assertFalse(decision["accepted"])
         self.assertTrue(decision["adjudicated"])
-        self.assertTrue(decision["audit_incident"])
-        self.assertIsNone(decision["repair_feedback"])
+        self.assertEqual(decision["verdict"], "unfaithful")
+        self.assertFalse(decision["audit_incident"])
+        self.assertEqual(
+            decision["repair_feedback"]["issues"][0]["missing_paper_requirement"],
+            "The result covers every no-overflow execution.",
+        )
         self.assertEqual(controller.roles[-1], "adjudicator")
+
+    def test_unclear_is_not_a_semantic_verdict(self) -> None:
+        malformed_judgment = judgment("direct-judge")
+        malformed_judgment["verdict"] = "unclear"
+        malformed_judgment["uncertainties"] = ["A domain bridge is missing."]
+        with self.assertRaisesRegex(BenchmarkError, "semantic contract"):
+            _validate_judgment(
+                malformed_judgment,
+                role="direct-judge",
+                paper_sha256=PAPER_HASH,
+                semantic_sha256=SEMANTIC_HASH,
+            )
+        malformed_adjudication = unfaithful_adjudication()
+        malformed_adjudication["verdict"] = "unclear"
+        malformed_adjudication["mismatches"] = []
+        malformed_adjudication["remaining_uncertainties"] = [
+            "A domain bridge is missing."
+        ]
+        with self.assertRaisesRegex(BenchmarkError, "semantic contract"):
+            _validate_adjudication(
+                malformed_adjudication,
+                paper_sha256=PAPER_HASH,
+                semantic_sha256=SEMANTIC_HASH,
+            )
 
     def test_local_validator_rejects_malformed_nested_mismatch(self) -> None:
         malformed = judgment("direct-judge")
@@ -138,6 +180,17 @@ class AuditControllerPolicyTests(unittest.TestCase):
             _validate_judgment(
                 malformed,
                 role="direct-judge",
+                paper_sha256=PAPER_HASH,
+                semantic_sha256=SEMANTIC_HASH,
+            )
+
+    def test_unfaithful_requires_concrete_mismatch(self) -> None:
+        malformed = judgment("roundtrip-judge")
+        malformed["verdict"] = "unfaithful"
+        with self.assertRaisesRegex(BenchmarkError, "concrete mismatch"):
+            _validate_judgment(
+                malformed,
+                role="roundtrip-judge",
                 paper_sha256=PAPER_HASH,
                 semantic_sha256=SEMANTIC_HASH,
             )

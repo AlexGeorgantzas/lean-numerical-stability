@@ -134,7 +134,7 @@ def _validate_judgment(
         or value.get("role") != role
         or value.get("paper_sha256") != paper_sha256
         or value.get("candidate_semantic_sha256") != semantic_sha256
-        or value.get("verdict") not in ("faithful", "unfaithful", "unclear")
+        or value.get("verdict") not in ("faithful", "unfaithful")
         or not _valid_mismatches(value.get("mismatches"))
         or not _nonempty_string_list(value.get("uncertainties"))
         or not isinstance(value.get("rationale"), str)
@@ -147,8 +147,6 @@ def _validate_judgment(
         raise BenchmarkError(f"{role} returned a contradictory faithful judgment")
     if value["verdict"] == "unfaithful" and not value["mismatches"]:
         raise BenchmarkError(f"{role} returned unfaithful without a concrete mismatch")
-    if value["verdict"] == "unclear" and not value["uncertainties"]:
-        raise BenchmarkError(f"{role} returned unclear without an uncertainty")
 
 
 def _validate_adjudication(
@@ -168,7 +166,7 @@ def _validate_adjudication(
         or value.get("role") != "adjudicator"
         or value.get("paper_sha256") != paper_sha256
         or value.get("candidate_semantic_sha256") != semantic_sha256
-        or value.get("verdict") not in ("faithful", "unfaithful", "unclear")
+        or value.get("verdict") not in ("faithful", "unfaithful")
         or not _valid_mismatches(value.get("mismatches"))
         or not _nonempty_string_list(value.get("remaining_uncertainties"))
         or not isinstance(value.get("rationale"), str)
@@ -181,8 +179,6 @@ def _validate_adjudication(
         raise BenchmarkError("adjudicator returned a contradictory faithful judgment")
     if value["verdict"] == "unfaithful" and not value["mismatches"]:
         raise BenchmarkError("adjudicator returned unfaithful without a concrete mismatch")
-    if value["verdict"] == "unclear" and not value["remaining_uncertainties"]:
-        raise BenchmarkError("adjudicator returned unclear without an uncertainty")
 
 
 class AuditController:
@@ -583,13 +579,11 @@ class AuditController:
             uncertainties = list(adjudication["remaining_uncertainties"])
             rationale = adjudication["rationale"]
 
-        if verdict != "faithful" and not mismatches:
-            for judgment in (direct, roundtrip):
-                mismatches.extend(judgment.get("mismatches", []))
-        # ``unclear`` means the evaluator could not establish a candidate-caused
-        # defect.  It is an unscored audit-system incident, never repair advice
-        # charged to the contestant.
-        audit_incident = verdict == "unclear"
+        if verdict == "unfaithful" and not mismatches:
+            raise BenchmarkError("unfaithful audit decision has no concrete mismatch")
+        # A valid semantic decision is binary. Operational audit failures are
+        # sealed separately as incidents, never as a third faithfulness verdict.
+        audit_incident = False
         feedback = (
             make_repair_feedback(
                 mismatches,
