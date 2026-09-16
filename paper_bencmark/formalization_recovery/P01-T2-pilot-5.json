@@ -1,0 +1,48 @@
+{
+  "schema_version": "formalization-study-recovery-disposition-1",
+  "decision_date_utc": "2026-09-16",
+  "adoption": "Benchmark owner approved counting P01-T2 as complete via audited infrastructure recovery after the verdict was known; this is post hoc.",
+  "pilot_id": "formalization-benchmark-t2-pilot-5",
+  "task_id": "P01-T2",
+  "run_id": "P01-T2-20260916T170046Z-91f2e89d",
+  "study_classification": "RECOVERED_COMPLETE",
+  "native_pair_status": "PAIR_INCIDENT",
+  "original_protocol_complete": false,
+  "amended_study_complete": true,
+  "no_formalizer_rerun_or_repair": true,
+  "condition_N": {
+    "original_status": "ACCEPTED_FAITHFUL",
+    "active_seconds": 396.990627744,
+    "total_tokens": 356898
+  },
+  "condition_L": {
+    "original_status": "INFRASTRUCTURE_FAILURE",
+    "recovery_audit_verdict": "faithful",
+    "recovery_audit_accepted": true,
+    "active_seconds": 458.620685311,
+    "total_tokens": 1759284,
+    "candidate_sha256": "2dedb25adbcd33b92b48dd77867210dd82d7b424b75442df4afa2877ade1fcb8",
+    "condition_state_sha256": "51c4ab4989381b2e69e606f52650462677d3e8b18e9ba219d3a54b13893a7990"
+  },
+  "source_bindings": {
+    "paper_pdf_sha256": "d5ad99fac5022da54dbe02721ea57116df3cec15badddd7c96c344328718fea7",
+    "task_packet_sha256": "4444254ad2f88e3d254fda484df5012201e29d0416a78b45756db374b35c4f7c",
+    "deployed_release_manifest_sha256": "12794fd4c622adcfde82972ce0eb94644dcec6bfaf92a5bcde175326d97d5d90",
+    "deployment_sha256": "41632d90da27b5d5edda4bcaad6648264bfb2d042d551858c0d62f89a363404f",
+    "lean_toolchain": "leanprover/lean4:v4.29.0-rc3",
+    "mathlib_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
+    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225"
+  },
+  "evidence": {
+    "sealed_pair_report_path_on_titan": "/hdd/alexgeorgantzas/highambench/deployment-pilot-5-r1/runs/pairs/P01-T2-20260916T170046Z-91f2e89d/pair_report.json",
+    "sealed_pair_report_sha256": "ff4666528a69b39d5522463073c0282164c0df3c6e1881ae5477695d7e4cc56d",
+    "recovery_addendum_path_on_titan": "/hdd/alexgeorgantzas/highambench/recovery-pilot5-P01-T2-L-b91953027/addendum.json",
+    "recovery_addendum_sha256": "faa3ea6d629e0e50517f27d1580b1fdece8c96488109002138827ff71b09c2c9",
+    "recovery_audit_decision_path_on_titan": "/hdd/alexgeorgantzas/highambench/recovery-pilot5-P01-T2-L-b91953027/audit/decision.json",
+    "recovery_audit_decision_sha256": "e288d99af71f17ef99216df2d93fb511082777de7beca8b7bbf02cd7f7b339e2",
+    "blind_semantic_sha256": "bdc578c32f52e08a59b9e7c4a9d3a9553e19c9013e380e95cb7e0f964bd5e342",
+    "patched_helper_sha256": "35ccdbdf237a5a269c55a42122126c8cc42c6424d4bea8543b05b408e575d1ec",
+    "replay_code_commit": "33a2c18d44b3437d2ac57cd3d1df072c89a59c5e"
+  },
+  "reporting_rule": "Include only in explicitly labeled amended or sensitivity analyses; retain PAIR_INCIDENT in original-protocol analyses."
+}
