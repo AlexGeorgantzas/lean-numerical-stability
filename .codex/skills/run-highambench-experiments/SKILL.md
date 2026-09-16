@@ -7,12 +7,13 @@ description: Operate the source-first HighamBench faithful-formalization pilot f
 
 ## Scope
 
-This is pilot-3 (`formalization-benchmark-t2-pilot-3`). Pilot-1 and pilot-2 are
-sealed, unscored predecessors. Pilot-2 P01-T2 stopped after N submitted one
-compiling candidate: the provider rejected a blind-auditor response schema,
-no faithfulness verdict was produced, and L never started. Preserve both older
+This is pilot-4 (`formalization-benchmark-t2-pilot-4`). Pilots 1, 2, and 3 are
+sealed, unscored predecessors. Pilot-2 P01-T2 stopped on an audit response
+schema rejection; pilot-3 P01-T2 stopped because the command host was absent
+inside the sandbox, leaving an unchanged placeholder candidate and no
+faithfulness verdict. L never started in either pair. Preserve all older
 deployments and incidents; never reuse their launchers or run IDs, resume their
-P01-T2 pairs, or pool their data with pilot-3. All five pilot-3 tasks begin as
+P01-T2 pairs, or pool their data with pilot-4. All five pilot-4 tasks begin as
 fresh single pairs under one frozen release.
 
 Preparing or qualifying a repaired release does not authorize an official
@@ -43,19 +44,21 @@ placeholder in the complete candidate.
 Before any provider call or benchmark-state mutation on Titan:
 
 1. Read [the operations reference](references/operations.md) completely.
-2. Use only the installed `~/.local/bin/run-highambench-formalization-pilot-3-r1`
+2. Use only the installed `~/.local/bin/run-highambench-formalization-pilot-4-r1`
    launcher. Its deployment record binds the exact release checkout, so the
    command works regardless of the current directory.
 3. Run the launcher's provider-free `verify-release` command.
 4. Authenticate the selected packet, prompts, runtime snapshots, executable
    identities, deployment record, and hardware through the installed
    launcher's `doctor` gate.
-5. Require the pilot-1/pilot-2 predecessor lineage and account-global registry
+5. Require the pilot-1/pilot-2/pilot-3 predecessor lineage and account-global registry
    to authenticate. A fresh official `run` requires an off-benchmark
    provider-backed qualification before any pair slot is created. Besides
    single-agent capability, it must exercise the exact frozen output schemas
    for blind translation, direct judgment, round-trip judgment, and
-   adjudication through live provider calls.
+   adjudication through live provider calls. It must also prove that the
+   hash-pinned Code Mode host can run workspace tools: trace-backed file reads
+   for both role types, a checked formalizer write, and no startup warning.
 6. Stop if any gate is absent or fails. Never use legacy
    `paper_bencmark/highambench/tools/runner.py` or `tools/run_matrix.py` as a
    substitute.
@@ -68,7 +71,8 @@ The exact provider capability contract disables `agents.enabled`,
 `multi_agent`, and `multi_agent_v2`. Require effective global/thread
 attestations and reject collaboration or foreign-thread events as provider
 infrastructure incompatibility, not contestant misconduct. The deprecated
-`multiAgentMode` value is not evidence of this capability. `doctor` and
+`multiAgentMode` value is not evidence of this capability. JSON-only schema
+probes do not establish workspace-tool availability. `doctor` and
 `run --dry-run` remain provider-free; the qualification usage is never charged
 to N or L. Local JSON-schema validation alone does not replace the live
 provider-schema check that pilot-2 lacked.

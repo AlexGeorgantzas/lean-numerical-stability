@@ -20,6 +20,7 @@ from codex_driver import (  # noqa: E402
     _normalize_raw_usage,
     _normalize_usage_breakdown,
 )
+from common import BenchmarkError  # noqa: E402
 
 
 FAKE_APP_SERVER = r'''
@@ -718,10 +719,14 @@ class CodexDriverProtocolTests(unittest.TestCase):
         for executable in (bwrap, offline_shell):
             executable.write_text("fixture\n", encoding="utf-8")
             executable.chmod(0o500)
+        host = self.codex.with_name("codex-code-mode-host")
+        host.write_bytes(b"matching code-mode host")
+        host.chmod(0o500)
         artifacts = self.root / "shape-artifacts"
         artifacts.mkdir()
         driver = self.driver(
             bwrap_binary=bwrap,
+            code_mode_host_sha256=hashlib.sha256(host.read_bytes()).hexdigest(),
             offline_shell=offline_shell,
             toolchain_root=toolchain,
             packages_root=packages,
@@ -740,6 +745,11 @@ class CodexDriverProtocolTests(unittest.TestCase):
         )
         self.assertGreater(command.index("/etc/passwd"), command.index("/etc"))
         self.assertIn(
+            ["--ro-bind", str(host.resolve()), "/codex-code-mode-host"],
+            [command[index : index + 3] for index in range(len(command) - 2)],
+        )
+        self.assertEqual(driver.code_mode_host, host.resolve())
+        self.assertIn(
             ["--setenv", "SHELL", "/offline-bash"],
             [command[index : index + 3] for index in range(len(command) - 2)],
         )
@@ -753,6 +763,79 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertNotIn(str(self.auth), command)
         passwd = (driver._identity_root / "passwd").read_text(encoding="utf-8")
         self.assertEqual(passwd.split(":")[-1], "/offline-bash\n")
+        driver.close()
+
+    def test_bwrap_fails_closed_for_missing_or_unpinned_code_mode_host(self) -> None:
+        toolchain = self.root / "toolchain"
+        toolchain.mkdir()
+        packages = self.root / "packages"
+        packages.mkdir()
+        bwrap = self.root / "bwrap"
+        offline_shell = self.root / "offline-shell"
+        for executable in (bwrap, offline_shell):
+            executable.write_bytes(b"fixture")
+            executable.chmod(0o500)
+        options = {
+            "bwrap_binary": bwrap,
+            "offline_shell": offline_shell,
+            "toolchain_root": toolchain,
+            "packages_root": packages,
+        }
+        host = self.codex.with_name("codex-code-mode-host")
+        digest = hashlib.sha256(b"matching code-mode host").hexdigest()
+        with self.assertRaisesRegex(BenchmarkError, "pinned code-mode host SHA-256"):
+            self.driver(**options)
+        with self.assertRaisesRegex(BenchmarkError, "missing or unsafe"):
+            self.driver(**options, code_mode_host_sha256=digest)
+        host.write_bytes(b"matching code-mode host")
+        host.chmod(0o500)
+        with self.assertRaisesRegex(BenchmarkError, "does not match deployment"):
+            self.driver(**options, code_mode_host_sha256="0" * 64)
+        host.chmod(0o400)
+        with self.assertRaisesRegex(BenchmarkError, "not a safe executable"):
+            self.driver(**options, code_mode_host_sha256=digest)
+        host.unlink()
+        real_host = self.root / "unverified-host"
+        real_host.write_bytes(b"matching code-mode host")
+        real_host.chmod(0o500)
+        host.symlink_to(real_host)
+        with self.assertRaisesRegex(BenchmarkError, "missing or unsafe"):
+            self.driver(**options, code_mode_host_sha256=digest)
+        self.assertFalse((self.root / "state").exists())
+
+    def test_bwrap_reauthenticates_code_mode_host_before_launch(self) -> None:
+        toolchain = self.root / "toolchain"
+        toolchain.mkdir()
+        packages = self.root / "packages"
+        packages.mkdir()
+        bwrap = self.root / "bwrap"
+        offline_shell = self.root / "offline-shell"
+        for executable in (bwrap, offline_shell):
+            executable.write_bytes(b"fixture")
+            executable.chmod(0o500)
+        host = self.codex.with_name("codex-code-mode-host")
+        host.write_bytes(b"matching code-mode host")
+        host.chmod(0o500)
+        driver = self.driver(
+            bwrap_binary=bwrap,
+            code_mode_host_sha256=hashlib.sha256(host.read_bytes()).hexdigest(),
+            offline_shell=offline_shell,
+            toolchain_root=toolchain,
+            packages_root=packages,
+        )
+        host.chmod(0o700)
+        host.write_bytes(b"replaced code-mode host")
+        artifacts = self.root / "refused-artifacts"
+        artifacts.mkdir()
+        with self.assertRaisesRegex(BenchmarkError, "does not match deployment"):
+            driver._bwrap_command(
+                driver._app_server_command("/codex"),
+                workspace=self.workspace,
+                artifact_dir=artifacts,
+                output_schema=None,
+            )
+        self.assertFalse((artifacts / "network_violations.bin").exists())
+        driver.close()
 
     def test_malformed_telemetry_fails_closed_and_removes_auth(self) -> None:
         driver = self.driver()

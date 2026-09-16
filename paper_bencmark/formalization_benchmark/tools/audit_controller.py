@@ -190,6 +190,7 @@ class AuditController:
         self,
         *,
         codex_binary: Path,
+        code_mode_host_sha256: str | None = None,
         auth_file: Path,
         model: str,
         reasoning_effort: str,
@@ -202,6 +203,7 @@ class AuditController:
         forbidden_feedback_identifiers: Iterable[str] = (),
     ) -> None:
         self.codex_binary = codex_binary
+        self.code_mode_host_sha256 = code_mode_host_sha256
         self.auth_file = auth_file
         self.model = model
         self.reasoning_effort = reasoning_effort
@@ -263,6 +265,7 @@ class AuditController:
             artifacts = attempt_root / "artifacts"
             driver = CodexDriver(
                 codex_binary=self.codex_binary,
+                code_mode_host_sha256=self.code_mode_host_sha256,
                 model=self.model,
                 reasoning_effort=self.reasoning_effort,
                 # Auditor credentials likewise stay outside the archived audit

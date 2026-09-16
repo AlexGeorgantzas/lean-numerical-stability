@@ -402,8 +402,9 @@ def _campaign_lock(
     global_registry_root: Path | None = None,
     predecessor_run_root: Path | None = None,
     legacy_predecessor_run_root: Path | None = None,
+    ancestral_predecessor_run_root: Path | None = None,
 ) -> Iterator[None]:
-    """Serialize this release, all new releases, and both predecessor launchers."""
+    """Serialize this release, the account registry, and all three predecessors."""
 
     paths = [run_root / "locks" / "formalization-pilot.lock"]
     if global_registry_root is not None:
@@ -412,6 +413,8 @@ def _campaign_lock(
         paths.append(predecessor_run_root / "locks" / "formalization-pilot.lock")
     if legacy_predecessor_run_root is not None:
         paths.append(legacy_predecessor_run_root / "locks" / "formalization-pilot.lock")
+    if ancestral_predecessor_run_root is not None:
+        paths.append(ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     descriptors: list[int] = []
     try:
         for path in sorted(set(paths)):
@@ -456,6 +459,7 @@ class PairController:
             getattr(self.deployment, "global_registry_root", None),
             getattr(self.deployment, "predecessor_run_root", None),
             getattr(self.deployment, "legacy_predecessor_run_root", None),
+            getattr(self.deployment, "ancestral_predecessor_run_root", None),
         )
 
     def _qualify_provider(self) -> dict[str, Any]:
@@ -922,8 +926,9 @@ class PairController:
                 self.deployment.global_registry_root is None
                 or self.deployment.predecessor_run_root is None
                 or self.deployment.legacy_predecessor_run_root is None
+                or self.deployment.ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-3 registry or predecessor locks are missing")
+                raise BenchmarkError("pilot-4 registry or predecessor locks are missing")
             from setup_titan import predecessor_lineage
 
             lineage = predecessor_lineage(
@@ -934,6 +939,17 @@ class PairController:
             expected_codex_hash = deployment_record.get("codex_binary_sha256")
             if expected_codex_hash != codex["sha256"]:
                 raise BenchmarkError("Codex binary changed after deployment")
+            code_mode_host = self.deployment.codex_binary.with_name("codex-code-mode-host")
+            if (
+                code_mode_host.is_symlink()
+                or not code_mode_host.is_file()
+                or deployment_record.get("code_mode_host_binary") != str(code_mode_host)
+                or deployment_record.get("code_mode_host_sha256")
+                != self.deployment.code_mode_host_sha256
+                or deployment_record.get("code_mode_host_sha256")
+                != sha256_file(code_mode_host)
+            ):
+                raise BenchmarkError("Codex Code Mode host changed after deployment")
             for field, path, label in (
                 (
                     "library_snapshot_record_sha256",
@@ -1282,6 +1298,7 @@ class PairController:
         workspace = condition_root / "workspace"
         return CodexDriver(
             codex_binary=self.deployment.codex_binary,
+            code_mode_host_sha256=self.deployment.code_mode_host_sha256,
             model=str(self.config["formalizer_model"]),
             reasoning_effort=str(self.config["formalizer_reasoning_effort"]),
             # Provider credentials are staged only in a private tmpfs/runtime
@@ -1938,6 +1955,7 @@ class PairController:
             audit_root = pair_root / "audits" / semantic_sha256
             audit = AuditController(
                 codex_binary=self.deployment.codex_binary,
+                code_mode_host_sha256=self.deployment.code_mode_host_sha256,
                 auth_file=self.deployment.auth_file,
                 model=str(self.config["audit_model"]),
                 reasoning_effort=str(self.config["audit_reasoning_effort"]),

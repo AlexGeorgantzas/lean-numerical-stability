@@ -9,6 +9,8 @@ qualification is evidence, not permission to silently retry paid inference.
 
 import json
 from pathlib import Path
+import re
+import secrets
 from typing import Any, Mapping
 
 from codex_driver import CodexDriver, TurnResult, command_cgroup_snapshot
@@ -30,15 +32,29 @@ from hardware import snapshot_hardware, verify_frozen_hardware_identity
 from manifest_control import MANIFEST_PATH, verify_manifest
 
 
-SCHEMA = "formalization-provider-qualification-2"
+SCHEMA = "formalization-provider-qualification-3"
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT_SCHEMAS = ROOT / "audit" / "schemas"
+INPUT_NAME = "qualification_input.json"
+OUTPUT_NAME = "qualification_result.json"
 PROMPT = (
     "This is an off-benchmark interface check, not a benchmark task. "
-    "Complete these two independent small checks: "
-    "A. Compute (3^3 + 5^3 + 7^3) - (2^3 + 4^3 + 6^3). "
-    "B. Reverse the uppercase text NUMERICAL character by character. "
+    f"Use a workspace file-reading tool to read the entire {INPUT_NAME} file, "
+    "including its probe_marker. Compute weighted_sum as the sum of cubes "
+    "of odd_values minus the sum of cubes of even_values, and reverse "
+    "uppercase_text character by character. "
     "Return only a JSON object with integer weighted_sum and string reversed_text."
+)
+CODE_MODE = re.compile(rb"\bcode[\s_-]*mode\b", re.IGNORECASE)
+WARNING = re.compile(
+    rb"\b(?:warn(?:ing)?|fail(?:ed|ure)?|error|unavailable|unable|missing|"
+    rb"disabled|cannot|could\s+not|not\s+(?:found|started|initialized))\b",
+    re.IGNORECASE,
+)
+TOOL_FAILURE = re.compile(
+    rb"\b(?:tool execution failed|tool call failed|script error|"
+    rb"error running tool|failed to execute tool)\b",
+    re.IGNORECASE,
 )
 EXPECTED_OUTPUT = {"weighted_sum": 207, "reversed_text": "LACIREMUN"}
 OUTPUT_SCHEMA = {
@@ -278,6 +294,222 @@ def _check_shutdown(root: Path, thread_id: str) -> None:
         raise BenchmarkError("provider qualification formalizer shutdown was not clean")
 
 
+def _normalized(value: Any) -> str:
+    if not isinstance(value, str):
+        return ""
+    return "".join(character for character in value.casefold() if character.isalnum())
+
+
+def _tool_item(item: Mapping[str, Any]) -> bool:
+    kind = _normalized(item.get("type"))
+    return any(
+        token in kind
+        for token in (
+            "tool", "commandexecution", "filechange", "fileread", "filewrite",
+            "functioncall",
+        )
+    )
+
+
+def _tool_text(item: Mapping[str, Any], keys: tuple[str, ...]) -> str:
+    return " ".join(
+        json.dumps(item[key], sort_keys=True, ensure_ascii=False)
+        for key in keys
+        if key in item
+    )
+
+
+def _has_code_mode_warning(payload: bytes) -> bool:
+    return any(
+        CODE_MODE.search(line) and WARNING.search(line)
+        for line in payload.splitlines()
+    )
+
+
+def _event_has_code_mode_warning(value: Any) -> bool:
+    if isinstance(value, str):
+        encoded = value.encode("utf-8")
+        return bool(CODE_MODE.search(encoded) and WARNING.search(encoded))
+    if isinstance(value, Mapping):
+        if (
+            _normalized(value.get("type")) in {"warning", "error"}
+            or _normalized(value.get("method")) in {"warning", "error"}
+        ) and any(
+            CODE_MODE.search(child.encode("utf-8"))
+            for child in value.values()
+            if isinstance(child, str)
+        ):
+            return True
+        return any(_event_has_code_mode_warning(child) for child in value.values())
+    if isinstance(value, list):
+        return any(_event_has_code_mode_warning(child) for child in value)
+    return False
+
+
+def _check_tool_trace(
+    role_root: Path,
+    turn: Mapping[str, Any],
+    *,
+    marker: str,
+    writable: bool,
+) -> dict[str, Any]:
+    """Require observable, successful workspace tools, not just a claimed result."""
+
+    turn_root = role_root / "turn"
+    events_path = turn_root / "events.jsonl"
+    stderr_path = turn_root / "stderr.log"
+    if any(
+        not path.is_file() or path.is_symlink()
+        for path in (events_path, stderr_path)
+    ):
+        raise BenchmarkError("provider qualification lacks tool trace or stderr evidence")
+    if (
+        turn.get("events_sha256") != sha256_file(events_path)
+        or turn.get("stderr_sha256") != sha256_file(stderr_path)
+    ):
+        raise BenchmarkError("provider qualification tool trace digest mismatch")
+    event_bytes = events_path.read_bytes()
+    stderr_bytes = stderr_path.read_bytes()
+    if _has_code_mode_warning(stderr_bytes):
+        raise BenchmarkError("provider qualification emitted a Code Mode warning")
+    if TOOL_FAILURE.search(stderr_bytes):
+        raise BenchmarkError("provider qualification tool failed")
+    late_stderr = role_root / "session-close" / "stderr-after-last-turn.log"
+    if late_stderr.is_symlink():
+        raise BenchmarkError("provider qualification has unsafe shutdown stderr evidence")
+    if late_stderr.is_file() and _has_code_mode_warning(late_stderr.read_bytes()):
+        raise BenchmarkError("provider qualification emitted a Code Mode warning")
+    if late_stderr.is_file() and TOOL_FAILURE.search(late_stderr.read_bytes()):
+        raise BenchmarkError("provider qualification tool failed")
+
+    events = []
+    for line in event_bytes.splitlines():
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise BenchmarkError("provider qualification tool trace is malformed") from error
+        if not isinstance(event, Mapping):
+            raise BenchmarkError("provider qualification tool trace is malformed")
+        if _event_has_code_mode_warning(event):
+            raise BenchmarkError("provider qualification emitted a Code Mode warning")
+        events.append(event)
+    if len(events) != turn.get("event_count"):
+        raise BenchmarkError("provider qualification tool trace count mismatch")
+
+    completed: list[tuple[str, Mapping[str, Any]]] = []
+    outputs: dict[str, str] = {}
+    result_call_ids: set[str] = set()
+    for event in events:
+        method = event.get("method")
+        if isinstance(method, str) and (
+            method.endswith("/failed") or method.endswith("/error")
+        ):
+            raise BenchmarkError("provider qualification tool failed")
+        params = event.get("params")
+        item = params.get("item") if isinstance(params, Mapping) else None
+        if not isinstance(item, Mapping) or not _tool_item(item):
+            continue
+        status = _normalized(item.get("status"))
+        exit_code = item.get("exitCode", item.get("exit_code"))
+        result = item.get("result")
+        output_text = _tool_text(
+            item, ("output", "stdout", "aggregatedOutput", "content")
+        )
+        if (
+            status in {"failed", "error", "cancelled", "canceled", "rejected", "denied"}
+            or (exit_code is not None and (type(exit_code) is not int or exit_code != 0))
+            or item.get("isError") is True
+            or item.get("error") not in (None, "", False)
+            or (
+                isinstance(result, Mapping)
+                and (
+                    result.get("isError") is True
+                    or result.get("error") not in (None, "", False)
+                )
+            )
+            or (
+                isinstance(params, Mapping)
+                and params.get("error") not in (None, "", False)
+            )
+            or TOOL_FAILURE.search(output_text.encode("utf-8"))
+        ):
+            raise BenchmarkError("provider qualification tool failed")
+        if method not in ("item/completed", "rawResponseItem/completed"):
+            continue
+        call_id = item.get("callId", item.get("call_id", item.get("id")))
+        if isinstance(call_id, str) and call_id:
+            outputs[call_id] = outputs.get(call_id, "") + _tool_text(
+                item, ("output", "stdout", "aggregatedOutput", "result", "content")
+            )
+            if "functioncalloutput" in _normalized(item.get("type")):
+                result_call_ids.add(call_id)
+        completed.append((method, item))
+
+    request_keys = (
+        "command", "cmd", "name", "arguments", "input", "params", "path",
+        "filePath", "changes", "patch",
+    )
+    result_keys = ("output", "stdout", "aggregatedOutput", "result", "content")
+    read_items = []
+    write_items = []
+    for method, item in completed:
+        request = _tool_text(item, request_keys)
+        call_id = item.get("callId", item.get("call_id", item.get("id")))
+        kind = _normalized(item.get("type"))
+        response = _tool_text(item, result_keys)
+        if isinstance(call_id, str):
+            response += outputs.get(call_id, "")
+        if INPUT_NAME in request and marker in response:
+            read_items.append(item)
+        raw_function_request = (
+            method == "rawResponseItem/completed"
+            and "functioncall" in kind
+            and "functioncalloutput" not in kind
+        )
+        if (
+            OUTPUT_NAME in request
+            and kind != "functioncalloutput"
+            and (not raw_function_request or call_id in result_call_ids)
+        ):
+            write_items.append(item)
+    if not read_items:
+        raise BenchmarkError("provider qualification lacks a completed workspace file-read tool")
+    if writable and not write_items:
+        raise BenchmarkError("provider qualification lacks a completed workspace file-write tool")
+    return {
+        "read_tool_items": len(read_items),
+        "write_tool_items": len(write_items),
+        "events_sha256": sha256_file(events_path),
+    }
+
+
+def _check_workspace_probe(
+    workspace: Path,
+    *,
+    input_sha256: str,
+    expected_output: Mapping[str, Any],
+    writable: bool,
+) -> None:
+    source = workspace / INPUT_NAME
+    output = workspace / OUTPUT_NAME
+    if not source.is_file() or source.is_symlink() or sha256_file(source) != input_sha256:
+        raise BenchmarkError("provider qualification workspace input changed")
+    if not writable:
+        if set(workspace.iterdir()) != {source}:
+            raise BenchmarkError("provider qualification read-only workspace was written")
+        return
+    if not output.is_file() or output.is_symlink():
+        raise BenchmarkError("provider qualification workspace file-write is missing")
+    try:
+        written = load_json(output)
+    except (BenchmarkError, ValueError) as error:
+        raise BenchmarkError("provider qualification workspace file-write is malformed") from error
+    if written != expected_output or (
+        "weighted_sum" in expected_output and type(written.get("weighted_sum")) is not int
+    ):
+        raise BenchmarkError("provider qualification workspace file-write has wrong content")
+
+
 def qualification_identity(
     deployment: Deployment, manifest: Mapping[str, Any], config: Mapping[str, Any]
 ) -> dict[str, Any]:
@@ -293,6 +525,8 @@ def qualification_identity(
         or deployment_record.get("run_root") != str(deployment.run_root)
         or deployment_record.get("codex_binary_sha256")
         != sha256_file(deployment.codex_binary)
+        or deployment_record.get("code_mode_host_sha256")
+        != deployment.code_mode_host_sha256
         or manifest.get("pilot_id") != config.get("pilot_id")
     ):
         raise BenchmarkError("provider qualification deployment/release identity mismatch")
@@ -303,6 +537,7 @@ def qualification_identity(
         "deployment_path": str(deployment.path),
         "deployment_sha256": sha256_file(deployment.path),
         "codex_binary_sha256": sha256_file(deployment.codex_binary),
+        "code_mode_host_sha256": deployment.code_mode_host_sha256,
         "roles": {
             role: {
                 "model": str(config[model_key]),
@@ -389,10 +624,27 @@ def run_provider_capability_canary(
             role_root = roles_root / role
             workspace = role_root / "workspace"
             workspace.mkdir(parents=True, mode=0o700)
+            marker = "qualification-" + secrets.token_hex(16)
+            input_payload: dict[str, Any] = {"probe_marker": marker}
+            if schema_name is None:
+                input_payload.update({
+                    "odd_values": [3, 5, 7],
+                    "even_values": [2, 4, 6],
+                    "uppercase_text": "NUMERICAL",
+                })
+            else:
+                input_payload["expected_output"] = expected
+            input_path = workspace / INPUT_NAME
+            write_json_atomic(input_path, input_payload, mode=0o400)
+            input_sha256 = sha256_file(input_path)
             schema_path = role_root / "output_schema.json"
             if schema_name is None:
                 write_json_atomic(schema_path, OUTPUT_SCHEMA, mode=0o400)
-                prompt = PROMPT
+                prompt = PROMPT + (
+                    f" Use a workspace file-writing tool to create {OUTPUT_NAME} "
+                    "containing exactly the same JSON object before returning it."
+                    if writable else " Do not write to the workspace."
+                )
             else:
                 source_schema = AUDIT_SCHEMAS / schema_name
                 if not source_schema.is_file() or source_schema.is_symlink():
@@ -402,9 +654,10 @@ def run_provider_capability_canary(
                 write_bytes_atomic(schema_path, source_schema.read_bytes(), mode=0o400)
                 prompt = (
                     "This is an off-benchmark structured-output interface check, "
-                    "not a paper audit. Copy the following JSON object exactly, "
-                    "with no explanatory text: "
-                    + json.dumps(expected, sort_keys=True, separators=(",", ":"))
+                    f"not a paper audit. Use a workspace file-reading tool to read "
+                    f"the entire {INPUT_NAME} file, including its probe_marker. "
+                    "Copy the expected_output JSON object from that file exactly, "
+                    "with no explanatory text. Do not write to the workspace."
                 )
             if sha256_file(schema_path) != identity["roles"][role]["output_schema_sha256"]:
                 raise BenchmarkError(
@@ -421,6 +674,7 @@ def run_provider_capability_canary(
                 toolchain_root=deployment.toolchain_root,
                 packages_root=deployment.packages_root,
                 workspace_writable=writable,
+                code_mode_host_sha256=deployment.code_mode_host_sha256,
             )
             result: TurnResult | None = None
             try:
@@ -447,6 +701,15 @@ def run_provider_capability_canary(
                 ephemeral=ephemeral,
                 command_envelope=config["command_resource_envelope"],
             )
+            tool_probe = _check_tool_trace(
+                role_root, turn, marker=marker, writable=writable
+            )
+            _check_workspace_probe(
+                workspace,
+                input_sha256=input_sha256,
+                expected_output=expected,
+                writable=writable,
+            )
             if not ephemeral:
                 _check_shutdown(role_root, result.thread_id)
             outcomes[role] = {
@@ -454,6 +717,11 @@ def run_provider_capability_canary(
                 "thread_id": result.thread_id,
                 "usage": result.usage,
                 "raw_provider_responses": turn["raw_response_count"],
+                "workspace_tool_probe": tool_probe,
+                "workspace_input_sha256": input_sha256,
+                "workspace_output_sha256": (
+                    sha256_file(workspace / OUTPUT_NAME) if writable else None
+                ),
                 "turn_record_sha256": sha256_file(turn_path),
                 "turn_artifacts": tree_manifest(role_root),
             }

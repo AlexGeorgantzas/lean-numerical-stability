@@ -51,6 +51,8 @@ class FakeDriver:
     turn_overrides: dict = {}
     result_overrides: dict = {}
     role_result_overrides: dict = {}
+    trace_mode: str = "normal"
+    role_trace_modes: dict[str, str] = {}
 
     def __init__(self, **options):
         self.options = options
@@ -63,8 +65,119 @@ class FakeDriver:
         artifact_dir = options["artifact_dir"]
         role = artifact_dir.parent.name
         expected = next(item[-1] for item in canary.ROLES if item[0] == role)
+        mode = self.role_trace_modes.get(role, self.trace_mode)
+        source = options["workspace"] / canary.INPUT_NAME
+        source_text = source.read_text(encoding="utf-8")
         artifact_dir.mkdir(parents=True)
-        (artifact_dir / "events.jsonl").write_text("{}\n", encoding="utf-8")
+        events = []
+        if mode != "missing-read":
+            if mode.startswith("function-call"):
+                events.extend([
+                    {"method": "rawResponseItem/completed", "params": {"item": {
+                        "callId": "read-call", "type": "function_call",
+                        "name": "exec_command",
+                        "arguments": {"cmd": f"cat {canary.INPUT_NAME}"},
+                    }}},
+                    {"method": "rawResponseItem/completed", "params": {"item": {
+                        "callId": "read-call", "type": "function_call_output",
+                        "output": source_text,
+                    }}},
+                ])
+            else:
+                events.append(
+                    {
+                        "method": "item/started" if mode == "no-completed-read" else "item/completed",
+                        "params": {
+                            "item": {
+                                "id": "read-tool",
+                                "type": "commandExecution",
+                                "command": f"cat {canary.INPUT_NAME}",
+                                "aggregatedOutput": source_text,
+                                "status": "completed",
+                                "exitCode": 1 if mode == "failed-tool" else 0,
+                            }
+                        },
+                    }
+                )
+        if self.options["workspace_writable"]:
+            output = options["workspace"] / canary.OUTPUT_NAME
+            if mode != "missing-output":
+                written = (
+                    {**expected, "weighted_sum": 206}
+                    if mode == "wrong-output"
+                    else expected
+                )
+                output.write_text(json.dumps(written), encoding="utf-8")
+            if mode != "missing-write":
+                if mode.startswith("function-call"):
+                    events.append(
+                        {"method": "rawResponseItem/completed", "params": {"item": {
+                            "callId": "write-call", "type": "function_call",
+                            "name": "apply_patch",
+                            "arguments": {"patch": f"*** Add File: {canary.OUTPUT_NAME}"},
+                        }}}
+                    )
+                    if mode == "function-call":
+                        events.append({"method": "rawResponseItem/completed", "params": {"item": {
+                            "callId": "write-call", "type": "function_call_output",
+                            "output": "Success. Updated the following files",
+                        }}})
+                else:
+                    events.append(
+                        {
+                            "method": "item/completed",
+                            "params": {
+                                "item": {
+                                    "id": "write-tool",
+                                    "type": "fileChange",
+                                    "changes": [{"path": canary.OUTPUT_NAME, "kind": "add"}],
+                                    "status": "completed",
+                                }
+                            },
+                        }
+                    )
+        elif mode == "read-only-write":
+            (options["workspace"] / "unexpected.txt").write_text(
+                "written", encoding="utf-8"
+            )
+        if mode == "warning-event":
+            events.append(
+                {"method": "item/completed", "params": {"item": {
+                    "id": "warning", "type": "agentMessage",
+                    "text": "Warning: Code Mode failed to start",
+                }}}
+            )
+        if mode == "benign-code-mode":
+            events.append(
+                {"method": "item/completed", "params": {"item": {
+                    "id": "helper", "type": "codeModeToolCall",
+                    "command": "/codex-code-mode-host", "error": None,
+                    "status": "completed",
+                }}}
+            )
+        if mode == "failed-function-tool":
+            events.append(
+                {"method": "item/completed", "params": {"item": {
+                    "id": "another-tool", "type": "function_call_output",
+                    "isError": True, "output": "Tool execution failed",
+                }}}
+            )
+        events.append(
+            {"method": "item/completed", "params": {"item": {
+                "id": "final-message", "type": "agentMessage",
+                "text": json.dumps(expected),
+            }}}
+        )
+        (artifact_dir / "events.jsonl").write_text(
+            "".join(json.dumps(event) + "\n" for event in events), encoding="utf-8"
+        )
+        stderr = artifact_dir / "stderr.log"
+        stderr.write_text(
+            "Warning: Code Mode unavailable\n" if mode == "warning-stderr"
+            else "Tool execution failed\n" if mode == "failed-tool-stderr"
+            else "",
+            encoding="utf-8",
+        )
         result_options = {
             "thread_id": self.thread_id,
             "exit_code": 0,
@@ -73,7 +186,7 @@ class FakeDriver:
             "usage": dict(USAGE),
             "usage_complete": True,
             "final_message": json.dumps(expected),
-            "event_count": 1,
+            "event_count": len(events),
             "command": ["fake-codex"],
             "active_started_perf_ns": 10,
             "active_ended_perf_ns": 20,
@@ -93,7 +206,9 @@ class FakeDriver:
             "usage_complete": True,
             "usage": dict(USAGE),
             "raw_response_count": 1,
-            "event_count": 1,
+            "event_count": len(events),
+            "events_sha256": sha256_file(artifact_dir / "events.jsonl"),
+            "stderr_sha256": sha256_file(stderr),
             "cumulative_usage_delta_cross_check": dict(USAGE),
             "capability_attestation": {"passed": True},
             "protocol_error": None,
@@ -156,6 +271,7 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
                 "release_manifest_sha256": sha256_file(self.manifest_path),
                 "run_root": str(self.run_root),
                 "codex_binary_sha256": sha256_file(self.codex),
+                "code_mode_host_sha256": "a" * 64,
                 "hardware_identity": {"fixture": True},
             },
         )
@@ -174,6 +290,7 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
             library_snapshot_record=self.root / "library-snapshot.json",
             runtime_snapshot_record=self.root / "runtime-snapshot.json",
             strict_hardware=True,
+            code_mode_host_sha256="a" * 64,
         )
         self.manifest = {
             "pilot_id": "test-pilot",
@@ -195,6 +312,8 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
         FakeDriver.turn_overrides = {}
         FakeDriver.result_overrides = {}
         FakeDriver.role_result_overrides = {}
+        FakeDriver.trace_mode = "normal"
+        FakeDriver.role_trace_modes = {}
         self.patches = [
             mock.patch.object(canary, "CodexDriver", FakeDriver),
             mock.patch.object(canary, "MANIFEST_PATH", self.manifest_path),
@@ -231,6 +350,10 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
             ("exact-auditor", "high"),
         )
         self.assertTrue(formalizer["driver"]["workspace_writable"])
+        self.assertEqual(
+            formalizer["driver"]["code_mode_host_sha256"],
+            self.deployment.code_mode_host_sha256,
+        )
         self.assertFalse(formalizer["turn"]["ephemeral"])
         self.assertFalse(auditor["driver"]["workspace_writable"])
         self.assertTrue(auditor["turn"]["ephemeral"])
@@ -255,9 +378,18 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
                 call["turn"]["output_schema"].read_bytes(),
                 (canary.AUDIT_SCHEMAS / schema_name).read_bytes(),
             )
-            self.assertIn(
-                json.dumps(expected, sort_keys=True, separators=(",", ":")),
-                call["turn"]["prompt"],
+            self.assertNotIn(json.dumps(expected), call["turn"]["prompt"])
+            self.assertEqual(
+                json.loads(
+                    (call["turn"]["workspace"] / canary.INPUT_NAME).read_text()
+                )["expected_output"],
+                expected,
+            )
+        for role, outcome in first["record"]["role_outcomes"].items():
+            self.assertGreaterEqual(outcome["workspace_tool_probe"]["read_tool_items"], 1)
+            self.assertEqual(
+                outcome["workspace_tool_probe"]["write_tool_items"] >= 1,
+                role == "formalizer",
             )
         self.assertEqual(first["record"]["provider_turns"], 6)
         self.assertEqual(first["record"]["provider_calls"], 6)
@@ -267,6 +399,23 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
         second = canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(second["record_sha256"], first["record_sha256"])
         self.assertEqual(len(FakeDriver.calls), 6)
+
+    def test_function_call_tool_trace_is_accepted_when_file_is_checked(self) -> None:
+        FakeDriver.trace_mode = "function-call"
+        result = canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(result["status"], "PASSED")
+        self.assertEqual(len(FakeDriver.calls), 6)
+
+    def test_raw_function_call_without_tool_result_is_not_a_write(self) -> None:
+        FakeDriver.trace_mode = "function-call-no-write-result"
+        with self.assertRaisesRegex(BenchmarkError, "file-write tool"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_benign_code_mode_tool_name_is_not_a_startup_warning(self) -> None:
+        FakeDriver.trace_mode = "benign-code-mode"
+        result = canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(result["status"], "PASSED")
 
     def test_auditor_schema_probes_satisfy_audit_contracts(self) -> None:
         for role, _schema, expected in canary.AUDIT_SCHEMA_PROBES:
@@ -308,6 +457,72 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
     def test_wrong_parallel_check_output_fails_closed(self) -> None:
         FakeDriver.result_overrides = {"final_message": '{"weighted_sum": 206, "reversed_text": "LACIREMUN"}'}
         with self.assertRaisesRegex(BenchmarkError, "wrong checkable output"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_missing_completed_file_read_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "no-completed-read"
+        with self.assertRaisesRegex(BenchmarkError, "file-read tool"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_missing_file_write_tool_fails_even_with_correct_file(self) -> None:
+        FakeDriver.trace_mode = "missing-write"
+        with self.assertRaisesRegex(BenchmarkError, "file-write tool"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_missing_file_write_fails_even_with_correct_final_json(self) -> None:
+        FakeDriver.trace_mode = "missing-output"
+        with self.assertRaisesRegex(BenchmarkError, "file-write is missing"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_wrong_file_write_fails_even_with_correct_final_json(self) -> None:
+        FakeDriver.trace_mode = "wrong-output"
+        with self.assertRaisesRegex(BenchmarkError, "wrong content"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_paper_facing_schema_role_must_read_file(self) -> None:
+        FakeDriver.role_trace_modes = {"audit-schema-blind-translation": "missing-read"}
+        with self.assertRaisesRegex(BenchmarkError, "file-read tool"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 3)
+
+    def test_read_only_role_cannot_write_an_unexpected_workspace_file(self) -> None:
+        FakeDriver.role_trace_modes = {"auditor": "read-only-write"}
+        with self.assertRaisesRegex(BenchmarkError, "read-only workspace was written"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 2)
+
+    def test_code_mode_warning_in_event_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "warning-event"
+        with self.assertRaisesRegex(BenchmarkError, "Code Mode warning"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_code_mode_warning_in_stderr_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "warning-stderr"
+        with self.assertRaisesRegex(BenchmarkError, "Code Mode warning"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_failed_command_tool_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "failed-tool"
+        with self.assertRaisesRegex(BenchmarkError, "tool failed"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_failed_function_tool_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "failed-function-tool"
+        with self.assertRaisesRegex(BenchmarkError, "tool failed"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_failed_tool_stderr_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "failed-tool-stderr"
+        with self.assertRaisesRegex(BenchmarkError, "tool failed"):
             canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(len(FakeDriver.calls), 1)
 

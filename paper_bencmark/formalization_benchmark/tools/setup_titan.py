@@ -45,6 +45,30 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = ROOT.parents[1]
 FROZEN_LIBRARY_COMMIT = "45813a95dacf577461bae13f033af0dbc985a225"
 FROZEN_TOOLCHAIN = "leanprover/lean4:v4.29.0-rc3"
+PILOT3_PILOT_ID = "formalization-benchmark-t2-pilot-3"
+PILOT3_RELEASE_COMMIT = "2df140d15c207703e0a5f5a222eb34f223525f6d"
+PILOT3_MANIFEST_PAYLOAD_SHA256 = (
+    "46402dd9f63f5ee85d387762c07ff22ca7c25a7ef787552d6eb8b26c7007e183"
+)
+PILOT3_MANIFEST_FILE_SHA256 = (
+    "bee6fc6e278364a6e215f25ec4e567daac16a50e88abf3d04831b527c0950581"
+)
+PILOT3_DEPLOYMENT_SHA256 = (
+    "ee699c530894511fce8e96c7a39c6b76e9295cbde5ea4f96560a83751d8fb9a0"
+)
+PILOT3_INCIDENT_RUN_ID = "P01-T2-20260916T150151Z-40b3a1dd"
+PILOT3_INDEX_SHA256 = (
+    "578a3ff3d263ce7d9caa1a274787190e88dac88290ebd54e92fc2673a29d876e"
+)
+PILOT3_STATE_SHA256 = (
+    "935e085b452af737fa7b43658024e1cd0431e834d0a400ebab2b00ec90e56860"
+)
+PILOT3_INCIDENT_REPORT_SHA256 = (
+    "04e44175c8192d719a943b6d56f565b0e013ee737471ccd03fc8b4db896254c7"
+)
+PILOT3_QUALIFICATION_SHA256 = (
+    "6d8155f5e3f626c572b8f950eb9dc3df8c3be853f6850cc2d6726f6261e29eea"
+)
 PREDECESSOR_PILOT_ID = "formalization-benchmark-t2-pilot-2"
 PREDECESSOR_RELEASE_COMMIT = "a26d275b47e0d786a9b3aecdaa3584149f6aa3c3"
 PREDECESSOR_MANIFEST_PAYLOAD_SHA256 = (
@@ -187,7 +211,7 @@ def legacy_predecessor_lineage(
     }
 
 
-def predecessor_lineage(root_argument: str) -> dict[str, str]:
+def pilot2_lineage(root_argument: str) -> dict[str, str]:
     """Authenticate the sealed pilot-2 incident without modifying its deployment."""
 
     root = Path(root_argument).expanduser()
@@ -308,10 +332,159 @@ def predecessor_lineage(root_argument: str) -> dict[str, str]:
     }
 
 
+def predecessor_lineage(root_argument: str) -> dict[str, str]:
+    """Authenticate pilot-3's sealed incident and its pilot-2/pilot-1 lineage."""
+
+    root = Path(root_argument).expanduser()
+    if not root.is_absolute() or root.is_symlink() or not root.is_dir():
+        raise BenchmarkError("pilot-3 predecessor deployment root is missing or unsafe")
+    root = root.resolve()
+    record_path = root / "deployment.json"
+    manifest_path = (
+        root / "release" / "paper_bencmark" / "formalization_benchmark" / "manifest.json"
+    )
+    for path, expected in (
+        (record_path, PILOT3_DEPLOYMENT_SHA256),
+        (manifest_path, PILOT3_MANIFEST_FILE_SHA256),
+    ):
+        if not path.is_file() or path.is_symlink() or sha256_file(path) != expected:
+            raise BenchmarkError(f"sealed pilot-3 release evidence is missing or changed: {path}")
+    previous = load_json(record_path)
+    previous_manifest = load_json(manifest_path)
+    if (
+        previous.get("schema_version") != "formalization-deployment-1"
+        or previous.get("pilot_id") != PILOT3_PILOT_ID
+        or previous.get("release_commit") != PILOT3_RELEASE_COMMIT
+        or previous.get("release_manifest_sha256") != PILOT3_MANIFEST_FILE_SHA256
+        or previous.get("manifest_payload_sha256")
+        != PILOT3_MANIFEST_PAYLOAD_SHA256
+        or previous_manifest.get("pilot_id") != PILOT3_PILOT_ID
+        or previous_manifest.get("manifest_payload_sha256")
+        != PILOT3_MANIFEST_PAYLOAD_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-3 release identity changed")
+    run_root = root / "runs"
+    if (
+        not run_root.is_dir()
+        or run_root.is_symlink()
+        or previous.get("run_root") != str(run_root)
+    ):
+        raise BenchmarkError("pilot-3 run root does not match its deployment record")
+    pilot2_run_root_raw = previous.get("predecessor_run_root")
+    if not isinstance(pilot2_run_root_raw, str):
+        raise BenchmarkError("pilot-3 deployment is missing its pilot-2 run root")
+    pilot2_run_root = Path(pilot2_run_root_raw)
+    if (
+        not pilot2_run_root.is_absolute()
+        or pilot2_run_root.is_symlink()
+        or not pilot2_run_root.is_dir()
+        or pilot2_run_root.resolve() == run_root
+    ):
+        raise BenchmarkError("pilot-3 pilot-2 predecessor run root is unsafe")
+    old_lineage = pilot2_lineage(str(pilot2_run_root.parent))
+    if any(previous.get(key) != value for key, value in old_lineage.items()):
+        raise BenchmarkError("pilot-3 record does not bind the sealed pilot-2/pilot-1 lineage")
+    index_path = run_root / "index" / "P01-T2.json"
+    if (
+        not index_path.is_file()
+        or index_path.is_symlink()
+        or sha256_file(index_path) != PILOT3_INDEX_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-3 P01 index is missing or changed")
+    index = load_json(index_path)
+    pair_root_raw = index.get("pair_root")
+    if (
+        index.get("task_id") != "P01-T2"
+        or index.get("run_id") != PILOT3_INCIDENT_RUN_ID
+        or not isinstance(pair_root_raw, str)
+    ):
+        raise BenchmarkError("sealed pilot-3 P01 index is malformed")
+    raw_pair_root = Path(pair_root_raw)
+    pair_root = raw_pair_root.resolve()
+    if raw_pair_root.is_symlink() or pair_root.parent != run_root / "pairs":
+        raise BenchmarkError("sealed pilot-3 P01 pair path is unsafe")
+    report_path = pair_root / "pair_report.json"
+    state_path = pair_root / "pair_state.json"
+    for path, expected in (
+        (report_path, PILOT3_INCIDENT_REPORT_SHA256),
+        (state_path, PILOT3_STATE_SHA256),
+    ):
+        if not path.is_file() or path.is_symlink() or sha256_file(path) != expected:
+            raise BenchmarkError(f"sealed pilot-3 incident evidence is missing or changed: {path}")
+    report = load_json(report_path)
+    state = load_json(state_path)
+    if (
+        state.get("status") != "PAIR_INCIDENT"
+        or state.get("run_id") != PILOT3_INCIDENT_RUN_ID
+        or state.get("pair_root") != str(pair_root)
+        or state.get("pair_state_path") != str(state_path)
+        or state.get("pair_report_sha256") != PILOT3_INCIDENT_REPORT_SHA256
+        or index.get("pair_state_path") != str(state_path)
+        or report.get("pilot_id") != PILOT3_PILOT_ID
+        or report.get("task_id") != "P01-T2"
+        or report.get("status") != "PAIR_INCIDENT"
+        or report.get("run_id") != PILOT3_INCIDENT_RUN_ID
+        or report.get("manifest_sha256") != PILOT3_MANIFEST_FILE_SHA256
+        or report.get("pair_root") != str(pair_root)
+        or report.get("pair_state_path") != str(state_path)
+    ):
+        raise BenchmarkError("sealed pilot-3 P01 incident hash chain changed")
+    qualification_path = (
+        run_root / "qualifications" / PILOT3_MANIFEST_FILE_SHA256 / "qualification.json"
+    )
+    if (
+        not qualification_path.is_file()
+        or qualification_path.is_symlink()
+        or sha256_file(qualification_path) != PILOT3_QUALIFICATION_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-3 qualification evidence is missing or changed")
+    qualification = load_json(qualification_path)
+    qualification_identity = qualification.get("identity")
+    qualification_roles = qualification_path.parent / "roles"
+    if (
+        qualification.get("schema_version") != "formalization-provider-qualification-2"
+        or qualification.get("status") != "PASSED"
+        or not isinstance(qualification_identity, Mapping)
+        or qualification_identity.get("pilot_id") != PILOT3_PILOT_ID
+        or qualification_identity.get("manifest_sha256")
+        != PILOT3_MANIFEST_FILE_SHA256
+        or qualification_identity.get("manifest_payload_sha256")
+        != PILOT3_MANIFEST_PAYLOAD_SHA256
+        or qualification_identity.get("deployment_path") != str(record_path)
+        or qualification_identity.get("deployment_sha256") != PILOT3_DEPLOYMENT_SHA256
+        or qualification.get("roles_manifest") != tree_manifest(qualification_roles)
+    ):
+        raise BenchmarkError("sealed pilot-3 qualification is not passed")
+    return {
+        "predecessor_pilot_id": PILOT3_PILOT_ID,
+        "predecessor_deployment_record": str(record_path),
+        "predecessor_deployment_record_sha256": PILOT3_DEPLOYMENT_SHA256,
+        "predecessor_release_manifest": str(manifest_path),
+        "predecessor_release_manifest_sha256": PILOT3_MANIFEST_FILE_SHA256,
+        "predecessor_run_root": str(run_root),
+        "predecessor_task_index": str(index_path),
+        "predecessor_task_index_sha256": PILOT3_INDEX_SHA256,
+        "predecessor_pair_report": str(report_path),
+        "predecessor_pair_report_sha256": PILOT3_INCIDENT_REPORT_SHA256,
+        "predecessor_pair_state": str(state_path),
+        "predecessor_pair_state_sha256": PILOT3_STATE_SHA256,
+        "predecessor_qualification": str(qualification_path),
+        "predecessor_qualification_sha256": PILOT3_QUALIFICATION_SHA256,
+        **{
+            (
+                "legacy_predecessor_" + key.removeprefix("predecessor_")
+                if key.startswith("predecessor_")
+                else "ancestral_predecessor_" + key.removeprefix("legacy_predecessor_")
+            ): value
+            for key, value in old_lineage.items()
+        },
+    }
+
+
 def verify_predecessor_lineage(root_argument: str, deployment_record: Mapping[str, Any]) -> None:
     observed = predecessor_lineage(root_argument)
     if any(deployment_record.get(field) != value for field, value in observed.items()):
-        raise BenchmarkError("predecessor pilot-2 evidence changed during pilot-3 setup")
+        raise BenchmarkError("predecessor evidence changed during pilot-4 setup")
 
 
 def fsync_directory(path: Path) -> None:
@@ -1302,6 +1475,14 @@ def _install_once(
     if linger != "yes":
         raise BenchmarkError("Titan requires user-manager lingering for long benchmark runs")
     codex = Path(args.codex_binary).expanduser().resolve() if args.codex_binary else command_path("codex")
+    code_mode_host = codex.with_name("codex-code-mode-host")
+    if (
+        code_mode_host.is_symlink()
+        or not code_mode_host.is_file()
+        or not os.access(code_mode_host, os.X_OK)
+    ):
+        raise BenchmarkError("matching Codex Code Mode host is missing or unsafe")
+    code_mode_host_sha256 = sha256_file(code_mode_host)
     auth_file = Path(args.auth_file).expanduser().resolve()
     if not auth_file.is_file():
         raise BenchmarkError(f"Codex auth file is missing: {auth_file}")
@@ -1326,13 +1507,15 @@ def _install_once(
     )
     if ancestry.returncode != 0:
         raise BenchmarkError("release branch is not descended from the frozen benchmark base")
-    if config.get("pilot_id") != "formalization-benchmark-t2-pilot-3":
-        raise BenchmarkError("this installer requires the frozen pilot-3 identity")
+    if config.get("pilot_id") != "formalization-benchmark-t2-pilot-4":
+        raise BenchmarkError("this installer requires the frozen pilot-4 identity")
     predecessor = predecessor_lineage(args.predecessor_deployment_root)
     if published_root == Path(predecessor["predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-3 must not overwrite its predecessor deployment")
+        raise BenchmarkError("pilot-4 must not overwrite the pilot-3 deployment")
     if published_root == Path(predecessor["legacy_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-3 must not overwrite the pilot-1 deployment")
+        raise BenchmarkError("pilot-4 must not overwrite the pilot-2 deployment")
+    if published_root == Path(predecessor["ancestral_predecessor_run_root"]).parent:
+        raise BenchmarkError("pilot-4 must not overwrite the pilot-1 deployment")
     if GLOBAL_REGISTRY_ROOT.is_symlink() or (
         GLOBAL_REGISTRY_ROOT.exists() and not GLOBAL_REGISTRY_ROOT.is_dir()
     ):
@@ -1556,6 +1739,8 @@ def _install_once(
         "codex_binary": str(codex),
         "codex_binary_sha256": sha256_file(codex),
         "codex_version": run([str(codex), "--version"]),
+        "code_mode_host_binary": str(code_mode_host),
+        "code_mode_host_sha256": code_mode_host_sha256,
         "auth_file": str(published(private_auth_file)),
         "bwrap_binary": str(command_path("bwrap")),
         "offline_shell": str(published(offline_shell)),
@@ -1587,6 +1772,7 @@ def _install_once(
         run_root=run_root,
         pdf_root=pdf_root,
         codex_binary=codex,
+        code_mode_host_sha256=code_mode_host_sha256,
         auth_file=private_auth_file,
         bwrap_binary=command_path("bwrap"),
         offline_shell=offline_shell,
@@ -1604,6 +1790,7 @@ def _install_once(
         global_registry_root=GLOBAL_REGISTRY_ROOT,
         predecessor_run_root=Path(predecessor["predecessor_run_root"]),
         legacy_predecessor_run_root=Path(predecessor["legacy_predecessor_run_root"]),
+        ancestral_predecessor_run_root=Path(predecessor["ancestral_predecessor_run_root"]),
     )
     command_canary = {
         "schema_version": "formalization-command-sandbox-canary-1",
@@ -1640,6 +1827,7 @@ def _install_once(
             preflight_workspace.mkdir()
             preflight_driver = CodexDriver(
                 codex_binary=codex,
+                code_mode_host_sha256=code_mode_host_sha256,
                 model=str(config[model_key]),
                 reasoning_effort=str(config[effort_key]),
                 state_root=None,
@@ -1947,17 +2135,17 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pdf-source-dir", required=True)
     parser.add_argument(
         "--deployment-root",
-        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-3-r1"),
+        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-4-r1"),
     )
     parser.add_argument(
         "--predecessor-deployment-root",
         required=True,
-        help="read-only path to the sealed pilot-2 deployment for lineage and legacy locking",
+        help="read-only path to the sealed pilot-3 deployment for three-pilot lineage and locking",
     )
     parser.add_argument("--auth-file", default=str(Path.home() / ".codex" / "auth.json"))
     parser.add_argument("--codex-binary")
     parser.add_argument(
-        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-3-r1")
+        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-4-r1")
     )
     return parser
 

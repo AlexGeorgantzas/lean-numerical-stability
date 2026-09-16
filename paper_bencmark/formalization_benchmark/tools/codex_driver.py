@@ -736,6 +736,7 @@ class CodexDriver:
         auth_file: Path,
         disable_features: list[str] | None = None,
         bwrap_binary: Path | None = None,
+        code_mode_host_sha256: str | None = None,
         offline_shell: Path | None = None,
         toolchain_root: Path | None = None,
         packages_root: Path | None = None,
@@ -811,6 +812,8 @@ class CodexDriver:
         ]
         self.disable_features = list(dict.fromkeys([*self.disable_features, *SINGLE_AGENT_FEATURES]))
         self.bwrap_binary = bwrap_binary
+        self.code_mode_host_sha256 = code_mode_host_sha256
+        self.code_mode_host: Path | None = None
         self.offline_shell = offline_shell
         self.toolchain_root = toolchain_root
         self.packages_root = packages_root
@@ -833,6 +836,8 @@ class CodexDriver:
         self._live_session: _LiveSession | None = None
         self._next_turn_request_id = TURN_REQUEST_ID
         try:
+            if bwrap_binary is not None:
+                self.code_mode_host = self._authenticated_code_mode_host()
             self._prepare_state()
             self._prepare_identity_files()
         except BaseException:
@@ -1106,6 +1111,68 @@ class CodexDriver:
     def externally_sandboxed(self) -> bool:
         return self.bwrap_binary is not None
 
+    def _authenticated_code_mode_host(self) -> Path:
+        """Authenticate the helper packaged beside the real Codex executable."""
+
+        expected = self.code_mode_host_sha256
+        if (
+            not isinstance(expected, str)
+            or len(expected) != 64
+            or any(character not in "0123456789abcdef" for character in expected)
+        ):
+            raise BenchmarkError("external sandbox requires a pinned code-mode host SHA-256")
+        try:
+            codex = self.codex_binary.resolve(strict=True)
+            codex_metadata = codex.stat(follow_symlinks=False)
+        except OSError as error:
+            raise BenchmarkError("Codex executable is missing or unsafe") from error
+        if not stat.S_ISREG(codex_metadata.st_mode):
+            raise BenchmarkError("Codex executable is not a regular file")
+        # Resolve the installed Codex target first so a PATH symlink cannot
+        # select a helper from a different package/version directory.
+        host = codex.with_name("codex-code-mode-host")
+        try:
+            before = host.lstat()
+            flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW
+            descriptor = os.open(host, flags)
+        except OSError as error:
+            raise BenchmarkError(f"code-mode host is missing or unsafe: {host}") from error
+        try:
+            opened = os.fstat(descriptor)
+            if (
+                not stat.S_ISREG(before.st_mode)
+                or not stat.S_ISREG(opened.st_mode)
+                or before.st_dev != opened.st_dev
+                or before.st_ino != opened.st_ino
+                or not opened.st_mode & 0o111
+            ):
+                raise BenchmarkError(f"code-mode host is not a safe executable: {host}")
+            digest = hashlib.sha256()
+            for chunk in iter(lambda: os.read(descriptor, 1024 * 1024), b""):
+                digest.update(chunk)
+            after_open = os.fstat(descriptor)
+        except OSError as error:
+            raise BenchmarkError(f"could not authenticate code-mode host: {host}") from error
+        finally:
+            os.close(descriptor)
+        try:
+            after_path = host.lstat()
+        except OSError as error:
+            raise BenchmarkError(f"code-mode host changed during authentication: {host}") from error
+        identity_fields = ("st_dev", "st_ino", "st_mode", "st_size", "st_mtime_ns", "st_ctime_ns")
+        if any(
+            getattr(before, field) != getattr(opened, field)
+            or getattr(opened, field) != getattr(after_open, field)
+            or getattr(after_open, field) != getattr(after_path, field)
+            for field in identity_fields
+        ):
+            raise BenchmarkError(f"code-mode host changed during authentication: {host}")
+        if not os.access(host, os.X_OK):
+            raise BenchmarkError(f"code-mode host is not executable by this account: {host}")
+        if digest.hexdigest() != expected:
+            raise BenchmarkError(f"code-mode host SHA-256 does not match deployment: {host}")
+        return host
+
     def _bwrap_command(
         self,
         inner: list[str],
@@ -1120,6 +1187,9 @@ class CodexDriver:
         assert self.offline_shell is not None
         assert self.toolchain_root is not None
         assert self.packages_root is not None
+        host = self._authenticated_code_mode_host()
+        if host != self.code_mode_host:
+            raise BenchmarkError("code-mode host path changed after preflight")
         command = [
             str(self.bwrap_binary.resolve()),
             "--unshare-all",
@@ -1160,6 +1230,9 @@ class CodexDriver:
                 "--ro-bind",
                 str(self.codex_binary.resolve()),
                 "/codex",
+                "--ro-bind",
+                str(host),
+                "/codex-code-mode-host",
                 "--ro-bind",
                 str(self.offline_shell.resolve()),
                 "/offline-bash",

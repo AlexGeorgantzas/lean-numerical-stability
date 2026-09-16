@@ -4,13 +4,16 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-3 is a side-by-side release. The pilot-1 and pilot-2 deployments,
+Pilot-4 is a side-by-side release. The pilot-1, pilot-2, and pilot-3 deployments,
 launchers, and sealed P01-T2 incidents must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
-blind-translation audit response schema; L never started. Pilot-3 restarts all
-five tasks with fresh slots. Never combine observations across pilots. Setup
-authenticates the direct pilot-2 predecessor and its retained pilot-1 lineage
+blind-translation audit response schema; L never started. Pilot-3 P01-T2
+(`P01-T2-20260916T150151Z-40b3a1dd`) stopped after its formalizer could not
+access the workspace because `/codex-code-mode-host` was missing inside the
+sandbox; no faithfulness verdict or L run exists. Pilot-4 restarts all five
+tasks with fresh slots. Never combine observations across pilots. Setup
+authenticates the direct pilot-3 predecessor and its retained pilot-2/pilot-1 lineage
 before publication.
 
 ## Security first
@@ -25,7 +28,8 @@ already been shared in a chat.
 Titan must provide Linux x86-64, cgroup v2, a functioning per-user systemd
 manager, Bubblewrap, seccomp user notification, Landlock ABI 3 or newer, Git,
 a C compiler, Poppler, Python 3.11 or later, Elan/Lake, `/usr/bin/rg`, GNU
-`/usr/bin/time`, and an authenticated standalone Codex CLI. The system manager
+`/usr/bin/time`, and an authenticated standalone Codex CLI with its matching
+`codex-code-mode-host` executable beside the resolved CLI binary. The system manager
 must delegate `cpu`, `memory`, and `pids` to the per-user manager.
 User-manager lingering must be enabled so a multi-hour run is not killed solely
 because its SSH login ends.
@@ -77,12 +81,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-2-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-3-r1
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-3-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-4-r1
 ```
 
-The installer creates a user-private pilot-3 deployment below
-`~/.local/share/highambench-formalization-pilot-3-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-4 deployment below
+`~/.local/share/highambench-formalization-pilot-4-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -114,6 +118,7 @@ launcher is never overwritten. It:
    NumStability fails to import in N, and succeeds in L;
 8. starts the exact sandboxed Codex app-server through `thread/start`, attests
    effective `agents.enabled=false` and both disabled multi-agent features,
+   verifies the same-package Code Mode host is hash-pinned and mounted read-only,
    then stops before `turn/start` without model inference;
 9. writes the private deployment record and a source-only, read-only copy of
    the exact release in the sibling transaction;
@@ -140,11 +145,11 @@ committed to Git.
 
 ## Run
 
-The installed pilot-3 operator command is:
+The installed pilot-4 operator command is:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-3-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-3-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-4-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-4-r1 run --task-id P01-T2
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -153,8 +158,10 @@ formalizer and auditor roles pass off-benchmark provider-backed single-agent
 qualification. The same qualification submits the exact frozen response
 schemas for blind translation, direct judgment, round-trip judgment, and
 adjudication through live provider calls and verifies checkable synthetic
-outputs. This guards against the schema rejection that occurred after the
-pilot-2 capability canary. Its sealed, one-shot usage is separately recorded
+outputs, then proves workspace-tool availability through trace-backed reads
+and a checked formalizer write under the real sandbox. Code Mode startup
+warnings fail the qualification. This guards against both the pilot-2 schema
+rejection and pilot-3 missing-command-host incidents. Its sealed, one-shot usage is separately recorded
 and never charged to N or L. A missing or failed qualification blocks the
 release without consuming that task's official slot. The repository skill maps
 the natural-language request `Run benchmark for P01-T2` to this command.
@@ -181,7 +188,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-3-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-4-r1 status --task-id P01-T2
 ```
 
 ## Storage separation

@@ -1,15 +1,18 @@
 # HighamBench source-first formalization pilot
 
-This directory is the control plane for the source-first HighamBench pilot-3. It
+This directory is the control plane for the source-first HighamBench pilot-4. It
 does not use the legacy fixed-target proof runner in
 `paper_bencmark/highambench/tools/runner.py`.
 
-Pilots 1 and 2 are preserved as sealed, unscored predecessors. Pilot-1 P01-T2
+Pilots 1, 2, and 3 are preserved as sealed, unscored predecessors. Pilot-1 P01-T2
 stopped on a provider multi-agent capability incident. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) stopped after N submitted one compiling
 candidate: the provider rejected the blind-translation audit response schema,
-so no faithfulness verdict was produced and L never started. Pilot-3 starts all
-five tasks anew under its own release identity. Do not pool observations across
+so no faithfulness verdict was produced and L never started. Pilot-3 P01-T2
+(`P01-T2-20260916T150151Z-40b3a1dd`) stopped after an unchanged placeholder
+candidate because the Codex Code Mode host was absent inside the sandbox;
+paper-facing auditors could not read their workspace and L never started.
+Pilot-4 starts all five tasks anew under its own release identity. Do not pool observations across
 pilots, alter the old evidence, or use an older launcher for a replacement run.
 
 The pilot accepts exactly these tasks:
@@ -48,10 +51,10 @@ On Titan, use the installed launcher so every command enters the fixed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-3-r1 doctor --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-3-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-3-r1 run --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-3-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-4-r1 doctor --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-4-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-4-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-4-r1 status --task-id P01-T2
 ```
 
 Use `--dry-run` with `run` to exercise admission, staging, condition isolation,
@@ -65,10 +68,15 @@ fails closed on any collaboration or foreign-thread event. A paid but
 off-benchmark provider canary qualifies this capability before a fresh
 official pair is indexed. It also submits the exact frozen schemas for blind
 translation, direct judgment, round-trip judgment, and adjudication through
-live provider calls with synthetic checkable outputs. This closes the pilot-2
-gap: provider acceptance of the real audit schemas was not established by the
-earlier generic auditor probe. Qualification time and tokens never enter
+live provider calls with synthetic checkable outputs. It also requires
+trace-backed reads of a seeded workspace file for both role types and a
+checked write for the formalizer, and rejects Code Mode startup failures. This
+closes the pilot-3 gap: its schema-only qualification passed while workspace
+tools were unavailable. Qualification time and tokens never enter
 contestant totals.
+The Codex binary and its same-package Code Mode host are both hash-pinned by
+the deployment, and the host is mounted read-only beside `/codex` inside the
+minimal Bubblewrap filesystem.
 Provider-free `doctor` and `--dry-run` do not make this inference call.
 `qualify-provider` runs these paid checks without consuming an official task
 slot; a later `run` verifies and reuses its sealed record.

@@ -10,8 +10,8 @@ installed run-highambench-experiments skill
         |
         +--> verify-release (complete frozen-file closure)
         +--> Titan doctor (PDF/runtime/executable/hardware identities)
-        +--> off-benchmark provider capability and exact audit-schema
-        |    qualification (before a new pair ID)
+        +--> off-benchmark provider capability, exact audit-schema,
+        |    and workspace-tool qualification (before a new pair ID)
         |
         v
 transient systemd user service: fixed 8 CPUs / 32 GiB / 512 tasks / no swap
@@ -33,12 +33,15 @@ run command returns a terminal pair or continues before the first turn or
 between sealed conditions. An interruption after a condition has submitted is
 not cold-resumed, because that would lose its exact raw-event stream; it fails
 closed as an incident. An account-global pilot/task reservation and campaign
-lock prevent duplicates across deployment roots. Pilot-3 also acquires its
-predecessors' launcher locks to avoid contending for Titan's fixed allocation.
-The sealed pilot-1 and pilot-2 P01 incidents remain unscored predecessor
-evidence and are never pooled with pilot-3. Pilot-2 P01 stopped after one
+lock prevent duplicates across deployment roots. Pilot-4 also acquires all
+three predecessors' launcher locks to avoid contending for Titan's fixed allocation.
+The sealed pilot-1, pilot-2, and pilot-3 P01 incidents remain unscored predecessor
+evidence and are never pooled with pilot-4. Pilot-2 P01 stopped after one
 compiling N candidate when the provider rejected the blind-auditor response
-schema; no audit verdict or L run exists for that pair. All five pilot-3 task
+schema; no audit verdict or L run exists for that pair. Pilot-3 P01 stopped
+after an unchanged placeholder when the Code Mode command host was absent
+inside its Bubblewrap filesystem; paper-facing audit roles could not inspect
+their files and L never started. All five pilot-4 task
 slots are fresh.
 
 ## Per-condition loop
@@ -84,7 +87,10 @@ separate overhead ledger.
 ## Isolation boundary
 
 Each formalizer gets a fresh Codex state and workspace inside a minimal
-Bubblewrap filesystem. The provider control process may reach the model
+Bubblewrap filesystem. The exact same-package Codex Code Mode host is
+hash-pinned at deployment and mounted read-only at `/codex-code-mode-host`;
+its availability is tested with trace-backed synthetic file operations before
+an official task slot exists. The provider control process may reach the model
 provider; model-selected shell descendants are forced through the frozen
 Landlock/seccomp launcher, cannot read `/proc` or the Codex control tree, and
 cannot create or use sockets. Security-sensitive Codex configuration generated
@@ -113,8 +119,11 @@ provider infrastructure incident. An off-benchmark provider canary exercises
 the exact formalizer and auditor models/efforts and sends the exact frozen
 blind-translation, direct-judge, round-trip-judge, and adjudicator response
 schemas in live calls with checkable synthetic outputs before a new pair
-consumes its slot; its usage is logged separately. Static schema checks alone
-would not have caught the pilot-2 provider rejection. The app-server has no
+consumes its slot. The same qualification requires actual file reads in the
+formalizer and auditor sandboxes and a checked formalizer write; Code Mode
+startup warnings fail the gate. Its usage is logged separately. Static schema
+checks alone would not have caught the pilot-2 provider rejection, and the
+JSON-only pilot-3 probes did not catch its unavailable workspace tools. The app-server has no
 generic pre-execution built-in-tool allowlist, so event rejection is an
 additional fail-closed check, not a claim that every unused tool was impossible
 to call.
@@ -200,7 +209,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-t2-pilot-3/P01-T2.json
+  index/formalization-benchmark-t2-pilot-4/P01-T2.json
 ```
 
 At the end of each condition, the driver closes the one persistent formalizer

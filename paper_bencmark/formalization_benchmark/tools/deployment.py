@@ -16,7 +16,7 @@ DEFAULT_DEPLOYMENT = (
     Path.home()
     / ".local"
     / "share"
-    / "highambench-formalization-pilot-3-r1"
+    / "highambench-formalization-pilot-4-r1"
     / "deployment.json"
 )
 GLOBAL_REGISTRY_ROOT = (
@@ -50,6 +50,8 @@ class Deployment:
     global_registry_root: Path | None = None
     predecessor_run_root: Path | None = None
     legacy_predecessor_run_root: Path | None = None
+    ancestral_predecessor_run_root: Path | None = None
+    code_mode_host_sha256: str | None = None
 
 
 def deployment_path(explicit: Path | None = None) -> Path:
@@ -92,8 +94,8 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     value = load_json(path)
     if value.get("schema_version") != "formalization-deployment-1":
         raise BenchmarkError("unsupported deployment record")
-    if value.get("pilot_id") != "formalization-benchmark-t2-pilot-3":
-        raise BenchmarkError("deployment does not identify the pilot-3 release")
+    if value.get("pilot_id") != "formalization-benchmark-t2-pilot-4":
+        raise BenchmarkError("deployment does not identify the pilot-4 release")
     for field, length in (
         ("release_commit", 40),
         ("release_manifest_sha256", 64),
@@ -114,8 +116,30 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     )
     if legacy_predecessor_run_root is None or not legacy_predecessor_run_root.is_dir():
         raise BenchmarkError("deployment legacy_predecessor_run_root is missing")
-    if legacy_predecessor_run_root == predecessor_run_root:
+    ancestral_predecessor_run_root = _optional_directory_target(
+        value, "ancestral_predecessor_run_root"
+    )
+    if ancestral_predecessor_run_root is None or not ancestral_predecessor_run_root.is_dir():
+        raise BenchmarkError("deployment ancestral_predecessor_run_root is missing")
+    if len({predecessor_run_root, legacy_predecessor_run_root, ancestral_predecessor_run_root}) != 3:
         raise BenchmarkError("deployment predecessor run roots must be distinct")
+    codex_binary = _required_path(value, "codex_binary")
+    code_mode_host = codex_binary.with_name("codex-code-mode-host")
+    code_mode_host_raw = value.get("code_mode_host_binary")
+    code_mode_host_sha256 = value.get("code_mode_host_sha256")
+    if (
+        not isinstance(code_mode_host_raw, str)
+        or not Path(code_mode_host_raw).is_absolute()
+        or Path(code_mode_host_raw).is_symlink()
+        or Path(code_mode_host_raw).resolve() != code_mode_host
+        or code_mode_host.is_symlink()
+        or not code_mode_host.is_file()
+        or not os.access(code_mode_host, os.X_OK)
+        or not isinstance(code_mode_host_sha256, str)
+        or re.fullmatch(r"[0-9a-f]{64}", code_mode_host_sha256) is None
+        or sha256_file(code_mode_host) != code_mode_host_sha256
+    ):
+        raise BenchmarkError("deployment Codex Code Mode host identity is missing or changed")
     run_root_raw = value.get("run_root")
     if not isinstance(run_root_raw, str) or not run_root_raw:
         raise BenchmarkError("deployment run_root is missing")
@@ -127,7 +151,7 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
         path=path,
         run_root=run_root,
         pdf_root=_required_path(value, "pdf_root", directory=True),
-        codex_binary=_required_path(value, "codex_binary"),
+        codex_binary=codex_binary,
         auth_file=_required_path(value, "auth_file"),
         bwrap_binary=_required_path(value, "bwrap_binary"),
         offline_shell=_required_path(value, "offline_shell"),
@@ -145,6 +169,8 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
         global_registry_root=global_registry_root,
         predecessor_run_root=predecessor_run_root,
         legacy_predecessor_run_root=legacy_predecessor_run_root,
+        ancestral_predecessor_run_root=ancestral_predecessor_run_root,
+        code_mode_host_sha256=code_mode_host_sha256,
     )
 
 

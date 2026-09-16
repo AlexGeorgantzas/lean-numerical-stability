@@ -8,13 +8,17 @@ of a paper result. It does not measure proof construction.
 
 ## Frozen pilot
 
-- Release identity: `formalization-benchmark-t2-pilot-3`, one exact Git commit,
-  manifest-file SHA-256, and manifest-payload SHA-256. The sealed pilot-1 and
-  pilot-2 P01 incidents are predecessor provenance, not scored observations.
+- Release identity: `formalization-benchmark-t2-pilot-4`, one exact Git commit,
+  manifest-file SHA-256, and manifest-payload SHA-256. The sealed pilot-1,
+  pilot-2, and pilot-3 P01 incidents are predecessor provenance, not scored observations.
   Pilot-2 P01-T2 (`P01-T2-20260916T084145Z-6dad064a`) had one compiling N
   candidate but no faithfulness verdict because the provider rejected an audit
-  response schema; L did not start. All five tasks restart under pilot-3; no
-  cross-pilot pooling or replacement within either older pilot.
+  response schema; L did not start. Pilot-3 P01-T2
+  (`P01-T2-20260916T150151Z-40b3a1dd`) submitted the unchanged placeholder:
+  its formalizer and paper-facing auditors could not access the workspace
+  because `/codex-code-mode-host` was absent inside the sandbox. No
+  faithfulness verdict or L run exists. All five tasks restart under pilot-4;
+  no cross-pilot pooling or replacement within an older pilot.
 - Tasks: P01-T2, P02-T2, P03-T2, P13-T2, and P14-T2.
 - Replication count: one N/L pair per task.
 - Formalizer model and reasoning effort are frozen in `config.json`.
@@ -34,7 +38,7 @@ of a paper result. It does not measure proof construction.
   CPU model, and exact eight-CPU set; the controller verifies that identity at
   admission and at both ends of every attempt.
 - Pair concurrency: one measured N/L pair at a time on Titan, enforced by an
-  account-global nonblocking lock and the predecessor launcher's existing lock.
+  account-global nonblocking lock and all three predecessors' existing locks.
   An account-global registry reserves each `(pilot_id, task_id)` exactly once.
 - Library provisioning: setup runs `lake clean`, rehydrates the frozen
   dependency cache off-clock, proves that the root project build tree is still
@@ -56,7 +60,11 @@ or foreign-thread notifications are infrastructure incompatibilities, never
 contestant rule violations. The same paid, off-benchmark qualification must
 also submit each exact frozen audit output schema (blind translation, direct
 judgment, round-trip judgment, and adjudication) to the provider and verify
-checkable synthetic outputs. Local schema validation or a generic auditor
+checkable synthetic outputs. It must exercise real workspace tools on
+synthetic files inside the same sandbox, with trace-backed reads for both
+role types, a checked formalizer write, and no Code Mode startup warning.
+The deployment authenticates the same-package Code Mode host and mounts it
+read-only beside the Codex executable. Local schema validation or a generic auditor
 probe is insufficient: pilot-2 passed the latter but the real blind auditor
 was rejected before inference. Provider-free doctor and dry-run remain free of
 model inference; qualification usage is never included in contestant metrics.
