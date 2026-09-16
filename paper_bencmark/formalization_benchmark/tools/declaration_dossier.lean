@@ -101,12 +101,17 @@ private unsafe def ppExprIn
     let render : CoreM String := Meta.MetaM.run' do
       return (← Meta.ppExpr expression).pretty
     if explicit then
-      withOptions (fun options => options.setBool `pp.all true) render
+      withOptions (fun options =>
+        options.setBool `pp.all true
+          |>.setBool `pp.fullNames true
+          |>.setBool `pp.privateNames true) render
     else
       withOptions (fun options =>
         options.setBool `pp.universes false
           |>.setBool `pp.explicit false
-          |>.setBool `pp.coercions true) render
+          |>.setBool `pp.coercions true
+          |>.setBool `pp.fullNames true
+          |>.setBool `pp.privateNames true) render
 
 private def dependencyLess (left right : Dependency) : Bool :=
   let leftRank := if left.role == "local" then 0 else 1

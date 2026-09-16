@@ -147,6 +147,37 @@ class CandidateDossierTests(unittest.TestCase):
             )
             self.assertNotIn("HighamBenchCandidate", json.dumps(blind))
 
+    @unittest.skipUnless(shutil.which("lean"), "Lean executable is unavailable")
+    def test_real_lean_extractor_blinds_private_helpers(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            candidate = Path(temporary) / "Candidate.lean"
+            candidate.write_text(
+                "namespace HighamBenchCandidate\n"
+                "private def firstIndex (n : Nat) : Nat := n\n"
+                "private def tailIndex (n : Nat) : Nat := firstIndex n + 1\n"
+                "def pairwiseSum (n : Nat) : Nat := firstIndex n\n"
+                "def recursiveSum (n : Nat) : Nat := tailIndex n\n"
+                "theorem target : ∀ n : Nat, pairwiseSum n = recursiveSum n := by sorry\n"
+                "end HighamBenchCandidate\n",
+                encoding="utf-8",
+            )
+            blind, private = prepare_candidate_audit(candidate)
+            raw = private["raw_semantic_report"]
+            self.assertTrue(
+                any(
+                    item["role"] == "local" and "firstIndex" in item["name"]
+                    for item in raw["dependencies"]
+                )
+            )
+            self.assertTrue(
+                any(
+                    item["role"] == "local" and "tailIndex" in item["name"]
+                    for item in raw["dependencies"]
+                )
+            )
+            for forbidden in ("HighamBenchCandidate", "_private", "firstIndex", "tailIndex", "✝"):
+                self.assertNotIn(forbidden, json.dumps(blind, sort_keys=True))
+
 
 if __name__ == "__main__":
     unittest.main()
