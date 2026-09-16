@@ -3,7 +3,7 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
-The active release is pilot-4. Pilots 1, 2, and 3 are sealed, unscored
+The active release is pilot-5. Pilots 1, 2, 3, and 4 are sealed, unscored
 predecessor evidence, not observations or runs to resume. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) stopped after N submitted one compiling
 candidate because the provider rejected the blind-translation response schema;
@@ -11,9 +11,15 @@ there was no faithfulness verdict and L never started. Do not pool data across
 pilots. Pilot-3 P01-T2 (`P01-T2-20260916T150151Z-40b3a1dd`) stopped after
 the command host was absent inside Bubblewrap: N submitted the unchanged
 placeholder, the paper-facing auditors could not inspect workspace files,
-no faithfulness verdict was produced, and L never started. Pilot-4 has distinct
-deployment, launcher, task indices, and
-account-global pilot/task reservations; all five task slots are fresh.
+no faithfulness verdict was produced, and L never started. Pilot-4's clean
+library build took 1307.425 seconds under eight CPUs/32 GiB and an isolated
+one-turn workspace-tool probe passed. In its six-role, one-shot qualification,
+the formalizer completed with its exact output and checked workspace write;
+then a broad warning detector misread a giant truncated tool-catalog output
+as a Code Mode startup warning. Qualification failed before any auditor role,
+and no official pair or task index was created. Pilot-5 narrows the detector,
+has a distinct deployment, launcher, task indices, and account-global
+pilot/task reservations; all five task slots are fresh.
 
 ## Canonical surfaces
 
@@ -90,14 +96,14 @@ On Titan, authenticate the installed release through its location-independent
 launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-4-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-5-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-4-r1 doctor \
+~/.local/bin/run-highambench-formalization-pilot-5-r1 doctor \
   --task-id P01-T2
 ```
 
@@ -136,8 +142,8 @@ their authenticated outputs jointly confirm all of the following:
   `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
   and stops without model inference or writing secrets to logs; the matching
   Code Mode host is hash-pinned and mounted read-only beside `/codex`;
-- the sealed pilot-1, pilot-2, and pilot-3 predecessor incident lineage and the
-  account-global campaign lock/registry match the pilot-4 deployment record.
+- the sealed pilot-1, pilot-2, pilot-3, and pilot-4 predecessor lineage and the
+  account-global campaign lock/registry match the pilot-5 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -148,7 +154,7 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-4-r1 run \
+~/.local/bin/run-highambench-formalization-pilot-5-r1 run \
   --task-id P01-T2
 ```
 
@@ -162,10 +168,12 @@ output-schema probes for every frozen audit role: blind translation, direct
 judgment, round-trip judgment, and adjudication. The latter use the exact
 schemas that production auditing will submit, with synthetic checkable
 outputs. It must also perform trace-backed synthetic workspace reads and a
-checked formalizer write under the same sandbox, and reject any Code Mode
-startup failure. Static JSON-schema checks or a generic auditor probe do not establish
-provider acceptance of those schemas or tool availability. Qualification is outside the contestant
-clock and task slot; its separate time and tokens are retained as overhead. A
+checked formalizer write under the same sandbox, and reject actual Code Mode
+startup failures in diagnostic events or stderr. Truncated tool-catalog text
+is not a startup diagnostic; pilot-4 falsely treated it as one. Static
+JSON-schema checks or a generic auditor probe do not establish provider
+acceptance of those schemas or tool availability. Qualification is outside the
+contestant clock and task slot; its separate time and tokens are retained as overhead. A
 failed or missing qualification stops without consuming a slot. The deprecated
 `multiAgentMode` response is not an attestation. Collaboration or
 foreign-thread events are provider infrastructure incompatibilities, never

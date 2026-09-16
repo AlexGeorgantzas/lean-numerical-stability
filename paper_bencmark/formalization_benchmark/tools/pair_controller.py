@@ -403,8 +403,9 @@ def _campaign_lock(
     predecessor_run_root: Path | None = None,
     legacy_predecessor_run_root: Path | None = None,
     ancestral_predecessor_run_root: Path | None = None,
+    great_ancestral_predecessor_run_root: Path | None = None,
 ) -> Iterator[None]:
-    """Serialize this release, the account registry, and all three predecessors."""
+    """Serialize this release, the account registry, and all four predecessors."""
 
     paths = [run_root / "locks" / "formalization-pilot.lock"]
     if global_registry_root is not None:
@@ -415,6 +416,8 @@ def _campaign_lock(
         paths.append(legacy_predecessor_run_root / "locks" / "formalization-pilot.lock")
     if ancestral_predecessor_run_root is not None:
         paths.append(ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
+    if great_ancestral_predecessor_run_root is not None:
+        paths.append(great_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     descriptors: list[int] = []
     try:
         for path in sorted(set(paths)):
@@ -460,6 +463,7 @@ class PairController:
             getattr(self.deployment, "predecessor_run_root", None),
             getattr(self.deployment, "legacy_predecessor_run_root", None),
             getattr(self.deployment, "ancestral_predecessor_run_root", None),
+            getattr(self.deployment, "great_ancestral_predecessor_run_root", None),
         )
 
     def _qualify_provider(self) -> dict[str, Any]:
@@ -927,8 +931,9 @@ class PairController:
                 or self.deployment.predecessor_run_root is None
                 or self.deployment.legacy_predecessor_run_root is None
                 or self.deployment.ancestral_predecessor_run_root is None
+                or self.deployment.great_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-4 registry or predecessor locks are missing")
+                raise BenchmarkError("pilot-5 registry or predecessor locks are missing")
             from setup_titan import predecessor_lineage
 
             lineage = predecessor_lineage(

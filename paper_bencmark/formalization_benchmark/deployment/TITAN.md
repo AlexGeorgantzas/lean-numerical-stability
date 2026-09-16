@@ -4,17 +4,32 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-4 is a side-by-side release. The pilot-1, pilot-2, and pilot-3 deployments,
+Pilot-5 is a side-by-side release. The pilot-1, pilot-2, pilot-3, and pilot-4 deployments,
 launchers, and sealed P01-T2 incidents must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
 blind-translation audit response schema; L never started. Pilot-3 P01-T2
 (`P01-T2-20260916T150151Z-40b3a1dd`) stopped after its formalizer could not
 access the workspace because `/codex-code-mode-host` was missing inside the
-sandbox; no faithfulness verdict or L run exists. Pilot-4 restarts all five
-tasks with fresh slots. Never combine observations across pilots. Setup
-authenticates the direct pilot-3 predecessor and its retained pilot-2/pilot-1 lineage
+sandbox; no faithfulness verdict or L run exists. Pilot-4's clean full-library
+build took 1307.425 seconds under eight logical CPUs and 32 GiB RAM. An
+isolated one-turn workspace-tool probe passed. Its six-role, one-shot
+qualification then failed after the formalizer completed with exact output
+and a checked workspace write, before any auditor role, because a broad
+warning detector mistook unrelated text in a giant truncated tool catalog
+for a Code Mode startup warning. Pilot-4 created no official pair or index.
+Pilot-5 narrows that warning check and restarts all five tasks with fresh
+slots. Never combine observations across pilots. Setup authenticates the
+direct pilot-4 predecessor and its retained pilot-3/pilot-2/pilot-1 lineage
 before publication.
+
+The sealed pilot-4 deployment SHA-256 is
+`bd9dbc1c1f7576399c767d9dc7cae19732965e5e21989d195720bb884b31a749`;
+its failed qualification record is
+`930a69c9a059f8e00590a6689ea9d15177e27b435e901e724e57861a1db79c9a`
+and its library build record is
+`42d1a09980a908d4b4757b174dff0239d20f9cc35e0e67dd7499a0bec60580ec`.
+These authenticate predecessor evidence, not pilot-5 measurements.
 
 ## Security first
 
@@ -81,12 +96,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-3-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-4-r1
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-4-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-5-r1
 ```
 
-The installer creates a user-private pilot-4 deployment below
-`~/.local/share/highambench-formalization-pilot-4-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-5 deployment below
+`~/.local/share/highambench-formalization-pilot-5-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -145,11 +160,11 @@ committed to Git.
 
 ## Run
 
-The installed pilot-4 operator command is:
+The installed pilot-5 operator command is:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-4-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-4-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-5-r1 qualify-provider --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-5-r1 run --task-id P01-T2
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -160,7 +175,8 @@ schemas for blind translation, direct judgment, round-trip judgment, and
 adjudication through live provider calls and verifies checkable synthetic
 outputs, then proves workspace-tool availability through trace-backed reads
 and a checked formalizer write under the real sandbox. Code Mode startup
-warnings fail the qualification. This guards against both the pilot-2 schema
+warnings in diagnostic events or stderr fail the qualification; unrelated
+tool-catalog text does not. This guards against both the pilot-2 schema
 rejection and pilot-3 missing-command-host incidents. Its sealed, one-shot usage is separately recorded
 and never charged to N or L. A missing or failed qualification blocks the
 release without consuming that task's official slot. The repository skill maps
@@ -188,7 +204,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-4-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-5-r1 status --task-id P01-T2
 ```
 
 ## Storage separation

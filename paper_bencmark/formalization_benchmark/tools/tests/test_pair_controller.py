@@ -430,14 +430,15 @@ class PairControllerDryRunTests(unittest.TestCase):
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
 
-    def test_global_campaign_lock_serializes_releases_and_three_predecessors(self) -> None:
+    def test_global_campaign_lock_serializes_releases_and_four_predecessors(self) -> None:
         registry = self.root / "account-registry"
-        predecessor = self.root / "pilot-3-runs"
-        legacy_predecessor = self.root / "pilot-2-runs"
-        ancestral_predecessor = self.root / "pilot-1-runs"
+        predecessor = self.root / "pilot-4-runs"
+        legacy_predecessor = self.root / "pilot-3-runs"
+        ancestral_predecessor = self.root / "pilot-2-runs"
+        great_ancestral_predecessor = self.root / "pilot-1-runs"
         with _campaign_lock(
             self.deployment.run_root, registry, predecessor, legacy_predecessor,
-            ancestral_predecessor
+            ancestral_predecessor, great_ancestral_predecessor,
         ):
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", registry):
@@ -450,6 +451,9 @@ class PairControllerDryRunTests(unittest.TestCase):
                     pass
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", None, ancestral_predecessor):
+                    pass
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(self.root / "another-release", None, great_ancestral_predecessor):
                     pass
 
     def test_official_pair_rejects_downgraded_qualification_binding(self) -> None:

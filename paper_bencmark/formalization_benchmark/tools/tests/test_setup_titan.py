@@ -15,7 +15,13 @@ from unittest import mock
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from common import BenchmarkError, sha256_file, tree_manifest  # noqa: E402
+from common import (  # noqa: E402
+    BenchmarkError,
+    canonical_json_bytes,
+    sha256_bytes,
+    sha256_file,
+    tree_manifest,
+)
 from setup_titan import (  # noqa: E402
     INSTALL_TRANSACTION,
     LEGACY_INCIDENT_RUN_ID,
@@ -27,6 +33,8 @@ from setup_titan import (  # noqa: E402
     PILOT3_INCIDENT_RUN_ID,
     PILOT3_MANIFEST_PAYLOAD_SHA256,
     PILOT3_RELEASE_COMMIT,
+    PILOT4_MANIFEST_PAYLOAD_SHA256,
+    PILOT4_RELEASE_COMMIT,
     _load_transaction,
     _remove_skill_transaction_tree,
     _transaction_record,
@@ -39,6 +47,7 @@ from setup_titan import (  # noqa: E402
     private_provisioning_environment,
     make_parser,
     pilot2_lineage,
+    pilot3_lineage,
     predecessor_lineage,
     verify_predecessor_lineage,
     remove_owned_deployment_root,
@@ -48,15 +57,15 @@ from setup_titan import (  # noqa: E402
 
 
 class SkillInstallTests(unittest.TestCase):
-    def test_pilot4_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+    def test_pilot5_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
         parser = make_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(["--pdf-source-dir", "/tmp"])
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-4-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-4-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-5-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-5-r1"))
 
     def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -357,34 +366,165 @@ class SkillInstallTests(unittest.TestCase):
                 PILOT3_STATE_SHA256=before[state],
                 PILOT3_QUALIFICATION_SHA256=before[qualification],
             ), mock.patch("setup_titan.pilot2_lineage", return_value=old_lineage) as older:
-                lineage = predecessor_lineage(str(root))
+                lineage = pilot3_lineage(str(root))
                 self.assertEqual(lineage["predecessor_run_root"], str(run_root))
                 self.assertEqual(lineage["legacy_predecessor_run_root"], str(pilot2_run_root))
                 self.assertEqual(lineage["ancestral_predecessor_run_root"], str(pilot1_run_root))
                 self.assertEqual(lineage["predecessor_qualification_sha256"], before[qualification])
                 older.assert_called_with(str(pilot2_run_root.parent))
                 self.assertEqual(before, {path: sha256_file(path) for path in before})
-                verify_predecessor_lineage(str(root), lineage)
-
                 with mock.patch("setup_titan.pilot2_lineage", return_value={
                     **old_lineage, "predecessor_pilot_id": "tampered"
                 }), self.assertRaisesRegex(BenchmarkError, "does not bind"):
-                    predecessor_lineage(str(root))
+                    pilot3_lineage(str(root))
 
                 original_artifact = qualification_artifact.read_bytes()
                 qualification_artifact.write_text('{"probe":false}', encoding="utf-8")
                 with self.assertRaisesRegex(BenchmarkError, "pilot-3 qualification is not passed"):
-                    predecessor_lineage(str(root))
+                    pilot3_lineage(str(root))
                 qualification_artifact.write_bytes(original_artifact)
 
                 original_report = report.read_bytes()
                 report.write_text('{"status":"COMPLETE"}', encoding="utf-8")
                 with self.assertRaisesRegex(BenchmarkError, "pilot-3 incident evidence"):
-                    predecessor_lineage(str(root))
+                    pilot3_lineage(str(root))
                 report.write_bytes(original_report)
 
                 qualification.write_text('{"status":"FAILED"}', encoding="utf-8")
                 with self.assertRaisesRegex(BenchmarkError, "pilot-3 qualification evidence"):
+                    pilot3_lineage(str(root))
+
+    def test_pilot4_failed_qualification_and_four_pilot_lineage_are_hash_bound(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = (Path(temporary) / "pilot-4-deployment").resolve()
+            run_root = root / "runs"
+            pilot3_run_root = (Path(temporary) / "pilot-3-deployment" / "runs").resolve()
+            pilot2_run_root = (Path(temporary) / "pilot-2-deployment" / "runs").resolve()
+            pilot1_run_root = (Path(temporary) / "pilot-1-deployment" / "runs").resolve()
+            pilot3_run_root.mkdir(parents=True)
+            old_lineage = {
+                "predecessor_pilot_id": "formalization-benchmark-t2-pilot-3",
+                "predecessor_run_root": str(pilot3_run_root),
+                "legacy_predecessor_run_root": str(pilot2_run_root),
+                "ancestral_predecessor_run_root": str(pilot1_run_root),
+            }
+            manifest = (
+                root / "release" / "paper_bencmark" / "formalization_benchmark"
+                / "manifest.json"
+            )
+            manifest.parent.mkdir(parents=True)
+            manifest.write_text(
+                json.dumps({
+                    "pilot_id": "formalization-benchmark-t2-pilot-4",
+                    "manifest_payload_sha256": PILOT4_MANIFEST_PAYLOAD_SHA256,
+                }),
+                encoding="utf-8",
+            )
+            build = root / "runtime" / "library" / "build" / "build-record.json"
+            build.parent.mkdir(parents=True)
+            build.write_text('{"returncode":0}', encoding="utf-8")
+            deployment = root / "deployment.json"
+            deployment.write_text(
+                json.dumps({
+                    "schema_version": "formalization-deployment-1",
+                    "pilot_id": "formalization-benchmark-t2-pilot-4",
+                    "release_commit": PILOT4_RELEASE_COMMIT,
+                    "release_manifest_sha256": sha256_file(manifest),
+                    "manifest_payload_sha256": PILOT4_MANIFEST_PAYLOAD_SHA256,
+                    "library_build_record": str(build),
+                    "library_build_record_sha256": sha256_file(build),
+                    "run_root": str(run_root),
+                    **old_lineage,
+                }),
+                encoding="utf-8",
+            )
+            qualification = (
+                run_root / "qualifications" / sha256_file(manifest) / "qualification.json"
+            )
+            qualification.parent.mkdir(parents=True)
+            roles_root = qualification.parent / "roles"
+            roles_root.mkdir()
+            for number in range(20):
+                (roles_root / f"artifact-{number:02d}.json").write_text(
+                    json.dumps({"role": number}), encoding="utf-8"
+                )
+            roles_manifest = tree_manifest(roles_root)
+            self.assertEqual(len(roles_manifest["entries"]), 21)
+            qualification.write_text(
+                json.dumps({
+                    "schema_version": "formalization-provider-qualification-3",
+                    "status": "FAILED",
+                    "classification": "off_benchmark_provider_qualification",
+                    "charged_to_contestant": False,
+                    "identity": {
+                        "pilot_id": "formalization-benchmark-t2-pilot-4",
+                        "manifest_sha256": sha256_file(manifest),
+                        "manifest_payload_sha256": PILOT4_MANIFEST_PAYLOAD_SHA256,
+                        "deployment_path": str(deployment),
+                        "deployment_sha256": sha256_file(deployment),
+                    },
+                }),
+                encoding="utf-8",
+            )
+            before = {path: sha256_file(path) for path in (
+                deployment, manifest, build, qualification,
+            )}
+            with mock.patch.multiple(
+                "setup_titan",
+                PILOT4_DEPLOYMENT_SHA256=before[deployment],
+                PILOT4_MANIFEST_FILE_SHA256=before[manifest],
+                PILOT4_BUILD_RECORD_SHA256=before[build],
+                PILOT4_FAILED_QUALIFICATION_SHA256=before[qualification],
+                PILOT4_QUALIFICATION_ROLES_MANIFEST_SHA256=sha256_bytes(
+                    canonical_json_bytes(roles_manifest)
+                ),
+            ), mock.patch("setup_titan.pilot3_lineage", return_value=old_lineage) as older, mock.patch(
+                "setup_titan.GLOBAL_REGISTRY_ROOT", root / "account-registry"
+            ):
+                lineage = predecessor_lineage(str(root))
+                self.assertEqual(lineage["predecessor_run_root"], str(run_root))
+                self.assertEqual(lineage["legacy_predecessor_run_root"], str(pilot3_run_root))
+                self.assertEqual(lineage["ancestral_predecessor_run_root"], str(pilot2_run_root))
+                self.assertEqual(
+                    lineage["great_ancestral_predecessor_run_root"], str(pilot1_run_root)
+                )
+                self.assertEqual(lineage["predecessor_qualification_sha256"], before[qualification])
+                self.assertEqual(lineage["predecessor_library_build_record_sha256"], before[build])
+                older.assert_called_with(str(pilot3_run_root.parent))
+                verify_predecessor_lineage(str(root), lineage)
+                self.assertEqual(before, {path: sha256_file(path) for path in before})
+
+                with mock.patch("setup_titan.pilot3_lineage", return_value={
+                    **old_lineage, "predecessor_pilot_id": "tampered"
+                }), self.assertRaisesRegex(BenchmarkError, "does not bind"):
+                    predecessor_lineage(str(root))
+
+                first_role = roles_root / "artifact-00.json"
+                role_bytes = first_role.read_bytes()
+                first_role.write_text('{"role":"tampered"}', encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "failed qualification identity"):
+                    predecessor_lineage(str(root))
+                first_role.write_bytes(role_bytes)
+
+                index = run_root / "index"
+                index.mkdir()
+                (index / "P01-T2.json").write_text('{}', encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "official pair evidence"):
+                    predecessor_lineage(str(root))
+                (index / "P01-T2.json").unlink()
+
+                registry_index = (
+                    root / "account-registry" / "index"
+                    / "formalization-benchmark-t2-pilot-4"
+                )
+                registry_index.mkdir(parents=True)
+                (registry_index / "P01-T2.json").write_text('{}', encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "account-global task reservation"):
+                    predecessor_lineage(str(root))
+                (registry_index / "P01-T2.json").unlink()
+
+                build.write_text('{"returncode":1}', encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "pilot-4 evidence"):
                     predecessor_lineage(str(root))
 
     @staticmethod
@@ -532,7 +672,7 @@ class SkillInstallTests(unittest.TestCase):
     def test_dependency_preparation_uses_private_cache_and_tmp(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary).resolve()
-            deployment = root / "deployment-pilot-4-r1"
+            deployment = root / "deployment-pilot-5-r1"
             private_bin = root / "tooling" / "elan" / "bin"
             private_bin.mkdir(parents=True, mode=0o700)
             private_bin.parent.parent.chmod(0o700)

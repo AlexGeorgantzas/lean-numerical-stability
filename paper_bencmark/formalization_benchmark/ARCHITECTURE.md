@@ -33,16 +33,21 @@ run command returns a terminal pair or continues before the first turn or
 between sealed conditions. An interruption after a condition has submitted is
 not cold-resumed, because that would lose its exact raw-event stream; it fails
 closed as an incident. An account-global pilot/task reservation and campaign
-lock prevent duplicates across deployment roots. Pilot-4 also acquires all
-three predecessors' launcher locks to avoid contending for Titan's fixed allocation.
+lock prevent duplicates across deployment roots. Pilot-5 also acquires all
+four predecessors' launcher locks to avoid contending for Titan's fixed allocation.
 The sealed pilot-1, pilot-2, and pilot-3 P01 incidents remain unscored predecessor
-evidence and are never pooled with pilot-4. Pilot-2 P01 stopped after one
+evidence and are never pooled with pilot-5. Pilot-2 P01 stopped after one
 compiling N candidate when the provider rejected the blind-auditor response
 schema; no audit verdict or L run exists for that pair. Pilot-3 P01 stopped
 after an unchanged placeholder when the Code Mode command host was absent
 inside its Bubblewrap filesystem; paper-facing audit roles could not inspect
-their files and L never started. All five pilot-4 task
-slots are fresh.
+their files and L never started. Pilot-4's clean library build took 1307.425
+seconds under eight CPUs and 32 GiB RAM; its isolated one-turn tool probe
+passed, but the six-role, one-shot qualification failed after the formalizer
+completed with exact output and a checked workspace write, before any auditor
+role, because a broad warning detector matched unrelated truncated
+tool-catalog text. It created no official pair or index. All five pilot-5
+task slots are fresh.
 
 ## Per-condition loop
 
@@ -121,7 +126,9 @@ blind-translation, direct-judge, round-trip-judge, and adjudicator response
 schemas in live calls with checkable synthetic outputs before a new pair
 consumes its slot. The same qualification requires actual file reads in the
 formalizer and auditor sandboxes and a checked formalizer write; Code Mode
-startup warnings fail the gate. Its usage is logged separately. Static schema
+startup warnings in diagnostic events or stderr fail the gate. Unrelated
+tool-catalog text does not count as a startup warning; the broader pilot-4
+detector produced a false failure. Its usage is logged separately. Static schema
 checks alone would not have caught the pilot-2 provider rejection, and the
 JSON-only pilot-3 probes did not catch its unavailable workspace tools. The app-server has no
 generic pre-execution built-in-tool allowlist, so event rejection is an
@@ -209,7 +216,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-t2-pilot-4/P01-T2.json
+  index/formalization-benchmark-t2-pilot-5/P01-T2.json
 ```
 
 At the end of each condition, the driver closes the one persistent formalizer

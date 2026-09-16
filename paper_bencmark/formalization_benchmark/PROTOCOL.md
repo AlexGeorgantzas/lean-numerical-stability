@@ -8,17 +8,24 @@ of a paper result. It does not measure proof construction.
 
 ## Frozen pilot
 
-- Release identity: `formalization-benchmark-t2-pilot-4`, one exact Git commit,
+- Release identity: `formalization-benchmark-t2-pilot-5`, one exact Git commit,
   manifest-file SHA-256, and manifest-payload SHA-256. The sealed pilot-1,
-  pilot-2, and pilot-3 P01 incidents are predecessor provenance, not scored observations.
+  pilot-2, and pilot-3 P01 incidents and pilot-4 qualification failure are
+  predecessor provenance, not scored observations.
   Pilot-2 P01-T2 (`P01-T2-20260916T084145Z-6dad064a`) had one compiling N
   candidate but no faithfulness verdict because the provider rejected an audit
   response schema; L did not start. Pilot-3 P01-T2
   (`P01-T2-20260916T150151Z-40b3a1dd`) submitted the unchanged placeholder:
   its formalizer and paper-facing auditors could not access the workspace
   because `/codex-code-mode-host` was absent inside the sandbox. No
-  faithfulness verdict or L run exists. All five tasks restart under pilot-4;
-  no cross-pilot pooling or replacement within an older pilot.
+  faithfulness verdict or L run exists. Pilot-4 completed a clean library build
+  in 1307.425 seconds under eight logical CPUs and 32 GiB RAM, and an isolated
+  one-turn workspace-tool probe passed. Its six-role, one-shot qualification
+  nevertheless failed after the formalizer completed with exact output and a
+  checked workspace write, before any auditor role, because an overly broad
+  warning detector matched unrelated truncated tool-catalog text. It created
+  no official pair or task index. All five tasks restart under pilot-5; no
+  cross-pilot pooling or replacement within an older pilot.
 - Tasks: P01-T2, P02-T2, P03-T2, P13-T2, and P14-T2.
 - Replication count: one N/L pair per task.
 - Formalizer model and reasoning effort are frozen in `config.json`.
@@ -38,7 +45,7 @@ of a paper result. It does not measure proof construction.
   CPU model, and exact eight-CPU set; the controller verifies that identity at
   admission and at both ends of every attempt.
 - Pair concurrency: one measured N/L pair at a time on Titan, enforced by an
-  account-global nonblocking lock and all three predecessors' existing locks.
+  account-global nonblocking lock and all four predecessors' existing locks.
   An account-global registry reserves each `(pilot_id, task_id)` exactly once.
 - Library provisioning: setup runs `lake clean`, rehydrates the frozen
   dependency cache off-clock, proves that the root project build tree is still
@@ -62,7 +69,10 @@ also submit each exact frozen audit output schema (blind translation, direct
 judgment, round-trip judgment, and adjudication) to the provider and verify
 checkable synthetic outputs. It must exercise real workspace tools on
 synthetic files inside the same sandbox, with trace-backed reads for both
-role types, a checked formalizer write, and no Code Mode startup warning.
+role types, a checked formalizer write, and no actual Code Mode startup warning.
+The warning check examines diagnostic events and stderr, not arbitrary
+tool-catalog text; this avoids the pilot-4 false failure without accepting a
+real host-startup failure.
 The deployment authenticates the same-package Code Mode host and mounts it
 read-only beside the Codex executable. Local schema validation or a generic auditor
 probe is insufficient: pilot-2 passed the latter but the real blind auditor

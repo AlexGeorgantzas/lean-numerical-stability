@@ -155,6 +155,31 @@ class FakeDriver:
                     "status": "completed",
                 }}}
             )
+        if mode == "truncated-tool-catalog":
+            events.append(
+                {"method": "item/completed", "params": {"item": {
+                    "id": "catalog", "type": "custom_tool_call_output",
+                    "output": (
+                        "Warning: truncated output (original token count: 30039)\n"
+                        + "Other available tools. " * 100
+                        + "Code Mode disabled is an example of a warning. "
+                        + "The phrase tool execution failed is also documented here."
+                    ),
+                    "status": "completed",
+                }}}
+            )
+        if mode == "diagnostic-event":
+            events.append(
+                {"method": "warning", "params": {"message": "Code Mode disabled"}}
+            )
+        if mode == "failed-output-wrapper":
+            events.append(
+                {"method": "item/completed", "params": {"item": {
+                    "id": "failed-output", "type": "custom_tool_call_output",
+                    "output": "Script failed: sandbox command could not run",
+                    "status": "completed",
+                }}}
+            )
         if mode == "failed-function-tool":
             events.append(
                 {"method": "item/completed", "params": {"item": {
@@ -174,6 +199,11 @@ class FakeDriver:
         stderr = artifact_dir / "stderr.log"
         stderr.write_text(
             "Warning: Code Mode unavailable\n" if mode == "warning-stderr"
+            else (
+                "2026-09-16T15:02:43.872554Z ERROR codex_core::tools::router: "
+                "error=failed to spawn code-mode host /codex-code-mode-host: "
+                "No such file or directory (os error 2)\n"
+            ) if mode == "missing-host-stderr"
             else "Tool execution failed\n" if mode == "failed-tool-stderr"
             else "",
             encoding="utf-8",
@@ -417,6 +447,11 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
         result = canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(result["status"], "PASSED")
 
+    def test_truncated_tool_catalog_is_not_a_code_mode_startup_warning(self) -> None:
+        FakeDriver.trace_mode = "truncated-tool-catalog"
+        result = canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(result["status"], "PASSED")
+
     def test_auditor_schema_probes_satisfy_audit_contracts(self) -> None:
         for role, _schema, expected in canary.AUDIT_SCHEMA_PROBES:
             if role == "blind-translation":
@@ -508,6 +543,18 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
             canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(len(FakeDriver.calls), 1)
 
+    def test_missing_code_mode_host_stderr_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "missing-host-stderr"
+        with self.assertRaisesRegex(BenchmarkError, "Code Mode warning"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_explicit_code_mode_diagnostic_event_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "diagnostic-event"
+        with self.assertRaisesRegex(BenchmarkError, "Code Mode warning"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
     def test_failed_command_tool_fails_closed(self) -> None:
         FakeDriver.trace_mode = "failed-tool"
         with self.assertRaisesRegex(BenchmarkError, "tool failed"):
@@ -516,6 +563,12 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
 
     def test_failed_function_tool_fails_closed(self) -> None:
         FakeDriver.trace_mode = "failed-function-tool"
+        with self.assertRaisesRegex(BenchmarkError, "tool failed"):
+            canary.run_provider_capability_canary(self.deployment)
+        self.assertEqual(len(FakeDriver.calls), 1)
+
+    def test_failed_tool_output_wrapper_fails_closed(self) -> None:
+        FakeDriver.trace_mode = "failed-output-wrapper"
         with self.assertRaisesRegex(BenchmarkError, "tool failed"):
             canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(len(FakeDriver.calls), 1)

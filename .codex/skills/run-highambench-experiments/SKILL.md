@@ -7,14 +7,17 @@ description: Operate the source-first HighamBench faithful-formalization pilot f
 
 ## Scope
 
-This is pilot-4 (`formalization-benchmark-t2-pilot-4`). Pilots 1, 2, and 3 are
-sealed, unscored predecessors. Pilot-2 P01-T2 stopped on an audit response
-schema rejection; pilot-3 P01-T2 stopped because the command host was absent
-inside the sandbox, leaving an unchanged placeholder candidate and no
-faithfulness verdict. L never started in either pair. Preserve all older
-deployments and incidents; never reuse their launchers or run IDs, resume their
-P01-T2 pairs, or pool their data with pilot-4. All five pilot-4 tasks begin as
-fresh single pairs under one frozen release.
+This is pilot-5 (`formalization-benchmark-t2-pilot-5`). Pilots 1–4 are sealed,
+unscored predecessors. Pilot-2 P01-T2 stopped on an audit response-schema
+rejection; pilot-3 P01-T2 stopped because the command host was absent inside
+the sandbox, leaving an unchanged placeholder candidate and no faithfulness
+verdict. L never started in either pair. Pilot-4 had no official pair or index:
+its six-role, one-shot qualification stopped after a successful formalizer
+turn and checked workspace write, before any auditor role, because a broad
+warning detector matched unrelated text in a truncated tool catalog.
+Preserve all older deployments and incidents; never reuse their launchers or
+run IDs, resume their P01-T2 pairs, or pool their data with pilot-5. All five
+pilot-5 tasks begin as fresh single pairs under one frozen release.
 
 Preparing or qualifying a repaired release does not authorize an official
 pair. Run one only in response to an explicit task-run request.
@@ -44,21 +47,23 @@ placeholder in the complete candidate.
 Before any provider call or benchmark-state mutation on Titan:
 
 1. Read [the operations reference](references/operations.md) completely.
-2. Use only the installed `~/.local/bin/run-highambench-formalization-pilot-4-r1`
+2. Use only the installed `~/.local/bin/run-highambench-formalization-pilot-5-r1`
    launcher. Its deployment record binds the exact release checkout, so the
    command works regardless of the current directory.
 3. Run the launcher's provider-free `verify-release` command.
 4. Authenticate the selected packet, prompts, runtime snapshots, executable
    identities, deployment record, and hardware through the installed
    launcher's `doctor` gate.
-5. Require the pilot-1/pilot-2/pilot-3 predecessor lineage and account-global registry
+5. Require the pilot-1/pilot-2/pilot-3/pilot-4 predecessor lineage and account-global registry
    to authenticate. A fresh official `run` requires an off-benchmark
    provider-backed qualification before any pair slot is created. Besides
    single-agent capability, it must exercise the exact frozen output schemas
    for blind translation, direct judgment, round-trip judgment, and
    adjudication through live provider calls. It must also prove that the
    hash-pinned Code Mode host can run workspace tools: trace-backed file reads
-   for both role types, a checked formalizer write, and no startup warning.
+   for both role types, a checked formalizer write, and no genuine startup
+   warning in diagnostic events or stderr. Unrelated tool-catalog text is not
+   a startup warning.
 6. Stop if any gate is absent or fails. Never use legacy
    `paper_bencmark/highambench/tools/runner.py` or `tools/run_matrix.py` as a
    substitute.

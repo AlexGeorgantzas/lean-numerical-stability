@@ -32,7 +32,7 @@ from hardware import snapshot_hardware, verify_frozen_hardware_identity
 from manifest_control import MANIFEST_PATH, verify_manifest
 
 
-SCHEMA = "formalization-provider-qualification-3"
+SCHEMA = "formalization-provider-qualification-4"
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT_SCHEMAS = ROOT / "audit" / "schemas"
 INPUT_NAME = "qualification_input.json"
@@ -46,9 +46,14 @@ PROMPT = (
     "Return only a JSON object with integer weighted_sum and string reversed_text."
 )
 CODE_MODE = re.compile(rb"\bcode[\s_-]*mode\b", re.IGNORECASE)
-WARNING = re.compile(
-    rb"\b(?:warn(?:ing)?|fail(?:ed|ure)?|error|unavailable|unable|missing|"
-    rb"disabled|cannot|could\s+not|not\s+(?:found|started|initialized))\b",
+CODE_MODE_STARTUP_FAILURE = re.compile(
+    rb"\b(?:fail(?:ed|ure)?\s+to\s+(?:spawn|start|launch|initialize|load|execute)"
+    rb"|unable\s+to\s+(?:spawn|start|launch|initialize|load|execute)"
+    rb"|could\s+not\s+(?:spawn|start|launch|initialize|load|execute)"
+    rb"|cannot\s+(?:spawn|start|launch|initialize|load|execute)"
+    rb"|did\s+not\s+(?:start|initialize)"
+    rb"|unavailable|disabled|missing|not\s+(?:found|started|initialized)"
+    rb"|no\s+such\s+file(?:\s+or\s+directory)?)\b",
     re.IGNORECASE,
 )
 TOOL_FAILURE = re.compile(
@@ -56,6 +61,12 @@ TOOL_FAILURE = re.compile(
     rb"error running tool|failed to execute tool)\b",
     re.IGNORECASE,
 )
+TOOL_FAILURE_PREFIX = re.compile(
+    rb"^\s*(?:tool execution failed|tool call failed|script (?:error|failed)|"
+    rb"error running tool|failed to execute tool)\b",
+    re.IGNORECASE,
+)
+DIAGNOSTIC_TEXT_KEYS = ("message", "text", "error", "detail", "details", "reason")
 EXPECTED_OUTPUT = {"weighted_sum": 207, "reversed_text": "LACIREMUN"}
 OUTPUT_SCHEMA = {
     "type": "object",
@@ -320,30 +331,67 @@ def _tool_text(item: Mapping[str, Any], keys: tuple[str, ...]) -> str:
 
 
 def _has_code_mode_warning(payload: bytes) -> bool:
-    return any(
-        CODE_MODE.search(line) and WARNING.search(line)
-        for line in payload.splitlines()
-    )
+    # Tool outputs can contain a long, unrelated warning and a later catalog
+    # entry naming Code Mode. Require a *startup failure* close to Code Mode
+    # within one physical line; do not join independently sourced text.
+    for line in payload.splitlines():
+        for match in CODE_MODE.finditer(line):
+            nearby = line[max(0, match.start() - 96):match.end() + 96]
+            if CODE_MODE_STARTUP_FAILURE.search(nearby):
+                return True
+    return False
 
 
 def _event_has_code_mode_warning(value: Any) -> bool:
-    if isinstance(value, str):
-        encoded = value.encode("utf-8")
-        return bool(CODE_MODE.search(encoded) and WARNING.search(encoded))
-    if isinstance(value, Mapping):
-        if (
-            _normalized(value.get("type")) in {"warning", "error"}
-            or _normalized(value.get("method")) in {"warning", "error"}
-        ) and any(
-            CODE_MODE.search(child.encode("utf-8"))
-            for child in value.values()
-            if isinstance(child, str)
-        ):
-            return True
-        return any(_event_has_code_mode_warning(child) for child in value.values())
-    if isinstance(value, list):
-        return any(_event_has_code_mode_warning(child) for child in value)
+    def in_diagnostic_fields(diagnostic: Any) -> bool:
+        if isinstance(diagnostic, str):
+            return _has_code_mode_warning(diagnostic.encode("utf-8"))
+        if isinstance(diagnostic, Mapping):
+            return any(
+                in_diagnostic_fields(diagnostic[key])
+                for key in DIAGNOSTIC_TEXT_KEYS
+                if key in diagnostic
+            )
+        if isinstance(diagnostic, list):
+            return any(in_diagnostic_fields(child) for child in diagnostic)
+        return False
+
+    if not isinstance(value, Mapping):
+        return False
+    method = _normalized(value.get("method"))
+    kind = _normalized(value.get("type"))
+    if (
+        kind in {"warning", "error"}
+        or method.endswith("warning")
+        or method.endswith("error")
+    ) and (
+        in_diagnostic_fields(value)
+        or in_diagnostic_fields(value.get("params"))
+    ):
+        return True
+    params = value.get("params")
+    item = params.get("item") if isinstance(params, Mapping) else None
+    if isinstance(item, Mapping) and _normalized(item.get("type")) in {
+        "agentmessage", "warning", "error",
+    }:
+        return in_diagnostic_fields(item)
     return False
+
+
+def _tool_output_has_failure_prefix(item: Mapping[str, Any]) -> bool:
+    def is_failed_output(value: Any) -> bool:
+        if isinstance(value, str):
+            return bool(TOOL_FAILURE_PREFIX.search(value.encode("utf-8")))
+        if isinstance(value, list):
+            return any(is_failed_output(child) for child in value)
+        if isinstance(value, Mapping):
+            return is_failed_output(value.get("text"))
+        return False
+
+    return any(
+        is_failed_output(item.get(key))
+        for key in ("output", "stdout", "aggregatedOutput", "content")
+    )
 
 
 def _check_tool_trace(
@@ -412,9 +460,6 @@ def _check_tool_trace(
         status = _normalized(item.get("status"))
         exit_code = item.get("exitCode", item.get("exit_code"))
         result = item.get("result")
-        output_text = _tool_text(
-            item, ("output", "stdout", "aggregatedOutput", "content")
-        )
         if (
             status in {"failed", "error", "cancelled", "canceled", "rejected", "denied"}
             or (exit_code is not None and (type(exit_code) is not int or exit_code != 0))
@@ -431,7 +476,7 @@ def _check_tool_trace(
                 isinstance(params, Mapping)
                 and params.get("error") not in (None, "", False)
             )
-            or TOOL_FAILURE.search(output_text.encode("utf-8"))
+            or _tool_output_has_failure_prefix(item)
         ):
             raise BenchmarkError("provider qualification tool failed")
         if method not in ("item/completed", "rawResponseItem/completed"):
