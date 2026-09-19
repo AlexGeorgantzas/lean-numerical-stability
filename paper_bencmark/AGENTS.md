@@ -67,3 +67,15 @@ and every later P0X entry follow the same rules.
 16. Before treating the split as checked, compile every affected target in N
     and L using its paper bundle and run a negative import probe showing that
     the other paper modules are unavailable.
+
+## Coordination with other agents
+
+Claude Code also works on this repository, usually at different times and
+sometimes on the same branch. `paper_bencmark/COORDINATION.md` is the channel
+between you. Read it before starting; append an entry when you finish work
+another agent will build on, would otherwise redo, or could be broken by, and
+when you leave uncommitted changes in a shared worktree.
+
+That file sits outside `formalization_benchmark/` deliberately:
+`tools/freeze_manifest.py` globs `ROOT.rglob("*")`, so any file added under
+that directory changes the frozen manifest. Writing to the log never does.
