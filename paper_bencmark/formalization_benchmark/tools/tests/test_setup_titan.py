@@ -38,6 +38,7 @@ from setup_titan import (  # noqa: E402
     PILOT5_MANIFEST_PAYLOAD_SHA256,
     PILOT5_RELEASE_COMMIT,
     PILOT5_SEALED_PAIRS,
+    _copy_frozen_source_pdfs,
     _pilot5_release_closure,
     _load_transaction,
     _remove_skill_transaction_tree,
@@ -62,6 +63,49 @@ from setup_titan import (  # noqa: E402
 
 
 class SkillInstallTests(unittest.TestCase):
+    def test_shared_source_pdf_is_copied_once_and_conflicts_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source_root = root / "source"
+            pdf_root = root / "private" / "pdfs"
+            source_root.mkdir()
+            pdf_root.mkdir(parents=True)
+            source = source_root / "shared.pdf"
+            source.write_bytes(b"%PDF shared frozen source\n")
+            expected_sha256 = sha256_file(source)
+            manifest = {
+                "tasks": [
+                    {
+                        "task_id": task_id,
+                        "source_pdf": {
+                            "path_basename": source.name,
+                            "sha256": expected_sha256,
+                        },
+                    }
+                    for task_id in ("H22-11", "H22-5")
+                ]
+            }
+
+            _copy_frozen_source_pdfs(
+                manifest=manifest,
+                task_ids=["H22-11", "H22-5"],
+                source_pdf_root=source_root,
+                pdf_root=pdf_root,
+            )
+            destination = pdf_root / source.name
+            self.assertEqual(destination.read_bytes(), source.read_bytes())
+            self.assertEqual(stat.S_IMODE(destination.stat().st_mode), 0o400)
+
+            destination.chmod(0o600)
+            destination.write_bytes(b"changed")
+            with self.assertRaisesRegex(BenchmarkError, "conflicting content"):
+                _copy_frozen_source_pdfs(
+                    manifest=manifest,
+                    task_ids=["H22-11", "H22-5"],
+                    source_pdf_root=source_root,
+                    pdf_root=pdf_root,
+                )
+
     def test_pilot5_release_closure_rejects_changed_and_unlisted_executable(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

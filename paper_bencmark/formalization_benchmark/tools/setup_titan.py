@@ -1922,6 +1922,40 @@ if exec 9<>/dev/tcp/127.0.0.1/9; then exit 47; fi
         }
 
 
+def _copy_frozen_source_pdfs(
+    *,
+    manifest: dict[str, Any],
+    task_ids: list[str],
+    source_pdf_root: Path,
+    pdf_root: Path,
+) -> None:
+    """Copy each distinct frozen PDF once and reject basename/hash conflicts."""
+    for task_id in task_ids:
+        paper = task_record(manifest, task_id)["source_pdf"]
+        source = source_pdf_root / paper["path_basename"]
+        if (
+            not source.is_file()
+            or source.is_symlink()
+            or sha256_file(source) != paper["sha256"]
+        ):
+            raise BenchmarkError(f"private PDF failed its frozen hash: {source}")
+        destination = pdf_root / source.name
+        if os.path.lexists(destination):
+            if (
+                destination.is_symlink()
+                or not destination.is_file()
+                or sha256_file(destination) != paper["sha256"]
+            ):
+                raise BenchmarkError(
+                    f"duplicate PDF basename has conflicting content: {destination}"
+                )
+            continue
+        shutil.copyfile(source, destination)
+        destination.chmod(0o400)
+        if sha256_file(destination) != paper["sha256"]:
+            raise BenchmarkError(f"copied PDF failed verification: {destination}")
+
+
 def _install_once(
     args: argparse.Namespace,
     deployment_root: Path,
@@ -2057,16 +2091,12 @@ def _install_once(
         mode=0o600,
     )
     source_pdf_root = Path(args.pdf_source_dir).expanduser().resolve()
-    for task_id in config["task_ids"]:
-        paper = task_record(manifest, task_id)["source_pdf"]
-        source = source_pdf_root / paper["path_basename"]
-        if not source.is_file() or sha256_file(source) != paper["sha256"]:
-            raise BenchmarkError(f"private PDF failed its frozen hash: {source}")
-        destination = pdf_root / source.name
-        shutil.copyfile(source, destination)
-        destination.chmod(0o400)
-        if sha256_file(destination) != paper["sha256"]:
-            raise BenchmarkError(f"copied PDF failed verification: {destination}")
+    _copy_frozen_source_pdfs(
+        manifest=manifest,
+        task_ids=config["task_ids"],
+        source_pdf_root=source_pdf_root,
+        pdf_root=pdf_root,
+    )
 
     common_project = deployment_root / "runtime" / "common-project"
     common_project.mkdir(parents=True, exist_ok=True)
