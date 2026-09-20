@@ -1,258 +1,258 @@
 # Source-first formalization protocol
 
-> Pilot-6 release policy: a valid candidate has exactly two semantic audit
-> verdicts, `faithful` and `unfaithful`. Pilot-5 and its sealed runs remain
-> governed by the original three-way audit and must not be reinterpreted or
-> resumed under this policy. The pilot-6 identity must be frozen, deployed,
-> and qualified before any official pair starts.
+> Pilot-7 is a new frozen release. Pilot-6 and every earlier run remain sealed
+> under their original software, prompts, task set, and audit policy. No
+> observation is copied, resumed, or pooled across pilot identities.
 
 ## Purpose
 
-This pilot measures whether access to, and explicit encouragement to use, a
-frozen NumStability library helps Codex construct a faithful Lean formalization
-of a paper result. It does not measure proof construction.
+Pilot-7 measures whether access to, and explicit encouragement to use, a frozen
+NumStability library helps Codex construct a faithful Lean formalization of a
+selected numerical-analysis result. It measures statement construction, not
+proof construction.
 
-## Frozen pilot
+## Frozen release
 
-- Release identity: `formalization-benchmark-t2-pilot-6`, one exact Git commit,
-  manifest-file SHA-256, and manifest-payload SHA-256. Earlier pilots and their
-  sealed incidents are predecessor provenance, not scored pilot-6 observations.
-  Pilot-2 P01-T2 (`P01-T2-20260916T084145Z-6dad064a`) had one compiling N
-  candidate but no faithfulness verdict because the provider rejected an audit
-  response schema; L did not start. Pilot-3 P01-T2
-  (`P01-T2-20260916T150151Z-40b3a1dd`) submitted the unchanged placeholder:
-  its formalizer and paper-facing auditors could not access the workspace
-  because `/codex-code-mode-host` was absent inside the sandbox. No
-  faithfulness verdict or L run exists. Pilot-4 completed a clean library build
-  in 1307.425 seconds under eight logical CPUs and 32 GiB RAM, and an isolated
-  one-turn workspace-tool probe passed. Its six-role, one-shot qualification
-  nevertheless failed after the formalizer completed with exact output and a
-  checked workspace write, before any auditor role, because an overly broad
-  warning detector matched unrelated truncated tool-catalog text. It created
-  no official pair or task index. Pilot-5 then created sealed P01-T2 and
-  P02-T2 pairs under its three-way policy; P02-T2 stopped when L's audit
-  returned `unclear`. Those pairs retain their original disposition. All five
-  pilot-6 task slots are fresh; no cross-pilot pooling or replacement within an
-  older pilot.
-- Tasks: P01-T2, P02-T2, P03-T2, P13-T2, and P14-T2.
-- Replication count: one N/L pair per task.
-- Formalizer model and reasoning effort are frozen in `config.json`.
-- Maximum submissions per condition: four (initial plus three repairs).
-- Cumulative contestant-active termination threshold per condition: 18,000
-  seconds. Actual timer or final-freeze overshoot is retained and makes the
-  condition unscored `ACTIVE_TIME_LIMIT`; it is never clamped or accepted.
-- Benchmark token cap: none. Provider usage is still measured at every turn.
-- Hardware envelope: the complete condition process tree runs in a transient
-  user service with systemd-enforced affinity to exactly eight logical CPUs and
-  cgroup limits of 32 GiB RAM, 512 tasks, and no swap. Model-generated command
-  trees enter a delegated child cgroup capped at 24 GiB RAM, 384 tasks, and no
-  swap; the trusted control child has an 8 GiB `memory.low` reservation. The
-  outer service denies affinity changes for its complete descendant tree, and
-  the generated-command seccomp policy repeats the denial. Every strict
-  snapshot verifies that syscall denial. Setup freezes the Titan host identity,
-  CPU model, and exact eight-CPU set; the controller verifies that identity at
-  admission and at both ends of every attempt.
-- Pair concurrency: one measured N/L pair at a time on Titan, enforced by an
-  account-global nonblocking lock and all five predecessors' existing locks.
-  An account-global registry reserves each `(pilot_id, task_id)` exactly once.
-- Library provisioning: setup runs `lake clean`, rehydrates the frozen
-  dependency cache off-clock, proves that the root project build tree is still
-  empty, and fully builds the frozen NumStability target once inside the same
-  outer eight-CPU/32-GiB/512-task/no-swap envelope. Its wall/CPU/resource data
-  and complete output are authenticated deployment evidence and are never
-  charged to a contestant.
+- Pilot ID: `formalization-benchmark-pilot-7`.
+- One exact Git commit, manifest-file SHA-256, and self-hashed manifest payload
+  define the release.
+- Formalizer: `gpt-5.6-sol` at `xhigh`, frozen in `config.json`.
+- One N/L pair per task, one official pair slot per `(pilot_id, task_id)`.
+- Four submissions per condition: one initial statement and at most three
+  same-conversation repairs.
+- Cumulative contestant-active threshold: 18,000 seconds per condition.
+- No benchmark token cap. Exact provider usage is still recorded.
+- Fixed Titan envelope: eight logical CPUs, 32 GiB RAM, 512 tasks, and no swap.
+  Generated command trees have a 24-GiB/384-task/no-swap child cgroup; trusted
+  control has an 8-GiB `memory.low` reservation.
+- A clean full build of the frozen NumStability snapshot is measured once
+  off-clock during installation. Wall/CPU/resource metrics and complete build
+  output are authenticated deployment evidence.
 
-The existing 51 accepted HighamBench tasks establish only that the selected
-paper results can be formalized faithfully. They do not pre-approve any
-candidate generated in this pilot.
+The task order is frozen as follows:
 
-Before a new official pair is created, the provider is qualified outside the
-contestant clock and task slot using the exact frozen role/model/effort and
-single-agent capability contract. The effective app-server configuration must
-report `agents.enabled=false`, `multi_agent=false`, and
-`multi_agent_v2=false` globally and for each thread. Collaboration tool events
-or foreign-thread notifications are infrastructure incompatibilities, never
-contestant rule violations. The same paid, off-benchmark qualification must
-also submit each exact frozen audit output schema (blind translation, direct
-judgment, round-trip judgment, and adjudication) to the provider and verify
-checkable synthetic outputs. It must exercise real workspace tools on
-synthetic files inside the same sandbox, with trace-backed reads for both
-role types, a checked formalizer write, and no actual Code Mode startup warning.
-The warning check examines diagnostic events and stderr, not arbitrary
-tool-catalog text; this avoids the pilot-4 false failure without accepting a
-real host-startup failure.
-The deployment authenticates the same-package Code Mode host and mounts it
-read-only beside the Codex executable. Local schema validation or a generic auditor
-probe is insufficient: pilot-2 passed the latter but the real blind auditor
-was rejected before inference. Provider-free doctor and dry-run remain free of
-model inference; qualification usage is never included in contestant metrics.
-The deprecated `multiAgentMode` response is not capability evidence.
+1. `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, `P14-T2`
+2. `H22-11`, `H22-5`, `H20-6`, `H7-12`, `H20-9`, `H20-8`
+3. `H23-6`, `H5-5`, `H10-7`, `H12-4`, `H19-5`, `H7-14`, `H15-3`
 
-Repair and qualification do not consume an official task slot and do not
-authorize an official pair. Launch one only on an explicit task-run request.
+The condition order is precommitted per task in `config.json`, with nine
+N-first and nine L-first pairs. Pilot-7 creates fresh slots for all 18 tasks.
+
+The five `P..-T2` entries are paper tasks retained from Pilot-6. The thirteen
+`Hchapter-problem` entries are Higham textbook problems. Their source packets
+fix the exact selected conclusion before a formalizer runs. Open-ended exercise
+wording is not delegated to the contestant: H5-5 uses the book's Appendix A
+`gamma_(2n+1)` result; H7-14 selects part (a); H12-4 selects the cited
+Demmel--Higham first-order residual bound; H15-3 includes every stated
+conclusion in the exercise; and H23-6 freezes the coefficient reading
+`6*c_Strassen + 4`.
 
 ## Conditions
 
-Both conditions receive the identical hash-verified PDF, task packet, Lean
-toolchain, Mathlib snapshot, and common prompt.
+Both conditions receive byte-identical, hash-verified versions of:
+
+- the source PDF and task packet;
+- the common formalizer prompt;
+- the Lean toolchain and Mathlib snapshot;
+- the candidate contract, limits, and validation rules.
 
 Condition N has no NumStability source, compiled objects, documentation,
 declaration names, search index, cache, Git history, old benchmark target, or
 prior condition output.
 
-Condition L receives the same environment plus a read-only NumStability
-snapshot at commit `45813a95dacf577461bae13f033af0dbc985a225`. Its prompt is
-the byte-identical common prompt followed by the frozen L-only appendix. That
-appendix explicitly encourages the formalizer to inspect, import, reuse, adapt,
-or draw inspiration from related library material. It identifies the source
-tree `/library/NumStability`, the root module
-`/library/NumStability.lean`, and compiled declarations on `LEAN_PATH`; it also
-provides concrete `find`, `rg`, and `import NumStability` guidance. This combined
-access and encouragement is the intended treatment.
+Condition L receives the same base environment plus the read-only NumStability
+snapshot at commit
+`45813a95dacf577461bae13f033af0dbc985a225`. The common prompt is followed by
+one frozen L-only appendix. It explicitly encourages the model to inspect,
+import, reuse, adapt, or draw inspiration from the library and gives concrete
+discovery/import guidance. This encouragement is part of the treatment.
 
 ## Candidate contract
 
-The candidate is a single `Candidate.lean` file. Its audited root must be the
-unique declaration:
+The single submitted artifact is `Candidate.lean`. Its final declaration must
+be:
 
 ```lean
 namespace HighamBenchCandidate
 
--- definitions needed to state the result
+-- definitions needed to state the selected result
 
-theorem target : <the generated proposition> := by
+theorem target : <generated proposition> := by
   sorry
 
 end HighamBenchCandidate
 ```
 
-Exactly this root proof hole is permitted. Every other `sorry`, `admit`, new
-`axiom` or `constant`, `opaque`, `unsafe`, or equivalent integrity escape is a
-validation failure. The proposition is not compared to an old Lean target.
+Exactly this proof hole is permitted. Every other `sorry`, `admit`, new
+`axiom` or `constant`, `opaque`, `unsafe`, or equivalent integrity
+escape fails validation. The candidate is never compared with an old Lean
+target.
 
-## Per-condition state machine
+## Per-condition loop
 
 ```text
-admitted
-  -> single-agent configuration and feature attestation (off-clock)
-  -> model-active interval through terminal cleanup/quiescence
-  -> telemetry settle and artifact bookkeeping (off-clock)
-  -> candidate copy/hash (separately timed and charged)
-  -> compilation/integrity validation (off-clock)
-       -> neutral repair feedback -> same conversation, or
-       -> fresh blind faithfulness audit (clock paused)
-            -> accepted faithful, or
-            -> neutral repair feedback -> same conversation
+same persistent formalizer conversation
+  -> model-active interval and token metering
+  -> immutable Candidate.lean submission, freeze, and hash
+  -> off-clock compilation and proof-integrity validation
+  -> off-clock semantic-dossier extraction
+  -> fresh blind/direct/round-trip audit roles
+  -> faithful: stop
+  -> unfaithful: neutral feedback to the same formalizer conversation
 ```
 
-A complete immutable submission consumes one of the four submission slots even
-when compilation fails. Audit infrastructure failures do not consume an
-additional slot and are retried off-clock, except a provider capability
-incompatibility, which blocks the release. The condition terminates on faithful
-acceptance, the fourth rejected submission, the 18,000-second cumulative active
-limit, or a fail-closed infrastructure outcome.
+A complete immutable submission consumes one of four slots even when
+compilation fails. Audit infrastructure retries are off-clock and do not
+consume another submission; a provider-capability incompatibility blocks the
+release. A condition terminates on faithful acceptance, four rejected
+submissions, the active-time threshold, or a fail-closed infrastructure
+outcome.
 
-## Clock and usage boundaries
+## Measurement
 
-The model-active interval begins immediately before the `turn/start` RPC that
-publishes the common prompt or frozen repair feedback to the persistent
-formalizer conversation. It contains the model turn, post-terminal cleanup,
-and verification that no contestant background terminal remains. The runner
-then pauses that interval while it settles ordered telemetry and writes trusted
-bookkeeping. It separately times and charges the stable candidate copy/hash.
-The contestant-active total is the sum of the model-active and candidate-freeze
-components, not the intervening off-clock work. The 18,000-second value is the
-termination threshold rather than a claim that operating-system timer delivery
-has zero latency: any measured overshoot is retained in full and terminates the
-condition unscored before validation or auditing. App-server teardown,
-transcript writing, compilation, and auditing are off-clock. The submitted
-artifact is the single `Candidate.lean`; mutable scratch and object files are
-not submissions.
+Contestant-active time starts immediately before the `turn/start` request that
+delivers the common or repair prompt and continues through contestant-process
+cleanup and quiescence. Ordered telemetry settling and trusted bookkeeping are
+off-clock. Stable candidate copy/hash is timed separately and charged. The
+active total is the sum of model-active and candidate-freeze durations.
 
-One raw-event-enabled app-server process remains alive for all submissions in a
-condition. Repair prompts therefore continue the exact same conversation and
-each upstream response has exact, deduplicated input, cached-input,
-cache-write-input, output, reasoning-output, and total usage. A timeout keeps
-observed usage as a labeled lower bound and remains an `ACTIVE_TIME_LIMIT`
-outcome. Because a cold `thread/resume` cannot preserve that raw event stream,
-an interruption after a submission is fail-closed; recovery is supported only
-before the first turn or between sealed condition records.
+Compilation, semantic extraction, auditing, feedback rendering, app-server
+teardown, and transcript writing are excluded from contestant time and tokens.
+End-to-end and audit overhead are reported separately. Any measured timeout or
+freeze overshoot is preserved in full and makes the condition unscored
+`ACTIVE_TIME_LIMIT`; it is never clamped.
 
-If the controller or host stops before a complete turn record or candidate-
-freeze duration becomes durable, the pair is sealed as an unscored incident.
-The recorded contestant time and token totals remain useful lower bounds, but
-their completeness fields explicitly label whichever measurements are no
-longer exact.
+One raw-event-enabled app-server process remains alive for all attempts in a
+condition. Repair prompts therefore continue the exact same conversation.
+Input, cached-input, cache-write-input, output, reasoning-output, and total
+usage are deduplicated and cross-checked against cumulative thread telemetry.
+An interruption after a submission is fail-closed because cold resume cannot
+preserve this exact raw event stream.
 
-Compilation, semantic-dossier construction, faithfulness auditing, and feedback
-rendering are recorded separately and excluded from contestant-active time and
-tokens. Ordered post-terminal telemetry settling and trusted artifact
-bookkeeping are likewise excluded. End-to-end wall time is also reported.
-
-The controller stores observable Codex JSONL events, prompts, final messages,
-tool calls, usage records, file hashes, line counts, validation output, audit
-outputs, and concise API-exposed reasoning summaries. Hidden chain-of-thought is
-neither available nor requested or claimed.
+Artifacts retain observable prompts, final messages, tool events, concise
+API-exposed reasoning summaries, hashes, line counts, validation output, audit
+output, hardware observations, and usage. Hidden chain-of-thought is neither
+available nor requested.
 
 ## Faithfulness audit
 
-### Binary verdict policy
+### Source authority
 
-For a compiling, integrity-valid candidate with an admissible source task, the
-semantic verdict has exactly two values: `faithful` or `unfaithful`. Accept as
-`faithful` only when the candidate's elaborated proposition and reached
-definitions establish every material requirement of the selected paper result,
-including the full paper-permitted domain. The burden is on the candidate to
-encode any equivalence on which its scope depends. If, for example, the
-candidate assumes successful partial operations but the paper assumes no
-overflow, and the candidate does not establish that the former covers every
-no-overflow execution, classify it `unfaithful` and identify that domain gap as
-a concrete mismatch. Do not accept a narrower theorem merely because its
-conclusion is true on the restricted domain.
+The primary PDF and frozen source packet define the selected result. The packet
+may clarify which part of an exercise is selected, but the PDF controls if they
+conflict. Unlike the method paper's full audit, Pilot-7 omits a separate
+source-contract model call because the source side is frozen and validated
+before release. This deliberate deviation is recorded; every generated
+candidate still receives a fresh candidate-side audit.
 
-An `unfaithful` verdict requires a concrete paper requirement and corresponding
-candidate mismatch in condition-neutral language. It triggers the ordinary
-frozen feedback and same-conversation repair loop if a submission slot remains.
-Auditor disagreement is resolved against the paper and candidate semantics,
-not by majority vote or a third semantic verdict. Provider failures, malformed
-auditor responses, unavailable tools, and dossier failures remain unscored
-operational incidents, not faithfulness tags. A genuinely underdetermined
-paper/source contract must be resolved or excluded at source-admissibility
-review before a candidate is scored; it must not be silently labeled a
-contestant error. This binary rule applies to pilot-6 only; pilot-5 remains
-sealed under its frozen policy.
+### Candidate semantic dossier
 
-Every new semantic statement hash receives a new audit. An exact duplicate may
-reuse the already frozen verdict for that same pair run.
+Lean elaborates the root proposition. The controller recursively expands types
+and bodies of candidate-local declarations and reached NumStability
+declarations. Reached Lean/Mathlib declarations form a one-level external
+semantic frontier. Every dependency receives a stable `Dxxx` ID. Candidate
+and NumStability names and module provenance are pseudonymized before auditors
+see them.
 
-The audit uses fresh ephemeral agents for blind translation, direct comparison,
-round-trip comparison, and conditional adjudication. Auditor workspaces expose
-neither condition nor submission number. Candidate and local-library identifiers
-and module provenance are pseudonymized in the semantic dossier before any
-auditor sees it.
+The blind translator and direct judge must each return exactly one record for
+every `Dxxx` ID, in order. Missing, duplicate, or renamed records invalidate
+the role response. Supplying the dossier is not treated as a substitute for
+this explicit dependency accounting.
 
-The dossier recursively expands reached declarations generated in the
-candidate and, for condition L, reached NumStability declarations. Reached
-Lean/Mathlib declarations form a recorded one-level type/body frontier. Lean
-and Mathlib are the hash-frozen trusted semantic foundation, so faithfulness
-claims are relative to their ordinary semantics; the benchmark does not claim
-an unbounded transitive unfolding of that foundation.
+### Fresh roles
 
-An audit acceptance means the generated proposition faithfully captures the
-selected paper statement. A rejected candidate receives only a fixed neutral
-schema containing:
+Each role is a fresh, stateless, memoryless, condition-blind conversation:
 
-1. the missing or distorted paper requirement; and
-2. the corresponding candidate mismatch.
+1. blind Lean-to-mathematics translator;
+2. direct PDF-versus-dossier judge;
+3. round-trip PDF-versus-blind-translation judge;
+4. adjudicator only when the frozen triggers require it.
 
-Feedback contains no gold Lean theorem, proof code, NumStability module, or
-NumStability declaration name.
+All roles currently use the frozen audit model in `config.json`. This differs
+from the method paper's use of a different model family for one role; role
+freshness, state isolation, condition blindness, and evidence separation remain
+mandatory.
 
-## Pair integrity
+### Mandatory 16 checks
 
-The pair controller admits both conditions against one frozen task manifest
-before either begins. It runs the conditions in the precommitted order, never
-shares their workspaces, and publishes a pair result only after both terminal
-records and their hashes are sealed. Reissuing the same task command returns the
-existing terminal run or continues between sealed conditions rather than
-silently creating a duplicate. It never cold-resumes an in-progress condition.
+Both judges must complete exactly `S01`--`S16`, in order:
+
+1. source selection;
+2. binders and types;
+3. quantifier scope;
+4. hypotheses;
+5. conclusion completeness;
+6. operators and imported definitions;
+7. exact versus computed quantities;
+8. algorithm linkage;
+9. norm semantics;
+10. constants and indexing;
+11. floating-point model and exceptional values;
+12. relation strength;
+13. error notion;
+14. higher-order terms;
+15. specialization or generalization;
+16. nonvacuity.
+
+Each record includes source evidence, candidate or translation evidence, and
+reasoning. `not-applicable` still requires an explanation.
+
+### Implications and classification
+
+Each judge answers both directions independently:
+
+| Candidate implies source | Source implies candidate | Classification |
+| --- | --- | --- |
+| yes | yes | `faithful-equivalent` |
+| yes | no | `faithful-stronger`, only for genuine added strength |
+| no | yes | `unfaithful-weaker` |
+| no | no | `unfaithful-different` |
+| unclear | either | `undetermined`, mandatory adjudication |
+
+Extra assumptions, restricted domains, impossible premises, or vacuity are not
+strengthening. A genuinely stronger candidate is faithful because it still
+implies the complete selected source result.
+
+The method paper permits a score-2 exception for multiple declarations that
+cover only a proper subset of the source domain. Pilot-7 deliberately rejects
+that exception: partial case-split coverage is `unfaithful`. This deviation is
+frozen and must not be inferred ad hoc during an audit.
+
+The only final candidate verdicts are `faithful` and `unfaithful`.
+`undetermined` is an intermediate judge classification that must be resolved
+by a fresh adjudicator; it is never a candidate outcome. Operational failures
+are sealed infrastructure incidents, not semantic verdicts.
+
+Adjudication is mandatory when classifications differ, a judge requests it, or
+a dependency or semantic check remains unclear. The adjudicator resolves
+evidence item by item and returns both implication directions, a four-way
+classification, and the binary final verdict. When judges agree conclusively
+and no trigger remains, the controller derives the binary verdict without an
+extra model call.
+
+### Repair feedback
+
+An unfaithful verdict must include a concrete source requirement and candidate
+mismatch. Repair feedback contains only those condition-neutral prose fields.
+It contains no gold Lean statement, proof code, library/module name, or
+NumStability declaration identifier. A new semantic statement hash receives a
+fresh audit; an exact duplicate may reuse only its already frozen decision in
+the same pair.
+
+## Admission and integrity
+
+Before any official pair, provider-free doctor verifies the frozen release,
+private PDFs, toolchain, Mathlib, NumStability build evidence, executables,
+hardware, and N/L isolation. A paid off-benchmark qualification exercises the
+exact formalizer and audit models/efforts, every frozen output schema, real
+workspace reads, and the formalizer write path. It consumes no official task
+slot and is excluded from contestant measurements.
+
+The app-server globally and per thread disables agent delegation. Collaboration
+events or foreign-thread notifications are provider incompatibilities, not
+contestant errors.
+
+The pair controller stages both conditions against one manifest before either
+starts, runs the precommitted order, never shares workspaces, and publishes only
+after both terminal records are sealed. Reissuing a task command returns the
+existing terminal pair or resumes only at a safe boundary between conditions.

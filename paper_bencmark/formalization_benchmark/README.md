@@ -1,142 +1,83 @@
-# HighamBench source-first formalization pilot
+# HighamBench source-first formalization benchmark
 
-This directory is the control plane for the source-first HighamBench pilot-6. It
-does not use the legacy fixed-target proof runner in
-`paper_bencmark/highambench/tools/runner.py`.
+This directory is the frozen Pilot-7 control plane. It does not use the legacy
+fixed-target proof runner. Pilot-6 and earlier evidence remain sealed and are
+never reinterpreted, resumed, or pooled with Pilot-7.
 
-Pilots 1–4 are preserved as sealed, unscored predecessors. Pilot-1 P01-T2
-stopped on a provider multi-agent capability incident. Pilot-2 P01-T2
-(`P01-T2-20260916T084145Z-6dad064a`) stopped after N submitted one compiling
-candidate: the provider rejected the blind-translation audit response schema,
-so no faithfulness verdict was produced and L never started. Pilot-3 P01-T2
-(`P01-T2-20260916T150151Z-40b3a1dd`) stopped after an unchanged placeholder
-candidate because the Codex Code Mode host was absent inside the sandbox;
-paper-facing auditors could not read their workspace and L never started.
-Pilot-4 completed a clean NumStability build in 1307.425 seconds under eight
-logical CPUs and 32 GiB RAM. An isolated one-turn workspace-tool probe passed,
-but its six-role, one-shot provider qualification failed after the formalizer
-role completed with exact output and a checked workspace write, before any
-auditor role: an overly broad Code Mode warning detector matched unrelated
-text in a truncated tool catalog. Pilot-4 created no official pair or task
-index. Pilot-5 narrowed that detector and produced sealed P01-T2 and P02-T2
-pairs under its original three-way audit policy. P02-T2 ended when L's audit
-returned `unclear`; N did not start. Pilot-6 is a separate binary-verdict
-successor, not a reinterpretation or continuation of either sealed pair. Its
-installation and provider qualification must be authenticated before any
-official pilot-6 run. Do not pool observations across pilots, alter old
-evidence, or use an older launcher as a substitute.
+Pilot ID: `formalization-benchmark-pilot-7`.
 
-The pilot accepts exactly these tasks:
+## Tasks
 
-- `P01-T2`
-- `P02-T2`
-- `P03-T2`
-- `P13-T2`
-- `P14-T2`
+Pilot-7 supports 18 fresh N/L pairs:
 
-For each requested task, the controller runs one condition N formalizer and one
-condition L formalizer in the frozen order recorded in `config.json`.
-Both formalizers receive the same paper and common prompt. L alone receives the
-frozen NumStability snapshot and the explicit encouragement appendix. That
-appendix names the read-only source at `/library/NumStability`, explains that
-compiled declarations are on `LEAN_PATH`, and gives concrete `find`, `rg`, and
-`import NumStability` discovery/import guidance.
+- Paper tasks: `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, `P14-T2`.
+- Higham problems: `H22-11`, `H22-5`, `H20-6`, `H7-12`,
+  `H20-9`, `H20-8`, `H23-6`, `H5-5`, `H10-7`, `H12-4`,
+  `H19-5`, `H7-14`, `H15-3`.
 
-The benchmark measures the construction of a faithful Lean proposition. The
-root declaration is deliberately left as `by sorry`; proof search is outside
-the outcome. A condition may submit at most four times in one persistent Codex
-conversation and one live raw-event-enabled app-server process. Validation and
-fresh-agent faithfulness auditing happen while the contestant clock is paused.
-For an integrity-valid candidate with an admissible source task, the pilot-6
-semantic audit returns only `faithful` or `unfaithful`. Acceptance requires
-affirmative coverage of the paper's full domain. An unsupported extra
-successful-operation, run-existence, or other domain restriction is
-`unfaithful` and produces concrete, condition-neutral feedback for repair in
-the same conversation. Provider, tool, or malformed-output failures remain
-unscored operational incidents, not a third faithfulness verdict.
-For each attempt, the model-active interval begins immediately before the
-`turn/start` request and runs through contestant-process quiescence. The later
-candidate copy/hash is timed and charged as a separate component; validation,
-telemetry settling, and auditing stay off-clock. The two charged components are
-summed against an 18,000-second cumulative termination threshold. A measured
-timer or final-freeze overshoot is retained and yields an unscored
-`ACTIVE_TIME_LIMIT`, never a faithful acceptance. Exact provider usage is
-metered and reported but does not stop the benchmark.
+The condition order is frozen in `config.json` and balanced nine N-first /
+nine L-first. Each task has one official pair slot.
 
-## Operator commands
+Both formalizers receive the same PDF, task packet, common prompt, Lean, and
+Mathlib. L alone receives the read-only NumStability snapshot and the frozen
+appendix that explicitly encourages discovery, import, reuse, adaptation, or
+inspiration from the library. N has no direct or indirect NumStability
+material.
 
-After pilot-6 is installed on Titan, use its dedicated launcher so every
-command enters the fixed hardware envelope. These commands describe the
-successor release; they do not assert that it has already been installed:
+The formalizer is `gpt-5.6-sol` at `xhigh`. Each condition has one initial
+submission and at most three same-conversation repairs, a cumulative
+18,000-second contestant-active threshold, and no token cap. The target proof
+is deliberately `by sorry`; success is statement faithfulness.
+
+## Audit
+
+Every compiling candidate gets a recursively expanded, pseudonymized semantic
+dossier and fresh blind, direct, and round-trip roles. Blind and direct outputs
+must account for every `Dxxx` dependency. Both judges must complete all 16
+semantic checks and both implication directions. Equivalent and genuinely
+stronger candidates are faithful; weaker, different, restricted, vacuous, or
+partial-case candidates are unfaithful.
+
+An intermediate `undetermined` judge classification triggers a fresh
+adjudicator. The final candidate verdict is always exactly `faithful` or
+`unfaithful`; infrastructure failures are separate incidents.
+
+See [PROTOCOL.md](PROTOCOL.md) for the complete frozen contract.
+
+## Titan commands
+
+After Pilot-7 is installed and provider-qualified on Titan:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-6-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-6-r1 doctor --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-6-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-6-r1 run --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-6-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-7-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-7-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-7-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-7-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-7-r1 status --task-id H22-11
 ```
 
-Use `--dry-run` with `run` to exercise admission, staging, condition isolation,
-and hashing without making provider calls or consuming the task's one official
-pair slot.
+`run --dry-run` checks admission and staging without model calls or consuming
+an official pair. Installation and qualification never authorize an official
+run; a measured pair starts only after an explicit user request for that task.
 
-The exact app-server configuration disables agent delegation through
-`agents.enabled=false` and both multi-agent feature flags. The controller
-attests the effective configuration and features before model inference and
-fails closed on any collaboration or foreign-thread event. A paid but
-off-benchmark provider canary qualifies this capability before a fresh
-official pair is indexed. It also submits the exact frozen schemas for blind
-translation, direct judgment, round-trip judgment, and adjudication through
-live provider calls with synthetic checkable outputs. It also requires
-trace-backed reads of a seeded workspace file for both role types and a
-checked write for the formalizer, and rejects actual Code Mode startup
-failures. The warning check is restricted to diagnostic events and stderr,
-not arbitrary tool-catalog text; pilot-4's broader check gave a false failure.
-This tool-backed qualification closes the pilot-3 gap: its schema-only
-qualification passed while workspace tools were unavailable. Qualification time and tokens never enter
-contestant totals.
-The Codex binary and its same-package Code Mode host are both hash-pinned by
-the deployment, and the host is mounted read-only beside `/codex` inside the
-minimal Bubblewrap filesystem.
-Provider-free `doctor` and `--dry-run` do not make this inference call.
-`qualify-provider` runs these paid checks without consuming an official task
-slot; a later `run` verifies and reuses its sealed record.
+Natural-language examples:
 
-Release repair, installation, and qualification are preparation, not an
-instruction to start an official pair. Check all five statuses after setup;
-issue `run` only when explicitly requested for that task.
+```text
+Run benchmark for H22-11
+Run benchmark for H5-5
+Run benchmark for P03-T2
+```
 
-Every real run enters a transient user service with systemd-enforced affinity
-to the setup-frozen eight logical CPUs and cgroup limits of 32 GiB RAM, 512
-tasks, and no swap. Generated shell-command trees are additionally confined to
-a delegated child cgroup limited to 24 GiB RAM, 384 tasks, and no swap, leaving
-protected capacity for the trusted controller. The outer service denies
-affinity changes throughout its process tree, every strict hardware snapshot
-tests that denial, and the generated-command seccomp policy repeats it.
+## Private inputs and build evidence
 
-Setup also performs one clean full build of the frozen NumStability snapshot.
-It cleans the workspace, rehydrates the frozen dependency cache off-clock, and
-proves the root project build tree is empty immediately before measurement.
-The build runs in the same fixed outer hardware envelope but is never charged
-to either contestant. Its wall/CPU
-time, peak memory and other GNU `time` statistics, hardware/cgroup snapshots,
-sanitized environment, source/configuration and dependency-cache digests,
-source/object counts, complete build output, and hashes are retained under
-`runtime/library/build/` in the private deployment and authenticated by every
-doctor run.
+The 18 source PDFs are private and are matched by basename and SHA-256 from
+`manifest.json`. Reused chapter PDFs are stored once in the deployment.
+Setup also performs and records a clean full NumStability build under the same
+eight-CPU/32-GiB/no-swap outer envelope. Build duration, GNU `time` metrics,
+hardware/cgroup observations, complete output, source/object counts, and hashes
+are authenticated under `runtime/library/build/` and excluded from contestant
+measurements.
 
-## Private inputs
-
-PDFs are intentionally not committed. The deployment root must contain the five
-hash-verified files named by `manifest.json`. The NumStability source and
-compiled snapshot are also private runtime inputs and must resolve to commit
-`45813a95dacf577461bae13f033af0dbc985a225`.
-
-The controller never stages the old `Target.lean`, `context.md`, shared
-HighamBench definitions, construction metadata, audit history, Git repository,
-or the other condition's output into a contestant workspace.
-
-See `PROTOCOL.md` for the frozen experimental contract, `ARCHITECTURE.md` for
-the control/data flow and script inventory, and `deployment/TITAN.md` for
-installation and hardware containment.
+The controller never stages old targets, shared benchmark scaffolds, prior
+audit history, Git history, or the other condition's output into a contestant
+workspace.

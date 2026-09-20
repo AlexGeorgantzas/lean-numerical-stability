@@ -2,11 +2,37 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "type": "object",
   "additionalProperties": false,
-  "required": ["role", "semantic_sha256", "translation", "ambiguities", "vacuity_risks"],
+  "required": ["role", "semantic_sha256", "dependency_coverage", "translation", "ambiguities", "vacuity_risks"],
   "properties": {
     "role": {"type": "string", "enum": ["blind-translation"]},
     "semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-    "translation": {"type": "string", "minLength": 1},
+    "dependency_coverage": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "name", "meaning", "effect_on_target", "status"],
+        "properties": {
+          "id": {"type": "string", "pattern": "^D[0-9]{3}$"},
+          "name": {"type": "string", "minLength": 1},
+          "meaning": {"type": "string", "minLength": 1},
+          "effect_on_target": {"type": "string", "minLength": 1},
+          "status": {"type": "string", "enum": ["understood", "unclear"]}
+        }
+      }
+    },
+    "translation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["binders", "hypotheses", "conclusions", "mathematical_definitions", "proposition_plain_english"],
+      "properties": {
+        "binders": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "hypotheses": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "conclusions": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+        "mathematical_definitions": {"type": "array", "items": {"type": "string", "minLength": 1}},
+        "proposition_plain_english": {"type": "string", "minLength": 1}
+      }
+    },
     "ambiguities": {"type": "array", "items": {"type": "string", "minLength": 1}},
     "vacuity_risks": {"type": "array", "items": {"type": "string", "minLength": 1}}
   }

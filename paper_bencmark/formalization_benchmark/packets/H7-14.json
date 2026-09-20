@@ -1,0 +1,40 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H7-14",
+  "selected_result": "First-order statistical perturbation bound for a linear system",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 7: Perturbation Theory for Linear Systems, Problem 7.14",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "136",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch7.pdf",
+    "sha256": "14e70e41c8881f866003246b806bd116ca79f59af3d3bf0b24a6d7fc8ebe24c2"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 7, Problems",
+      "printed_pages": "136",
+      "pdf_pages": "18",
+      "anchor": "Problem 7.14: random componentwise perturbations of A and b and the resulting first-order behaviour of the solution"
+    }
+  ],
+  "task_clarification": [
+    "Let A be nonsingular and square, perturbed to A + dA, and b perturbed to b + db. To first order the solution of A x = b is perturbed to x + dx with dx = -A^{-1} dA x + A^{-1} db.",
+    "Let the perturbations have the form dA_ij = eps_ij e_ij and db_i = delta_i f_i, where the eps_ij and delta_i are independent random variables with zero mean and variance sigma^2, and E and f carry the perturbation magnitudes.",
+    "Formalize part (a): E(||dx||_2^2) = sigma^2 || [A^{-1}][E][x] + [A^{-1}][f] ||_1, where square brackets denote elementwise squaring.",
+    "The conclusion is a statistical perturbation statement, not a worst-case bound."
+  ],
+  "scope_constraints": [
+    "The perturbation model is first order; the second-order term is dropped as in the source.",
+    "The random variables are independent with zero mean and common variance sigma^2.",
+    "A is nonsingular and square.",
+    "Represent the random perturbation model rather than assuming the resulting expression.",
+    "Only part (a) is selected. Parts (b) and (c), concerning the expected condition number and its comparison with the worst-case condition number, are outside this task."
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H10-7",
+  "selected_result": "Ordering property of the Cholesky factor under complete pivoting",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 10: Cholesky Factorization, Problem 10.7",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "211",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch10.pdf",
+    "sha256": "50cc14881f265b9c465aefbdadf457c0671ef5c3470485c4eba29f2bcda722b4"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 10, Problems",
+      "printed_pages": "211",
+      "pdf_pages": "17",
+      "anchor": "Problem 10.7: equation (10.13), stated on the page introducing the standard pivoting strategy"
+    }
+  ],
+  "task_clarification": [
+    "Let A be positive semidefinite of rank r, and let the Cholesky decomposition with complete pivoting produce the factor R.",
+    "Formalize equation (10.13): r_kk^2 >= sum_{i=k}^{min(j,r)} r_ij^2 for j = k+1:n and k = 1:r.",
+    "In particular the diagonal entries satisfy |r_11| >= |r_22| >= ... >= |r_rr|.",
+    "The pivoting strategy is the standard one: at each step the pivot is the largest remaining diagonal entry."
+  ],
+  "scope_constraints": [
+    "A is positive semidefinite of rank r; complete pivoting is the strategy defined by the source.",
+    "This is an exact algebraic property of the factor, not a rounding-error bound.",
+    "State the index ranges exactly as given.",
+    "Represent the pivoted factorization rather than assuming the inequality."
+  ]
+}

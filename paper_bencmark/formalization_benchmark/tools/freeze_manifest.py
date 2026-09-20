@@ -22,7 +22,26 @@ from manifest_control import (
 )
 
 
-TASK_IDS = ["P01-T2", "P02-T2", "P03-T2", "P13-T2", "P14-T2"]
+TASK_IDS = [
+    "P01-T2",
+    "P02-T2",
+    "P03-T2",
+    "P13-T2",
+    "P14-T2",
+    "H22-11",
+    "H22-5",
+    "H20-6",
+    "H7-12",
+    "H20-9",
+    "H20-8",
+    "H23-6",
+    "H5-5",
+    "H10-7",
+    "H12-4",
+    "H19-5",
+    "H7-14",
+    "H15-3",
+]
 REPOSITORY_DEPENDENCIES = [
     ".codex/skills/run-highambench-experiments/SKILL.md",
     ".codex/skills/run-highambench-experiments/agents/openai.yaml",

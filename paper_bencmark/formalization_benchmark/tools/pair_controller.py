@@ -938,10 +938,10 @@ class PairController:
                 or self.deployment.great_ancestral_predecessor_run_root is None
                 or self.deployment.fifth_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-6 registry or predecessor locks are missing")
+                raise BenchmarkError("pilot-7 registry or predecessor locks are missing")
             from setup_titan import pilot5_lineage
 
-            # doctor is called under the pilot-6 campaign lock (including the
+            # doctor is called under the pilot-7 campaign lock (including the
             # predecessor and account-global locks). The frozen pilot-5 status
             # verifier would try to reacquire them in another process. Setup
             # performs that full status check before publication; here compare

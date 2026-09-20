@@ -4,7 +4,7 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-6 is a side-by-side binary-verdict successor. The pilot-1 through pilot-5
+Pilot-7 is a side-by-side expanded successor. The pilot-1 through pilot-6
 deployments, launchers, and sealed runs must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
@@ -20,9 +20,11 @@ warning detector mistook unrelated text in a giant truncated tool catalog
 for a Code Mode startup warning. Pilot-4 created no official pair or index.
 Pilot-5 narrowed that warning check and produced sealed P01-T2 and P02-T2
 pairs under its original three-way audit policy. P02-T2 ended after L received
-`unclear`; N did not start. Pilot-6 gives each of the five tasks a fresh slot
+`unclear`; N did not start. Pilot-6 introduced the binary verdict policy for
+five paper tasks; its evidence remains sealed under its own release. Pilot-7
+gives each of the 18 tasks a fresh slot
 under a binary `faithful`/`unfaithful` semantic policy; it neither relabels nor
-resumes pilot-5 evidence. Never combine observations across pilots. Setup
+resumes any earlier-pilot evidence. Never combine observations across pilots. Setup
 authenticates the direct pilot-5 predecessor, its two sealed pairs, and the
 retained pilot-4/3/2/1 lineage before publication.
 
@@ -32,9 +34,9 @@ its qualification record is
 `0c0c4ccb252b432e41025fa1f4e17dfa1df78c1f6f8c9a54801a32bd5ee97e16`
 and its library build record is
 `d9abf28dfa5444a78fc88ce6818fc4c0e4ed166296d922f5b53b46476f4316db`.
-These identify the direct predecessor, not pilot-6 measurements.
+These identify the retained installation lineage, not Pilot-7 measurements.
 
-Pilot-6 must not be treated as ready merely because these repository files
+Pilot-7 must not be treated as ready merely because these repository files
 exist. Its own clean release, separate installation, provider-free gates, and
 live provider qualification must pass before an official pair starts. An
 integrity-valid candidate receives exactly one semantic verdict, `faithful`
@@ -49,7 +51,7 @@ its failed qualification record is
 `930a69c9a059f8e00590a6689ea9d15177e27b435e901e724e57861a1db79c9a`
 and its library build record is
 `42d1a09980a908d4b4757b174dff0239d20f9cc35e0e67dd7499a0bec60580ec`.
-These authenticate older predecessor evidence, not pilot-6 measurements.
+These authenticate older predecessor evidence, not pilot-7 measurements.
 
 ## Security first
 
@@ -117,11 +119,11 @@ From the exact release checkout:
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
   --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-5-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-6-r1
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-7-r1
 ```
 
-The installer creates a user-private pilot-6 deployment below
-`~/.local/share/highambench-formalization-pilot-6-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-7 deployment below
+`~/.local/share/highambench-formalization-pilot-7-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -133,7 +135,7 @@ before retrying. Incomplete or malformed sibling deployment transactions are
 quarantined under unique names; an unrecognized existing destination or
 launcher is never overwritten. It:
 
-1. verifies the release and all five private PDF hashes;
+1. verifies the release and all 18 task PDF identities (with reused chapter PDFs deduplicated by hash);
 2. prepares the frozen Lean 4.29.0-rc3 and Mathlib environment using the
    private `tooling/{cache,tmp}` directories beside the deployment on `/hdd`,
    not the account's small home filesystem;
@@ -180,13 +182,13 @@ committed to Git.
 
 ## Run
 
-Once pilot-6 is installed and authenticated, its operator commands are:
+Once pilot-7 is installed and authenticated, its operator commands are:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-6-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-6-r1 doctor --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-6-r1 qualify-provider --task-id P01-T2
-~/.local/bin/run-highambench-formalization-pilot-6-r1 run --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-7-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-7-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-7-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-7-r1 run --task-id H22-11
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -202,7 +204,8 @@ tool-catalog text does not. This guards against both the pilot-2 schema
 rejection and pilot-3 missing-command-host incidents. Its sealed, one-shot usage is separately recorded
 and never charged to N or L. A missing or failed qualification blocks the
 release without consuming that task's official slot. The repository skill maps
-the natural-language request `Run benchmark for P01-T2` to this command.
+requests such as `Run benchmark for H22-11` or `Run benchmark for P01-T2` to
+the corresponding command.
 Repeating the request returns the existing pilot run for that task rather than
 creating a repetition.
 The explicit `qualify-provider` command can be run immediately after setup to
@@ -211,12 +214,14 @@ establish live provider readiness without starting a benchmark; a later fresh
 probe remains failed evidence for this release; do not silently retry it or
 bypass the gate.
 
-Installation and qualification are preparation only. Check all five statuses
+Installation and qualification are preparation only. Check all 18 statuses
 after setup; do not start an official `run` as part of repair. A separate,
 explicit task-run request is required.
 
-The five accepted task IDs are `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, and
-`P14-T2`. Each task has exactly one official N/L pair. Every condition uses one
+The accepted task IDs are the five paper tasks `P01-T2`, `P02-T2`, `P03-T2`,
+`P13-T2`, and `P14-T2`, plus `H22-11`, `H22-5`, `H20-6`, `H7-12`,
+`H20-9`, `H20-8`, `H23-6`, `H5-5`, `H10-7`, `H12-4`, `H19-5`,
+`H7-14`, and `H15-3`. Each task has exactly one official N/L pair. Every condition uses one
 persistent formalizer conversation for up to four submissions, with 18,000
 cumulative contestant-active seconds as its termination threshold and no
 contestant token cap. Any timer or final-candidate-freeze overshoot is recorded,
@@ -226,7 +231,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-6-r1 status --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-7-r1 status --task-id H22-11
 ```
 
 ## Storage separation

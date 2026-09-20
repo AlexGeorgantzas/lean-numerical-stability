@@ -455,12 +455,17 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
     def test_auditor_schema_probes_satisfy_audit_contracts(self) -> None:
         for role, _schema, expected in canary.AUDIT_SCHEMA_PROBES:
             if role == "blind-translation":
-                _validate_translation(expected, canary.SYNTHETIC_SEMANTIC_SHA256)
+                _validate_translation(
+                    expected,
+                    canary.SYNTHETIC_SEMANTIC_SHA256,
+                    [],
+                )
             elif role == "adjudicator":
                 _validate_adjudication(
                     expected,
                     paper_sha256=canary.SYNTHETIC_PAPER_SHA256,
                     semantic_sha256=canary.SYNTHETIC_SEMANTIC_SHA256,
+                    trigger=["synthetic disagreement"],
                 )
             else:
                 _validate_judgment(
@@ -468,6 +473,7 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
                     role=role,
                     paper_sha256=canary.SYNTHETIC_PAPER_SHA256,
                     semantic_sha256=canary.SYNTHETIC_SEMANTIC_SHA256,
+                    dependencies=[],
                 )
 
     def test_incomplete_telemetry_fails_closed_and_does_not_retry(self) -> None:

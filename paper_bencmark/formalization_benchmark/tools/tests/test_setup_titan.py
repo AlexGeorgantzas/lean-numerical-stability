@@ -91,15 +91,15 @@ class SkillInstallTests(unittest.TestCase):
             with self.assertRaisesRegex(BenchmarkError, "gained or lost"):
                 _pilot5_release_closure(root, manifest)
 
-    def test_pilot6_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+    def test_pilot7_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
         parser = make_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(["--pdf-source-dir", "/tmp"])
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-6-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-6-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-7-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-7-r1"))
 
     def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -733,7 +733,7 @@ class SkillInstallTests(unittest.TestCase):
                 verify_predecessor_lineage(str(root), lineage)
                 self.assertEqual(before, {path: sha256_file(path) for path in before})
 
-                # Pilot-6 doctor already holds the shared campaign lock. It
+                # Pilot-7 doctor already holds the shared campaign lock. It
                 # must authenticate the pinned predecessor bytes without
                 # launching the frozen status command under that same lock.
                 with mock.patch(

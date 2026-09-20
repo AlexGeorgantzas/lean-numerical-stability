@@ -1,0 +1,40 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H5-5",
+  "selected_result": "Error analysis of polynomial evaluation in root-product form",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 5: Polynomials, Problem 5.5",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "104",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch5.pdf",
+    "sha256": "504df359b0adacff8255df6d165cf6d4bad0c465a02bb86fa6851209fdf171e1"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 5, Problems",
+      "printed_pages": "104",
+      "pdf_pages": "12",
+      "anchor": "Problem 5.5: evaluation of p from its root product form and the requested error analysis"
+    }
+  ],
+  "task_clarification": [
+    "Let p(x) = sum_{i=0}^{n} a_i x^i have roots x_1, ..., x_n, so that p(x) = a_n * prod_{i=1}^{n} (x - x_i).",
+    "Consider evaluating p(x) from the root product form by n rounded subtractions and n rounded multiplications.",
+    "Formalize the solution given in Appendix A: the computed value phat satisfies phat = p(x) * (1 + theta_{2n+1}) with |theta_{2n+1}| <= gamma_{2n+1}, where gamma_k = k*u/(1 - k*u).",
+    "Equivalently, |p(x) - phat| <= gamma_{2n+1} |p(x)| = gamma_{2n+1} |a_n| prod_{i=1}^{n} |x - x_i|."
+  ],
+  "scope_constraints": [
+    "Use the standard model for each rounded operation with unit roundoff u, excluding overflow and underflow.",
+    "The evaluation order is the product form given by the source; state it explicitly.",
+    "Assume (2*n + 1)*u < 1 for the gamma coefficient used.",
+    "Represent the computation and its rounding assumptions rather than postulating the bound.",
+    "The exact gamma_{2n+1} coefficient is fixed by the book's Appendix A solution to Problem 5.5; it is not an operator-invented strengthening."
+  ]
+}

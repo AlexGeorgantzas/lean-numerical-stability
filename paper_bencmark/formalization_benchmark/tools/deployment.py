@@ -16,7 +16,7 @@ DEFAULT_DEPLOYMENT = (
     Path.home()
     / ".local"
     / "share"
-    / "highambench-formalization-pilot-6-r1"
+    / "highambench-formalization-pilot-7-r1"
     / "deployment.json"
 )
 GLOBAL_REGISTRY_ROOT = (
@@ -96,8 +96,8 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     value = load_json(path)
     if value.get("schema_version") != "formalization-deployment-1":
         raise BenchmarkError("unsupported deployment record")
-    if value.get("pilot_id") != "formalization-benchmark-t2-pilot-6":
-        raise BenchmarkError("deployment does not identify the pilot-6 release")
+    if value.get("pilot_id") != "formalization-benchmark-pilot-7":
+        raise BenchmarkError("deployment does not identify the pilot-7 release")
     for field, length in (
         ("release_commit", 40),
         ("release_manifest_sha256", 64),

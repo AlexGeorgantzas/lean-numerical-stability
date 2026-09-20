@@ -24,6 +24,12 @@ from common import (
 ROOT = Path(__file__).resolve().parents[1]
 PROMPTS = ROOT / "audit" / "prompts"
 SCHEMAS = ROOT / "audit" / "schemas"
+SEMANTIC_CHECK_IDS = [f"S{index:02d}" for index in range(1, 17)]
+FAITHFUL_CLASSIFICATIONS = {"faithful-equivalent", "faithful-stronger"}
+UNFAITHFUL_CLASSIFICATIONS = {
+    "unfaithful-weaker",
+    "unfaithful-different",
+}
 
 
 def audit_evidence_manifest(audit_root: Path) -> dict[str, Any]:
@@ -103,54 +109,265 @@ def _valid_mismatches(value: Any) -> bool:
     )
 
 
-def _validate_translation(value: dict[str, Any], semantic_sha256: str) -> None:
-    if (
-        set(value)
-        != {"role", "semantic_sha256", "translation", "ambiguities", "vacuity_risks"}
-        or value.get("role") != "blind-translation"
-        or value.get("semantic_sha256") != semantic_sha256
-        or not isinstance(value.get("translation"), str)
-        or not value["translation"].strip()
-        or not _nonempty_string_list(value.get("ambiguities"))
-        or not _nonempty_string_list(value.get("vacuity_risks"))
-    ):
-        raise BenchmarkError("blind translation failed its semantic contract")
+def _dependency_identity(dossier: dict[str, Any]) -> list[tuple[str, str]]:
+    dependencies = dossier.get("dependencies")
+    if not isinstance(dependencies, list):
+        raise BenchmarkError("semantic dossier has no dependency inventory")
+    result: list[tuple[str, str]] = []
+    for dependency in dependencies:
+        if (
+            not isinstance(dependency, dict)
+            or not isinstance(dependency.get("id"), str)
+            or not isinstance(dependency.get("name"), str)
+        ):
+            raise BenchmarkError("semantic dossier dependency inventory is malformed")
+        result.append((dependency["id"], dependency["name"]))
+    return result
 
 
-def _validate_judgment(
-    value: dict[str, Any], *, role: str, paper_sha256: str, semantic_sha256: str
+def _validate_dependency_coverage(
+    value: Any,
+    expected: list[tuple[str, str]],
+    *,
+    direct: bool,
+) -> None:
+    fields = (
+        {"id", "name", "interpretation", "effect_on_target", "paper_match", "status"}
+        if direct
+        else {"id", "name", "meaning", "effect_on_target", "status"}
+    )
+    statuses = (
+        {"pass", "fail", "unclear", "not-applicable"}
+        if direct
+        else {"understood", "unclear"}
+    )
+    if not isinstance(value, list) or len(value) != len(expected):
+        raise BenchmarkError("auditor dependency coverage is incomplete")
+    for record, (dependency_id, dependency_name) in zip(value, expected, strict=True):
+        if (
+            not isinstance(record, dict)
+            or set(record) != fields
+            or record.get("id") != dependency_id
+            or record.get("name") != dependency_name
+            or record.get("status") not in statuses
+            or any(
+                not isinstance(record.get(field), str) or not record[field].strip()
+                for field in fields - {"status"}
+            )
+        ):
+            raise BenchmarkError(
+                f"auditor dependency record does not match {dependency_id}"
+            )
+
+
+def _validate_translation(
+    value: dict[str, Any],
+    semantic_sha256: str,
+    dependencies: list[tuple[str, str]],
 ) -> None:
     if (
         set(value)
         != {
             "role",
-            "paper_sha256",
-            "candidate_semantic_sha256",
-            "verdict",
-            "mismatches",
-            "uncertainties",
-            "rationale",
+            "semantic_sha256",
+            "dependency_coverage",
+            "translation",
+            "ambiguities",
+            "vacuity_risks",
         }
+        or value.get("role") != "blind-translation"
+        or value.get("semantic_sha256") != semantic_sha256
+        or not _nonempty_string_list(value.get("ambiguities"))
+        or not _nonempty_string_list(value.get("vacuity_risks"))
+    ):
+        raise BenchmarkError("blind translation failed its semantic contract")
+    _validate_dependency_coverage(
+        value["dependency_coverage"], dependencies, direct=False
+    )
+    translation = value.get("translation")
+    if (
+        not isinstance(translation, dict)
+        or set(translation)
+        != {
+            "binders",
+            "hypotheses",
+            "conclusions",
+            "mathematical_definitions",
+            "proposition_plain_english",
+        }
+        or not _nonempty_string_list(translation.get("binders"))
+        or not _nonempty_string_list(translation.get("hypotheses"))
+        or not _nonempty_string_list(translation.get("conclusions"))
+        or not translation["conclusions"]
+        or not _nonempty_string_list(translation.get("mathematical_definitions"))
+        or not isinstance(translation.get("proposition_plain_english"), str)
+        or not translation["proposition_plain_english"].strip()
+    ):
+        raise BenchmarkError("blind translation is incomplete")
+
+
+def _validate_implications(value: Any, *, allow_unclear: bool) -> tuple[str, str]:
+    if not isinstance(value, dict) or set(value) != {
+        "candidate_implies_source",
+        "source_implies_candidate",
+    }:
+        raise BenchmarkError("judge implication record is malformed")
+    allowed = {"yes", "no", "unclear"} if allow_unclear else {"yes", "no"}
+    verdicts: list[str] = []
+    for direction in ("candidate_implies_source", "source_implies_candidate"):
+        record = value.get(direction)
+        if (
+            not isinstance(record, dict)
+            or set(record) != {"verdict", "reasoning"}
+            or record.get("verdict") not in allowed
+            or not isinstance(record.get("reasoning"), str)
+            or not record["reasoning"].strip()
+        ):
+            raise BenchmarkError(f"judge implication direction is malformed: {direction}")
+        verdicts.append(record["verdict"])
+    return verdicts[0], verdicts[1]
+
+
+def _classification_for_implications(
+    candidate_implies_source: str, source_implies_candidate: str
+) -> str:
+    if "unclear" in {candidate_implies_source, source_implies_candidate}:
+        return "undetermined"
+    return {
+        ("yes", "yes"): "faithful-equivalent",
+        ("yes", "no"): "faithful-stronger",
+        ("no", "yes"): "unfaithful-weaker",
+        ("no", "no"): "unfaithful-different",
+    }[(candidate_implies_source, source_implies_candidate)]
+
+
+def _validate_semantic_checklist(value: Any, *, evidence_field: str) -> None:
+    expected_fields = {
+        "id",
+        "status",
+        "paper_evidence",
+        evidence_field,
+        "reasoning",
+    }
+    if not isinstance(value, list) or len(value) != len(SEMANTIC_CHECK_IDS):
+        raise BenchmarkError("judge omitted one or more mandatory semantic checks")
+    for record, check_id in zip(value, SEMANTIC_CHECK_IDS, strict=True):
+        if (
+            not isinstance(record, dict)
+            or set(record) != expected_fields
+            or record.get("id") != check_id
+            or record.get("status")
+            not in {"pass", "fail", "unclear", "not-applicable"}
+            or any(
+                not isinstance(record.get(field), str) or not record[field].strip()
+                for field in expected_fields - {"id", "status"}
+            )
+        ):
+            raise BenchmarkError(f"judge semantic check is malformed: {check_id}")
+
+
+def _validate_judgment(
+    value: dict[str, Any],
+    *,
+    role: str,
+    paper_sha256: str,
+    semantic_sha256: str,
+    dependencies: list[tuple[str, str]],
+) -> None:
+    direct = role == "direct-judge"
+    expected_fields = {
+        "role",
+        "paper_sha256",
+        "candidate_semantic_sha256",
+        "semantic_checklist",
+        "implications",
+        "classification",
+        "accepted",
+        "requires_adjudication",
+        "mismatches",
+        "uncertainties",
+        "rationale",
+    }
+    if direct:
+        expected_fields.add("dependency_coverage")
+    if (
+        set(value) != expected_fields
         or value.get("role") != role
         or value.get("paper_sha256") != paper_sha256
         or value.get("candidate_semantic_sha256") != semantic_sha256
-        or value.get("verdict") not in ("faithful", "unfaithful")
+        or value.get("classification")
+        not in {
+            *FAITHFUL_CLASSIFICATIONS,
+            *UNFAITHFUL_CLASSIFICATIONS,
+            "undetermined",
+        }
+        or not isinstance(value.get("accepted"), bool)
+        or not isinstance(value.get("requires_adjudication"), bool)
         or not _valid_mismatches(value.get("mismatches"))
         or not _nonempty_string_list(value.get("uncertainties"))
         or not isinstance(value.get("rationale"), str)
         or not value["rationale"].strip()
     ):
         raise BenchmarkError(f"{role} failed its semantic contract")
-    if value["verdict"] == "faithful" and (
+    if direct:
+        _validate_dependency_coverage(
+            value["dependency_coverage"], dependencies, direct=True
+        )
+    _validate_semantic_checklist(
+        value["semantic_checklist"],
+        evidence_field="candidate_evidence" if direct else "translation_evidence",
+    )
+    implication_pair = _validate_implications(
+        value["implications"], allow_unclear=True
+    )
+    expected_classification = _classification_for_implications(*implication_pair)
+    if value["classification"] != expected_classification:
+        raise BenchmarkError(f"{role} classification contradicts its implications")
+    expected_accepted = value["classification"] in FAITHFUL_CLASSIFICATIONS
+    if value["accepted"] != expected_accepted:
+        raise BenchmarkError(f"{role} accepted flag contradicts its classification")
+    unresolved = (
+        value["classification"] == "undetermined"
+        or any(item["status"] == "unclear" for item in value["semantic_checklist"])
+        or (
+            direct
+            and any(
+                item["status"] == "unclear"
+                for item in value["dependency_coverage"]
+            )
+        )
+    )
+    if unresolved and not value["requires_adjudication"]:
+        raise BenchmarkError(f"{role} suppressed mandatory adjudication")
+    recorded_failure = any(
+        item["status"] == "fail" for item in value["semantic_checklist"]
+    ) or (
+        direct
+        and any(
+            item["status"] == "fail" for item in value["dependency_coverage"]
+        )
+    )
+    if recorded_failure and value["classification"] in FAITHFUL_CLASSIFICATIONS:
+        raise BenchmarkError(f"{role} accepted despite a failed semantic check")
+    if value["accepted"] and (
         value["mismatches"] or value["uncertainties"]
     ):
         raise BenchmarkError(f"{role} returned a contradictory faithful judgment")
-    if value["verdict"] == "unfaithful" and not value["mismatches"]:
+    if (
+        value["classification"] in UNFAITHFUL_CLASSIFICATIONS
+        and not value["mismatches"]
+    ):
         raise BenchmarkError(f"{role} returned unfaithful without a concrete mismatch")
+    if value["classification"] == "undetermined" and not value["uncertainties"]:
+        raise BenchmarkError(f"{role} returned undetermined without an uncertainty")
 
 
 def _validate_adjudication(
-    value: dict[str, Any], *, paper_sha256: str, semantic_sha256: str
+    value: dict[str, Any],
+    *,
+    paper_sha256: str,
+    semantic_sha256: str,
+    trigger: list[str],
 ) -> None:
     if (
         set(value)
@@ -158,6 +375,10 @@ def _validate_adjudication(
             "role",
             "paper_sha256",
             "candidate_semantic_sha256",
+            "trigger",
+            "resolved_items",
+            "implications",
+            "classification",
             "verdict",
             "mismatches",
             "remaining_uncertainties",
@@ -166,6 +387,11 @@ def _validate_adjudication(
         or value.get("role") != "adjudicator"
         or value.get("paper_sha256") != paper_sha256
         or value.get("candidate_semantic_sha256") != semantic_sha256
+        or value.get("trigger") != trigger
+        or not isinstance(value.get("resolved_items"), list)
+        or not value["resolved_items"]
+        or value.get("classification")
+        not in {*FAITHFUL_CLASSIFICATIONS, *UNFAITHFUL_CLASSIFICATIONS}
         or value.get("verdict") not in ("faithful", "unfaithful")
         or not _valid_mismatches(value.get("mismatches"))
         or not _nonempty_string_list(value.get("remaining_uncertainties"))
@@ -173,6 +399,28 @@ def _validate_adjudication(
         or not value["rationale"].strip()
     ):
         raise BenchmarkError("adjudicator failed its semantic contract")
+    if len(value["resolved_items"]) != len(trigger):
+        raise BenchmarkError("adjudicator omitted one or more trigger resolutions")
+    for item, expected_trigger in zip(value["resolved_items"], trigger, strict=True):
+        if (
+            not isinstance(item, dict)
+            or set(item) != {"item", "resolution", "primary_evidence"}
+            or item.get("item") != expected_trigger
+            or any(
+                not isinstance(item.get(field), str) or not item[field].strip()
+                for field in item
+            )
+        ):
+            raise BenchmarkError("adjudicator resolution record is malformed")
+    implication_pair = _validate_implications(
+        value["implications"], allow_unclear=False
+    )
+    if value["classification"] != _classification_for_implications(*implication_pair):
+        raise BenchmarkError("adjudicator classification contradicts its implications")
+    if (value["verdict"] == "faithful") != (
+        value["classification"] in FAITHFUL_CLASSIFICATIONS
+    ):
+        raise BenchmarkError("adjudicator verdict contradicts its classification")
     if value["verdict"] == "faithful" and (
         value["mismatches"] or value["remaining_uncertainties"]
     ):
@@ -452,6 +700,8 @@ class AuditController:
         blind_workspace = audit_root / "workspaces" / "blind"
         blind_workspace.mkdir(parents=True)
         dossier_text = dossier_path.read_text(encoding="utf-8")
+        dossier = load_json(dossier_path)
+        dependencies = _dependency_identity(dossier)
         blind_prompt = (
             (PROMPTS / "blind_translation.md").read_text(encoding="utf-8")
             + "\n\nSemantic SHA-256: `"
@@ -465,7 +715,9 @@ class AuditController:
             workspace=blind_workspace,
             role_root=audit_root / "roles" / "blind-translation",
             schema=SCHEMAS / "blind_translation.schema.json",
-            validate=lambda value: _validate_translation(value, semantic_sha256),
+            validate=lambda value: _validate_translation(
+                value, semantic_sha256, dependencies
+            ),
         )
         telemetry.append(role_telemetry)
         translation_path = audit_root / "blind_translation.json"
@@ -488,12 +740,13 @@ class AuditController:
             prompt=direct_prompt,
             workspace=direct_workspace,
             role_root=audit_root / "roles" / "direct-judge",
-            schema=SCHEMAS / "judgment.schema.json",
+            schema=SCHEMAS / "direct_judgment.schema.json",
             validate=lambda value: _validate_judgment(
                 value,
                 role="direct-judge",
                 paper_sha256=paper_sha256,
                 semantic_sha256=semantic_sha256,
+                dependencies=dependencies,
             ),
         )
         telemetry.append(role_telemetry)
@@ -516,12 +769,13 @@ class AuditController:
             prompt=roundtrip_prompt,
             workspace=roundtrip_workspace,
             role_root=audit_root / "roles" / "roundtrip-judge",
-            schema=SCHEMAS / "judgment.schema.json",
+            schema=SCHEMAS / "roundtrip_judgment.schema.json",
             validate=lambda value: _validate_judgment(
                 value,
                 role="roundtrip-judge",
                 paper_sha256=paper_sha256,
                 semantic_sha256=semantic_sha256,
+                dependencies=dependencies,
             ),
         )
         telemetry.append(role_telemetry)
@@ -529,19 +783,35 @@ class AuditController:
 
         adjudicated = False
         adjudication: dict[str, Any] | None = None
-        blind_has_unresolved_risk = bool(
-            translation["ambiguities"] or translation["vacuity_risks"]
-        )
-        if (
-            direct["verdict"] == "faithful"
-            and roundtrip["verdict"] == "faithful"
-            and not blind_has_unresolved_risk
+        trigger: list[str] = []
+        if direct["classification"] != roundtrip["classification"]:
+            trigger.append("direct and round-trip classifications differ")
+        if direct["requires_adjudication"]:
+            trigger.append("direct judge requested adjudication")
+        if roundtrip["requires_adjudication"]:
+            trigger.append("round-trip judge requested adjudication")
+        if any(
+            item["status"] == "unclear"
+            for item in translation["dependency_coverage"]
         ):
-            verdict = "faithful"
-            mismatches: list[dict[str, Any]] = []
-            uncertainties: list[str] = []
-            rationale = "Independent direct and round-trip judges both accepted the proposition."
-        else:
+            trigger.append("blind dependency interpretation remains unclear")
+        if any(
+            item["status"] == "unclear"
+            for item in direct["dependency_coverage"]
+        ):
+            trigger.append("direct dependency interpretation remains unclear")
+        if any(
+            item["status"] == "unclear"
+            for item in direct["semantic_checklist"]
+        ):
+            trigger.append("direct semantic check remains unclear")
+        if any(
+            item["status"] == "unclear"
+            for item in roundtrip["semantic_checklist"]
+        ):
+            trigger.append("round-trip semantic check remains unclear")
+
+        if trigger:
             adjudicated = True
             adjudicator_workspace = audit_root / "workspaces" / "adjudicator"
             adjudicator_workspace.mkdir(parents=True)
@@ -559,6 +829,9 @@ class AuditController:
                 + f"\n\nTask: {task_id}\nPaper SHA-256: {paper_sha256}\n"
                 + f"Candidate semantic SHA-256: {semantic_sha256}\n"
                 + "All authoritative inputs are the files in this workspace.\n"
+                + "Triggers requiring resolution: "
+                + json.dumps(trigger, ensure_ascii=False)
+                + "\n"
             )
             adjudication, role_telemetry = self._fresh_role(
                 role="adjudicator",
@@ -570,14 +843,41 @@ class AuditController:
                     value,
                     paper_sha256=paper_sha256,
                     semantic_sha256=semantic_sha256,
+                    trigger=trigger,
                 ),
             )
             telemetry.append(role_telemetry)
             write_json_atomic(audit_root / "adjudication.json", adjudication, mode=0o400)
             verdict = adjudication["verdict"]
+            classification = adjudication["classification"]
+            implications = adjudication["implications"]
             mismatches = list(adjudication["mismatches"])
             uncertainties = list(adjudication["remaining_uncertainties"])
             rationale = adjudication["rationale"]
+        else:
+            classification = direct["classification"]
+            implications = direct["implications"]
+            verdict = (
+                "faithful"
+                if classification in FAITHFUL_CLASSIFICATIONS
+                else "unfaithful"
+            )
+            mismatches = []
+            seen_mismatches: set[tuple[str, str, str]] = set()
+            for mismatch in [*direct["mismatches"], *roundtrip["mismatches"]]:
+                identity = (
+                    mismatch["paper_requirement"],
+                    mismatch["candidate_mismatch"],
+                    mismatch["severity"],
+                )
+                if identity not in seen_mismatches:
+                    seen_mismatches.add(identity)
+                    mismatches.append(mismatch)
+            uncertainties = [*direct["uncertainties"], *roundtrip["uncertainties"]]
+            rationale = (
+                "Independent direct and round-trip judges agreed on "
+                f"{classification}; no adjudication trigger remained."
+            )
 
         if verdict == "unfaithful" and not mismatches:
             raise BenchmarkError("unfaithful audit decision has no concrete mismatch")
@@ -605,8 +905,12 @@ class AuditController:
             "accepted": verdict == "faithful",
             "audit_incident": audit_incident,
             "adjudicated": adjudicated,
-            "direct_verdict": direct["verdict"],
-            "roundtrip_verdict": roundtrip["verdict"],
+            "classification": classification,
+            "implications": implications,
+            "direct_classification": direct["classification"],
+            "roundtrip_classification": roundtrip["classification"],
+            "direct_verdict": "faithful" if direct["accepted"] else "unfaithful",
+            "roundtrip_verdict": "faithful" if roundtrip["accepted"] else "unfaithful",
             "mismatches": mismatches,
             "remaining_uncertainties": uncertainties,
             "rationale": rationale,

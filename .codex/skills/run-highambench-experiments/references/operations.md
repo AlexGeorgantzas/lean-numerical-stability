@@ -3,12 +3,12 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
-Pilot-6 is the separate binary-verdict successor being prepared. Pilots 1–5
-are predecessor evidence, not pilot-6 observations or runs to resume. The
+Pilot-7 is the separate expanded successor being prepared. Pilots 1–6
+are predecessor evidence, not pilot-7 observations or runs to resume. The
 installed pilot-5 release retains its three-way audit and sealed P01-T2 and
 P02-T2 records; its `unclear` decisions must not be relabeled or supplied with
 manufactured feedback. Do not pool data across pilots or use pilot-5 task slots
-to satisfy a pilot-6 request. Pilot-6 must have its own pilot ID, deployment,
+to satisfy a pilot-7 request. Pilot-7 must have its own pilot ID, deployment,
 launcher, task indices, and account-global reservations; it is not ready
 for measurement until its clean release and installation are authenticated and
 provider qualification passes. If any of these are missing, stop before an
@@ -65,11 +65,24 @@ P02-T2
 P03-T2
 P13-T2
 P14-T2
+H22-11
+H22-5
+H20-6
+H7-12
+H20-9
+H20-8
+H23-6
+H5-5
+H10-7
+H12-4
+H19-5
+H7-14
+H15-3
 ```
 
-`Run benchmark for P01-T2` means:
+`Run benchmark for H22-11` means:
 
-1. select only `P01-T2`;
+1. select only `H22-11`;
 2. authenticate one immutable pair manifest;
 3. run exactly one N condition and one L condition in the frozen order; and
 4. stop after both have a terminal, authenticated result or the pair reaches a
@@ -79,26 +92,26 @@ It does not authorize additional repetitions, the other pilot tasks, metadata
 refresh, controlled-file edits, publication, commit, push, or deletion of an
 existing result.
 
-The earlier accepted HighamBench tasks establish only that these source results
-can be formalized faithfully. They never pre-approve a generated candidate;
+The frozen source packets establish the selected source results and their scope.
+They never pre-approve a generated candidate;
 every distinct semantic candidate still needs its own audit.
 
 ## Admission
 
-On Titan, first require the dedicated pilot-6 launcher and deployment. If
+On Titan, first require the dedicated pilot-7 launcher and deployment. If
 either is absent, stop with `source_first_runner_not_ready`; do not run pilot-5.
-Once installed, authenticate pilot-6 through its location-independent launcher:
+Once installed, authenticate pilot-7 through its location-independent launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-6-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-7-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-6-r1 doctor \
-  --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-7-r1 doctor \
+  --task-id H22-11
 ```
 
 Do not proceed unless `verify-release` and `doctor` both exit successfully and
@@ -137,7 +150,7 @@ their authenticated outputs jointly confirm all of the following:
   and stops without model inference or writing secrets to logs; the matching
   Code Mode host is hash-pinned and mounted read-only beside `/codex`;
 - the sealed pilot-1 through pilot-5 predecessor lineage and the
-  account-global campaign lock/registry match the pilot-6 deployment record.
+  account-global campaign lock/registry match the pilot-7 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -148,11 +161,11 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-6-r1 run \
-  --task-id P01-T2
+~/.local/bin/run-highambench-formalization-pilot-7-r1 run \
+  --task-id H22-11
 ```
 
-Replace `P01-T2` only with the single allowlisted task requested by the user.
+Replace `H22-11` only with the single allowlisted task requested by the user.
 Do not add a repetition count. The runner, not the operator, selects the frozen
 N/L order and creates the pair/run identities.
 
@@ -173,12 +186,12 @@ failed or missing qualification stops without consuming a slot. The deprecated
 foreign-thread events are provider infrastructure incompatibilities, never
 contestant rule violations.
 
-The explicit `qualify-provider --task-id P01-T2` command may establish this
+The explicit `qualify-provider --task-id H22-11` command may establish this
 readiness without starting a benchmark. After setup or repair, inspect all
-five task statuses with provider-free `status`. Do not invoke official `run`
+18 task statuses with provider-free `status`. Do not invoke official `run`
 until the user explicitly asks to start that task.
 
-Use the provider-free `status --task-id P01-T2` command to inspect a task. Do
+Use the provider-free `status --task-id H22-11` command to inspect a task. Do
 not reissue `run` merely to inspect it. Reissue the same authenticated `run`
 command only when intentionally continuing an advertised resumable transition
 or retrieving the already terminal result. Recovery is supported before a
@@ -297,7 +310,7 @@ library provenance wherever de-identification is reliable. The dossier
 contains candidate semantics under the explicit closure/frontier policy; paper
 and packet are supplied separately only to paper-facing roles.
 
-Acceptance requires the pilot-6 audit's `faithful` verdict: every material
+Acceptance requires the Pilot-7 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency, and both judges must complete S01--S16 plus both implication directions. Every material
 binder, premise, restriction, quantifier dependency, and conclusion must match
 the selected paper result without vacuity, unsupported assumptions, or narrower
 applicability. Auditor disagreement is resolved by adjudication against the
@@ -305,8 +318,11 @@ paper and candidate semantics. Provider failure, malformed auditor output,
 unavailable tools, or dossier failure is an unscored operational incident;
 it is not a semantic verdict.
 
-The only semantic verdicts for a valid pilot-6 candidate are `faithful` and
-`unfaithful`. A candidate must encode enough semantics to
+The only final semantic verdicts for a valid Pilot-7 candidate are `faithful` and
+`unfaithful`. Equivalent and genuinely stronger candidates are faithful; weaker,
+different, restricted, vacuous, and partial-case candidates are unfaithful. An
+intermediate `undetermined` judge classification is an adjudication trigger,
+not a candidate outcome. A candidate must encode enough semantics to
 cover the paper's full domain. If coverage depends on an equivalence it does
 not establish—such as successful partial arithmetic operations versus the
 paper's no-overflow assumption—the verdict is `unfaithful` with a concrete
@@ -317,7 +333,7 @@ malformed outputs, unavailable tools, and dossier failures stay unscored
 operational incidents, not candidate verdicts. A genuinely underdetermined
 source contract requires source-admissibility resolution or exclusion before
 scoring and must not be attributed to a candidate. This policy becomes
-operative only after the pilot-6 release and provider qualification pass;
+operative only after the pilot-7 release and provider qualification pass;
 the installed pilot-5 release remains historically unchanged.
 
 For an unfaithful candidate with a slot remaining, render feedback only through

@@ -1,0 +1,39 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H22-5",
+  "selected_result": "Comparison of inverse row sums for Chebyshev-Vandermonde and Vandermonde matrices",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 22: Vandermonde Systems, Problem 22.5",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "430",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch22.pdf",
+    "sha256": "8769dde6594809436213c55939fe9dd4100c0ab025a45cac91bec465dca0cc5e"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 22, Problems",
+      "printed_pages": "430",
+      "pdf_pages": "16",
+      "anchor": "Problem 22.5: the inequality between inverse row sums and the resulting infinity-norm comparison"
+    }
+  ],
+  "task_clarification": [
+    "Let T = T(alpha_0,...,alpha_n) = (T_i(alpha_j)) be the Chebyshev-Vandermonde matrix, where T_j is the Chebyshev polynomial of degree j, and write T^{-1} = (u_ij).",
+    "Let V = V(alpha_0,...,alpha_n) be the ordinary Vandermonde matrix on the same nodes, with V^{-1} = (w_ij).",
+    "Formalize sum_{j=0}^{n} |u_ij| <= sum_{j=0}^{n} |w_ij| for each i.",
+    "Formalize the consequence ||T^{-1}||_inf <= ||V^{-1}||_inf."
+  ],
+  "scope_constraints": [
+    "Nodes are distinct so that both matrices are nonsingular.",
+    "The Chebyshev polynomials are the first-kind polynomials T_j used by the source.",
+    "This is an exact matrix-analytic comparison; no rounding model is involved.",
+    "Represent both inverses and prove the row-sum inequality rather than assuming it."
+  ]
+}

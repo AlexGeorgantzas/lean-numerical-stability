@@ -758,7 +758,7 @@ def _pilot5_status(root: Path, deployment_record: Path, task_id: str) -> Mapping
 def pilot5_lineage(root_argument: str, *, verify_status: bool = True) -> dict[str, str]:
     """Pin pilot-5; optionally verify full attempt closure outside campaign locks.
 
-    Setup invokes the frozen pilot-5 status verifier before publication. Pilot-6
+    Setup invokes the frozen pilot-5 status verifier before publication. Pilot-7
     doctor already holds the shared campaign lock, so it must use the pinned
     byte/identity checks only; invoking pilot-5 status there would reacquire the
     same lock from a second process.
@@ -974,7 +974,7 @@ def pilot5_lineage(root_argument: str, *, verify_status: bool = True) -> dict[st
 def verify_predecessor_lineage(root_argument: str, deployment_record: Mapping[str, Any]) -> None:
     observed = pilot5_lineage(root_argument)
     if any(deployment_record.get(field) != value for field, value in observed.items()):
-        raise BenchmarkError("predecessor evidence changed during pilot-6 setup")
+        raise BenchmarkError("predecessor evidence changed during pilot-7 setup")
 
 
 def fsync_directory(path: Path) -> None:
@@ -1997,19 +1997,24 @@ def _install_once(
     )
     if ancestry.returncode != 0:
         raise BenchmarkError("release branch is not descended from the frozen benchmark base")
-    if config.get("pilot_id") != "formalization-benchmark-t2-pilot-6":
-        raise BenchmarkError("this installer requires the frozen pilot-6 identity")
+    if config.get("pilot_id") != "formalization-benchmark-pilot-7":
+        raise BenchmarkError("this installer requires the frozen pilot-7 identity")
     predecessor = pilot5_lineage(args.predecessor_deployment_root)
+    pilot6_root = (
+        Path.home() / ".local" / "share" / "highambench-formalization-pilot-6-r1"
+    ).resolve()
+    if published_root == pilot6_root:
+        raise BenchmarkError("pilot-7 must not overwrite the pilot-6 deployment")
     if published_root == Path(predecessor["predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-6 must not overwrite the pilot-5 deployment")
+        raise BenchmarkError("pilot-7 must not overwrite the pilot-5 deployment")
     if published_root == Path(predecessor["legacy_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-6 must not overwrite the pilot-4 deployment")
+        raise BenchmarkError("pilot-7 must not overwrite the pilot-4 deployment")
     if published_root == Path(predecessor["ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-6 must not overwrite the pilot-3 deployment")
+        raise BenchmarkError("pilot-7 must not overwrite the pilot-3 deployment")
     if published_root == Path(predecessor["great_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-6 must not overwrite the pilot-2 deployment")
+        raise BenchmarkError("pilot-7 must not overwrite the pilot-2 deployment")
     if published_root == Path(predecessor["fifth_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-6 must not overwrite the pilot-1 deployment")
+        raise BenchmarkError("pilot-7 must not overwrite the pilot-1 deployment")
     if GLOBAL_REGISTRY_ROOT.is_symlink() or (
         GLOBAL_REGISTRY_ROOT.exists() and not GLOBAL_REGISTRY_ROOT.is_dir()
     ):
@@ -2635,7 +2640,7 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pdf-source-dir", required=True)
     parser.add_argument(
         "--deployment-root",
-        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-6-r1"),
+        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-7-r1"),
     )
     parser.add_argument(
         "--predecessor-deployment-root",
@@ -2645,7 +2650,7 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--auth-file", default=str(Path.home() / ".codex" / "auth.json"))
     parser.add_argument("--codex-binary")
     parser.add_argument(
-        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-6-r1")
+        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-7-r1")
     )
     return parser
 

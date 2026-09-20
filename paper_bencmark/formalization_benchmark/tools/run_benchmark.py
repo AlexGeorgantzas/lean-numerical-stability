@@ -14,11 +14,18 @@ from manifest_control import verify_manifest
 from pair_controller import PairController
 
 
+TASK_IDS = (
+    "P01-T2", "P02-T2", "P03-T2", "P13-T2", "P14-T2",
+    "H22-11", "H22-5", "H20-6", "H7-12", "H20-9", "H20-8",
+    "H23-6", "H5-5", "H10-7", "H12-4", "H19-5", "H7-14", "H15-3",
+)
+
+
 def normalized_task_id(value: str) -> str:
     rendered = value.strip().upper().replace("_", "-")
-    if rendered not in {"P01-T2", "P02-T2", "P03-T2", "P13-T2", "P14-T2"}:
+    if rendered not in TASK_IDS:
         raise argparse.ArgumentTypeError(
-            "task must be one of P01-T2, P02-T2, P03-T2, P13-T2, or P14-T2"
+            "task must be one of the 18 task IDs frozen in pilot-7"
         )
     return rendered
 

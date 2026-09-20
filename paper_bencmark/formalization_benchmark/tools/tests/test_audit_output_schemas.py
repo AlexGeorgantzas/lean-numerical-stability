@@ -8,7 +8,8 @@ import unittest
 SCHEMAS = Path(__file__).resolve().parents[2] / "audit" / "schemas"
 AUDITOR_SCHEMAS = (
     "blind_translation.schema.json",
-    "judgment.schema.json",
+    "direct_judgment.schema.json",
+    "roundtrip_judgment.schema.json",
     "adjudication.schema.json",
 )
 
@@ -59,13 +60,18 @@ class AuditorOutputSchemaTests(unittest.TestCase):
                 assert_strict_output_schema(self, schema, name)
 
     def test_semantic_verdicts_are_binary(self) -> None:
-        for name in ("judgment.schema.json", "adjudication.schema.json"):
+        schema = json.loads(
+            (SCHEMAS / "adjudication.schema.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            schema["properties"]["verdict"]["enum"],
+            ["faithful", "unfaithful"],
+        )
+        for name in ("direct_judgment.schema.json", "roundtrip_judgment.schema.json"):
             with self.subTest(schema=name):
-                schema = json.loads((SCHEMAS / name).read_text(encoding="utf-8"))
-                self.assertEqual(
-                    schema["properties"]["verdict"]["enum"],
-                    ["faithful", "unfaithful"],
-                )
+                judge = json.loads((SCHEMAS / name).read_text(encoding="utf-8"))
+                self.assertNotIn("verdict", judge["properties"])
+                self.assertIn("undetermined", judge["properties"]["classification"]["enum"])
 
     def test_regression_catches_untyped_role_before_provider_call(self) -> None:
         schema = json.loads(

@@ -1,0 +1,40 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H12-4",
+  "selected_result": "Stability of fixed precision iterative refinement using a fast multiplication technique",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 12: Iterative Refinement, Problem 12.4",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "242",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch12.pdf",
+    "sha256": "9aa86285b2a3e0bc6de4eaeadd63f40f479d3fdbeb319c43f7260a2f5e42a9b1"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 12, Problems",
+      "printed_pages": "242",
+      "pdf_pages": "12",
+      "anchor": "Problem 12.4: refinement of multiple right-hand sides with the residual computed conventionally and the update computed by a fast method"
+    }
+  ],
+  "task_clarification": [
+    "Suppose GEPP with fixed precision iterative refinement is applied to the multiple right-hand side system A X = B, refining the columns of X in parallel: R = B - A X, A D = R, Y = X + D.",
+    "The residual R is computed by conventional multiplication, while the second step uses a fast multiplication technique satisfying only the weaker bound the source labels (13.4).",
+    "Formalize the first-order residual conclusion for each refined column y_j: |b_j - A y_j| <= (n + 2) u (|A| |y_j| + |b_j|) + O(u^2), componentwise.",
+    "The fast correction computation affects the second-order term through its potentially large fast-multiplication constants; therefore this result alone does not justify claiming an unconditional componentwise backward error of order u."
+  ],
+  "scope_constraints": [
+    "The residual is computed conventionally; only the correction solve uses the fast technique.",
+    "Use the standard model with unit roundoff u, excluding overflow and underflow.",
+    "State the hypotheses required by the one-step fixed-precision refinement analysis, including nonsingularity and the successful GEPP/correction computation.",
+    "Represent the refinement step and its rounding assumptions rather than postulating the conclusion.",
+    "This frozen benchmark selects the residual bound proved in the Demmel--Higham analysis cited by Problem 12.4 as the precise answer to the book's open-ended question. It must not be replaced by a stronger unconditional stability claim."
+  ]
+}

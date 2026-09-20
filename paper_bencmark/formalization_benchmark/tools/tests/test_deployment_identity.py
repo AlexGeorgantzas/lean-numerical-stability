@@ -15,7 +15,7 @@ from deployment import GLOBAL_REGISTRY_ROOT, load_deployment  # noqa: E402
 
 
 class DeploymentIdentityTests(unittest.TestCase):
-    def test_loader_requires_pilot6_release_host_and_five_predecessors(self) -> None:
+    def test_loader_requires_pilot7_release_host_and_five_predecessors(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             artifact = root / "artifact"
@@ -40,7 +40,7 @@ class DeploymentIdentityTests(unittest.TestCase):
             fifth_ancestral_predecessor.mkdir()
             record = {
                 "schema_version": "formalization-deployment-1",
-                "pilot_id": "formalization-benchmark-t2-pilot-6",
+                "pilot_id": "formalization-benchmark-pilot-7",
                 "release_commit": "a" * 40,
                 "release_manifest_sha256": "b" * 64,
                 "manifest_payload_sha256": "c" * 64,
@@ -73,7 +73,7 @@ class DeploymentIdentityTests(unittest.TestCase):
                 return load_deployment(path)
 
             loaded = read(record)
-            self.assertEqual(loaded.pilot_id, "formalization-benchmark-t2-pilot-6")
+            self.assertEqual(loaded.pilot_id, "formalization-benchmark-pilot-7")
             self.assertEqual(loaded.global_registry_root, GLOBAL_REGISTRY_ROOT)
             self.assertEqual(loaded.predecessor_run_root, predecessor.resolve())
             self.assertEqual(

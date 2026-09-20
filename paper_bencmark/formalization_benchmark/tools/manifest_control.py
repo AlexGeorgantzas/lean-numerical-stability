@@ -110,8 +110,8 @@ def verify_manifest() -> tuple[dict[str, Any], dict[str, Any]]:
     for index, schema in enumerate(manifest.get("schemas", [])):
         verify_file_ref(schema, label=f"schema[{index}]")
     tasks = manifest.get("tasks")
-    if not isinstance(tasks, list) or len(tasks) != 5:
-        raise BenchmarkError("manifest must contain exactly five task records")
+    if not isinstance(tasks, list) or len(tasks) != 18:
+        raise BenchmarkError("manifest must contain exactly eighteen task records")
     observed: list[str] = []
     for index, task in enumerate(tasks):
         if not isinstance(task, dict) or not isinstance(task.get("task_id"), str):

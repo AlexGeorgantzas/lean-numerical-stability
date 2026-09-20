@@ -51,33 +51,117 @@ class FakeAuditController(AuditController):
         }
 
 
-def translation(*, ambiguous: bool) -> dict:
+DEPENDENCIES = [("D001", "Nat")]
+
+
+def translation(*, unclear_dependency: bool = False) -> dict:
     return {
         "role": "blind-translation",
         "semantic_sha256": SEMANTIC_HASH,
-        "translation": "For every admissible input, the stated error bound holds.",
-        "ambiguities": ["A quantified domain might be implicit."] if ambiguous else [],
+        "dependency_coverage": [
+            {
+                "id": "D001",
+                "name": "Nat",
+                "meaning": "The natural-number type.",
+                "effect_on_target": "Indexes the finite problem dimension.",
+                "status": "unclear" if unclear_dependency else "understood",
+            }
+        ],
+        "translation": {
+            "binders": ["n is a natural number."],
+            "hypotheses": [],
+            "conclusions": ["The stated error bound holds."],
+            "mathematical_definitions": [],
+            "proposition_plain_english": (
+                "For every admissible input, the stated error bound holds."
+            ),
+        },
+        "ambiguities": [],
         "vacuity_risks": [],
     }
 
 
-def judgment(role: str) -> dict:
-    return {
+def semantic_checklist(*, direct: bool) -> list[dict]:
+    evidence_field = "candidate_evidence" if direct else "translation_evidence"
+    return [
+        {
+            "id": f"S{index:02d}",
+            "status": "pass",
+            "paper_evidence": "The selected source requirement is explicit.",
+            evidence_field: "The corresponding candidate content is explicit.",
+            "reasoning": "The two agree for this check.",
+        }
+        for index in range(1, 17)
+    ]
+
+
+def judgment(role: str, *, faithful: bool = True) -> dict:
+    value = {
         "role": role,
         "paper_sha256": PAPER_HASH,
         "candidate_semantic_sha256": SEMANTIC_HASH,
-        "verdict": "faithful",
-        "mismatches": [],
+        "semantic_checklist": semantic_checklist(direct=role == "direct-judge"),
+        "implications": {
+            "candidate_implies_source": {
+                "verdict": "yes" if faithful else "no",
+                "reasoning": "All source requirements follow." if faithful else "One is missing.",
+            },
+            "source_implies_candidate": {
+                "verdict": "yes",
+                "reasoning": "The source entails the candidate statement.",
+            },
+        },
+        "classification": "faithful-equivalent" if faithful else "unfaithful-weaker",
+        "accepted": faithful,
+        "requires_adjudication": False,
+        "mismatches": [] if faithful else [
+            {
+                "paper_requirement": "The result covers every admissible input.",
+                "candidate_mismatch": "The candidate covers only a proper subset.",
+                "severity": "major",
+            }
+        ],
         "uncertainties": [],
         "rationale": "All material requirements agree.",
     }
+    if role == "direct-judge":
+        value["dependency_coverage"] = [
+            {
+                "id": "D001",
+                "name": "Nat",
+                "interpretation": "The natural-number type.",
+                "effect_on_target": "Indexes the problem dimension.",
+                "paper_match": "Matches the source's dimension parameter.",
+                "status": "pass",
+            }
+        ]
+    return value
 
 
-def unfaithful_adjudication() -> dict:
+def unfaithful_adjudication(trigger: list[str]) -> dict:
     return {
         "role": "adjudicator",
         "paper_sha256": PAPER_HASH,
         "candidate_semantic_sha256": SEMANTIC_HASH,
+        "trigger": trigger,
+        "resolved_items": [
+            {
+                "item": trigger[0],
+                "resolution": "The uncertainty exposes missing source-domain coverage.",
+                "primary_evidence": "The source includes every no-overflow execution.",
+            }
+        ],
+        "implications": {
+            "candidate_implies_source": {
+                "verdict": "no",
+                "reasoning": "The candidate has an unsupported extra premise.",
+            },
+            "source_implies_candidate": {
+                "verdict": "yes",
+                "reasoning": "The full source result entails the restricted case.",
+            },
+        },
+        "classification": "unfaithful-weaker",
         "verdict": "unfaithful",
         "mismatches": [
             {
@@ -103,7 +187,15 @@ class AuditControllerPolicyTests(unittest.TestCase):
         self.dossier = self.root / "dossier.json"
         self.paper.write_bytes(b"%PDF synthetic")
         self.packet.write_text("source contract", encoding="utf-8")
-        self.dossier.write_text(json.dumps({"semantic_sha256": SEMANTIC_HASH}), encoding="utf-8")
+        self.dossier.write_text(
+            json.dumps(
+                {
+                    "semantic_sha256": SEMANTIC_HASH,
+                    "dependencies": [{"id": "D001", "name": "Nat"}],
+                }
+            ),
+            encoding="utf-8",
+        )
 
     def tearDown(self) -> None:
         self.temporary.cleanup()
@@ -121,20 +213,21 @@ class AuditControllerPolicyTests(unittest.TestCase):
 
     def test_clean_independent_agreement_accepts_without_adjudication(self) -> None:
         controller = FakeAuditController(
-            [translation(ambiguous=False), judgment("direct-judge"), judgment("roundtrip-judge")]
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
         )
         decision = self.run_audit(controller, "clean")
         self.assertTrue(decision["accepted"])
         self.assertFalse(decision["adjudicated"])
         self.assertEqual(controller.roles, ["blind-translation", "direct-judge", "roundtrip-judge"])
 
-    def test_blind_ambiguity_forces_adjudication_and_domain_gap_gets_feedback(self) -> None:
+    def test_unclear_dependency_forces_adjudication_and_domain_gap_gets_feedback(self) -> None:
+        trigger = ["blind dependency interpretation remains unclear"]
         controller = FakeAuditController(
             [
-                translation(ambiguous=True),
+                translation(unclear_dependency=True),
                 judgment("direct-judge"),
                 judgment("roundtrip-judge"),
-                unfaithful_adjudication(),
+                unfaithful_adjudication(trigger),
             ]
         )
         decision = self.run_audit(controller, "ambiguous")
@@ -148,18 +241,9 @@ class AuditControllerPolicyTests(unittest.TestCase):
         )
         self.assertEqual(controller.roles[-1], "adjudicator")
 
-    def test_unclear_is_not_a_semantic_verdict(self) -> None:
-        malformed_judgment = judgment("direct-judge")
-        malformed_judgment["verdict"] = "unclear"
-        malformed_judgment["uncertainties"] = ["A domain bridge is missing."]
-        with self.assertRaisesRegex(BenchmarkError, "semantic contract"):
-            _validate_judgment(
-                malformed_judgment,
-                role="direct-judge",
-                paper_sha256=PAPER_HASH,
-                semantic_sha256=SEMANTIC_HASH,
-            )
-        malformed_adjudication = unfaithful_adjudication()
+    def test_unclear_is_not_a_final_semantic_verdict(self) -> None:
+        trigger = ["direct and round-trip classifications differ"]
+        malformed_adjudication = unfaithful_adjudication(trigger)
         malformed_adjudication["verdict"] = "unclear"
         malformed_adjudication["mismatches"] = []
         malformed_adjudication["remaining_uncertainties"] = [
@@ -170,11 +254,11 @@ class AuditControllerPolicyTests(unittest.TestCase):
                 malformed_adjudication,
                 paper_sha256=PAPER_HASH,
                 semantic_sha256=SEMANTIC_HASH,
+                trigger=trigger,
             )
 
     def test_local_validator_rejects_malformed_nested_mismatch(self) -> None:
         malformed = judgment("direct-judge")
-        malformed["verdict"] = "unfaithful"
         malformed["mismatches"] = ["not-an-object"]
         with self.assertRaisesRegex(BenchmarkError, "semantic contract"):
             _validate_judgment(
@@ -182,17 +266,45 @@ class AuditControllerPolicyTests(unittest.TestCase):
                 role="direct-judge",
                 paper_sha256=PAPER_HASH,
                 semantic_sha256=SEMANTIC_HASH,
+                dependencies=DEPENDENCIES,
             )
 
     def test_unfaithful_requires_concrete_mismatch(self) -> None:
-        malformed = judgment("roundtrip-judge")
-        malformed["verdict"] = "unfaithful"
+        malformed = judgment("roundtrip-judge", faithful=False)
+        malformed["mismatches"] = []
         with self.assertRaisesRegex(BenchmarkError, "concrete mismatch"):
             _validate_judgment(
                 malformed,
                 role="roundtrip-judge",
                 paper_sha256=PAPER_HASH,
                 semantic_sha256=SEMANTIC_HASH,
+                dependencies=DEPENDENCIES,
+            )
+
+    def test_faithful_judgment_cannot_hide_a_failed_semantic_check(self) -> None:
+        malformed = judgment("direct-judge")
+        malformed["semantic_checklist"][3]["status"] = "fail"
+        with self.assertRaisesRegex(BenchmarkError, "accepted despite"):
+            _validate_judgment(
+                malformed,
+                role="direct-judge",
+                paper_sha256=PAPER_HASH,
+                semantic_sha256=SEMANTIC_HASH,
+                dependencies=DEPENDENCIES,
+            )
+
+    def test_adjudicator_must_resolve_every_trigger_in_order(self) -> None:
+        trigger = [
+            "direct and round-trip classifications differ",
+            "direct semantic check remains unclear",
+        ]
+        malformed = unfaithful_adjudication(trigger)
+        with self.assertRaisesRegex(BenchmarkError, "omitted one or more"):
+            _validate_adjudication(
+                malformed,
+                paper_sha256=PAPER_HASH,
+                semantic_sha256=SEMANTIC_HASH,
+                trigger=trigger,
             )
 
     def test_failed_audit_role_telemetry_is_sealed_into_incident(self) -> None:
@@ -248,7 +360,7 @@ class AuditControllerPolicyTests(unittest.TestCase):
 
     def test_successful_decision_detects_mutated_underlying_evidence(self) -> None:
         controller = FakeAuditController(
-            [translation(ambiguous=False), judgment("direct-judge"), judgment("roundtrip-judge")]
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
         )
         self.run_audit(controller, "mutable")
         judgment_path = self.root / "mutable" / "direct_judgment.json"

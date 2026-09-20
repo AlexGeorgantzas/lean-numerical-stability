@@ -32,7 +32,7 @@ from hardware import snapshot_hardware, verify_frozen_hardware_identity
 from manifest_control import MANIFEST_PATH, verify_manifest
 
 
-SCHEMA = "formalization-provider-qualification-4"
+SCHEMA = "formalization-provider-qualification-5"
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT_SCHEMAS = ROOT / "audit" / "schemas"
 INPUT_NAME = "qualification_input.json"
@@ -79,6 +79,36 @@ OUTPUT_SCHEMA = {
 }
 SYNTHETIC_SEMANTIC_SHA256 = "0" * 64
 SYNTHETIC_PAPER_SHA256 = "1" * 64
+SYNTHETIC_DIRECT_CHECKLIST = [
+    {
+        "id": f"S{index:02d}",
+        "status": "pass",
+        "paper_evidence": "Synthetic source evidence.",
+        "candidate_evidence": "Synthetic candidate evidence.",
+        "reasoning": "Synthetic interface check only.",
+    }
+    for index in range(1, 17)
+]
+SYNTHETIC_ROUNDTRIP_CHECKLIST = [
+    {
+        "id": f"S{index:02d}",
+        "status": "pass",
+        "paper_evidence": "Synthetic source evidence.",
+        "translation_evidence": "Synthetic translation evidence.",
+        "reasoning": "Synthetic interface check only.",
+    }
+    for index in range(1, 17)
+]
+SYNTHETIC_IMPLICATIONS = {
+    "candidate_implies_source": {
+        "verdict": "yes",
+        "reasoning": "The synthetic candidate implies the synthetic source.",
+    },
+    "source_implies_candidate": {
+        "verdict": "yes",
+        "reasoning": "The synthetic source implies the synthetic candidate.",
+    },
+}
 AUDIT_SCHEMA_PROBES = (
     (
         "blind-translation",
@@ -86,19 +116,33 @@ AUDIT_SCHEMA_PROBES = (
         {
             "role": "blind-translation",
             "semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
-            "translation": "Synthetic identity statement: each natural number equals itself.",
+            "dependency_coverage": [],
+            "translation": {
+                "binders": ["n is a natural number."],
+                "hypotheses": [],
+                "conclusions": ["n equals itself."],
+                "mathematical_definitions": [],
+                "proposition_plain_english": (
+                    "Synthetic identity statement: each natural number equals itself."
+                ),
+            },
             "ambiguities": [],
             "vacuity_risks": [],
         },
     ),
     (
         "direct-judge",
-        "judgment.schema.json",
+        "direct_judgment.schema.json",
         {
             "role": "direct-judge",
             "paper_sha256": SYNTHETIC_PAPER_SHA256,
             "candidate_semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
-            "verdict": "faithful",
+            "dependency_coverage": [],
+            "semantic_checklist": SYNTHETIC_DIRECT_CHECKLIST,
+            "implications": SYNTHETIC_IMPLICATIONS,
+            "classification": "faithful-equivalent",
+            "accepted": True,
+            "requires_adjudication": False,
             "mismatches": [],
             "uncertainties": [],
             "rationale": "Synthetic interface check only.",
@@ -106,12 +150,16 @@ AUDIT_SCHEMA_PROBES = (
     ),
     (
         "roundtrip-judge",
-        "judgment.schema.json",
+        "roundtrip_judgment.schema.json",
         {
             "role": "roundtrip-judge",
             "paper_sha256": SYNTHETIC_PAPER_SHA256,
             "candidate_semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
-            "verdict": "faithful",
+            "semantic_checklist": SYNTHETIC_ROUNDTRIP_CHECKLIST,
+            "implications": SYNTHETIC_IMPLICATIONS,
+            "classification": "faithful-equivalent",
+            "accepted": True,
+            "requires_adjudication": False,
             "mismatches": [],
             "uncertainties": [],
             "rationale": "Synthetic interface check only.",
@@ -124,6 +172,16 @@ AUDIT_SCHEMA_PROBES = (
             "role": "adjudicator",
             "paper_sha256": SYNTHETIC_PAPER_SHA256,
             "candidate_semantic_sha256": SYNTHETIC_SEMANTIC_SHA256,
+            "trigger": ["synthetic disagreement"],
+            "resolved_items": [
+                {
+                    "item": "synthetic disagreement",
+                    "resolution": "The synthetic statements are equivalent.",
+                    "primary_evidence": "Both are the identity n = n.",
+                }
+            ],
+            "implications": SYNTHETIC_IMPLICATIONS,
+            "classification": "faithful-equivalent",
             "verdict": "faithful",
             "mismatches": [],
             "remaining_uncertainties": [],

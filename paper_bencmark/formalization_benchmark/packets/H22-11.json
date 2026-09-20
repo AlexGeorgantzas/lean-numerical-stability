@@ -1,0 +1,40 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H22-11",
+  "selected_result": "Structured condition number for the primal Vandermonde system",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 22: Vandermonde Systems, Problem 22.11",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "431",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch22.pdf",
+    "sha256": "8769dde6594809436213c55939fe9dd4100c0ab025a45cac91bec465dca0cc5e"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 22, Problems",
+      "printed_pages": "431",
+      "pdf_pages": "17",
+      "anchor": "Problem 22.11: limit definition of cond(V), the claimed closed form, and the dual-system variant"
+    }
+  ],
+  "task_clarification": [
+    "Let V = V(alpha_0,...,alpha_n) be the Vandermonde matrix with distinct nodes alpha_i, and let x solve V x = b.",
+    "Define cond(V) := lim_{eps->0} sup { ||dx||_inf / (eps*||x||_inf) : V(alpha_0+d_0,...,alpha_n+d_n)(x+dx) = b, |d_i| <= eps*|alpha_i|, i = 0:n }.",
+    "Formalize the closed form cond(V) = || |V^{-1} diag(0,1,2,...,n) V| |x| ||_inf / ||x||_inf.",
+    "Formalize the corresponding condition number for the dual system V^T a = f."
+  ],
+  "scope_constraints": [
+    "Perturbations act on the nodes alpha_i only; the right-hand side b is unperturbed.",
+    "The node perturbation is componentwise relative, bounded by eps*|alpha_i|.",
+    "Nodes must be distinct so that V is nonsingular; state that hypothesis explicitly.",
+    "State the definition as a limit of a supremum, not as an assumed bound.",
+    "Represent the perturbed system and the limit rather than postulating the closed form."
+  ]
+}

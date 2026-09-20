@@ -1,0 +1,39 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H7-12",
+  "selected_result": "Symmetric backward error for a symmetric linear system",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 7: Perturbation Theory for Linear Systems, Problem 7.12",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "136",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch7.pdf",
+    "sha256": "14e70e41c8881f866003246b806bd116ca79f59af3d3bf0b24a6d7fc8ebe24c2"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 7, Problems",
+      "printed_pages": "136",
+      "pdf_pages": "18",
+      "anchor": "Problem 7.12: whether a small backward error implies a small symmetric backward error, normwise and componentwise"
+    }
+  ],
+  "task_clarification": [
+    "Let A in R^{n x n} be symmetric and let y be an approximate solution to A x = b.",
+    "Formalize: if (A + G) y = b for some G, then there exists a symmetric H = H^T with (A + H) y = b and ||H|| bounded in terms of ||G||.",
+    "Treat the normwise case as stated by the source.",
+    "The result says a small general backward error implies a comparably small structure-preserving backward error."
+  ],
+  "scope_constraints": [
+    "A is symmetric; the perturbed matrix must also be symmetric.",
+    "This is an exact perturbation-theoretic statement; no floating-point model is required.",
+    "State the norm in which the bound holds explicitly.",
+    "Represent the existence claim rather than assuming the symmetric perturbation is given."
+  ]
+}

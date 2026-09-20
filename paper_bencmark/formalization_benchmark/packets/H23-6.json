@@ -1,0 +1,40 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H23-6",
+  "selected_result": "Error bound for the 3M method implemented with Strassen's method",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 23: Fast Matrix Multiplication, Problem 23.6",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "449",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch23.pdf",
+    "sha256": "e3ec5da214944fefb5e8f276de16d7fe139e5ea8750136298ce4e0a43a79fbc0"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 23, Problems",
+      "printed_pages": "449",
+      "pdf_pages": "17",
+      "anchor": "Section 23.2.4 closing paragraph and Theorem 23.2 equation (23.14)"
+    }
+  ],
+  "task_clarification": [
+    "Theorem 23.2 (Brent) states that for A, B in R^{n x n} with n = 2^k, if C = AB is computed by Strassen's method with conventional-multiplication threshold n_0 = 2^r, then the computed Chat satisfies ||C - Chat|| <= [ (n/n_0)^{log_2 12} (n_0^2 + 5 n_0) - 5 n ] u ||A|| ||B|| + O(u^2), which is (23.14).",
+    "The source states that if the 3M method is implemented using Strassen's method to form the real matrix products, the computed complex product satisfies the same bound with an extra constant multiplier of 6 and with 4 added to the expression inside the square brackets.",
+    "Formalize the combined first-order coefficient as 6 * ((n/n_0)^{log_2 12} (n_0^2 + 5 n_0) - 5 n) + 4 inside the error bound for the complex product.",
+    "A and B are complex matrices; C = AB is the complex product."
+  ],
+  "scope_constraints": [
+    "n = 2^k and the threshold n_0 = 2^r, exactly as in Theorem 23.2.",
+    "The bound is to first order in u with the O(u^2) remainder explicit.",
+    "The norm is the one used by Theorem 23.2.",
+    "Represent the algorithm and its rounding assumptions rather than postulating the bound.",
+    "The frozen reading is [6*c_Strassen + 4], where c_Strassen is the complete square-bracket coefficient in (23.14); the 4 is not inserted into the inner polynomial n_0^2 + 5 n_0."
+  ]
+}

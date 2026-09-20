@@ -1,0 +1,39 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H20-8",
+  "selected_result": "Least-squares backward error when the right-hand side is not perturbed",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 20: The Least Squares Problem, Problem 20.8",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "406",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch20.pdf",
+    "sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 20, Problems",
+      "printed_pages": "406",
+      "pdf_pages": "26",
+      "anchor": "Problem 20.8: evaluating eta_F(0) in Theorem 20.5 for the case theta = infinity, that is db = 0"
+    }
+  ],
+  "task_clarification": [
+    "Use the Theorem 20.5 setting: A in R^{m x n} (m >= n), b in R^m, y != 0, r = b - A y, and eta_F(y) := min{ ||[dA, theta*db]||_F : ||(A + dA) y - (b + db)||_2 is minimized }.",
+    "The source notes that taking the limit theta -> infinity forces db = 0, giving the case where only A is perturbed.",
+    "Formalize the value of the backward error in that limiting case, completing the gap left in Theorem 20.5.",
+    "State the result for the case the source labels theta = infinity with db identically zero."
+  ],
+  "scope_constraints": [
+    "Only A is perturbed; db is identically zero.",
+    "This is the limiting case of the Theorem 20.5 quantity, not a separate definition.",
+    "State the hypotheses y != 0 and m >= n explicitly.",
+    "Represent the constrained minimization rather than assuming its value."
+  ]
+}

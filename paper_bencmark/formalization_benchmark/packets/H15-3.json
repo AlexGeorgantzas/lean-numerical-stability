@@ -1,0 +1,40 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H15-3",
+  "selected_result": "Behaviour of the LAPACK-style condition estimator on a parametrized tridiagonal family",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 15: Condition Number Estimation, Problem 15.3",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "303",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch15.pdf",
+    "sha256": "94b5c7a57510ca3f694f3d2b4f30b131eb3377192cea9591fdd71af62218ff87"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 15, Problems",
+      "printed_pages": "303",
+      "pdf_pages": "17",
+      "anchor": "Problem 15.3: the family T_n(alpha) and the estimate produced by Algorithm 15.3"
+    }
+  ],
+  "task_clarification": [
+    "Let T_n(alpha) be the n x n symmetric tridiagonal family defined by the source, with t_ii = 2 for i = 1, t_ii = i for 2 <= i <= n-1, t_nn = -t_{n,n-1} + alpha, and the stated off-diagonal pattern.",
+    "For all alpha the family satisfies ||T_n(alpha) e_{n-1}||_1 = ||T_n(alpha)||_1.",
+    "For 0 <= alpha < 1, formalize that Algorithm 15.3 has x = e_{i-1} on iteration i for i = 2, ..., n and converges on iteration n.",
+    "Also formalize the stated contrast for Algorithm 15.4: it terminates after five iterations with y_5 = T_n(alpha)e_4, its intermediate estimate has ratio ||y_5||_1 / ||T_n(alpha)||_1 = (8-alpha)/(2*n-2-alpha), which tends to zero as n tends to infinity, while its extra estimate makes the final returned estimate lie within a factor 3 of the true norm for every alpha < 1."
+  ],
+  "scope_constraints": [
+    "The matrix family is exactly the one defined in the problem statement.",
+    "Algorithm 15.3 is the estimator defined by the source.",
+    "Use 0 <= alpha < 1 for the iteration and convergence claims; retain the source's stated alpha < 1 range for the final factor-3 claim.",
+    "Represent the family and the estimator rather than assuming the conclusion.",
+    "All stated conclusions in Problem 15.3 are selected; proving only the Algorithm 15.3 subclaim is incomplete."
+  ]
+}

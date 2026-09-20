@@ -1,0 +1,39 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H20-9",
+  "selected_result": "Cancellation-resistant formula for the normwise least-squares backward error",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 20: The Least Squares Problem, Problem 20.9",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "406",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch20.pdf",
+    "sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 20, Problems",
+      "printed_pages": "406",
+      "pdf_pages": "26",
+      "anchor": "Problem 20.9: equation (20.21), the computationally stable alternative to the Theorem 20.5 formulae"
+    }
+  ],
+  "task_clarification": [
+    "Let A in R^{m x n} (m >= n), b in R^m, y != 0 in R^n, and r = b - A y.",
+    "Theorem 20.5 defines eta_F(y) := min{ ||[dA, theta*db]||_F : ||(A + dA) y - (b + db)||_2 is minimized }.",
+    "Formalize equation (20.21): eta_F(y) = min{ phi, sigma_min([A, phi*(I - r r^+)]) }, where phi = sqrt(mu) * ||r||_2 / ||y||_2.",
+    "Here r^+ is the pseudo-inverse of r and sigma_min denotes the smallest singular value."
+  ],
+  "scope_constraints": [
+    "This is the alternative formula whose purpose is to avoid the catastrophic cancellation of the Theorem 20.5 expressions when lambda_* < 0.",
+    "State the hypotheses y != 0 and m >= n explicitly.",
+    "This is an exact identity for eta_F, not an inequality.",
+    "Represent eta_F by its minimization definition rather than assuming the stated formula."
+  ]
+}

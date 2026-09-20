@@ -1,0 +1,39 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H20-6",
+  "selected_result": "Difference between true and computed least-squares residual norms for the normal equations method",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 20: The Least Squares Problem, Problem 20.6",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "406",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch20.pdf",
+    "sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 20, Problems",
+      "printed_pages": "406",
+      "pdf_pages": "26",
+      "anchor": "Problem 20.6: the bound on |r^T r - rhat^T rhat| derived from (20.12) and (20.13)"
+    }
+  ],
+  "task_clarification": [
+    "Consider min_x ||b - A x||_2 with A in R^{m x n}. Let xhat be the computed LS solution from the normal equations method and x the exact solution.",
+    "Define rhat = b - A xhat and r = b - A x.",
+    "Formalize the bound |r^T r - rhat^T rhat| <= c_{m,n} u ||x - xhat||_2 ||A||_2 (||A||_2 ||xhat||_2 + ||b||_2) + O(u^2).",
+    "c_{m,n} is a modest constant depending only on m and n; u is the unit roundoff."
+  ],
+  "scope_constraints": [
+    "The computed solution comes from the normal equations method, as in the source.",
+    "State the bound to first order in u, keeping the O(u^2) remainder explicit.",
+    "Exclude overflow and underflow consistently with the source model.",
+    "Represent the two residuals and the rounding assumptions rather than postulating the requested bound."
+  ]
+}

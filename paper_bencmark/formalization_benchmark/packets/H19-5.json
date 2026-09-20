@@ -1,0 +1,39 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H19-5",
+  "selected_result": "Ordering property of the R factor under QR factorization with column pivoting",
+  "bibliographic_source": {
+    "authors": [
+      "Nicholas J. Higham"
+    ],
+    "title": "Accuracy and Stability of Numerical Algorithms, 2nd ed., Chapter 19: QR Factorization, Problem 19.5",
+    "venue": "SIAM",
+    "year": 2002,
+    "pages": "378",
+    "doi": "10.1137/1.9780898718027"
+  },
+  "paper_pdf": {
+    "path_basename": "1.9780898718027.ch19.pdf",
+    "sha256": "04169bb8bfda76a09bb831b45640d9bcce6393d243d666b72bae856d3f9c2b57"
+  },
+  "paper_locations": [
+    {
+      "section": "Chapter 19, Problems",
+      "printed_pages": "378",
+      "pdf_pages": "26",
+      "anchor": "Problem 19.5: the inequalities satisfied by R from column pivoting, and their relation to (10.13)"
+    }
+  ],
+  "task_clarification": [
+    "Let A have QR factorization with column pivoting as defined by the source at (19.15), producing the factor R.",
+    "Formalize r_kk^2 >= sum_{i=k}^{j} r_ij^2 for j = k+1:n and k = 1:n.",
+    "In particular |r_11| >= |r_22| >= ... >= |r_nn|.",
+    "These are the same inequalities as (10.13) for the Cholesky factorization with complete pivoting."
+  ],
+  "scope_constraints": [
+    "Column pivoting is the strategy defined by the source at (19.15).",
+    "This is an exact algebraic property of the computed factor, not a rounding-error bound.",
+    "State the index ranges exactly as given.",
+    "Represent the pivoted factorization rather than assuming the inequality."
+  ]
+}
