@@ -133,3 +133,24 @@ that does not verify.
 device authorization, then run verify-release, doctor, all-task status checks,
 and the one-shot provider qualification. Start no task without a new explicit
 user request naming it.
+
+### Titan completion
+
+- Installed from commit `c3c07630bc961675ed22c0e39b247242ed8539ff` at
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-8-r1`; deployment record
+  SHA-256 is
+  `3c680b39563e3e7c66e2892a16d7cb72f541ed04631d4b134cee101acda04588`.
+- The fresh clean build passed in `1295.406857829` seconds under eight logical
+  CPUs, 32 GiB RAM, 512 tasks, and no swap. Build-record SHA-256 is
+  `94a3cec672a8c67ef1f5ffeb842320b56b68f49df2d5bfc7daaa96e545b31584`;
+  it produced 879 OLean files totaling 1,015,839,912 bytes.
+- Verify-release and doctor passed; condition N's 9,692,398,312-byte / 127,166-
+  file treatment-absence scan passed. All 18 task slots remain `NOT_STARTED`.
+- The one-shot off-benchmark qualification passed with record SHA-256
+  `e8e90208a08dfcf60ca336fab3e82edc1b240701df4ab0ff6e1ec31ce6165a2e`.
+  It used six isolated role turns, 14 raw provider responses, 141,042 total
+  tokens, and 117.452 aggregate role wall-seconds; it consumed no official slot
+  and charged no contestant budget.
+
+**Current need:** Pilot-8 is ready. Start exactly one official task only after
+a new explicit user request naming that task.
