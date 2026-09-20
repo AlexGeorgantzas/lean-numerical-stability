@@ -187,3 +187,29 @@ a new explicit user request naming that task.
 **Needs:** Commit and push the frozen Pilot-9 release, install it beside Pilot-8
 on Titan, then pass verify-release, doctor, all-task status checks, and the
 one-shot provider qualification without starting an official task.
+
+### Titan completion
+
+- Installed from commit `16172f249084b517b8069859760517297e4fb4cf` at
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-9-r1`; deployment-record
+  SHA-256 is
+  `cf84e8cfeb47447be38055cb8cd2758c50ccb7ff98d6afe8bdf531e9ab480863`.
+- The fresh clean build passed in `1296.309068256` seconds under eight logical
+  CPUs, 32 GiB RAM, 512 tasks, and no swap. Build-record SHA-256 is
+  `7f12698294c2e10f68431d86a959bccf34698bda1dbf3fd236a7993349ae80fa`;
+  GNU time recorded 6,514.09 user CPU seconds, 392.15 system CPU seconds,
+  532% CPU, and 8,453,357,568 bytes peak RSS. It produced 879 OLean files
+  totaling 1,015,839,912 bytes; no memory, PID, or swap limit event occurred.
+- Verify-release and doctor passed. Condition N's 9,692,673,818-byte / 127,166-
+  file treatment-absence scan passed, and all 18 Pilot-9 task slots were
+  `NOT_STARTED`.
+- The one-shot off-benchmark qualification passed with record SHA-256
+  `54efe6d01d9ef0a50235c905298779876a338e1f12806432a0f4f6b16ea2ca2a`
+  and roles-tree SHA-256
+  `44abda6f8a174740bc65ace23dc21f92aa5c71c6385e37e855954d4c0ba8072c`.
+  Six isolated role turns made 15 raw provider calls, used 151,430 total tokens,
+  and took 121.319530234 aggregate role wall-seconds. It charged no contestant
+  budget and consumed no official slot. H22-11 remained `NOT_STARTED` afterward.
+
+**Current need:** Pilot-9 is ready. Start H22-11 or another allowlisted task
+only after a new explicit user request naming that task.
