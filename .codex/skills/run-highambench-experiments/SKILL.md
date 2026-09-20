@@ -1,19 +1,20 @@
 ---
 name: run-highambench-experiments
-description: Operate Pilot-7 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
+description: Operate Pilot-8 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
 ---
 
 # Run HighamBench Formalization Experiments
 
 ## Scope
 
-Pilot-7 (`formalization-benchmark-pilot-7`) is a separate frozen release.
-Pilots 1--6 and all of their runs, incidents, and deployment records are
+Pilot-8 (`formalization-benchmark-pilot-8`) is a separate frozen release.
+Pilots 1--7 and all of their runs, incidents, and deployment records are
 read-only predecessor evidence. Never reinterpret an older decision, resume an
 older sealed condition, pool results across pilots, or use an older launcher as
-a substitute.
+a substitute. Pilot-7's provider qualification failed before any role completed;
+Pilot-8 is the fresh authentication-repaired successor.
 
-Preparing, installing, repairing, or qualifying Pilot-7 never authorizes an
+Preparing, installing, repairing, or qualifying Pilot-8 never authorizes an
 official pair. Run one only after an explicit request naming exactly one task.
 
 The allowlist is:
@@ -35,7 +36,7 @@ Before any provider call or benchmark-state mutation:
 
 1. Read [the operations reference](references/operations.md) completely.
 2. Require
-   `~/.local/bin/run-highambench-formalization-pilot-7-r1` and its distinct,
+   `~/.local/bin/run-highambench-formalization-pilot-8-r1` and its distinct,
    digest-bound deployment record.
 3. Run provider-free `verify-release`.
 4. Run provider-free `doctor --task-id <TASK>` through that launcher.

@@ -34,7 +34,7 @@ Classify the result as follows:
 - any unresolved direction: undetermined and request adjudication.
 
 A collection of declarations that covers only a proper subset of the source
-domain is unfaithful; Pilot-7 deliberately does not use the paper appendix's
+domain is unfaithful; Pilot-8 deliberately does not use the paper appendix's
 partial-case score-2 exception. A candidate-added successful-operation,
 defined-run, run-existence, or other domain restriction is unfaithful unless
 the supplied semantics establish it for every source-admissible case. Do not

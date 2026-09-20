@@ -1,7 +1,7 @@
 {
   "$schema": "schemas/config.schema.json",
   "schema_version": "formalization-benchmark-config-1",
-  "pilot_id": "formalization-benchmark-pilot-7",
+  "pilot_id": "formalization-benchmark-pilot-8",
   "task_ids": [
     "P01-T2",
     "P02-T2",

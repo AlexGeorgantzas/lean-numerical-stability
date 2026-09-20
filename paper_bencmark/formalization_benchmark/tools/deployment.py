@@ -16,7 +16,7 @@ DEFAULT_DEPLOYMENT = (
     Path.home()
     / ".local"
     / "share"
-    / "highambench-formalization-pilot-7-r1"
+    / "highambench-formalization-pilot-8-r1"
     / "deployment.json"
 )
 GLOBAL_REGISTRY_ROOT = (
@@ -53,6 +53,7 @@ class Deployment:
     ancestral_predecessor_run_root: Path | None = None
     great_ancestral_predecessor_run_root: Path | None = None
     fifth_ancestral_predecessor_run_root: Path | None = None
+    sixth_ancestral_predecessor_run_root: Path | None = None
     code_mode_host_sha256: str | None = None
 
 
@@ -96,8 +97,8 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     value = load_json(path)
     if value.get("schema_version") != "formalization-deployment-1":
         raise BenchmarkError("unsupported deployment record")
-    if value.get("pilot_id") != "formalization-benchmark-pilot-7":
-        raise BenchmarkError("deployment does not identify the pilot-7 release")
+    if value.get("pilot_id") != "formalization-benchmark-pilot-8":
+        raise BenchmarkError("deployment does not identify the pilot-8 release")
     for field, length in (
         ("release_commit", 40),
         ("release_manifest_sha256", 64),
@@ -139,13 +140,22 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
         or not fifth_ancestral_predecessor_run_root.is_dir()
     ):
         raise BenchmarkError("deployment fifth_ancestral_predecessor_run_root is missing")
+    sixth_ancestral_predecessor_run_root = _optional_directory_target(
+        value, "sixth_ancestral_predecessor_run_root"
+    )
+    if (
+        sixth_ancestral_predecessor_run_root is None
+        or not sixth_ancestral_predecessor_run_root.is_dir()
+    ):
+        raise BenchmarkError("deployment sixth_ancestral_predecessor_run_root is missing")
     if len({
         predecessor_run_root,
         legacy_predecessor_run_root,
         ancestral_predecessor_run_root,
         great_ancestral_predecessor_run_root,
         fifth_ancestral_predecessor_run_root,
-    }) != 5:
+        sixth_ancestral_predecessor_run_root,
+    }) != 6:
         raise BenchmarkError("deployment predecessor run roots must be distinct")
     codex_binary = _required_path(value, "codex_binary")
     code_mode_host = codex_binary.with_name("codex-code-mode-host")
@@ -196,6 +206,7 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
         ancestral_predecessor_run_root=ancestral_predecessor_run_root,
         great_ancestral_predecessor_run_root=great_ancestral_predecessor_run_root,
         fifth_ancestral_predecessor_run_root=fifth_ancestral_predecessor_run_root,
+        sixth_ancestral_predecessor_run_root=sixth_ancestral_predecessor_run_root,
         code_mode_host_sha256=code_mode_host_sha256,
     )
 

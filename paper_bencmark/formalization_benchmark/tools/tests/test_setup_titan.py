@@ -38,6 +38,8 @@ from setup_titan import (  # noqa: E402
     PILOT5_MANIFEST_PAYLOAD_SHA256,
     PILOT5_RELEASE_COMMIT,
     PILOT5_SEALED_PAIRS,
+    PILOT7_MANIFEST_PAYLOAD_SHA256,
+    PILOT7_RELEASE_COMMIT,
     _copy_frozen_source_pdfs,
     _pilot5_release_closure,
     _load_transaction,
@@ -54,6 +56,7 @@ from setup_titan import (  # noqa: E402
     pilot2_lineage,
     pilot3_lineage,
     pilot5_lineage,
+    pilot7_lineage,
     predecessor_lineage,
     verify_predecessor_lineage,
     remove_owned_deployment_root,
@@ -135,15 +138,15 @@ class SkillInstallTests(unittest.TestCase):
             with self.assertRaisesRegex(BenchmarkError, "gained or lost"):
                 _pilot5_release_closure(root, manifest)
 
-    def test_pilot7_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+    def test_pilot8_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
         parser = make_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(["--pdf-source-dir", "/tmp"])
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-7-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-7-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-8-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-8-r1"))
 
     def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -774,10 +777,11 @@ class SkillInstallTests(unittest.TestCase):
                     seals["P02-T2"]["report_sha256"],
                 )
                 older.assert_called_with(str(old_roots["predecessor_run_root"].parent))
-                verify_predecessor_lineage(str(root), lineage)
+                with mock.patch("setup_titan.pilot7_lineage", return_value=lineage):
+                    verify_predecessor_lineage(str(root), lineage)
                 self.assertEqual(before, {path: sha256_file(path) for path in before})
 
-                # Pilot-7 doctor already holds the shared campaign lock. It
+                # A successor doctor already holds the shared campaign lock. It
                 # must authenticate the pinned predecessor bytes without
                 # launching the frozen status command under that same lock.
                 with mock.patch(
@@ -797,6 +801,102 @@ class SkillInstallTests(unittest.TestCase):
                 report.write_text('{"status":"COMPLETE"}', encoding="utf-8")
                 with self.assertRaisesRegex(BenchmarkError, "pair evidence changed"):
                     pilot5_lineage(str(root))
+
+    def test_pilot7_failed_qualification_is_hash_bound_and_shifted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = (Path(temporary) / "pilot-7-deployment").resolve()
+            run_root = root / "runs"
+            release_root = root / "release" / "paper_bencmark" / "formalization_benchmark"
+            manifest = release_root / "manifest.json"
+            build = root / "runtime" / "library" / "build" / "build-record.json"
+            manifest.parent.mkdir(parents=True)
+            build.parent.mkdir(parents=True)
+            run_root.mkdir(parents=True)
+            manifest.write_text(json.dumps({
+                "pilot_id": "formalization-benchmark-pilot-7",
+                "manifest_payload_sha256": PILOT7_MANIFEST_PAYLOAD_SHA256,
+            }), encoding="utf-8")
+            build.write_text('{"status":"ok"}', encoding="utf-8")
+            manifest_hash = sha256_file(manifest)
+
+            older_roots = {
+                "predecessor_run_root": Path(temporary) / "pilot-5" / "runs",
+                "legacy_predecessor_run_root": Path(temporary) / "pilot-4" / "runs",
+                "ancestral_predecessor_run_root": Path(temporary) / "pilot-3" / "runs",
+                "great_ancestral_predecessor_run_root": Path(temporary) / "pilot-2" / "runs",
+                "fifth_ancestral_predecessor_run_root": Path(temporary) / "pilot-1" / "runs",
+            }
+            for value in older_roots.values():
+                value.mkdir(parents=True)
+            old_lineage = {
+                "predecessor_pilot_id": "formalization-benchmark-t2-pilot-5",
+                **{key: str(value.resolve()) for key, value in older_roots.items()},
+            }
+            deployment = root / "deployment.json"
+            deployment.write_text(json.dumps({
+                "schema_version": "formalization-deployment-1",
+                "pilot_id": "formalization-benchmark-pilot-7",
+                "release_commit": PILOT7_RELEASE_COMMIT,
+                "release_manifest_sha256": manifest_hash,
+                "manifest_payload_sha256": PILOT7_MANIFEST_PAYLOAD_SHA256,
+                "library_build_record": str(build),
+                "library_build_record_sha256": sha256_file(build),
+                "run_root": str(run_root),
+                **old_lineage,
+            }), encoding="utf-8")
+            deployment_hash = sha256_file(deployment)
+
+            qualification_root = run_root / "qualifications" / manifest_hash
+            roles = qualification_root / "roles"
+            roles.mkdir(parents=True)
+            (roles / "failure.json").write_text('{"tokens":0}', encoding="utf-8")
+            roles_hash = tree_manifest(roles)["tree_sha256"]
+            qualification = qualification_root / "qualification.json"
+            qualification.write_text(json.dumps({
+                "schema_version": "formalization-provider-qualification-5",
+                "status": "FAILED",
+                "classification": "off_benchmark_provider_qualification",
+                "charged_to_contestant": False,
+                "completed_roles": [],
+                "identity": {
+                    "pilot_id": "formalization-benchmark-pilot-7",
+                    "manifest_sha256": manifest_hash,
+                    "manifest_payload_sha256": PILOT7_MANIFEST_PAYLOAD_SHA256,
+                    "deployment_path": str(deployment),
+                    "deployment_sha256": deployment_hash,
+                },
+            }), encoding="utf-8")
+            registry = Path(temporary) / "registry"
+            with mock.patch.multiple(
+                "setup_titan",
+                PILOT7_DEPLOYMENT_SHA256=deployment_hash,
+                PILOT7_MANIFEST_FILE_SHA256=manifest_hash,
+                PILOT7_BUILD_RECORD_SHA256=sha256_file(build),
+                PILOT7_FAILED_QUALIFICATION_SHA256=sha256_file(qualification),
+                PILOT7_FAILED_QUALIFICATION_ROLES_TREE_SHA256=roles_hash,
+                GLOBAL_REGISTRY_ROOT=registry,
+            ), mock.patch(
+                "setup_titan.pilot5_lineage", return_value=old_lineage
+            ) as older, mock.patch("setup_titan._pilot5_release_closure"):
+                lineage = pilot7_lineage(str(root))
+                self.assertEqual(lineage["predecessor_run_root"], str(run_root))
+                self.assertEqual(
+                    lineage["legacy_predecessor_run_root"],
+                    str(older_roots["predecessor_run_root"].resolve()),
+                )
+                self.assertEqual(
+                    lineage["sixth_ancestral_predecessor_run_root"],
+                    str(older_roots["fifth_ancestral_predecessor_run_root"].resolve()),
+                )
+                older.assert_called_with(
+                    str(older_roots["predecessor_run_root"].parent.resolve()),
+                    verify_status=True,
+                )
+                verify_predecessor_lineage(str(root), lineage)
+
+                qualification.write_text('{"status":"PASSED"}', encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "missing or changed"):
+                    pilot7_lineage(str(root))
 
     @staticmethod
     def _write_read_only_skill(root: Path, contents: str) -> None:

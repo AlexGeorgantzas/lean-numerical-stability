@@ -4,7 +4,7 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-7 is a side-by-side expanded successor. The pilot-1 through pilot-6
+Pilot-8 is a side-by-side expanded successor. The pilot-1 through pilot-7
 deployments, launchers, and sealed runs must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
@@ -22,11 +22,22 @@ Pilot-5 narrowed that warning check and produced sealed P01-T2 and P02-T2
 pairs under its original three-way audit policy. P02-T2 ended after L received
 `unclear`; N did not start. Pilot-6 introduced the binary verdict policy for
 five paper tasks; its evidence remains sealed under its own release. Pilot-7
-gives each of the 18 tasks a fresh slot
+expanded the release to 18 tasks, installed successfully, and completed no
+official task. Its one-shot live qualification failed before any role completed
+because its copied ChatGPT refresh token was stale; that failure is sealed.
+Pilot-8 gives each of the 18 tasks a fresh slot
 under a binary `faithful`/`unfaithful` semantic policy; it neither relabels nor
 resumes any earlier-pilot evidence. Never combine observations across pilots. Setup
-authenticates the direct pilot-5 predecessor, its two sealed pairs, and the
-retained pilot-4/3/2/1 lineage before publication.
+authenticates the direct Pilot-7 predecessor, its failed zero-completed-role
+qualification and build, plus the retained pilot-5/4/3/2/1 lineage before
+publication.
+
+The sealed Pilot-7 deployment SHA-256 is
+`8258440ac97ec55a4775839fa2e5cd25e1e90d62005c4e9de2b29a037be9ec8e`;
+its failed qualification record is
+`93e26b4e45f0eea423967a77083c95b0a708caaa361bd2f573e57ba598f9c8fd`
+and its library build record is
+`af3ad72d084743adecabcc9b5a1ebca09b89dd1ff28ee440a317dd2eab0e073a`.
 
 The sealed pilot-5 deployment SHA-256 is
 `41632d90da27b5d5edda4bcaad6648264bfb2d042d551858c0d62f89a363404f`;
@@ -34,9 +45,9 @@ its qualification record is
 `0c0c4ccb252b432e41025fa1f4e17dfa1df78c1f6f8c9a54801a32bd5ee97e16`
 and its library build record is
 `d9abf28dfa5444a78fc88ce6818fc4c0e4ed166296d922f5b53b46476f4316db`.
-These identify the retained installation lineage, not Pilot-7 measurements.
+These identify retained older installation lineage, not Pilot-8 measurements.
 
-Pilot-7 must not be treated as ready merely because these repository files
+Pilot-8 must not be treated as ready merely because these repository files
 exist. Its own clean release, separate installation, provider-free gates, and
 live provider qualification must pass before an official pair starts. An
 integrity-valid candidate receives exactly one semantic verdict, `faithful`
@@ -51,7 +62,7 @@ its failed qualification record is
 `930a69c9a059f8e00590a6689ea9d15177e27b435e901e724e57861a1db79c9a`
 and its library build record is
 `42d1a09980a908d4b4757b174dff0239d20f9cc35e0e67dd7499a0bec60580ec`.
-These authenticate older predecessor evidence, not pilot-7 measurements.
+These authenticate older predecessor evidence, not pilot-8 measurements.
 
 ## Security first
 
@@ -118,12 +129,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-5-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-7-r1
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-7-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-8-r1
 ```
 
-The installer creates a user-private pilot-7 deployment below
-`~/.local/share/highambench-formalization-pilot-7-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-8 deployment below
+`~/.local/share/highambench-formalization-pilot-8-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -182,13 +193,13 @@ committed to Git.
 
 ## Run
 
-Once pilot-7 is installed and authenticated, its operator commands are:
+Once pilot-8 is installed and authenticated, its operator commands are:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-7-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-7-r1 doctor --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-7-r1 qualify-provider --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-7-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-8-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-8-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-8-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-8-r1 run --task-id H22-11
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -231,7 +242,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-7-r1 status --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-8-r1 status --task-id H22-11
 ```
 
 ## Storage separation

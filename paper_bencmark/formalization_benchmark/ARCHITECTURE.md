@@ -1,7 +1,8 @@
 # Formalization benchmark architecture
 
-Pilot-7 is a side-by-side successor. Earlier deployments and results are
-read-only provenance, not Pilot-7 observations.
+Pilot-8 is a side-by-side successor. Earlier deployments and results are
+read-only provenance, not Pilot-8 observations. The direct predecessor is
+Pilot-7, whose provider qualification failed before any role completed.
 
 ## Operator path
 
@@ -30,7 +31,7 @@ one pair controller
 
 The controller pre-stages and compares both condition inputs before the first
 contestant call. An account-global registry reserves each
-`(formalization-benchmark-pilot-7, task_id)` once. A shared campaign lock and
+`(formalization-benchmark-pilot-8, task_id)` once. A shared campaign lock and
 predecessor locks prevent concurrent measured use of Titan. Reissuing a command
 returns the terminal pair or continues only at a safe boundary between sealed
 conditions.
@@ -116,7 +117,7 @@ incomplete telemetry fail closed as infrastructure incidents.
 
 | Script | Responsibility |
 | --- | --- |
-| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-7. |
+| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-8. |
 | `tools/measure_library_build.py` | Record the clean full NumStability build and resources. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary without provider calls. |
 | `tools/provider_capability_canary.py` | Exercise exact models, schemas, tools, and isolation off-benchmark. |
@@ -167,7 +168,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-pilot-7/H22-11.json
+  index/formalization-benchmark-pilot-8/H22-11.json
 ```
 
 Records bind prompts, candidates, source packets, semantic dossiers, role

@@ -102,3 +102,34 @@ Entry format:
 **Needs:** whoever made it — commit it with a re-freeze, or revert it. Leaving
 it uncommitted in a shared worktree means the next agent inherits a release
 that does not verify.
+
+---
+
+## 2026-09-20 — Codex — formalization_benchmark — Pilot-8 authentication-repaired successor prepared
+
+**Did:**
+- Minted `formalization-benchmark-pilot-8` with the same 18-task experimental
+  design, model policy, prompts, audit depth, condition ordering, and resource
+  envelope as Pilot-7. The frozen manifest payload is
+  `9b958df6de4c2724e1b91cd4e3e56df60d0cc4dc8630f841919e505b92169b7f`.
+- Added direct, hash-verified lineage to Pilot-7's successful installation,
+  clean build, and failed one-shot qualification. The failure completed zero
+  roles after a stale/reused ChatGPT refresh token error; no official Pilot-7
+  pair or account-global reservation exists.
+- Shifted and retained the complete Pilot-5/4/3/2/1 evidence chain and campaign
+  locks, updated the Titan launcher/deployment identity and operator skill to
+  Pilot-8, and added regression coverage. All 161 unit tests, release
+  verification, and skill validation pass.
+
+**Careful:**
+- Pilot-7 remains immutable at deployment SHA-256
+  `8258440ac97ec55a4775839fa2e5cd25e1e90d62005c4e9de2b29a037be9ec8e`;
+  do not retry or rewrite its failed qualification. Pilot-8 must use a distinct
+  deployment, launcher, qualification, and official task namespace.
+- Preparing, installing, or qualifying Pilot-8 does not authorize an official
+  benchmark pair.
+
+**Needs:** Install Pilot-8 beside Pilot-7 on Titan using the newly refreshed
+device authorization, then run verify-release, doctor, all-task status checks,
+and the one-shot provider qualification. Start no task without a new explicit
+user request naming it.
