@@ -17,6 +17,7 @@ from audit_controller import (  # noqa: E402
     AuditController,
     _validate_adjudication,
     _validate_judgment,
+    _validate_translation,
 )
 from codex_driver import ProviderCapabilityError  # noqa: E402
 from common import BenchmarkError, sha256_file  # noqa: E402
@@ -263,6 +264,31 @@ class AuditControllerPolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(BenchmarkError, "semantic contract"):
             _validate_judgment(
                 malformed,
+                role="direct-judge",
+                paper_sha256=PAPER_HASH,
+                semantic_sha256=SEMANTIC_HASH,
+                dependencies=DEPENDENCIES,
+            )
+
+    def test_dependency_identity_is_ordered_id_not_descriptive_name(self) -> None:
+        translated = translation()
+        translated["dependency_coverage"][0]["name"] = "Natural-number dimension"
+        _validate_translation(translated, SEMANTIC_HASH, DEPENDENCIES)
+
+        judged = judgment("direct-judge")
+        judged["dependency_coverage"][0]["name"] = "Natural-number dimension"
+        _validate_judgment(
+            judged,
+            role="direct-judge",
+            paper_sha256=PAPER_HASH,
+            semantic_sha256=SEMANTIC_HASH,
+            dependencies=DEPENDENCIES,
+        )
+
+        judged["dependency_coverage"][0]["id"] = "D002"
+        with self.assertRaisesRegex(BenchmarkError, "does not match D001"):
+            _validate_judgment(
+                judged,
                 role="direct-judge",
                 paper_sha256=PAPER_HASH,
                 semantic_sha256=SEMANTIC_HASH,

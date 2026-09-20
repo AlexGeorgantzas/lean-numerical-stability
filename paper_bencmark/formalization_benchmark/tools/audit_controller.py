@@ -143,12 +143,11 @@ def _validate_dependency_coverage(
     )
     if not isinstance(value, list) or len(value) != len(expected):
         raise BenchmarkError("auditor dependency coverage is incomplete")
-    for record, (dependency_id, dependency_name) in zip(value, expected, strict=True):
+    for record, (dependency_id, _dependency_name) in zip(value, expected, strict=True):
         if (
             not isinstance(record, dict)
             or set(record) != fields
             or record.get("id") != dependency_id
-            or record.get("name") != dependency_name
             or record.get("status") not in statuses
             or any(
                 not isinstance(record.get(field), str) or not record[field].strip()

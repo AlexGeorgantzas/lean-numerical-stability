@@ -9,6 +9,10 @@ Return exactly one dependency record for every dossier dependency ID, in the
 same order, with no omissions or duplicates. For each, record its meaning,
 effect on the target, and match to the selected source result.
 
+The ordered `Dxxx` ID is the dependency identity and must be copied exactly.
+Use `name` for a concise human-readable mathematical label; it need not copy
+the dossier's opaque local pseudonym.
+
 Complete all 16 semantic checks in this exact order:
 
 S01 source selection; S02 binders and types; S03 quantifier scope; S04
@@ -34,7 +38,7 @@ Classify the result as follows:
 - any unresolved direction: undetermined and request adjudication.
 
 A collection of declarations that covers only a proper subset of the source
-domain is unfaithful; Pilot-8 deliberately does not use the paper appendix's
+domain is unfaithful; Pilot-9 deliberately does not use the paper appendix's
 partial-case score-2 exception. A candidate-added successful-operation,
 defined-run, run-existence, or other domain restriction is unfaithful unless
 the supplied semantics establish it for every source-admissible case. Do not

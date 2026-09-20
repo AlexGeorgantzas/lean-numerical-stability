@@ -40,6 +40,10 @@ from setup_titan import (  # noqa: E402
     PILOT5_SEALED_PAIRS,
     PILOT7_MANIFEST_PAYLOAD_SHA256,
     PILOT7_RELEASE_COMMIT,
+    PILOT8_INCIDENT_RUN_ID,
+    PILOT8_MANIFEST_PAYLOAD_SHA256,
+    PILOT8_PILOT_ID,
+    PILOT8_RELEASE_COMMIT,
     _copy_frozen_source_pdfs,
     _pilot5_release_closure,
     _load_transaction,
@@ -57,6 +61,7 @@ from setup_titan import (  # noqa: E402
     pilot3_lineage,
     pilot5_lineage,
     pilot7_lineage,
+    pilot8_lineage,
     predecessor_lineage,
     verify_predecessor_lineage,
     remove_owned_deployment_root,
@@ -138,15 +143,15 @@ class SkillInstallTests(unittest.TestCase):
             with self.assertRaisesRegex(BenchmarkError, "gained or lost"):
                 _pilot5_release_closure(root, manifest)
 
-    def test_pilot8_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+    def test_pilot9_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
         parser = make_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(["--pdf-source-dir", "/tmp"])
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-8-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-8-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-9-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-9-r1"))
 
     def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -777,7 +782,7 @@ class SkillInstallTests(unittest.TestCase):
                     seals["P02-T2"]["report_sha256"],
                 )
                 older.assert_called_with(str(old_roots["predecessor_run_root"].parent))
-                with mock.patch("setup_titan.pilot7_lineage", return_value=lineage):
+                with mock.patch("setup_titan.pilot8_lineage", return_value=lineage):
                     verify_predecessor_lineage(str(root), lineage)
                 self.assertEqual(before, {path: sha256_file(path) for path in before})
 
@@ -892,11 +897,182 @@ class SkillInstallTests(unittest.TestCase):
                     str(older_roots["predecessor_run_root"].parent.resolve()),
                     verify_status=True,
                 )
-                verify_predecessor_lineage(str(root), lineage)
+                with mock.patch("setup_titan.pilot8_lineage", return_value=lineage):
+                    verify_predecessor_lineage(str(root), lineage)
 
                 qualification.write_text('{"status":"PASSED"}', encoding="utf-8")
                 with self.assertRaisesRegex(BenchmarkError, "missing or changed"):
                     pilot7_lineage(str(root))
+
+    def test_pilot8_audit_incident_is_hash_bound_and_shifted(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = (Path(temporary) / "pilot-8-deployment").resolve()
+            release_root = root / "release" / "paper_bencmark" / "formalization_benchmark"
+            manifest = release_root / "manifest.json"
+            build = root / "runtime" / "library" / "build" / "build-record.json"
+            run_root = root / "runs"
+            manifest.parent.mkdir(parents=True)
+            build.parent.mkdir(parents=True)
+            run_root.mkdir(parents=True)
+            manifest.write_text(json.dumps({
+                "pilot_id": PILOT8_PILOT_ID,
+                "manifest_payload_sha256": PILOT8_MANIFEST_PAYLOAD_SHA256,
+            }), encoding="utf-8")
+            build.write_text('{"status":"ok"}', encoding="utf-8")
+            manifest_hash = sha256_file(manifest)
+
+            older_roots = {
+                "predecessor_run_root": Path(temporary) / "pilot-7" / "runs",
+                "legacy_predecessor_run_root": Path(temporary) / "pilot-5" / "runs",
+                "ancestral_predecessor_run_root": Path(temporary) / "pilot-4" / "runs",
+                "great_ancestral_predecessor_run_root": Path(temporary) / "pilot-3" / "runs",
+                "fifth_ancestral_predecessor_run_root": Path(temporary) / "pilot-2" / "runs",
+                "sixth_ancestral_predecessor_run_root": Path(temporary) / "pilot-1" / "runs",
+            }
+            for value in older_roots.values():
+                value.mkdir(parents=True)
+                lock = value / "locks" / "formalization-pilot.lock"
+                lock.parent.mkdir()
+                lock.write_bytes(b"")
+            old_lineage = {
+                "predecessor_pilot_id": "formalization-benchmark-pilot-7",
+                **{key: str(value.resolve()) for key, value in older_roots.items()},
+            }
+            deployment = root / "deployment.json"
+            deployment.write_text(json.dumps({
+                "schema_version": "formalization-deployment-1",
+                "pilot_id": PILOT8_PILOT_ID,
+                "release_commit": PILOT8_RELEASE_COMMIT,
+                "release_manifest_sha256": manifest_hash,
+                "manifest_payload_sha256": PILOT8_MANIFEST_PAYLOAD_SHA256,
+                "library_build_record": str(build),
+                "library_build_record_sha256": sha256_file(build),
+                "run_root": str(run_root),
+                **old_lineage,
+            }), encoding="utf-8")
+            deployment_hash = sha256_file(deployment)
+
+            qualification_root = run_root / "qualifications" / manifest_hash
+            roles = qualification_root / "roles"
+            roles.mkdir(parents=True)
+            (roles / "passed.json").write_text('{"status":"PASSED"}', encoding="utf-8")
+            roles_manifest = tree_manifest(roles)
+            qualification = qualification_root / "qualification.json"
+            qualification.write_text(json.dumps({
+                "schema_version": "formalization-provider-qualification-5",
+                "status": "PASSED",
+                "classification": "off_benchmark_provider_qualification",
+                "charged_to_contestant": False,
+                "roles_manifest": roles_manifest,
+                "identity": {
+                    "pilot_id": PILOT8_PILOT_ID,
+                    "manifest_sha256": manifest_hash,
+                    "manifest_payload_sha256": PILOT8_MANIFEST_PAYLOAD_SHA256,
+                    "deployment_path": str(deployment),
+                    "deployment_sha256": deployment_hash,
+                },
+            }), encoding="utf-8")
+
+            pair_root = run_root / "pairs" / PILOT8_INCIDENT_RUN_ID
+            condition_state = pair_root / "conditions" / "L" / "condition_state.json"
+            audit_incident = (
+                pair_root / "audits"
+                / "bd33a3bdd1ee7d42c66b32d86f781d352f9cebd44a28b58604b5cc934bd985a2"
+                / "incident.json"
+            )
+            condition_state.parent.mkdir(parents=True)
+            audit_incident.parent.mkdir(parents=True)
+            condition_state.write_text(
+                json.dumps({"status": "AUDIT_SYSTEM_INCIDENT"}), encoding="utf-8"
+            )
+            audit_incident.write_text(json.dumps({
+                "status": "AUDIT_SYSTEM_INCIDENT",
+                "classification": "audit_system_infrastructure",
+                "error": "auditor dependency record does not match D001",
+            }), encoding="utf-8")
+            common = {
+                "pilot_id": PILOT8_PILOT_ID,
+                "task_id": "H22-11",
+                "run_id": PILOT8_INCIDENT_RUN_ID,
+                "manifest_sha256": manifest_hash,
+                "pair_root": str(pair_root),
+                "pair_state_path": str(pair_root / "pair_state.json"),
+                "status": "PAIR_INCIDENT",
+            }
+            report = pair_root / "pair_report.json"
+            report.write_text(json.dumps(common), encoding="utf-8")
+            state = pair_root / "pair_state.json"
+            state.write_text(json.dumps({
+                **common,
+                "pair_report_sha256": sha256_file(report),
+            }), encoding="utf-8")
+            index = run_root / "index" / "H22-11.json"
+            index.parent.mkdir()
+            index.write_text(json.dumps({
+                "schema_version": "formalization-task-index-2",
+                "pilot_id": PILOT8_PILOT_ID,
+                "release_commit": PILOT8_RELEASE_COMMIT,
+                "manifest_sha256": manifest_hash,
+                "manifest_payload_sha256": PILOT8_MANIFEST_PAYLOAD_SHA256,
+                "deployment_sha256": deployment_hash,
+                "task_id": "H22-11",
+                "run_id": PILOT8_INCIDENT_RUN_ID,
+                "pair_root": str(pair_root),
+                "pair_state_path": str(state),
+            }), encoding="utf-8")
+            registry = Path(temporary) / "registry"
+            registry_index = registry / "index" / PILOT8_PILOT_ID / "H22-11.json"
+            registry_index.parent.mkdir(parents=True)
+            registry_index.write_bytes(index.read_bytes())
+            for lock in (
+                run_root / "locks" / "formalization-pilot.lock",
+                registry / "locks" / "campaign.lock",
+            ):
+                lock.parent.mkdir(parents=True)
+                lock.write_bytes(b"")
+
+            with mock.patch.multiple(
+                "setup_titan",
+                PILOT8_DEPLOYMENT_SHA256=deployment_hash,
+                PILOT8_MANIFEST_FILE_SHA256=manifest_hash,
+                PILOT8_BUILD_RECORD_SHA256=sha256_file(build),
+                PILOT8_QUALIFICATION_SHA256=sha256_file(qualification),
+                PILOT8_QUALIFICATION_ROLES_TREE_SHA256=roles_manifest["tree_sha256"],
+                PILOT8_INDEX_SHA256=sha256_file(index),
+                PILOT8_PAIR_STATE_SHA256=sha256_file(state),
+                PILOT8_PAIR_REPORT_SHA256=sha256_file(report),
+                PILOT8_CONDITION_STATE_SHA256=sha256_file(condition_state),
+                PILOT8_AUDIT_INCIDENT_SHA256=sha256_file(audit_incident),
+                GLOBAL_REGISTRY_ROOT=registry,
+            ), mock.patch(
+                "setup_titan.pilot7_lineage", return_value=old_lineage
+            ) as older, mock.patch("setup_titan._pilot5_release_closure"), mock.patch(
+                "setup_titan._pilot8_status",
+                return_value={
+                    "task_id": "H22-11",
+                    "run_id": PILOT8_INCIDENT_RUN_ID,
+                    "status": "PAIR_INCIDENT",
+                    "pair_report_sha256": sha256_file(report),
+                },
+            ):
+                lineage = pilot8_lineage(str(root))
+                self.assertEqual(lineage["predecessor_run_root"], str(run_root))
+                self.assertEqual(
+                    lineage["legacy_predecessor_run_root"],
+                    str(older_roots["predecessor_run_root"].resolve()),
+                )
+                self.assertEqual(
+                    lineage["seventh_ancestral_predecessor_run_root"],
+                    str(older_roots["sixth_ancestral_predecessor_run_root"].resolve()),
+                )
+                older.assert_called_with(
+                    str(older_roots["predecessor_run_root"].parent.resolve()),
+                    verify_status=True,
+                )
+
+                audit_incident.write_text('{"status":"changed"}', encoding="utf-8")
+                with self.assertRaisesRegex(BenchmarkError, "missing or changed"):
+                    pilot8_lineage(str(root))
 
     @staticmethod
     def _write_read_only_skill(root: Path, contents: str) -> None:

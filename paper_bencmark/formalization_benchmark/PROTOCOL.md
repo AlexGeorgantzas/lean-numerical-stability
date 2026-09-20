@@ -1,23 +1,24 @@
 # Source-first formalization protocol
 
-> Pilot-8 is a new frozen release. Pilot-7 and every earlier run remain sealed
+> Pilot-9 is a new frozen release. Pilot-8 and every earlier run remain sealed
 > under their original software, prompts, task set, and audit policy. No
 > observation is copied, resumed, or pooled across pilot identities.
-> Pilot-7 installed successfully but its one-shot provider qualification failed
-> before any role completed or any token-bearing benchmark attempt began because
-> the retained ChatGPT refresh token was stale. Pilot-8 is the authentication-
-> repaired successor; it is not a retry under the Pilot-7 identity.
+> Pilot-8's H22-11 attempt is sealed as an infrastructure incident: its direct
+> judges returned complete, ordered dependency records, but the controller
+> rejected their human-readable dependency labels as if those labels were
+> identities. Pilot-9 corrects that interface mismatch. It does not reinterpret
+> Pilot-8 evidence or retry under the Pilot-8 identity.
 
 ## Purpose
 
-Pilot-8 measures whether access to, and explicit encouragement to use, a frozen
+Pilot-9 measures whether access to, and explicit encouragement to use, a frozen
 NumStability library helps Codex construct a faithful Lean formalization of a
 selected numerical-analysis result. It measures statement construction, not
 proof construction.
 
 ## Frozen release
 
-- Pilot ID: `formalization-benchmark-pilot-8`.
+- Pilot ID: `formalization-benchmark-pilot-9`.
 - One exact Git commit, manifest-file SHA-256, and self-hashed manifest payload
   define the release.
 - Formalizer: `gpt-5.6-sol` at `xhigh`, frozen in `config.json`.
@@ -40,7 +41,7 @@ The task order is frozen as follows:
 3. `H23-6`, `H5-5`, `H10-7`, `H12-4`, `H19-5`, `H7-14`, `H15-3`
 
 The condition order is precommitted per task in `config.json`, with nine
-N-first and nine L-first pairs. Pilot-8 creates fresh slots for all 18 tasks.
+N-first and nine L-first pairs. Pilot-9 creates fresh slots for all 18 tasks.
 
 The five `P..-T2` entries are paper tasks retained from Pilot-6. The thirteen
 `Hchapter-problem` entries are Higham textbook problems. Their source packets
@@ -144,7 +145,7 @@ available nor requested.
 
 The primary PDF and frozen source packet define the selected result. The packet
 may clarify which part of an exercise is selected, but the PDF controls if they
-conflict. Unlike the method paper's full audit, Pilot-8 omits a separate
+conflict. Unlike the method paper's full audit, Pilot-9 omits a separate
 source-contract model call because the source side is frozen and validated
 before release. This deliberate deviation is recorded; every generated
 candidate still receives a fresh candidate-side audit.
@@ -156,7 +157,10 @@ and bodies of candidate-local declarations and reached NumStability
 declarations. Reached Lean/Mathlib declarations form a one-level external
 semantic frontier. Every dependency receives a stable `Dxxx` ID. Candidate
 and NumStability names and module provenance are pseudonymized before auditors
-see them.
+see them. The ordered `Dxxx` value is the dependency identity. The accompanying
+`name` is a required human-readable semantic label and is not an identity;
+judges may render it differently without invalidating an otherwise complete
+record.
 
 The blind translator and direct judge must each return exactly one record for
 every `Dxxx` ID, in order. Missing, duplicate, or renamed records invalidate
@@ -218,7 +222,7 @@ strengthening. A genuinely stronger candidate is faithful because it still
 implies the complete selected source result.
 
 The method paper permits a score-2 exception for multiple declarations that
-cover only a proper subset of the source domain. Pilot-8 deliberately rejects
+cover only a proper subset of the source domain. Pilot-9 deliberately rejects
 that exception: partial case-split coverage is `unfaithful`. This deviation is
 frozen and must not be inferred ad hoc during an audit.
 

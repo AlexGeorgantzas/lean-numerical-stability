@@ -154,3 +154,36 @@ user request naming it.
 
 **Current need:** Pilot-8 is ready. Start exactly one official task only after
 a new explicit user request naming that task.
+
+---
+
+## 2026-09-21 — Codex — formalization_benchmark — Pilot-9 audit-interface repair prepared
+
+**Did:**
+- Preserved Pilot-8 H22-11 as an immutable `PAIR_INCIDENT`; no semantic verdict
+  was inferred and no Pilot-8 evidence was rewritten or resumed.
+- Fixed the blind/direct dependency-record interface: ordered `Dxxx` IDs remain
+  mandatory identities, every dependency still requires a record, but `name`
+  is now explicitly a human-readable semantic label rather than a hidden exact-
+  equality field. The 16 semantic checks, two implication directions, fresh
+  roles, and adjudication policy are unchanged.
+- Minted `formalization-benchmark-pilot-9`, added hash-verified lineage to the
+  Pilot-8 release, qualification, build, registry, pair, condition, and audit-
+  incident evidence, and retained Pilot-7/5/4/3/2/1 locks and provenance.
+- Updated the operator skill and Titan paths for Pilot-9. All 163 unit tests,
+  Python compilation, release freeze, and skill validation pass. Manifest
+  payload SHA-256 is
+  `7de3b3ad11a96f7b0e5afa1f0f33c1d05a59e095cc4710656b0db638d7785d49`.
+
+**Careful:**
+- Pilot-8 deployment SHA-256
+  `3c680b39563e3e7c66e2892a16d7cb72f541ed04631d4b134cee101acda04588`
+  and H22-11 audit-incident SHA-256
+  `4363f8fde6b0121ab33372364bb0806967e43ff814b010b5fcc89f1e16195469`
+  are predecessor evidence only.
+- Installing and qualifying Pilot-9 does not authorize H22-11 or any other
+  official pair. A new explicit task request is required after readiness.
+
+**Needs:** Commit and push the frozen Pilot-9 release, install it beside Pilot-8
+on Titan, then pass verify-release, doctor, all-task status checks, and the
+one-shot provider qualification without starting an official task.

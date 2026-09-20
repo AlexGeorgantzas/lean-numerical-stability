@@ -1,8 +1,8 @@
 # Formalization benchmark architecture
 
-Pilot-8 is a side-by-side successor. Earlier deployments and results are
-read-only provenance, not Pilot-8 observations. The direct predecessor is
-Pilot-7, whose provider qualification failed before any role completed.
+Pilot-9 is a side-by-side successor. Earlier deployments and results are
+read-only provenance, not Pilot-9 observations. The direct predecessor is
+Pilot-8, whose H22-11 attempt is sealed as an audit-interface incident.
 
 ## Operator path
 
@@ -31,7 +31,7 @@ one pair controller
 
 The controller pre-stages and compares both condition inputs before the first
 contestant call. An account-global registry reserves each
-`(formalization-benchmark-pilot-8, task_id)` once. A shared campaign lock and
+`(formalization-benchmark-pilot-9, task_id)` once. A shared campaign lock and
 predecessor locks prevent concurrent measured use of Titan. Reissuing a command
 returns the terminal pair or continues only at a safe boundary between sealed
 conditions.
@@ -83,7 +83,9 @@ and exact raw-response metering.
 dependency graph. Candidate-local and reached NumStability declarations are
 followed recursively through types and bodies. Lean/Mathlib declarations form a
 one-level external semantic frontier. Stable `Dxxx` IDs and semantic hashes
-are assigned before local names and module provenance are pseudonymized.
+are assigned before local names and module provenance are pseudonymized. The
+ordered `Dxxx` ID is the dependency identity. Each role must preserve every ID
+and its order, while its required `name` field is a descriptive semantic label.
 
 The blind role sees only this dossier. The direct role sees the PDF, source
 packet, and dossier. The round-trip role sees the PDF, packet, and blind
@@ -117,7 +119,7 @@ incomplete telemetry fail closed as infrastructure incidents.
 
 | Script | Responsibility |
 | --- | --- |
-| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-8. |
+| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-9. |
 | `tools/measure_library_build.py` | Record the clean full NumStability build and resources. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary without provider calls. |
 | `tools/provider_capability_canary.py` | Exercise exact models, schemas, tools, and isolation off-benchmark. |
@@ -168,7 +170,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-pilot-8/H22-11.json
+  index/formalization-benchmark-pilot-9/H22-11.json
 ```
 
 Records bind prompts, candidates, source packets, semantic dossiers, role

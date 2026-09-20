@@ -3,14 +3,15 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
-Pilot-8 is the separate authentication-repaired successor. Pilots 1–7
-are predecessor evidence, not pilot-8 observations or runs to resume. Pilot-7
-installed but its provider qualification failed before any role completed, so
-it has no official pairs to resume. The
+Pilot-9 is the separate audit-interface-repaired successor. Pilots 1–8
+are predecessor evidence, not pilot-9 observations or runs to resume. Pilot-8's
+H22-11 attempt is sealed as an infrastructure incident after its direct judges
+used valid human-readable dependency labels that a hidden controller check
+mistook for identity fields. The
 installed pilot-5 release retains its three-way audit and sealed P01-T2 and
 P02-T2 records; its `unclear` decisions must not be relabeled or supplied with
 manufactured feedback. Do not pool data across pilots or use pilot-5 task slots
-to satisfy a pilot-8 request. Pilot-8 must have its own pilot ID, deployment,
+to satisfy a pilot-9 request. Pilot-9 must have its own pilot ID, deployment,
 launcher, task indices, and account-global reservations; it is not ready
 for measurement until its clean release and installation are authenticated and
 provider qualification passes. If any of these are missing, stop before an
@@ -100,19 +101,19 @@ every distinct semantic candidate still needs its own audit.
 
 ## Admission
 
-On Titan, first require the dedicated pilot-8 launcher and deployment. If
+On Titan, first require the dedicated pilot-9 launcher and deployment. If
 either is absent, stop with `source_first_runner_not_ready`; do not run pilot-5.
-Once installed, authenticate pilot-8 through its location-independent launcher:
+Once installed, authenticate pilot-9 through its location-independent launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-8-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-9-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-8-r1 doctor \
+~/.local/bin/run-highambench-formalization-pilot-9-r1 doctor \
   --task-id H22-11
 ```
 
@@ -151,8 +152,8 @@ their authenticated outputs jointly confirm all of the following:
   `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
   and stops without model inference or writing secrets to logs; the matching
   Code Mode host is hash-pinned and mounted read-only beside `/codex`;
-- the sealed pilot-1 through pilot-5 predecessor lineage and the
-  account-global campaign lock/registry match the pilot-8 deployment record.
+- the sealed pilot-1 through pilot-8 predecessor lineage and the
+  account-global campaign lock/registry match the pilot-9 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -163,7 +164,7 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-8-r1 run \
+~/.local/bin/run-highambench-formalization-pilot-9-r1 run \
   --task-id H22-11
 ```
 
@@ -312,7 +313,7 @@ library provenance wherever de-identification is reliable. The dossier
 contains candidate semantics under the explicit closure/frontier policy; paper
 and packet are supplied separately only to paper-facing roles.
 
-Acceptance requires the Pilot-8 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency, and both judges must complete S01--S16 plus both implication directions. Every material
+Acceptance requires the Pilot-9 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency. The Dxxx ID, not the descriptive `name`, is dependency identity. Both judges must complete S01--S16 plus both implication directions. Every material
 binder, premise, restriction, quantifier dependency, and conclusion must match
 the selected paper result without vacuity, unsupported assumptions, or narrower
 applicability. Auditor disagreement is resolved by adjudication against the
@@ -320,7 +321,7 @@ paper and candidate semantics. Provider failure, malformed auditor output,
 unavailable tools, or dossier failure is an unscored operational incident;
 it is not a semantic verdict.
 
-The only final semantic verdicts for a valid Pilot-8 candidate are `faithful` and
+The only final semantic verdicts for a valid Pilot-9 candidate are `faithful` and
 `unfaithful`. Equivalent and genuinely stronger candidates are faithful; weaker,
 different, restricted, vacuous, and partial-case candidates are unfaithful. An
 intermediate `undetermined` judge classification is an adjudication trigger,
@@ -335,7 +336,7 @@ malformed outputs, unavailable tools, and dossier failures stay unscored
 operational incidents, not candidate verdicts. A genuinely underdetermined
 source contract requires source-admissibility resolution or exclusion before
 scoring and must not be attributed to a candidate. This policy becomes
-operative only after the pilot-8 release and provider qualification pass;
+operative only after the pilot-9 release and provider qualification pass;
 the installed pilot-5 release remains historically unchanged.
 
 For an unfaithful candidate with a slot remaining, render feedback only through

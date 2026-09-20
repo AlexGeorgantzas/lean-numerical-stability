@@ -15,7 +15,7 @@ from deployment import GLOBAL_REGISTRY_ROOT, load_deployment  # noqa: E402
 
 
 class DeploymentIdentityTests(unittest.TestCase):
-    def test_loader_requires_pilot8_release_host_and_six_predecessors(self) -> None:
+    def test_loader_requires_pilot9_release_host_and_seven_predecessors(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             artifact = root / "artifact"
@@ -40,9 +40,11 @@ class DeploymentIdentityTests(unittest.TestCase):
             fifth_ancestral_predecessor.mkdir()
             sixth_ancestral_predecessor = root / "sixth-ancestral-predecessor-runs"
             sixth_ancestral_predecessor.mkdir()
+            seventh_ancestral_predecessor = root / "seventh-ancestral-predecessor-runs"
+            seventh_ancestral_predecessor.mkdir()
             record = {
                 "schema_version": "formalization-deployment-1",
-                "pilot_id": "formalization-benchmark-pilot-8",
+                "pilot_id": "formalization-benchmark-pilot-9",
                 "release_commit": "a" * 40,
                 "release_manifest_sha256": "b" * 64,
                 "manifest_payload_sha256": "c" * 64,
@@ -53,6 +55,7 @@ class DeploymentIdentityTests(unittest.TestCase):
                 "great_ancestral_predecessor_run_root": str(great_ancestral_predecessor),
                 "fifth_ancestral_predecessor_run_root": str(fifth_ancestral_predecessor),
                 "sixth_ancestral_predecessor_run_root": str(sixth_ancestral_predecessor),
+                "seventh_ancestral_predecessor_run_root": str(seventh_ancestral_predecessor),
                 "code_mode_host_binary": str(host),
                 "code_mode_host_sha256": sha256_file(host),
                 "run_root": str(root / "runs"),
@@ -76,7 +79,7 @@ class DeploymentIdentityTests(unittest.TestCase):
                 return load_deployment(path)
 
             loaded = read(record)
-            self.assertEqual(loaded.pilot_id, "formalization-benchmark-pilot-8")
+            self.assertEqual(loaded.pilot_id, "formalization-benchmark-pilot-9")
             self.assertEqual(loaded.global_registry_root, GLOBAL_REGISTRY_ROOT)
             self.assertEqual(loaded.predecessor_run_root, predecessor.resolve())
             self.assertEqual(
@@ -97,6 +100,10 @@ class DeploymentIdentityTests(unittest.TestCase):
                 loaded.sixth_ancestral_predecessor_run_root,
                 sixth_ancestral_predecessor.resolve(),
             )
+            self.assertEqual(
+                loaded.seventh_ancestral_predecessor_run_root,
+                seventh_ancestral_predecessor.resolve(),
+            )
             self.assertEqual(loaded.code_mode_host_sha256, sha256_file(host))
             for field, replacement in (
                 ("pilot_id", "formalization-benchmark-t2-pilot-4"),
@@ -107,6 +114,7 @@ class DeploymentIdentityTests(unittest.TestCase):
                 ("great_ancestral_predecessor_run_root", str(predecessor)),
                 ("fifth_ancestral_predecessor_run_root", str(predecessor)),
                 ("sixth_ancestral_predecessor_run_root", str(predecessor)),
+                ("seventh_ancestral_predecessor_run_root", str(predecessor)),
                 ("code_mode_host_sha256", "0" * 64),
                 ("code_mode_host_binary", str(codex)),
             ):
@@ -122,6 +130,8 @@ class DeploymentIdentityTests(unittest.TestCase):
                 read({key: value for key, value in record.items() if key != "fifth_ancestral_predecessor_run_root"})
             with self.assertRaisesRegex(BenchmarkError, "sixth_ancestral_predecessor_run_root is missing"):
                 read({key: value for key, value in record.items() if key != "sixth_ancestral_predecessor_run_root"})
+            with self.assertRaisesRegex(BenchmarkError, "seventh_ancestral_predecessor_run_root is missing"):
+                read({key: value for key, value in record.items() if key != "seventh_ancestral_predecessor_run_root"})
 
 
 if __name__ == "__main__":

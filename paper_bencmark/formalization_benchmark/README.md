@@ -1,16 +1,16 @@
 # HighamBench source-first formalization benchmark
 
-This directory is the frozen Pilot-8 control plane. It does not use the legacy
-fixed-target proof runner. Pilot-7 and earlier evidence remain sealed and are
-never reinterpreted, resumed, or pooled with Pilot-8. Pilot-7's provider
-qualification failed before any role completed; Pilot-8 is its fresh,
-authentication-repaired successor.
+This directory is the frozen Pilot-9 control plane. It does not use the legacy
+fixed-target proof runner. Pilot-8 and earlier evidence remain sealed and are
+never reinterpreted, resumed, or pooled with Pilot-9. Pilot-8's H22-11 attempt
+ended in an audit-interface incident; Pilot-9 corrects that interface mismatch
+without weakening the audit.
 
-Pilot ID: `formalization-benchmark-pilot-8`.
+Pilot ID: `formalization-benchmark-pilot-9`.
 
 ## Tasks
 
-Pilot-8 supports 18 fresh N/L pairs:
+Pilot-9 supports 18 fresh N/L pairs:
 
 - Paper tasks: `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, `P14-T2`.
 - Higham problems: `H22-11`, `H22-5`, `H20-6`, `H7-12`,
@@ -35,7 +35,8 @@ is deliberately `by sorry`; success is statement faithfulness.
 
 Every compiling candidate gets a recursively expanded, pseudonymized semantic
 dossier and fresh blind, direct, and round-trip roles. Blind and direct outputs
-must account for every `Dxxx` dependency. Both judges must complete all 16
+must account for every ordered `Dxxx` dependency; their accompanying names are
+human-readable labels, not identity fields. Both judges must complete all 16
 semantic checks and both implication directions. Equivalent and genuinely
 stronger candidates are faithful; weaker, different, restricted, vacuous, or
 partial-case candidates are unfaithful.
@@ -48,14 +49,14 @@ See [PROTOCOL.md](PROTOCOL.md) for the complete frozen contract.
 
 ## Titan commands
 
-After Pilot-8 is installed and provider-qualified on Titan:
+After Pilot-9 is installed and provider-qualified on Titan:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-8-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-8-r1 doctor --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-8-r1 qualify-provider --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-8-r1 run --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-8-r1 status --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-9-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-9-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-9-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-9-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-9-r1 status --task-id H22-11
 ```
 
 `run --dry-run` checks admission and staging without model calls or consuming
