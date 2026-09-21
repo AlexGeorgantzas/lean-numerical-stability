@@ -517,9 +517,26 @@ def run_campaign(
         not isinstance(max_new_tasks, int) or max_new_tasks < 1
     ):
         raise BenchmarkError("--max-new-tasks must be a positive integer")
+    wave_task_ids = getattr(args, "wave_task_ids", None)
+    if wave_task_ids is None:
+        invocation_plan = list(core["plan"])
+    else:
+        if (
+            not isinstance(wave_task_ids, list)
+            or not wave_task_ids
+            or len(set(wave_task_ids)) != len(wave_task_ids)
+            or any(task_id not in EXPECTED_TASKS for task_id in wave_task_ids)
+        ):
+            raise BenchmarkError(
+                "--wave-task-ids must be a nonempty duplicate-free subset of Higham-13"
+            )
+        plan_by_id = {item["task_id"]: item for item in core["plan"]}
+        invocation_plan = [plan_by_id[task_id] for task_id in wave_task_ids]
     if args.dry_run:
-        invocation_plan = (
-            core["plan"][:max_new_tasks] if max_new_tasks is not None else core["plan"]
+        dry_run_plan = (
+            invocation_plan[:max_new_tasks]
+            if max_new_tasks is not None
+            else invocation_plan
         )
         return {
             "dry_run": True,
@@ -527,7 +544,7 @@ def run_campaign(
             "campaign_root": str(args.campaign_root.resolve()),
             "campaign_identity_sha256": _canonical_hash(core),
             "plan": core["plan"],
-            "invocation_plan": invocation_plan,
+            "invocation_plan": dry_run_plan,
             "commands": [
                 _command(
                     args,
@@ -537,7 +554,7 @@ def run_campaign(
                     / item["task_id"]
                     / "pair",
                 )
-                for item in invocation_plan
+                for item in dry_run_plan
             ],
         }
 
@@ -567,7 +584,7 @@ def run_campaign(
         }
 
         terminalized_this_invocation = 0
-        for item in core["plan"]:
+        for item in invocation_plan:
             task_id = item["task_id"]
             if task_id in terminals:
                 continue
@@ -705,6 +722,14 @@ def make_parser() -> argparse.ArgumentParser:
         "--max-new-tasks",
         type=int,
         help="stop after this many previously nonterminal tasks; resume later",
+    )
+    parser.add_argument(
+        "--wave-task-ids",
+        nargs="+",
+        help=(
+            "run only this ordered subset during the current invocation; "
+            "the frozen 13-task campaign identity and per-task orders are unchanged"
+        ),
     )
     parser.add_argument("--dry-run", action="store_true")
     return parser

@@ -127,6 +127,7 @@ def _args(root: Path, *, dry_run: bool) -> argparse.Namespace:
         dependency_limit=5,
         maximum_packet_bytes=48 * 1024,
         max_new_tasks=None,
+        wave_task_ids=None,
         dry_run=dry_run,
     )
 
@@ -208,6 +209,30 @@ class Design16CampaignTests(unittest.TestCase):
             ]
             self.assertEqual(len(terminals), 13)
             self.assertTrue((args.campaign_root / "tasks" / "H15-3" / "pair").is_dir())
+
+    def test_wave_subset_preserves_requested_task_order_and_frozen_condition_orders(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            args = _args(root, dry_run=True)
+            args.wave_task_ids = ["H5-5", "H10-7", "H7-12"]
+            result = run_campaign(args)
+            self.assertEqual(
+                [item["task_id"] for item in result["invocation_plan"]],
+                ["H5-5", "H10-7", "H7-12"],
+            )
+            self.assertEqual(
+                [item["condition_order"] for item in result["invocation_plan"]],
+                [["R0", "R1"], ["R1", "R0"], ["R0", "R1"]],
+            )
+            self.assertFalse(args.campaign_root.exists())
+
+    def test_wave_subset_rejects_duplicates(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            args = _args(root, dry_run=True)
+            args.wave_task_ids = ["H5-5", "H5-5"]
+            with self.assertRaises(BenchmarkError):
+                run_campaign(args)
 
 
 if __name__ == "__main__":
