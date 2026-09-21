@@ -19,6 +19,7 @@ from design16_matched import (  # noqa: E402
     _classify_atlas,
     _condition_order,
     condition_spec,
+    _candidate_template,
 )
 
 
@@ -98,6 +99,12 @@ class Design16MatchedTests(unittest.TestCase):
             (atlas / "declarations.jsonl").write_text("{}\n", encoding="utf-8")
             with self.assertRaises(BenchmarkError):
                 _atlas_declarations(atlas, label="Mathlib")
+
+    def test_statement_template_has_exactly_one_target_sorry(self) -> None:
+        source = _candidate_template({"retrieved_roots": []}, statement_only=True)
+        self.assertEqual(source.count("sorry"), 1)
+        self.assertIn("theorem target : True := by\n  sorry", source)
+        self.assertNotIn("trivial", source)
 
 
 if __name__ == "__main__":

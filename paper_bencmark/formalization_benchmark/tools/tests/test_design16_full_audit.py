@@ -37,6 +37,7 @@ def _args(root: Path) -> argparse.Namespace:
         timeout_seconds=7200,
         validation_timeout_seconds=600,
         infrastructure_retries=2,
+        statement_only=False,
     )
 
 

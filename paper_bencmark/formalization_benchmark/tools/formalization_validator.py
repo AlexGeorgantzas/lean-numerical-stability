@@ -442,7 +442,9 @@ def _issue(source: str, token: Token | None, code: str, message: str) -> dict[st
     return issue
 
 
-def inspect_candidate_source(source: str) -> dict[str, Any]:
+def inspect_candidate_source(
+    source: str, *, allow_single_target_sorry: bool = False
+) -> dict[str, Any]:
     """Check the narrow, deterministic source contract before compilation."""
 
     masked = _mask_noncode(source)
@@ -451,7 +453,9 @@ def inspect_candidate_source(source: str) -> dict[str, Any]:
     issues: list[dict[str, Any]] = []
 
     for token in tokens:
-        if token.value in FORBIDDEN_TOKENS:
+        if token.value in FORBIDDEN_TOKENS and not (
+            allow_single_target_sorry and token.value == "sorry"
+        ):
             issues.append(
                 _issue(
                     source,
@@ -462,7 +466,17 @@ def inspect_candidate_source(source: str) -> dict[str, Any]:
             )
 
     sorry_indices = [index for index, token in enumerate(tokens) if token.value == "sorry"]
-    if sorry_indices:
+    if allow_single_target_sorry and len(sorry_indices) != 1:
+        token = tokens[sorry_indices[0]] if sorry_indices else None
+        issues.append(
+            _issue(
+                source,
+                token,
+                "statement-hole-count",
+                f"expected exactly one target `sorry`, found {len(sorry_indices)}",
+            )
+        )
+    elif not allow_single_target_sorry and sorry_indices:
         issues.append(
             _issue(
                 source,
@@ -508,6 +522,28 @@ def inspect_candidate_source(source: str) -> dict[str, Any]:
                     "all candidate declarations must appear before the audited root",
                 )
             )
+        if allow_single_target_sorry and len(sorry_indices) == 1:
+            sorry_index = sorry_indices[0]
+            prefix = [token.value for token in tokens[max(0, sorry_index - 2) : sorry_index]]
+            suffix = [token.value for token in tokens[sorry_index + 1 :]]
+            valid_suffix = suffix == [] or (
+                len(suffix) in {1, 2}
+                and suffix[0] == "end"
+                and (len(suffix) == 1 or _is_identifier(suffix[1]))
+            )
+            if (
+                sorry_index <= root.token_index
+                or prefix != [":=", "by"]
+                or not valid_suffix
+            ):
+                issues.append(
+                    _issue(
+                        source,
+                        tokens[sorry_index],
+                        "statement-hole-placement",
+                        "the sole `sorry` must be the entire proof of the final audited target",
+                    )
+                )
 
     issue_key = lambda item: (
         int(item.get("line", 0)),
@@ -518,6 +554,11 @@ def inspect_candidate_source(source: str) -> dict[str, Any]:
     issues.sort(key=issue_key)
     return {
         "pass": not issues,
+        "source_contract": (
+            "statement-only-single-target-sorry"
+            if allow_single_target_sorry
+            else "complete-kernel-checked-proof"
+        ),
         "target_declaration": TARGET_DECLARATION,
         "sorry_count": len(sorry_indices),
         "nonblank_code_lines": sum(
@@ -748,6 +789,7 @@ def validate_candidate(
     scratch_root: Path | None = None,
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
     max_source_bytes: int = DEFAULT_MAX_SOURCE_BYTES,
+    allow_single_target_sorry: bool = False,
 ) -> dict[str, Any]:
     """Return a complete JSON-serializable validation decision."""
 
@@ -772,7 +814,9 @@ def validate_candidate(
         }
 
     source = candidate_bytes.decode("utf-8")
-    source_check = inspect_candidate_source(source)
+    source_check = inspect_candidate_source(
+        source, allow_single_target_sorry=allow_single_target_sorry
+    )
     result = {
         **base,
         "candidate": {
@@ -845,6 +889,11 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--max-source-bytes", type=int, default=DEFAULT_MAX_SOURCE_BYTES
     )
+    parser.add_argument(
+        "--allow-single-target-sorry",
+        action="store_true",
+        help="statement-only mode: require exactly one sorry as the final target proof",
+    )
     parser.add_argument("--output", type=Path, help="also write the JSON result here")
     return parser
 
@@ -858,6 +907,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         scratch_root=args.scratch_root,
         timeout_seconds=args.timeout_seconds,
         max_source_bytes=args.max_source_bytes,
+        allow_single_target_sorry=args.allow_single_target_sorry,
     )
     if args.output is not None:
         write_json_atomic(args.output, result)

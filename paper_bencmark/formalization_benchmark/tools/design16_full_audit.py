@@ -61,6 +61,7 @@ def run_cli(args: argparse.Namespace) -> dict[str, Any]:
         extractor_environment={},
         scratch_root=scratch,
         timeout_seconds=float(args.validation_timeout_seconds),
+        allow_single_target_sorry=bool(args.statement_only),
     )
     dossier_path = preparation_root / "blind_semantic_dossier.json"
     private_path = preparation_root / "private_semantic_manifest.json"
@@ -107,6 +108,11 @@ def run_cli(args: argparse.Namespace) -> dict[str, Any]:
         "auditor_tokens_excluded_from_benchmark": True,
         "condition_blind": True,
         "attempt_blind": True,
+        "source_contract": (
+            "statement-only-single-target-sorry"
+            if args.statement_only
+            else "complete-kernel-checked-proof"
+        ),
         "output_root": str(output_root),
     }
     write_json_atomic(output_root / "result.json", result, mode=0o400)
@@ -126,6 +132,11 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--reasoning-effort", default="high")
     parser.add_argument("--timeout-seconds", type=float, default=7200)
     parser.add_argument("--validation-timeout-seconds", type=float, default=600)
+    parser.add_argument(
+        "--statement-only",
+        action="store_true",
+        help="audit a candidate whose final target proof is exactly one permitted sorry",
+    )
     parser.add_argument(
         "--infrastructure-retries",
         type=int,

@@ -124,6 +124,34 @@ class CandidateDossierTests(unittest.TestCase):
             self.assertIn("raw_semantic_report", private)
             self.assertNotIn("NumStability", json.dumps(blind, sort_keys=True))
 
+    def test_statement_only_candidate_prepares_the_same_blinded_semantics(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            candidate = root / "Candidate.lean"
+            candidate.write_text(
+                GOOD_SOURCE.replace("by intro x; rfl", "by sorry"), encoding="utf-8"
+            )
+            compiler = root / "fake_compiler.py"
+            compiler.write_text(
+                "from pathlib import Path\n"
+                "import sys\n"
+                "candidate, olean = map(Path, sys.argv[1:3])\n"
+                "olean.write_bytes(b'fake olean')\n",
+                encoding="utf-8",
+            )
+            extractor = root / "fake_extractor.py"
+            extractor.write_text(f"print({REPORT!r}, end='')\n", encoding="utf-8")
+            blind, private = prepare_candidate_audit(
+                candidate,
+                compiler_command=(sys.executable, str(compiler), "{candidate}", "{olean}"),
+                extractor_command=(sys.executable, str(extractor)),
+                allow_single_target_sorry=True,
+            )
+            self.assertEqual(private["blind_semantic_sha256"], blind["semantic_sha256"])
+            self.assertEqual(
+                private["source_contract"], "statement-only-single-target-sorry"
+            )
+
     @unittest.skipUnless(shutil.which("lean"), "Lean executable is unavailable")
     def test_real_lean_extractor_follows_candidate_definition(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

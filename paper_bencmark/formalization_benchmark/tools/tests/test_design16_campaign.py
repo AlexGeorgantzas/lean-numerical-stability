@@ -131,6 +131,7 @@ def _args(root: Path, *, dry_run: bool) -> argparse.Namespace:
         max_new_tasks=None,
         wave_task_ids=None,
         enforce_titan_envelope=False,
+        statement_only=False,
         dry_run=dry_run,
     )
 
@@ -236,6 +237,15 @@ class Design16CampaignTests(unittest.TestCase):
             args.wave_task_ids = ["H5-5", "H5-5"]
             with self.assertRaises(BenchmarkError):
                 run_campaign(args)
+
+    def test_statement_only_mode_is_frozen_and_passed_to_every_condition(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            args = _args(root, dry_run=True)
+            args.statement_only = True
+            args.wave_task_ids = ["H5-5"]
+            result = run_campaign(args)
+            self.assertIn("--statement-only", result["commands"][0])
 
 
 if __name__ == "__main__":

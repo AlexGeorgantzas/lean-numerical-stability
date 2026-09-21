@@ -141,6 +141,34 @@ end HighamBenchCandidate
             with self.subTest(source=source):
                 self.assertFalse(inspect_candidate_source(source)["pass"])
 
+    def test_statement_only_mode_requires_one_hole_exactly_at_final_target(self) -> None:
+        source = GOOD_SOURCE.replace("intro n\n  rfl", "sorry")
+        self.write_candidate(source)
+        result = validate_candidate(
+            self.candidate,
+            compiler_command=self.command,
+            allow_single_target_sorry=True,
+        )
+        self.assertTrue(result["pass"], result)
+        self.assertEqual(result["source_check"]["sorry_count"], 1)
+        self.assertEqual(
+            result["source_check"]["source_contract"],
+            "statement-only-single-target-sorry",
+        )
+
+        bad_variants = [
+            source.replace("def reflected (n : Nat) : Nat := n", "def reflected (n : Nat) : Nat := by sorry"),
+            source.replace("theorem target : ∀ n : Nat, reflected n = n := by\n  sorry", "theorem target : ∀ n : Nat, reflected n = n := by\n  trivial\n  sorry"),
+            GOOD_SOURCE,
+        ]
+        for bad in bad_variants:
+            with self.subTest(source=bad):
+                self.assertFalse(
+                    inspect_candidate_source(
+                        bad, allow_single_target_sorry=True
+                    )["pass"]
+                )
+
     def test_rejects_lemma_as_the_audited_root(self) -> None:
         source = GOOD_SOURCE.replace("theorem target", "lemma target")
         inspection = inspect_candidate_source(source)

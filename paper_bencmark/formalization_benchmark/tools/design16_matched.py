@@ -180,12 +180,32 @@ def _contract_additions(task_id: str) -> tuple[list[str], str | None]:
     return list(values), sha256_file(contract_path)
 
 
-def _prompt_bytes() -> bytes:
-    base = (ROOT / "prompts" / "formalizer.md").read_text(encoding="utf-8").rstrip()
-    addendum = (ROOT / "prompts" / "design16_matched_addendum.md").read_text(
+def _prompt_bytes(*, statement_only: bool) -> bytes:
+    base_name = "statement_formalizer.md" if statement_only else "formalizer.md"
+    addendum_name = (
+        "design17_statement_addendum.md"
+        if statement_only
+        else "design16_matched_addendum.md"
+    )
+    base = (ROOT / "prompts" / base_name).read_text(encoding="utf-8").rstrip()
+    addendum = (ROOT / "prompts" / addendum_name).read_text(
         encoding="utf-8"
     )
     return (base + "\n" + addendum).encode("utf-8")
+
+
+def _candidate_template(composition: dict[str, Any], *, statement_only: bool) -> str:
+    template = _routed_candidate_template(composition)
+    if not statement_only:
+        return template
+    old = "theorem target : True := by\n  trivial"
+    new = "theorem target : True := by\n  sorry"
+    if template.count(old) != 1:
+        raise BenchmarkError("statement-only template replacement contract changed")
+    return template.replace(
+        "/- Replace this placeholder with the faithful paper result and complete proof. -/",
+        "/- Replace True with the faithful paper statement; keep the sole target sorry. -/",
+    ).replace(old, new)
 
 
 def _write_pair_report(output_root: Path, report: dict[str, Any]) -> None:
@@ -245,7 +265,12 @@ def _run_condition(
         source / "task.md", _task_packet_markdown(staged_packet).encode("utf-8"), mode=0o400
     )
     candidate = workspace / "Candidate.lean"
-    write_bytes_atomic(candidate, _routed_candidate_template(composition).encode("utf-8"))
+    write_bytes_atomic(
+        candidate,
+        _candidate_template(
+            composition, statement_only=bool(args.statement_only)
+        ).encode("utf-8"),
+    )
     write_bytes_atomic(
         workspace / "ENVIRONMENT.md", _environment_note().encode("utf-8"), mode=0o400
     )
@@ -307,6 +332,7 @@ def _run_condition(
         compiler_command=compiler_command(deployment, spec.compiler_condition),
         scratch_root=validation_scratch,
         timeout_seconds=float(args.validation_timeout_seconds),
+        allow_single_target_sorry=bool(args.statement_only),
     )
     validation_seconds = time.monotonic() - validation_started
     write_json_atomic(condition_root / "validation.json", validation, mode=0o400)
@@ -322,6 +348,16 @@ def _run_condition(
     report: dict[str, Any] = {
         "schema_version": "formalization-design16-matched-condition-1",
         "scientific_status": SCIENTIFIC_STATUS,
+        "benchmark_object": (
+            "FORMALIZED_STATEMENT_ONLY"
+            if args.statement_only
+            else "FORMALIZED_STATEMENT_AND_COMPLETE_PROOF"
+        ),
+        "source_contract": (
+            "statement-only-single-target-sorry"
+            if args.statement_only
+            else "complete-kernel-checked-proof"
+        ),
         "faithfulness_status": "NOT_AUDITED",
         "result_status": (
             "COMPILED_AND_INTEGRITY_VALIDATED" if condition_pass else "CONDITION_INCIDENT"
@@ -403,11 +439,21 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     ):
         raise BenchmarkError("source PDF does not match the frozen packet")
 
-    prompt = _prompt_bytes()
+    prompt = _prompt_bytes(statement_only=bool(args.statement_only))
     write_bytes_atomic(output_root / "prompt.txt", prompt, mode=0o400)
     pair_report: dict[str, Any] = {
         "schema_version": "formalization-design16-matched-pair-1",
         "scientific_status": SCIENTIFIC_STATUS,
+        "benchmark_object": (
+            "FORMALIZED_STATEMENT_ONLY"
+            if args.statement_only
+            else "FORMALIZED_STATEMENT_AND_COMPLETE_PROOF"
+        ),
+        "source_contract": (
+            "statement-only-single-target-sorry"
+            if args.statement_only
+            else "complete-kernel-checked-proof"
+        ),
         "faithfulness_status": "NOT_AUDITED",
         "pair_status": "RUNNING",
         "task_id": task_id,
@@ -488,6 +534,11 @@ def make_parser() -> argparse.ArgumentParser:
         "--require-titan-envelope",
         action="store_true",
         help="fail closed unless the exact 8-CPU/32-GiB/no-swap envelope is active",
+    )
+    parser.add_argument(
+        "--statement-only",
+        action="store_true",
+        help="measure only statement formalization; require one final target sorry",
     )
     return parser
 

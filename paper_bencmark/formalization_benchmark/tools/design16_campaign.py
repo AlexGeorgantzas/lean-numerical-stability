@@ -359,6 +359,16 @@ def _manifest_core(
             "reasoning_effort": args.reasoning_effort,
             "time_limit_seconds": args.time_limit_seconds,
             "validation_timeout_seconds": args.validation_timeout_seconds,
+            "benchmark_object": (
+                "FORMALIZED_STATEMENT_ONLY"
+                if args.statement_only
+                else "FORMALIZED_STATEMENT_AND_COMPLETE_PROOF"
+            ),
+            "source_contract": (
+                "statement-only-single-target-sorry"
+                if args.statement_only
+                else "complete-kernel-checked-proof"
+            ),
         },
         "hardware_envelope": (
             dict(hardware_envelope)
@@ -553,6 +563,8 @@ def _command(args: argparse.Namespace, item: Mapping[str, Any], pair_root: Path)
     ]
     if args.enforce_titan_envelope:
         command.append("--require-titan-envelope")
+    if args.statement_only:
+        command.append("--statement-only")
     return command
 
 
@@ -778,6 +790,11 @@ def make_parser() -> argparse.ArgumentParser:
             "require a delegated systemd envelope, verify 8 CPUs/32 GiB/no swap, "
             "and bound generated commands in a 24-GiB sub-cgroup"
         ),
+    )
+    parser.add_argument(
+        "--statement-only",
+        action="store_true",
+        help="freeze the campaign to statement-only formalization with one target sorry",
     )
     parser.add_argument(
         "--max-new-tasks",

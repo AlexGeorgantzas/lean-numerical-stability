@@ -518,6 +518,7 @@ def prepare_candidate_audit(
     timeout_seconds: float = DEFAULT_TIMEOUT_SECONDS,
     max_source_bytes: int = DEFAULT_MAX_SOURCE_BYTES,
     recursive_prefixes: Sequence[str] = DEFAULT_RECURSIVE_PREFIXES,
+    allow_single_target_sorry: bool = False,
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Compile, extract, and blind one candidate; return blind and private JSON."""
 
@@ -525,7 +526,10 @@ def prepare_candidate_audit(
         candidate_bytes = read_candidate_bytes(candidate, max_source_bytes)
     except (OSError, ValueError) as error:
         raise CandidateAuditError("RULE_VIOLATION", str(error)) from error
-    source_check = inspect_candidate_source(candidate_bytes.decode("utf-8"))
+    source_check = inspect_candidate_source(
+        candidate_bytes.decode("utf-8"),
+        allow_single_target_sorry=allow_single_target_sorry,
+    )
     if not source_check["pass"]:
         raise CandidateAuditError(
             "RULE_VIOLATION",
@@ -581,6 +585,7 @@ def prepare_candidate_audit(
             "bytes": len(candidate_bytes),
         },
         "target_declaration": TARGET_DECLARATION,
+        "source_contract": source_check["source_contract"],
         "recursive_module_prefixes": list(recursive_prefixes),
         "compile": compile_result,
         "extractor": extractor_metadata,
@@ -632,6 +637,11 @@ def make_parser() -> argparse.ArgumentParser:
         dest="recursive_prefixes",
         help="module prefix whose reached declarations are recursively expanded",
     )
+    parser.add_argument(
+        "--allow-single-target-sorry",
+        action="store_true",
+        help="prepare a statement-only candidate whose final target proof is exactly sorry",
+    )
     return parser
 
 
@@ -678,6 +688,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                 if args.recursive_prefixes
                 else DEFAULT_RECURSIVE_PREFIXES
             ),
+            allow_single_target_sorry=args.allow_single_target_sorry,
         )
         write_json_atomic(private_path, private)
         # Publish the only auditor-visible artifact last, after its private
