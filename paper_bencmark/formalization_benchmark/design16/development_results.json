@@ -2,7 +2,7 @@
   "schema_version": 1,
   "design": "Design-16 bounded composition packets",
   "status": "UNSCORED_ENGINEERING_EXPLORATORY",
-  "faithfulness_status": "PENDING_INDEPENDENT_SCREEN",
+  "faithfulness_status": "PASSED_CONDITION_BLIND_DEVELOPMENT_SCREEN_FULL_AUDIT_PENDING",
   "interpretation_policy": {
     "scientific_score": false,
     "compilation_pass_is_not_faithfulness": true,
@@ -11,7 +11,8 @@
     "notes": [
       "These consumed development tasks are not official successor-pilot observations.",
       "The Pilot-15 H10-7 L baseline is cumulative across the initial submission and repair.",
-      "No semantic claim may be made until an independent condition-blind faithfulness screen passes."
+      "Both candidates passed a fresh condition-blind development screen with dependency accounting, the 16-item checklist, both implication directions, and full-domain checks.",
+      "The screen omits the independent source-contract, blind-translation, separate round-trip, and conditional-adjudication roles, so a full scientific audit is still required."
     ]
   },
   "metrics": {
@@ -28,7 +29,19 @@
         "net_new_tokens": 81111,
         "candidate_lines": 85,
         "compilation_integrity": "PASS",
-        "faithfulness": "PENDING_INDEPENDENT_SCREEN"
+        "faithfulness": "PASSED_CONDITION_BLIND_DEVELOPMENT_SCREEN",
+        "candidate_sha256": "809784ad2cb97f61725996409f60112aa3d1fe30e5dd451a07bcf5d7a8e2ed47",
+        "faithfulness_screen": {
+          "verdict": "faithful",
+          "classification": "faithful-equivalent",
+          "candidate_implies_source": "yes",
+          "source_implies_candidate": "yes",
+          "source_cases_omitted": [],
+          "judge_wall_seconds": 256.070232785,
+          "judge_total_tokens": 140807,
+          "private_manifest_sha256": "2519bb4930d4ce6535a8424ec41b19cf440372b1889b15dd04eae5b586ab5810",
+          "scientific_status": "DEVELOPMENT_SCREEN_ONLY_NOT_SCIENTIFIC_AUDIT"
+        }
       },
       "sealed_pilot15_l": {
         "time_seconds": 476.9451,
@@ -83,7 +96,19 @@
         "net_new_tokens": 86725,
         "candidate_lines": 158,
         "compilation_integrity": "PASS",
-        "faithfulness": "PENDING_INDEPENDENT_SCREEN"
+        "faithfulness": "PASSED_CONDITION_BLIND_DEVELOPMENT_SCREEN",
+        "candidate_sha256": "2223eff57eea4a4a04ba8303464e31450118eeb88466915c9df9015dbb4a4c8f",
+        "faithfulness_screen": {
+          "verdict": "faithful",
+          "classification": "faithful-equivalent",
+          "candidate_implies_source": "yes",
+          "source_implies_candidate": "yes",
+          "source_cases_omitted": [],
+          "judge_wall_seconds": 293.780078746,
+          "judge_total_tokens": 211546,
+          "private_manifest_sha256": "0586112efc75dafdcf1f44a5ab6a51c8bfca49e54e2767d4827a610a808b636e",
+          "scientific_status": "DEVELOPMENT_SCREEN_ONLY_NOT_SCIENTIFIC_AUDIT"
+        }
       },
       "sealed_pilot15_l_cumulative": {
         "time_seconds": 1517.499,
