@@ -24,7 +24,14 @@ coverage, and nonvacuity are decided by the independent semantic audit.
   Mathlib and the frozen NumStability atlas and the NumStability OLean tree is
   mounted.
 - The contestant does not browse either library or run an open-ended search.
-  `LIBRARY_API.md` is the complete retrieval interface.
+  `LIBRARY_API.md` is the complete declared retrieval interface. The contestant
+  sandbox exposes source-stripped Mathlib package runtimes. R1 receives only
+  the packet-selected NumStability modules and their compiled import closure,
+  not the full library tree. The closure is necessarily compiler-visible, so
+  the prompt forbids treating it as a search interface; command telemetry is
+  screened for probing, and the controller rejects every direct target
+  dependency or explicit NumStability import not exposed in the packet. This is
+  a logged compliance boundary, not a claim of cryptographic noninterference.
 - Each condition uses a fresh stateless `gpt-5.6-sol` xhigh conversation.
 - Conditions run sequentially in the predeclared counterbalanced order.
 
@@ -48,6 +55,29 @@ Every condition runs inside the authenticated Titan envelope:
 - resource-limit events and a fresh hardware snapshot recorded for each
   condition.
 
+A non-dry statement campaign is rejected unless this envelope is requested and
+verified. The campaign manifest freezes a random campaign nonce and hashes the
+deployment record, formalizer/repair/audit prompts and schemas, controller and
+runner Python dependency closure, source packets, optional contract overlays,
+source PDFs, readiness/configuration records, snapshot records, and both
+declaration atlases. Resume recomputes this closure and fails if an input moved
+or changed.
+
+## Submission and repair loop
+
+Each condition receives an initial turn and at most three repair turns in one
+persisted contestant conversation. The contestant clock covers only model-active
+time and candidate freezing, accumulated across all submissions; retrieval is
+recorded as a separate deterministic component. Compilation, dossier
+construction, auditing, and feedback generation remain excluded.
+
+Every returned `Candidate.lean` is copied immediately into a mode-0400 numbered
+submission and hash-verified. Validation and audit operate only on that frozen
+copy. An invalid or unfaithful submission receives the fixed condition-neutral
+feedback schema containing only the missing source requirement and candidate
+mismatch. The repair turn sees no gold Lean statement, proof, condition label,
+attempt label, or NumStability declaration name.
+
 ## Semantic gate
 
 Candidates compile with the one explicitly permitted target `sorry`, then enter
@@ -64,6 +94,37 @@ the canonical condition-blind audit:
 Proper-subdomain and partial case-split coverage fail. A genuinely stronger
 full-domain proposition may pass. Auditor time and tokens are reported but
 excluded from benchmark measurements.
+
+## Outcome and analysis policy
+
+- `AUDITED_FAITHFUL_PAIR` requires both condition candidates to pass the
+  canonical binary audit. Only such pairs are eligible for paired time, token,
+  and line-count effect estimates.
+- If either side exhausts four submissions, reaches the cumulative active-time
+  cap, fails compilation, or ends unfaithful, the pair is retained as
+  `AUDITED_PAIR_INELIGIBLE`. It is a benchmark outcome, not silently censored or
+  reported as a treatment win.
+- Infrastructure and audit-system incidents are separate from contestant
+  failures and are retained with their evidence. They may be rerun only under a
+  predeclared incident-recovery rule.
+- The primary descriptive quantities are the paired R1/R0 ratios of cumulative
+  active seconds and net-new tokens among faithful pairs. Submission count and
+  source lines are secondary. Success rates and ineligible-pair reasons are
+  always reported alongside success-conditioned ratios.
+- Building-block tasks and negative controls remain separate strata. Direct
+  result collisions and router errors are excluded by the frozen readiness
+  decision, never post hoc because their numbers are inconvenient.
+
+Compilation is never recorded as scientific completion. Before a paid pair can
+become terminal, the campaign controller writes
+`tasks/<task>/campaign-pair-attestation.json`. It binds the campaign identity
+and nonce, a per-pair nonce, mode, condition order, runner return code and log
+hashes, pair-report hash, and the exact hash closure of every pair artifact.
+Recovery accepts an existing pair only when the hash-chained `TASK_STARTED`
+record, manifest, attestation, pair/condition reports, frozen submissions,
+validation records, source artifacts, and artifact closure all agree. Missing
+attestation, an unattributed output tree, or any mutation is retained as an
+incident and is never silently rerun.
 
 ## Development policy
 

@@ -1,10 +1,13 @@
 ## Design-17 matched bounded retrieval interface
 
-Read `LIBRARY_API.md` first. It is the complete, frozen retrieval interface for
-this condition. Library source, a broad declaration index, and interactive
-search are deliberately unavailable. The same automatic retriever and packet
-limits are used in both conditions; only the indexed declaration corpus and the
-corresponding compiled OLean visibility differ.
+Read `LIBRARY_API.md` first. It is the complete, frozen declared retrieval
+interface for this condition. Library source and a broad declaration index are
+unavailable. The controller mounts only source-stripped package runtimes and,
+for listed NumStability modules, the minimum compiled import closure needed to
+elaborate them. That closure is compiler substrate, not a search interface:
+do not inspect it, enumerate `LEAN_PATH`, create probe modules, or use an
+unlisted declaration. Commands and final semantic dependencies are checked.
+The same automatic retriever and packet limits are used in both conditions.
 
 If the packet reports `DIRECT_OR_COMPOSITION`, compile the smallest compatible
 listed route before introducing parallel numerical definitions, and try at most

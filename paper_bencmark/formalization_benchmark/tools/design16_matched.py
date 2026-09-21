@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one explicitly unscored matched Design-16 exploratory pair.
+"""Run one matched Design-16 proof or Design-17 statement pair.
 
 R0 indexes Mathlib only and exposes only Mathlib OLean files. R1 runs the same
 deterministic retriever over Mathlib plus the frozen NumStability atlas and
@@ -7,8 +7,10 @@ additionally exposes the frozen NumStability OLean tree. Each condition starts
 a fresh, stateless formalizer. Conditions run sequentially so timed contestants
 never contend on the same host.
 
-This tool is engineering infrastructure, not an official pilot controller. It
-does not perform a faithfulness audit and labels every result accordingly.
+Proof-inclusive mode freezes compiled candidates for later independent audit.
+Statement-only mode runs the canonical binary audit inline and permits up to
+three same-conversation repairs. Consumed tasks remain explicitly unscored
+engineering evidence until a separate untouched campaign is predeclared.
 """
 
 from __future__ import annotations
@@ -17,16 +19,20 @@ import argparse
 from dataclasses import dataclass
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import sys
 import time
-from typing import Any
+from typing import Any, Mapping
 
+from audit_controller import AuditController
 from codex_driver import CodexDriver
 from common import (
     BenchmarkError,
+    freeze_candidate,
     load_json,
+    make_repair_feedback,
     sha256_file,
     utc_now,
     write_bytes_atomic,
@@ -36,14 +42,46 @@ from composition_packets import build_composition_packet
 from deployment import Deployment, load_deployment
 from design16_smoke import _net_new, _routed_candidate_template
 from formalization_validator import compiled_candidate_workspace, validate_candidate
-from lean_sandbox import compiler_command
+from lean_sandbox import compiler_command, extractor_command
 from manifest_control import ROOT
-from pair_controller import _environment_note, _task_packet_markdown
+from pair_controller import (
+    _environment_note,
+    _net_new_usage,
+    _task_packet_markdown,
+    _usage_add,
+)
+from prepare_candidate_audit import CandidateAuditError, prepare_candidate_audit
+from statement_codex_driver import StatementCodexDriver
 from hardware import snapshot_hardware
 
 
 SCIENTIFIC_STATUS = "UNSCORED_ENGINEERING_EXPLORATORY"
 CONDITIONS = ("R0", "R1")
+INFRASTRUCTURE_CONDITION_STATUSES = frozenset(
+    {
+        "FORMALIZER_INCIDENT",
+        "VALIDATION_INFRASTRUCTURE_INCIDENT",
+        "AUDIT_PREPARATION_INCIDENT",
+        "AUDIT_SYSTEM_INCIDENT",
+    }
+)
+
+
+def _condition_faithfulness_status(result_status: str) -> str:
+    if result_status == "ACCEPTED_FAITHFUL":
+        return "FAITHFUL"
+    if result_status in INFRASTRUCTURE_CONDITION_STATUSES:
+        return "NOT_DECIDED_INFRASTRUCTURE"
+    return "UNFAITHFUL_OR_FAILED"
+
+
+def _statement_pair_status(r0_status: str, r1_status: str) -> tuple[str, str]:
+    statuses = {r0_status, r1_status}
+    if statuses & INFRASTRUCTURE_CONDITION_STATUSES:
+        return "PAIR_INCIDENT", "NOT_DECIDED_INFRASTRUCTURE"
+    if statuses == {"ACCEPTED_FAITHFUL"}:
+        return "AUDITED_FAITHFUL_PAIR", "BOTH_FAITHFUL"
+    return "AUDITED_PAIR_INELIGIBLE", "PAIR_NOT_BOTH_FAITHFUL"
 ALLOWED_EXPLORATORY_TASKS = frozenset(
     {
         "H5-5",
@@ -216,6 +254,859 @@ def _ratio(numerator: int | float, denominator: int | float) -> float | None:
     return float(numerator) / float(denominator) if denominator else None
 
 
+def _submission_clock(
+    *,
+    active_started_perf_ns: int,
+    active_ended_perf_ns: int,
+    freeze_started_perf_ns: int,
+    freeze_completed_perf_ns: int,
+) -> dict[str, float]:
+    """Measure one attempt continuously through the immutable submission freeze."""
+
+    boundaries = (
+        active_started_perf_ns,
+        active_ended_perf_ns,
+        freeze_started_perf_ns,
+        freeze_completed_perf_ns,
+    )
+    if any(not isinstance(value, int) or isinstance(value, bool) for value in boundaries):
+        raise BenchmarkError("formalizer/freeze time boundaries are malformed")
+    if boundaries != tuple(sorted(boundaries)):
+        raise BenchmarkError("formalizer/freeze time boundaries are inconsistent")
+    scale = 1_000_000_000
+    return {
+        "model_active_seconds": (
+            active_ended_perf_ns - active_started_perf_ns
+        )
+        / scale,
+        "post_turn_through_freeze_seconds": (
+            freeze_completed_perf_ns - active_ended_perf_ns
+        )
+        / scale,
+        "candidate_freeze_seconds": (
+            freeze_completed_perf_ns - freeze_started_perf_ns
+        )
+        / scale,
+        "contestant_active_seconds": (
+            freeze_completed_perf_ns - active_started_perf_ns
+        )
+        / scale,
+    }
+
+
+def _packet_treatment_allowlist(
+    composition: Mapping[str, Any],
+) -> tuple[set[str], set[str]]:
+    names: set[str] = set()
+    modules: set[str] = set()
+    for card in composition.get("retrieved_roots", []):
+        if not isinstance(card, Mapping):
+            continue
+        records = [card.get("declaration"), *card.get("dependencies", [])]
+        for record in records:
+            if not isinstance(record, Mapping):
+                continue
+            name = record.get("name")
+            module = record.get("module")
+            if isinstance(name, str) and name.startswith("NumStability."):
+                names.add(name)
+            if isinstance(module, str) and (
+                module == "NumStability" or module.startswith("NumStability.")
+            ):
+                modules.add(module)
+    return names, modules
+
+
+def _numstability_source_path(source_root: Path, module: str) -> Path:
+    if module == "NumStability":
+        return source_root.parent / "NumStability.lean"
+    prefix = "NumStability."
+    if not module.startswith(prefix):
+        raise BenchmarkError(f"not a NumStability module: {module}")
+    return source_root / Path(*module[len(prefix) :].split(".")).with_suffix(".lean")
+
+
+def _numstability_olean_path(olean_root: Path, module: str) -> Path:
+    return olean_root / Path(*module.split(".")).with_suffix(".olean")
+
+
+def _source_imports(path: Path) -> list[str]:
+    if path.is_symlink() or not path.is_file():
+        raise BenchmarkError(f"NumStability module source is missing or unsafe: {path}")
+    imports: list[str] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        match = re.match(r"^\s*(?:public\s+)?import\s+(.+?)\s*(?:--.*)?$", line)
+        if match is None:
+            continue
+        for value in match.group(1).split():
+            if value == "NumStability" or value.startswith("NumStability."):
+                if re.fullmatch(r"[A-Za-z0-9_'.]+", value) is None:
+                    raise BenchmarkError(f"malformed NumStability import in {path}")
+                imports.append(value)
+    return imports
+
+
+def _build_packet_olean_runtime(
+    *,
+    composition: Mapping[str, Any],
+    source_root: Path,
+    olean_root: Path,
+    destination: Path,
+) -> dict[str, Any]:
+    """Materialize only the packet modules and their trusted import closure."""
+
+    _names, selected_modules = _packet_treatment_allowlist(composition)
+    if destination.exists() or destination.is_symlink():
+        raise BenchmarkError("packet OLean runtime destination already exists")
+    destination.mkdir(parents=True, mode=0o700)
+    pending = sorted(selected_modules)
+    closure: set[str] = set()
+    source_hashes: dict[str, str] = {}
+    while pending:
+        module = pending.pop(0)
+        if module in closure:
+            continue
+        source = _numstability_source_path(source_root, module)
+        source_hashes[module] = sha256_file(source)
+        closure.add(module)
+        for dependency in _source_imports(source):
+            if dependency not in closure and dependency not in pending:
+                pending.append(dependency)
+        pending.sort()
+    files: list[dict[str, Any]] = []
+    for module in sorted(closure):
+        source_olean = _numstability_olean_path(olean_root, module)
+        if source_olean.is_symlink() or not source_olean.is_file():
+            raise BenchmarkError(
+                f"compiled NumStability module is missing or unsafe: {source_olean}"
+            )
+        relative = Path(*module.split(".")).with_suffix(".olean")
+        target = destination / relative
+        target.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+        write_bytes_atomic(target, source_olean.read_bytes(), mode=0o400)
+        files.append(
+            {
+                "module": module,
+                "relative_path": relative.as_posix(),
+                "olean_sha256": sha256_file(target),
+                "source_sha256": source_hashes[module],
+                "packet_selected": module in selected_modules,
+            }
+        )
+    manifest = {
+        "schema_version": "formalization-design17-packet-olean-runtime-1",
+        "selected_modules": sorted(selected_modules),
+        "closure_modules": sorted(closure),
+        "files": files,
+    }
+    write_json_atomic(destination / "runtime-manifest.json", manifest, mode=0o400)
+    return manifest
+
+
+def _treatment_interface_check(
+    *,
+    candidate_text: str,
+    composition: Mapping[str, Any],
+    private_dossier: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Verify that R1's target type uses only packet-exposed declarations.
+
+    Transitive implementation dependencies of an exposed declaration are
+    permitted.  A declaration is rejected only when candidate-owned statement
+    code directly reaches an unlisted NumStability declaration.
+    """
+
+    allowed_names, allowed_modules = _packet_treatment_allowlist(composition)
+    imported_modules: set[str] = set()
+    for line in candidate_text.splitlines():
+        match = re.match(r"^\s*(?:public\s+)?import\s+(.+?)\s*(?:--.*)?$", line)
+        if match is None:
+            continue
+        for module in match.group(1).split():
+            if module == "NumStability" or module.startswith("NumStability."):
+                imported_modules.add(module)
+    forbidden_imports = sorted(imported_modules - allowed_modules)
+    raw = private_dossier.get("raw_semantic_report")
+    if not isinstance(raw, Mapping):
+        raise BenchmarkError("private semantic dossier omitted its raw report")
+    dependencies = raw.get("dependencies")
+    edges = raw.get("edges")
+    if not isinstance(dependencies, list) or not isinstance(edges, list):
+        raise BenchmarkError("private semantic dossier dependency graph is malformed")
+    owners = {
+        item.get("name"): item.get("owner_module")
+        for item in dependencies
+        if isinstance(item, Mapping)
+        and isinstance(item.get("name"), str)
+        and isinstance(item.get("owner_module"), str)
+    }
+    forbidden_declarations: set[str] = set()
+    for edge in edges:
+        if not isinstance(edge, Mapping):
+            raise BenchmarkError("private semantic dossier edge is malformed")
+        parent = edge.get("parent")
+        child = edge.get("child")
+        if not isinstance(parent, str) or not isinstance(child, str):
+            raise BenchmarkError("private semantic dossier edge names are malformed")
+        parent_owner = (
+            "Candidate" if parent == "HighamBenchCandidate.target" else owners.get(parent)
+        )
+        child_owner = owners.get(child)
+        if (
+            isinstance(parent_owner, str)
+            and (parent_owner == "Candidate" or parent_owner.startswith("Candidate."))
+            and isinstance(child_owner, str)
+            and (
+                child_owner == "NumStability"
+                or child_owner.startswith("NumStability.")
+            )
+            and child not in allowed_names
+        ):
+            forbidden_declarations.add(child)
+    result = {
+        "schema_version": "formalization-design17-treatment-interface-1",
+        "allowed_declarations": sorted(allowed_names),
+        "allowed_modules": sorted(allowed_modules),
+        "observed_numstability_imports": sorted(imported_modules),
+        "forbidden_imports": forbidden_imports,
+        "forbidden_direct_declarations": sorted(forbidden_declarations),
+    }
+    result["pass"] = not forbidden_imports and not forbidden_declarations
+    return result
+
+
+def _statement_repair_feedback(validation: Mapping[str, Any]) -> dict[str, Any]:
+    failure = validation.get("failure_code")
+    mismatch = (
+        "The submitted statement does not elaborate in the frozen Lean environment."
+        if failure == "COMPILATION_FAILURE"
+        else "The submission violates the fixed single-target statement integrity contract."
+    )
+    return make_repair_feedback(
+        [
+            {
+                "paper_requirement": (
+                    "The exact paper proposition and its supporting definitions must "
+                    "elaborate, with exactly one proof hole as the entire proof of the "
+                    "required final target."
+                ),
+                "candidate_mismatch": mismatch,
+            }
+        ]
+    )
+
+
+def _audit_usage(decision: Mapping[str, Any]) -> tuple[dict[str, int], bool]:
+    total = {
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 0,
+    }
+    complete = True
+    telemetry = decision.get(
+        "incremental_auditor_telemetry", decision.get("auditor_telemetry", [])
+    )
+    if not isinstance(telemetry, list):
+        raise BenchmarkError("audit telemetry is malformed")
+    for role in telemetry:
+        if not isinstance(role, Mapping):
+            raise BenchmarkError("audit role telemetry is malformed")
+        usage = role.get("usage")
+        if isinstance(usage, Mapping):
+            total = _usage_add(total, usage)
+        tries = role.get("tries", [])
+        if not isinstance(tries, list):
+            raise BenchmarkError("audit try telemetry is malformed")
+        if any(
+            not isinstance(item, Mapping) or item.get("usage_complete") is not True
+            for item in tries
+        ):
+            complete = False
+    return total, complete
+
+
+def _library_exploration_policy(events_path: Path) -> dict[str, Any]:
+    """Reject commands that inspect package/library storage outside the packet."""
+
+    if not events_path.is_file() or events_path.is_symlink():
+        raise BenchmarkError("formalizer event trace is missing or unsafe")
+    forbidden_fragments = (
+        "/packages",
+        "/library-olean",
+        "/library-index",
+        "/library/NumStability",
+    )
+    violations: list[dict[str, Any]] = []
+    command_count = 0
+    for line_number, line in enumerate(
+        events_path.read_text(encoding="utf-8").splitlines(), 1
+    ):
+        try:
+            event = json.loads(line)
+        except json.JSONDecodeError as error:
+            raise BenchmarkError("formalizer event trace is malformed") from error
+        if not isinstance(event, Mapping):
+            raise BenchmarkError("formalizer event trace item is malformed")
+        params = event.get("params")
+        item = params.get("item") if isinstance(params, Mapping) else None
+        if not isinstance(item, Mapping) or item.get("type") != "commandExecution":
+            continue
+        command = item.get("command")
+        if not isinstance(command, str):
+            continue
+        command_count += 1
+        lowered = command.casefold()
+        reasons = [
+            f"forbidden mounted path {fragment}"
+            for fragment in forbidden_fragments
+            if fragment.casefold() in lowered
+        ]
+        if re.search(r"\bstrings(?:\s|$)", lowered):
+            reasons.append("binary string-table inspection")
+        if re.search(r"\bfind\s+/(?:\s|$)", lowered):
+            reasons.append("root-filesystem search")
+        if "lean_path" in lowered:
+            reasons.append("compiler search-path inspection")
+        lean_sources = {
+            value
+            for value in re.findall(r"(?<![A-Za-z0-9_./-])([A-Za-z0-9_./-]+\.lean)\b", command)
+            if value != "Candidate.lean" and not value.endswith("/Candidate.lean")
+        }
+        if lean_sources:
+            reasons.append("non-candidate Lean probe or source")
+        if re.search(r"\b(?:env|printenv)\b", lowered):
+            reasons.append("environment enumeration")
+        lean_invocations = len(re.findall(r"(?<![A-Za-z0-9_./-])lean(?:\s|$)", command))
+        exact_compile = re.search(
+            r"(?<![A-Za-z0-9_./-])lean\s+--root\s+\.\s+-o\s+"
+            r"Candidate\.olean\s+Candidate\.lean(?:\s|[;&|'\"]|$)",
+            command,
+        )
+        if lean_invocations and (lean_invocations != 1 or exact_compile is None):
+            reasons.append("noncanonical Lean invocation")
+        if reasons:
+            violations.append(
+                {
+                    "line": line_number,
+                    "command_sha256": __import__("hashlib").sha256(
+                        command.encode("utf-8")
+                    ).hexdigest(),
+                    "reasons": reasons,
+                }
+            )
+    return {
+        "schema_version": "formalization-design17-library-exploration-policy-1",
+        "command_count": command_count,
+        "violations": violations,
+        "pass": not violations,
+    }
+
+
+def _run_statement_condition_attempts(
+    *,
+    args: argparse.Namespace,
+    deployment: Deployment,
+    spec: ConditionSpec,
+    packet: dict[str, Any],
+    paper: Path,
+    prompt: bytes,
+    composition: dict[str, Any],
+    workspace: Path,
+    source: Path,
+    candidate: Path,
+    condition_root: Path,
+    hardware_snapshot: dict[str, Any] | None,
+    retrieval_seconds: float,
+    packet_library_olean: Path | None,
+    packet_runtime_manifest: Mapping[str, Any] | None,
+) -> dict[str, Any]:
+    """Run the statement-only audit/repair loop in one persisted conversation."""
+
+    driver = StatementCodexDriver(
+        codex_binary=deployment.codex_binary,
+        code_mode_host_sha256=deployment.code_mode_host_sha256,
+        model=args.model,
+        reasoning_effort=args.reasoning_effort,
+        state_root=None,
+        auth_file=deployment.auth_file,
+        bwrap_binary=deployment.bwrap_binary,
+        offline_shell=deployment.offline_shell,
+        toolchain_root=deployment.toolchain_root,
+        packages_root=deployment.packages_root,
+        library_olean=packet_library_olean,
+        workspace_writable=True,
+        protected_workspace_paths=[
+            source,
+            workspace / "ENVIRONMENT.md",
+            workspace / "LIBRARY_API.md",
+        ],
+    )
+    attempts: list[dict[str, Any]] = []
+    cumulative_usage = {
+        "input_tokens": 0,
+        "cached_input_tokens": 0,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 0,
+        "reasoning_output_tokens": 0,
+        "total_tokens": 0,
+    }
+    cumulative_active_seconds = 0.0
+    cumulative_formalizer_wall_seconds = 0.0
+    cumulative_validation_seconds = 0.0
+    cumulative_dossier_seconds = 0.0
+    cumulative_audit_seconds = 0.0
+    cumulative_audit_usage = dict(cumulative_usage)
+    audit_usage_complete = True
+    thread_id: str | None = None
+    feedback: dict[str, Any] | None = None
+    terminal_status = "ATTEMPT_LIMIT_UNFAITHFUL"
+    final_frozen: dict[str, Any] | None = None
+    final_text = ""
+    try:
+        for attempt_number in range(1, int(args.submission_limit) + 1):
+            remaining = float(args.time_limit_seconds) - cumulative_active_seconds
+            if remaining <= 0:
+                terminal_status = "ACTIVE_TIME_LIMIT"
+                break
+            if attempt_number == 1:
+                turn_prompt = prompt.decode("utf-8")
+                prompt_kind = "initial"
+            else:
+                if feedback is None:
+                    raise BenchmarkError("repair turn has no frozen neutral feedback")
+                template = (ROOT / "prompts" / "statement_repair.md").read_text(
+                    encoding="utf-8"
+                )
+                turn_prompt = template.replace(
+                    "{{FEEDBACK_JSON}}", json.dumps(feedback, indent=2, sort_keys=True)
+                )
+                prompt_kind = "repair"
+            attempt_root = condition_root / "submissions" / f"{attempt_number:02d}"
+            attempt_root.mkdir(parents=True, mode=0o700)
+            hardware_before = snapshot_hardware(strict=True)
+            write_json_atomic(
+                attempt_root / "hardware-before.json", hardware_before, mode=0o400
+            )
+            requested_thread_id = thread_id
+            turn = driver.run_turn(
+                prompt=turn_prompt,
+                workspace=workspace,
+                artifact_dir=attempt_root / "formalizer",
+                timeout_seconds=remaining,
+                thread_id=thread_id,
+            )
+            freeze_started = time.perf_counter_ns()
+            frozen = freeze_candidate(
+                candidate,
+                attempt_root / "Candidate.lean",
+                auth_file=deployment.auth_file,
+            )
+            freeze_completed = time.perf_counter_ns()
+            freeze_seconds = (freeze_completed - freeze_started) / 1_000_000_000
+            if (
+                turn.active_started_perf_ns is None
+                or turn.active_ended_perf_ns is None
+            ):
+                raise BenchmarkError("formalizer omitted measured active-time boundaries")
+            clock = _submission_clock(
+                active_started_perf_ns=turn.active_started_perf_ns,
+                active_ended_perf_ns=turn.active_ended_perf_ns,
+                freeze_started_perf_ns=freeze_started,
+                freeze_completed_perf_ns=freeze_completed,
+            )
+            model_active_seconds = clock["model_active_seconds"]
+            post_turn_through_freeze_seconds = clock[
+                "post_turn_through_freeze_seconds"
+            ]
+            freeze_seconds = clock["candidate_freeze_seconds"]
+            active_seconds = clock["contestant_active_seconds"]
+            cumulative_active_seconds += active_seconds
+            cumulative_formalizer_wall_seconds += float(turn.wall_seconds)
+            cumulative_usage = _usage_add(cumulative_usage, turn.usage)
+            final_frozen = frozen
+            frozen_candidate = attempt_root / "Candidate.lean"
+            final_text = frozen_candidate.read_text(encoding="utf-8")
+            hardware_after = snapshot_hardware(strict=True)
+
+            returned_thread_id = turn.thread_id
+            thread_identity_valid = (
+                isinstance(returned_thread_id, str)
+                and bool(returned_thread_id)
+                and (
+                    requested_thread_id is None
+                    or returned_thread_id == requested_thread_id
+                )
+            )
+            if thread_identity_valid:
+                thread_id = returned_thread_id
+            exploration_policy = _library_exploration_policy(
+                attempt_root / "formalizer" / "events.jsonl"
+            )
+            write_json_atomic(
+                attempt_root / "library-exploration-policy.json",
+                exploration_policy,
+                mode=0o400,
+            )
+            driver.assert_safe_control_surfaces(
+                workspace, scan_workspace=turn.failure_kind != "workspace_limit"
+            )
+
+            prevalidation_status: str | None = None
+            prevalidation_reason: str | None = None
+            if exploration_policy["pass"] is not True:
+                prevalidation_status = "RETRIEVAL_INTERFACE_RULE_VIOLATION"
+                prevalidation_reason = "retrieval interface policy violation"
+            elif not thread_identity_valid:
+                prevalidation_status = "FORMALIZER_INCIDENT"
+                prevalidation_reason = (
+                    "formalizer did not preserve one nonempty conversation identity"
+                )
+            elif cumulative_active_seconds > float(args.time_limit_seconds):
+                prevalidation_status = "ACTIVE_TIME_LIMIT"
+                prevalidation_reason = "inclusive post-freeze active-time cap exceeded"
+            elif turn.timed_out:
+                prevalidation_status = "ACTIVE_TIME_LIMIT"
+                prevalidation_reason = "formalizer turn timed out"
+            elif turn.exit_code != 0 or not turn.usage_complete:
+                prevalidation_status = "FORMALIZER_INCIDENT"
+                prevalidation_reason = "formalizer turn or usage telemetry was incomplete"
+
+            if prevalidation_status is None:
+                validation_started = time.perf_counter_ns()
+                validation_scratch = attempt_root / "validation-scratch"
+                validation_scratch.mkdir(mode=0o700)
+                validation = validate_candidate(
+                    frozen_candidate,
+                    compiler_command=compiler_command(
+                        deployment, spec.compiler_condition
+                    ),
+                    scratch_root=validation_scratch,
+                    timeout_seconds=float(args.validation_timeout_seconds),
+                    allow_single_target_sorry=True,
+                )
+                validation_seconds = (
+                    time.perf_counter_ns() - validation_started
+                ) / 1_000_000_000
+                cumulative_validation_seconds += validation_seconds
+            else:
+                validation_seconds = 0.0
+                validation = {
+                    "schema_version": "formalization-validator-not-run-1",
+                    "pass": False,
+                    "failure_code": "NOT_RUN_PREVALIDATION_TERMINAL",
+                    "reason": prevalidation_reason,
+                    "candidate_sha256": frozen["sha256"],
+                }
+            write_json_atomic(attempt_root / "validation.json", validation, mode=0o400)
+            attempt: dict[str, Any] = {
+                "attempt": attempt_number,
+                "prompt_kind": prompt_kind,
+                "thread_id": thread_id,
+                "requested_thread_id": requested_thread_id,
+                "thread_identity_valid": thread_identity_valid,
+                "formalizer_exit_code": turn.exit_code,
+                "formalizer_timed_out": turn.timed_out,
+                "formalizer_failure_kind": turn.failure_kind,
+                "formalizer_wall_seconds": turn.wall_seconds,
+                "model_active_seconds": model_active_seconds,
+                "post_turn_through_freeze_seconds": post_turn_through_freeze_seconds,
+                "candidate_freeze_seconds": freeze_seconds,
+                "contestant_active_seconds": active_seconds,
+                "contestant_active_seconds_cumulative": cumulative_active_seconds,
+                "usage": turn.usage,
+                "usage_complete": turn.usage_complete,
+                "candidate": frozen,
+                "hardware_before": hardware_before,
+                "hardware_after": hardware_after,
+                "validation_sha256": sha256_file(attempt_root / "validation.json"),
+                "validation_seconds_excluded": validation_seconds,
+                "validation_pass": validation.get("pass") is True,
+                "library_exploration_policy_sha256": sha256_file(
+                    attempt_root / "library-exploration-policy.json"
+                ),
+            }
+            if prevalidation_status is not None:
+                attempt["status"] = prevalidation_status
+                attempt["terminal_reason"] = prevalidation_reason
+                if prevalidation_status == "ACTIVE_TIME_LIMIT" and (
+                    cumulative_active_seconds > float(args.time_limit_seconds)
+                ):
+                    attempt["active_time_limit_overshoot_seconds"] = (
+                        cumulative_active_seconds - float(args.time_limit_seconds)
+                    )
+                attempts.append(attempt)
+                terminal_status = prevalidation_status
+                break
+            if cumulative_active_seconds > float(args.time_limit_seconds):
+                # The pre-validation gate above must make this branch unreachable.
+                attempt["status"] = "FORMALIZER_INCIDENT"
+                attempt["terminal_reason"] = "active-time cap gate was bypassed"
+                attempt["active_time_limit_overshoot_seconds"] = (
+                    cumulative_active_seconds - float(args.time_limit_seconds)
+                )
+                attempts.append(attempt)
+                terminal_status = "FORMALIZER_INCIDENT"
+                break
+            if validation.get("pass") is not True:
+                if validation.get("failure_code") == "INFRASTRUCTURE_FAILURE":
+                    attempt["status"] = "VALIDATION_INFRASTRUCTURE_INCIDENT"
+                    attempts.append(attempt)
+                    terminal_status = "VALIDATION_INFRASTRUCTURE_INCIDENT"
+                    break
+                feedback = _statement_repair_feedback(validation)
+                write_json_atomic(
+                    attempt_root / "repair_feedback.json", feedback, mode=0o400
+                )
+                attempt["repair_feedback_sha256"] = sha256_file(
+                    attempt_root / "repair_feedback.json"
+                )
+                attempt["status"] = "VALIDATION_REJECTED"
+                attempts.append(attempt)
+                continue
+
+            dossier_root = attempt_root / "audit-preparation"
+            dossier_root.mkdir(mode=0o700)
+            dossier_scratch = dossier_root / "scratch"
+            dossier_scratch.mkdir(mode=0o700)
+            dossier_started = time.perf_counter_ns()
+            try:
+                blind, private = prepare_candidate_audit(
+                    frozen_candidate,
+                    compiler_command=compiler_command(
+                        deployment, spec.compiler_condition
+                    ),
+                    extractor_command=extractor_command(
+                        deployment,
+                        spec.compiler_condition,
+                        Path(__file__).with_name("declaration_dossier.lean"),
+                    ),
+                    compiler_environment={},
+                    extractor_environment={},
+                    scratch_root=dossier_scratch,
+                    timeout_seconds=float(args.validation_timeout_seconds),
+                    allow_single_target_sorry=True,
+                )
+            except CandidateAuditError as error:
+                attempt["dossier_seconds_excluded"] = (
+                    time.perf_counter_ns() - dossier_started
+                ) / 1_000_000_000
+                cumulative_dossier_seconds += attempt["dossier_seconds_excluded"]
+                attempt["status"] = "AUDIT_PREPARATION_INCIDENT"
+                attempt["audit_preparation_failure_code"] = error.failure_code
+                attempt["audit_preparation_error"] = str(error)
+                attempts.append(attempt)
+                terminal_status = "AUDIT_PREPARATION_INCIDENT"
+                break
+            attempt["dossier_seconds_excluded"] = (
+                time.perf_counter_ns() - dossier_started
+            ) / 1_000_000_000
+            cumulative_dossier_seconds += attempt["dossier_seconds_excluded"]
+            blind_path = dossier_root / "blind_semantic_dossier.json"
+            private_path = dossier_root / "private_semantic_manifest.json"
+            write_json_atomic(blind_path, blind, mode=0o400)
+            write_json_atomic(private_path, private, mode=0o400)
+            interface = _treatment_interface_check(
+                candidate_text=final_text,
+                composition=composition,
+                private_dossier=private,
+            )
+            write_json_atomic(
+                attempt_root / "treatment-interface.json", interface, mode=0o400
+            )
+            attempt["treatment_interface_sha256"] = sha256_file(
+                attempt_root / "treatment-interface.json"
+            )
+            if interface["pass"] is not True:
+                feedback = make_repair_feedback(
+                    [
+                        {
+                            "paper_requirement": (
+                                "The statement must use only declarations exposed by the "
+                                "frozen task-time retrieval packet."
+                            ),
+                            "candidate_mismatch": (
+                                "The statement directly uses or imports a declaration outside "
+                                "that bounded interface."
+                            ),
+                        }
+                    ]
+                )
+                write_json_atomic(
+                    attempt_root / "repair_feedback.json", feedback, mode=0o400
+                )
+                attempt["repair_feedback_sha256"] = sha256_file(
+                    attempt_root / "repair_feedback.json"
+                )
+                attempt["status"] = "INTERFACE_REJECTED"
+                attempts.append(attempt)
+                continue
+
+            semantic_sha256 = blind.get("semantic_sha256")
+            if not isinstance(semantic_sha256, str) or not semantic_sha256:
+                raise BenchmarkError("semantic dossier omitted its identity")
+            audit_root = condition_root / "audits" / semantic_sha256
+            audit = AuditController(
+                codex_binary=deployment.codex_binary,
+                code_mode_host_sha256=deployment.code_mode_host_sha256,
+                auth_file=deployment.auth_file,
+                model=args.audit_model,
+                reasoning_effort=args.audit_reasoning_effort,
+                timeout_seconds=float(args.audit_timeout_seconds),
+                maximum_infrastructure_retries=int(args.audit_infrastructure_retries),
+                bwrap_binary=deployment.bwrap_binary,
+                offline_shell=deployment.offline_shell,
+                toolchain_root=deployment.toolchain_root,
+                packages_root=deployment.packages_root,
+                forbidden_feedback_identifiers=interface["allowed_declarations"],
+            )
+            audit_started = time.perf_counter_ns()
+            try:
+                decision = audit.run(
+                    task_id=packet["task_id"],
+                    paper_path=paper,
+                    paper_sha256=packet["paper_pdf"]["sha256"],
+                    source_packet=source / "task.md",
+                    dossier_path=blind_path,
+                    semantic_sha256=semantic_sha256,
+                    audit_root=audit_root,
+                )
+            except BenchmarkError as error:
+                audit_seconds = (
+                    time.perf_counter_ns() - audit_started
+                ) / 1_000_000_000
+                cumulative_audit_seconds += audit_seconds
+                incident = audit.seal_incident(
+                    audit_root=audit_root,
+                    task_id=packet["task_id"],
+                    paper_sha256=packet["paper_pdf"]["sha256"],
+                    semantic_sha256=semantic_sha256,
+                    error=str(error),
+                    wall_seconds=audit_seconds,
+                    classification="audit_system_infrastructure",
+                )
+                incident_usage = incident.get("usage")
+                if isinstance(incident_usage, Mapping):
+                    cumulative_audit_usage = _usage_add(
+                        cumulative_audit_usage, incident_usage
+                    )
+                audit_usage_complete = (
+                    audit_usage_complete
+                    and incident.get("usage_complete") is True
+                )
+                attempt["audit"] = {
+                    "verdict": "audit-system-incident",
+                    "accepted": False,
+                    "wall_seconds_excluded": audit_seconds,
+                    "error": str(error),
+                    "incident_sha256": sha256_file(audit_root / "incident.json"),
+                    "usage_excluded": incident.get("usage"),
+                    "usage_complete": incident.get("usage_complete") is True,
+                }
+                attempt["status"] = "AUDIT_SYSTEM_INCIDENT"
+                attempts.append(attempt)
+                terminal_status = "AUDIT_SYSTEM_INCIDENT"
+                break
+            audit_seconds = (time.perf_counter_ns() - audit_started) / 1_000_000_000
+            cumulative_audit_seconds += audit_seconds
+            role_usage, role_usage_complete = _audit_usage(decision)
+            cumulative_audit_usage = _usage_add(cumulative_audit_usage, role_usage)
+            audit_usage_complete = audit_usage_complete and role_usage_complete
+            attempt["semantic_sha256"] = semantic_sha256
+            attempt["blind_dossier_sha256"] = sha256_file(blind_path)
+            attempt["private_dossier_sha256"] = sha256_file(private_path)
+            attempt["audit"] = {
+                "verdict": decision.get("verdict"),
+                "accepted": decision.get("accepted") is True,
+                "decision_sha256": sha256_file(audit_root / "decision.json"),
+                "wall_seconds_excluded": audit_seconds,
+                "usage_excluded": role_usage,
+                "usage_complete": role_usage_complete,
+            }
+            if decision.get("accepted") is True:
+                attempt["status"] = "ACCEPTED_FAITHFUL"
+                attempts.append(attempt)
+                terminal_status = "ACCEPTED_FAITHFUL"
+                break
+            feedback = decision.get("repair_feedback")
+            if not isinstance(feedback, dict):
+                attempt["status"] = "AUDIT_SYSTEM_INCIDENT"
+                attempts.append(attempt)
+                terminal_status = "AUDIT_SYSTEM_INCIDENT"
+                break
+            write_json_atomic(
+                attempt_root / "repair_feedback.json", feedback, mode=0o400
+            )
+            attempt["repair_feedback_sha256"] = sha256_file(
+                attempt_root / "repair_feedback.json"
+            )
+            attempt["status"] = "AUDIT_REJECTED"
+            attempts.append(attempt)
+    finally:
+        driver.close(artifact_dir=condition_root / "session-close")
+
+    if final_frozen is None:
+        raise BenchmarkError("statement condition produced no frozen submission")
+    report = {
+        "schema_version": "formalization-design17-statement-condition-1",
+        "scientific_status": SCIENTIFIC_STATUS,
+        "benchmark_object": "FORMALIZED_STATEMENT_ONLY",
+        "source_contract": "statement-only-single-target-sorry",
+        "faithfulness_status": _condition_faithfulness_status(terminal_status),
+        "result_status": terminal_status,
+        "task_id": packet["task_id"],
+        "condition": spec.name,
+        "corpus_id": spec.corpus_id,
+        "created_at_utc": utc_now(),
+        "fresh_stateless_formalizer": True,
+        "same_conversation_repairs": True,
+        "submission_limit": int(args.submission_limit),
+        "submission_count": len(attempts),
+        "attempts": attempts,
+        "hardware_envelope_required": True,
+        "hardware_snapshot": hardware_snapshot,
+        "model": args.model,
+        "reasoning_effort": args.reasoning_effort,
+        "audit_model": args.audit_model,
+        "audit_reasoning_effort": args.audit_reasoning_effort,
+        "route_status": composition["route_status"],
+        "library_olean_visible": packet_library_olean is not None,
+        "packet_olean_runtime": (
+            dict(packet_runtime_manifest)
+            if packet_runtime_manifest is not None
+            else None
+        ),
+        "composition_packet_sha256": sha256_file(
+            condition_root / "composition-packet.json"
+        ),
+        "library_api_sha256": sha256_file(workspace / "LIBRARY_API.md"),
+        "staged_task_sha256": sha256_file(source / "task.md"),
+        "source_pdf_sha256": sha256_file(source / "paper.pdf"),
+        "candidate": final_frozen,
+        "candidate_sha256": final_frozen["sha256"],
+        "candidate_lines": len(final_text.splitlines()),
+        "numstability_name_mentions": final_text.count("NumStability"),
+        "retrieval_wall_seconds": retrieval_seconds,
+        "formalizer_wall_seconds": cumulative_formalizer_wall_seconds,
+        "contestant_active_seconds": cumulative_active_seconds,
+        "contestant_system_wall_seconds": retrieval_seconds
+        + cumulative_active_seconds,
+        "validation_seconds_excluded_from_contestant": cumulative_validation_seconds,
+        "dossier_seconds_excluded_from_contestant": cumulative_dossier_seconds,
+        "audit_seconds_excluded_from_contestant": cumulative_audit_seconds,
+        "usage": cumulative_usage,
+        "net_new_tokens": _net_new_usage(cumulative_usage)["net_new_tokens"],
+        "audit_usage_excluded": cumulative_audit_usage,
+        "audit_usage_complete": audit_usage_complete,
+        "validation_pass": bool(attempts and attempts[-1]["validation_pass"]),
+        "output_root": str(condition_root),
+    }
+    write_json_atomic(condition_root / "report.json", report, mode=0o400)
+    return report
+
+
 def _run_condition(
     *,
     args: argparse.Namespace,
@@ -245,10 +1136,25 @@ def _run_condition(
         dependency_limit=int(args.dependency_limit),
         maximum_markdown_bytes=int(args.maximum_packet_bytes),
     )
-    retrieval_seconds = time.monotonic() - retrieval_started
     write_json_atomic(
         condition_root / "composition-packet.json", composition, mode=0o400
     )
+    packet_library_olean: Path | None = None
+    packet_runtime_manifest: dict[str, Any] | None = None
+    _allowed_names, selected_treatment_modules = _packet_treatment_allowlist(
+        composition
+    )
+    if args.statement_only and spec.name == "R1" and selected_treatment_modules:
+        if spec.library_olean is None:
+            raise BenchmarkError("R1 packet selected NumStability without an OLean tree")
+        packet_library_olean = condition_root / "packet-library-olean"
+        packet_runtime_manifest = _build_packet_olean_runtime(
+            composition=composition,
+            source_root=deployment.library_source,
+            olean_root=spec.library_olean,
+            destination=packet_library_olean,
+        )
+    retrieval_seconds = time.monotonic() - retrieval_started
 
     workspace = condition_root / "workspace"
     source = workspace / "source"
@@ -293,6 +1199,25 @@ def _run_condition(
     if preflight["pass"] is not True:
         raise BenchmarkError(f"{spec.name} controller-generated template did not compile")
 
+    if args.statement_only:
+        return _run_statement_condition_attempts(
+            args=args,
+            deployment=deployment,
+            spec=spec,
+            packet=packet,
+            paper=paper,
+            prompt=prompt,
+            composition=composition,
+            workspace=workspace,
+            source=source,
+            candidate=candidate,
+            condition_root=condition_root,
+            hardware_snapshot=hardware_snapshot,
+            retrieval_seconds=retrieval_seconds,
+            packet_library_olean=packet_library_olean,
+            packet_runtime_manifest=packet_runtime_manifest,
+        )
+
     driver = CodexDriver(
         codex_binary=deployment.codex_binary,
         code_mode_host_sha256=deployment.code_mode_host_sha256,
@@ -324,11 +1249,26 @@ def _run_condition(
         driver.close(artifact_dir=condition_root / "session-close")
     formalizer_seconds = time.monotonic() - formalizer_started
 
+    freeze_started = time.perf_counter_ns()
+    submission_root = condition_root / "submissions" / "01"
+    submission_root.mkdir(parents=True, mode=0o700)
+    frozen = freeze_candidate(
+        candidate,
+        submission_root / "Candidate.lean",
+        auth_file=deployment.auth_file,
+    )
+    freeze_seconds = (time.perf_counter_ns() - freeze_started) / 1_000_000_000
+    frozen_candidate = submission_root / "Candidate.lean"
+
+    hardware_snapshot_after = (
+        snapshot_hardware(strict=True) if args.require_titan_envelope else None
+    )
+
     validation_started = time.monotonic()
     validation_scratch = condition_root / "validation-scratch"
     validation_scratch.mkdir(mode=0o700)
     validation = validate_candidate(
-        candidate,
+        frozen_candidate,
         compiler_command=compiler_command(deployment, spec.compiler_condition),
         scratch_root=validation_scratch,
         timeout_seconds=float(args.validation_timeout_seconds),
@@ -337,7 +1277,7 @@ def _run_condition(
     validation_seconds = time.monotonic() - validation_started
     write_json_atomic(condition_root / "validation.json", validation, mode=0o400)
 
-    candidate_text = candidate.read_text(encoding="utf-8")
+    candidate_text = frozen_candidate.read_text(encoding="utf-8")
     usage = turn.usage
     condition_pass = (
         turn.exit_code == 0
@@ -346,7 +1286,7 @@ def _run_condition(
         and validation.get("pass") is True
     )
     report: dict[str, Any] = {
-        "schema_version": "formalization-design16-matched-condition-1",
+        "schema_version": "formalization-design17-matched-condition-2",
         "scientific_status": SCIENTIFIC_STATUS,
         "benchmark_object": (
             "FORMALIZED_STATEMENT_ONLY"
@@ -370,6 +1310,7 @@ def _run_condition(
         "warm_or_forked_conversation": False,
         "hardware_envelope_required": bool(args.require_titan_envelope),
         "hardware_snapshot": hardware_snapshot,
+        "hardware_snapshot_after": hardware_snapshot_after,
         "model": args.model,
         "reasoning_effort": args.reasoning_effort,
         "route_status": composition["route_status"],
@@ -386,11 +1327,29 @@ def _run_condition(
             condition_root / "composition-packet.json"
         ),
         "library_api_sha256": sha256_file(workspace / "LIBRARY_API.md"),
-        "candidate_sha256": sha256_file(candidate),
+        "candidate": frozen,
+        "candidate_sha256": frozen["sha256"],
         "candidate_lines": len(candidate_text.splitlines()),
         "numstability_name_mentions": candidate_text.count("NumStability"),
         "retrieval_wall_seconds": retrieval_seconds,
         "formalizer_wall_seconds": formalizer_seconds,
+        "formalizer_active_seconds": (
+            (turn.active_ended_perf_ns - turn.active_started_perf_ns) / 1_000_000_000
+            if turn.active_started_perf_ns is not None
+            and turn.active_ended_perf_ns is not None
+            else None
+        ),
+        "candidate_freeze_seconds": freeze_seconds,
+        "contestant_active_seconds": (
+            (
+                (turn.active_ended_perf_ns - turn.active_started_perf_ns)
+                / 1_000_000_000
+            )
+            + freeze_seconds
+            if turn.active_started_perf_ns is not None
+            and turn.active_ended_perf_ns is not None
+            else None
+        ),
         "contestant_system_wall_seconds": retrieval_seconds + formalizer_seconds,
         "validation_seconds_excluded_from_contestant": validation_seconds,
         "formalizer_exit_code": turn.exit_code,
@@ -408,6 +1367,20 @@ def _run_condition(
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    if args.statement_only and not args.require_titan_envelope:
+        raise BenchmarkError(
+            "statement-only scientific runs require the authenticated Titan envelope"
+        )
+    if args.statement_only and (
+        args.model != "gpt-5.6-sol"
+        or args.reasoning_effort != "xhigh"
+        or args.audit_model != "gpt-6-astra"
+        or args.audit_reasoning_effort != "high"
+        or args.submission_limit != 4
+    ):
+        raise BenchmarkError(
+            "statement-only runs freeze Sol xhigh, Astra high, and four submissions"
+        )
     task_id = args.task_id.strip().upper().replace("_", "-")
     if task_id not in ALLOWED_EXPLORATORY_TASKS:
         raise BenchmarkError("task is not in the 13-task Design-16 exploratory set")
@@ -442,7 +1415,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     prompt = _prompt_bytes(statement_only=bool(args.statement_only))
     write_bytes_atomic(output_root / "prompt.txt", prompt, mode=0o400)
     pair_report: dict[str, Any] = {
-        "schema_version": "formalization-design16-matched-pair-1",
+        "schema_version": "formalization-design17-matched-pair-2",
         "scientific_status": SCIENTIFIC_STATUS,
         "benchmark_object": (
             "FORMALIZED_STATEMENT_ONLY"
@@ -498,18 +1471,44 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
 
     r0 = pair_report["condition_reports"]["R0"]
     r1 = pair_report["condition_reports"]["R1"]
-    pair_report["pair_status"] = "COMPILED_UNAUDITED"
+    if args.statement_only:
+        pair_status, faithfulness_status = _statement_pair_status(
+            r0["result_status"], r1["result_status"]
+        )
+        pair_report["pair_status"] = pair_status
+        pair_report["faithfulness_status"] = faithfulness_status
+    else:
+        pair_report["pair_status"] = "FORMALIZATION_FROZEN_PENDING_AUDIT"
+    effect_eligible = (
+        not args.statement_only
+        or pair_report["pair_status"] == "AUDITED_FAITHFUL_PAIR"
+    )
+    def comparison_ratio(field: str) -> float | None:
+        return _ratio(r1[field], r0[field]) if effect_eligible else None
+
     pair_report["comparison"] = {
-        "r1_over_r0_contestant_system_wall": _ratio(
-            r1["contestant_system_wall_seconds"], r0["contestant_system_wall_seconds"]
+        "effect_analysis_eligible": effect_eligible,
+        "r1_over_r0_contestant_system_wall": comparison_ratio(
+            "contestant_system_wall_seconds"
         ),
-        "r1_over_r0_formalizer_wall": _ratio(
-            r1["formalizer_wall_seconds"], r0["formalizer_wall_seconds"]
+        "r1_over_r0_contestant_active": comparison_ratio(
+            "contestant_active_seconds"
         ),
-        "r1_over_r0_net_new_tokens": _ratio(
-            r1["net_new_tokens"], r0["net_new_tokens"]
+        "r1_over_r0_formalizer_wall": comparison_ratio(
+            "formalizer_wall_seconds"
         ),
-        "interpretation": "engineering comparison only; independent faithfulness audit required",
+        "r1_over_r0_net_new_tokens": comparison_ratio("net_new_tokens"),
+        "r1_over_r0_candidate_lines": comparison_ratio("candidate_lines"),
+        "r1_over_r0_submission_count": (
+            comparison_ratio("submission_count") if args.statement_only else None
+        ),
+        "interpretation": (
+            "audited faithful paired comparison"
+            if args.statement_only and effect_eligible
+            else "no effect ratio: one or both statement conditions were not faithful"
+            if args.statement_only
+            else "engineering comparison only; independent faithfulness audit required"
+        ),
     }
     pair_report["completed_at_utc"] = utc_now()
     _write_pair_report(output_root, pair_report)
@@ -530,6 +1529,11 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root-limit", type=int, default=3)
     parser.add_argument("--dependency-limit", type=int, default=5)
     parser.add_argument("--maximum-packet-bytes", type=int, default=48 * 1024)
+    parser.add_argument("--submission-limit", type=int, default=4)
+    parser.add_argument("--audit-model", default="gpt-6-astra")
+    parser.add_argument("--audit-reasoning-effort", default="high")
+    parser.add_argument("--audit-timeout-seconds", type=float, default=7200)
+    parser.add_argument("--audit-infrastructure-retries", type=int, default=2)
     parser.add_argument(
         "--require-titan-envelope",
         action="store_true",
