@@ -1,0 +1,9 @@
+{
+  "schema_version": "formalization-design16-contract-additions-1",
+  "task_id": "H10-7",
+  "faithfulness_contract": [
+    "When several remaining diagonal entries attain the same maximum, the deterministic pivot rule selects the least remaining index.",
+    "Represent the actual output of the deterministic complete-pivoting algorithm rather than arbitrary existential pivot and factor witnesses."
+  ],
+  "provenance": "Correction required by the completed Pilot-15 binary faithfulness adjudication; consumed development task only."
+}

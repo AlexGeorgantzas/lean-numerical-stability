@@ -1325,17 +1325,7 @@ class CodexDriver:
                 ]
             )
         lean_paths: list[str] = []
-        if (
-            self.library_source is not None
-            or self.library_olean is not None
-            or self.library_atlas is not None
-        ):
-            if (
-                self.library_source is None
-                or self.library_olean is None
-                or self.library_atlas is None
-            ):
-                raise BenchmarkError("library source, olean, and atlas roots must be paired")
+        if self.library_source is not None:
             command.extend(
                 [
                     "--dir",
@@ -1343,18 +1333,28 @@ class CodexDriver:
                     "--ro-bind",
                     str(self.library_source.resolve()),
                     "/library/NumStability",
-                    "--ro-bind",
-                    str(self.library_olean.resolve()),
-                    "/library-olean",
-                    "--ro-bind",
-                    str(self.library_atlas.resolve()),
-                    "/library-index",
                 ]
             )
             root_file = self.library_source.parent / "NumStability.lean"
             if root_file.is_file():
                 command.extend(["--ro-bind", str(root_file.resolve()), "/library/NumStability.lean"])
+        if self.library_olean is not None:
+            command.extend(
+                [
+                    "--ro-bind",
+                    str(self.library_olean.resolve()),
+                    "/library-olean",
+                ]
+            )
             lean_paths.append("/library-olean")
+        if self.library_atlas is not None:
+            command.extend(
+                [
+                    "--ro-bind",
+                    str(self.library_atlas.resolve()),
+                    "/library-index",
+                ]
+            )
         mathlib_olean = self.packages_root / "mathlib" / ".lake" / "build" / "lib" / "lean"
         if not mathlib_olean.is_dir():
             raise BenchmarkError(f"Mathlib olean root is missing: {mathlib_olean}")

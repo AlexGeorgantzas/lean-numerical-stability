@@ -1,0 +1,164 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+import sys
+import tempfile
+import unittest
+
+
+TOOLS = Path(__file__).resolve().parents[1]
+if str(TOOLS) not in sys.path:
+    sys.path.insert(0, str(TOOLS))
+
+from composition_packets import build_composition_packet  # noqa: E402
+
+
+class CompositionPacketTests(unittest.TestCase):
+    def test_ranks_relevant_card_and_emits_bounded_packet(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            packet = root / "task.json"
+            packet.write_text(
+                json.dumps(
+                    {
+                        "task_id": "H5-5",
+                        "selected_result": "Rounded root product polynomial error bound",
+                        "task_clarification": [
+                            "The computed root product has a gamma coefficient."
+                        ],
+                        "scope_constraints": [
+                            "Represent the rounded evaluation algorithm."
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            records = [
+                {
+                    "kind": "theorem",
+                    "name": "NumStability.fl_rootProductEval_forward_error_bound",
+                    "display_name": "fl_rootProductEval_forward_error_bound",
+                    "module": "NumStability.Algorithms.Horner",
+                    "source_file": "NumStability/Algorithms/Horner.lean",
+                    "source_line": 10,
+                    "signature": "theorem fl_rootProductEval_forward_error_bound (fp : FPModel) : Prop",
+                    "documentation": "Rounded root-product evaluation gamma error bound.",
+                },
+                {
+                    "kind": "def",
+                    "name": "NumStability.unrelatedMatrix",
+                    "display_name": "unrelatedMatrix",
+                    "module": "NumStability.Other",
+                    "source_file": "NumStability/Other.lean",
+                    "source_line": 2,
+                    "signature": "def unrelatedMatrix : Nat := 0",
+                    "documentation": "Unrelated matrix helper.",
+                },
+            ]
+            atlas = root / "declarations.jsonl"
+            atlas.write_text(
+                "".join(json.dumps(record) + "\n" for record in records),
+                encoding="utf-8",
+            )
+            result, markdown = build_composition_packet(
+                source_packet_path=packet,
+                atlas_paths=[atlas],
+                corpus_id="mathlib-plus-numstability",
+                root_limit=1,
+                maximum_markdown_bytes=8192,
+            )
+            self.assertEqual(
+                result["retrieved_roots"][0]["declaration"]["name"],
+                "NumStability.fl_rootProductEval_forward_error_bound",
+            )
+            self.assertIn(b"complete task-time retrieval interface", markdown)
+            self.assertLessEqual(len(markdown), 8192)
+            self.assertFalse(result["policy"]["task_time_search_permitted"])
+
+    def test_conservative_no_route_hides_weak_lexical_hits(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            packet = root / "task.json"
+            packet.write_text(
+                json.dumps(
+                    {
+                        "task_id": "H7-12",
+                        "selected_result": "Symmetric backward error for a linear system",
+                        "task_clarification": [],
+                        "scope_constraints": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            atlas = root / "decls.jsonl"
+            atlas.write_text(
+                json.dumps(
+                    {
+                        "kind": "theorem",
+                        "name": "N.symmetric_backward_error_for_lyapunov",
+                        "module": "N.Lyapunov",
+                        "source_file": "N/Lyapunov.lean",
+                        "source_line": 1,
+                        "signature": "theorem symmetric_backward_error_for_lyapunov : True",
+                        "documentation": "",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            result, markdown = build_composition_packet(
+                source_packet_path=packet,
+                atlas_paths=[atlas],
+                corpus_id="test",
+            )
+            self.assertEqual(result["route_status"], "NO_ROUTE")
+            self.assertEqual(result["retrieved_roots"], [])
+            self.assertIn(b"Do not search for a substitute", markdown)
+
+    def test_is_deterministic(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            packet = root / "task.json"
+            packet.write_text(
+                json.dumps(
+                    {
+                        "task_id": "X",
+                        "selected_result": "symmetric perturbation norm bound",
+                        "task_clarification": [],
+                        "scope_constraints": [],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            atlas = root / "decls.jsonl"
+            atlas.write_text(
+                json.dumps(
+                    {
+                        "kind": "theorem",
+                        "name": "N.symmetric_perturbation_bound",
+                        "module": "N.Perturbation",
+                        "source_file": "N/Perturbation.lean",
+                        "source_line": 1,
+                        "signature": "theorem symmetric_perturbation_bound : True",
+                        "documentation": "norm bound",
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            first = build_composition_packet(
+                source_packet_path=packet,
+                atlas_paths=[atlas],
+                corpus_id="test",
+            )
+            second = build_composition_packet(
+                source_packet_path=packet,
+                atlas_paths=[atlas],
+                corpus_id="test",
+            )
+            self.assertEqual(first, second)
+
+
+if __name__ == "__main__":
+    unittest.main()

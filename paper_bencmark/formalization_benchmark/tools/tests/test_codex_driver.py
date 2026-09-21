@@ -1306,6 +1306,45 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertFalse((artifacts / "network_violations.bin").exists())
         driver.close()
 
+    def test_bwrap_can_mount_compiled_library_without_source_or_atlas(self) -> None:
+        toolchain = self.root / "toolchain-olean-only"
+        toolchain.mkdir()
+        packages = self.root / "packages-olean-only"
+        mathlib_olean = packages / "mathlib" / ".lake" / "build" / "lib" / "lean"
+        mathlib_olean.mkdir(parents=True)
+        library_olean = self.root / "library-olean-only"
+        library_olean.mkdir()
+        bwrap = self.root / "bwrap-olean-only"
+        offline_shell = self.root / "offline-shell-olean-only"
+        for executable in (bwrap, offline_shell):
+            executable.write_bytes(b"fixture")
+            executable.chmod(0o500)
+        host = self.codex.with_name("codex-code-mode-host")
+        if not host.exists():
+            host.write_bytes(b"matching code-mode host")
+            host.chmod(0o500)
+        driver = self.driver(
+            bwrap_binary=bwrap,
+            code_mode_host_sha256=hashlib.sha256(host.read_bytes()).hexdigest(),
+            offline_shell=offline_shell,
+            toolchain_root=toolchain,
+            packages_root=packages,
+            library_olean=library_olean,
+        )
+        artifacts = self.root / "olean-only-artifacts"
+        artifacts.mkdir()
+        command = driver._bwrap_command(
+            driver._app_server_command("/codex"),
+            workspace=self.workspace,
+            artifact_dir=artifacts,
+            output_schema=None,
+        )
+        rendered = "\n".join(command)
+        self.assertIn("/library-olean", rendered)
+        self.assertNotIn("/library/NumStability", rendered)
+        self.assertNotIn("/library-index", rendered)
+        driver.close()
+
     def test_malformed_telemetry_fails_closed_and_removes_auth(self) -> None:
         driver = self.driver()
         result = driver.run_turn(
