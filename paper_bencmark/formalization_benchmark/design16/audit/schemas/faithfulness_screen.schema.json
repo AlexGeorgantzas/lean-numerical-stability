@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Design-16 condition-blind faithfulness screen",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "role",
+    "paper_sha256",
+    "candidate_semantic_sha256",
+    "dependency_coverage",
+    "semantic_checklist",
+    "domain_assessment",
+    "implications",
+    "classification",
+    "verdict",
+    "mismatches",
+    "rationale"
+  ],
+  "properties": {
+    "schema_version": {"const": "formalization-design16-faithfulness-screen-1"},
+    "role": {"const": "condition-blind-faithfulness-screen"},
+    "paper_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "candidate_semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "dependency_coverage": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"$ref": "#/$defs/dependency"}
+    },
+    "semantic_checklist": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": {"$ref": "#/$defs/semanticCheck"}
+    },
+    "domain_assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "covers_every_source_case",
+        "source_cases_omitted",
+        "unjustified_extra_candidate_assumptions",
+        "vacuity_risks",
+        "genuine_added_strength",
+        "reasoning"
+      ],
+      "properties": {
+        "covers_every_source_case": {"type": "boolean"},
+        "source_cases_omitted": {"$ref": "#/$defs/stringArray"},
+        "unjustified_extra_candidate_assumptions": {"$ref": "#/$defs/stringArray"},
+        "vacuity_risks": {"$ref": "#/$defs/stringArray"},
+        "genuine_added_strength": {"$ref": "#/$defs/stringArray"},
+        "reasoning": {"type": "string", "minLength": 1}
+      }
+    },
+    "implications": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidate_implies_source", "source_implies_candidate"],
+      "properties": {
+        "candidate_implies_source": {"$ref": "#/$defs/implication"},
+        "source_implies_candidate": {"$ref": "#/$defs/implication"}
+      }
+    },
+    "classification": {
+      "enum": [
+        "faithful-equivalent",
+        "faithful-stronger",
+        "unfaithful-weaker",
+        "unfaithful-different"
+      ]
+    },
+    "verdict": {"enum": ["faithful", "unfaithful"]},
+    "mismatches": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/mismatch"}
+    },
+    "rationale": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "stringArray": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "interpretation",
+        "effect_on_target",
+        "paper_match",
+        "status"
+      ],
+      "properties": {
+        "id": {"type": "string", "pattern": "^D[0-9]{3}$"},
+        "name": {"type": "string", "minLength": 1},
+        "interpretation": {"type": "string", "minLength": 1},
+        "effect_on_target": {"type": "string", "minLength": 1},
+        "paper_match": {"type": "string", "minLength": 1},
+        "status": {"enum": ["pass", "fail", "not-applicable"]}
+      }
+    },
+    "semanticCheck": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "status", "paper_evidence", "candidate_evidence", "reasoning"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^S[0-9]{2}$"},
+        "status": {"enum": ["pass", "fail", "not-applicable"]},
+        "paper_evidence": {"type": "string", "minLength": 1},
+        "candidate_evidence": {"type": "string", "minLength": 1},
+        "reasoning": {"type": "string", "minLength": 1}
+      }
+    },
+    "implication": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["verdict", "reasoning"],
+      "properties": {
+        "verdict": {"enum": ["yes", "no"]},
+        "reasoning": {"type": "string", "minLength": 1}
+      }
+    },
+    "mismatch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["paper_requirement", "candidate_mismatch", "severity"],
+      "properties": {
+        "paper_requirement": {"type": "string", "minLength": 1},
+        "candidate_mismatch": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["critical", "major", "minor"]}
+      }
+    }
+  }
+}
