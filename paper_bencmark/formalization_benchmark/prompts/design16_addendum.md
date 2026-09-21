@@ -15,3 +15,5 @@ primary route's narrow import and exact declaration checks. Preserve that
 working import and begin the paper formalization directly. The signatures in
 `LIBRARY_API.md` are complete; do not repeat interface discovery unless a
 concrete elaboration error shows that a listed signature is insufficient.
+The initial `#check` commands are temporary route probes; remove all of them
+before the final submission so the candidate satisfies the integrity contract.

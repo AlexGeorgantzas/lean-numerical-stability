@@ -28,7 +28,7 @@ from common import (
 )
 from composition_packets import build_composition_packet
 from deployment import load_deployment
-from formalization_validator import validate_candidate
+from formalization_validator import compiled_candidate_workspace, validate_candidate
 from lean_sandbox import compiler_command
 from manifest_control import ROOT
 from pair_controller import _candidate_template, _environment_note, _task_packet_markdown
@@ -153,12 +153,17 @@ def run(args: argparse.Namespace) -> dict[str, object]:
 
     template_validation_scratch = output_root / "template-validation-scratch"
     template_validation_scratch.mkdir(mode=0o700)
-    template_validation = validate_candidate(
-        workspace / "Candidate.lean",
+    with compiled_candidate_workspace(
+        (workspace / "Candidate.lean").read_bytes(),
         compiler_command=compiler_command(deployment, "L"),
         scratch_root=template_validation_scratch,
         timeout_seconds=float(args.validation_timeout_seconds),
-    )
+    ) as (_, template_compile):
+        template_validation = {
+            "schema_version": "formalization-design16-template-compile-1",
+            "pass": template_compile.get("pass") is True,
+            "compile": template_compile,
+        }
     write_json_atomic(
         output_root / "template-validation.json", template_validation, mode=0o400
     )
