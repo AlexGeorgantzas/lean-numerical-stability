@@ -309,3 +309,47 @@ pilot identity for the telemetry repair.
 **Needs:** Finish release validation, commit and push Pilot-11, install it
 beside Pilot-10 on Titan, then pass verify-release, doctor, qualification, and
 the one-shot warm-root preparation. Start no official task.
+
+### Titan completion
+
+- Pilot-11 was committed and pushed as
+  `6fe44e8836d55c3f7885b026a5d22cdd5bf3dd56`, then installed at
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-11-r1`. Deployment-record
+  SHA-256 is
+  `de9a9252a641272224c180f12036fc315b483cc4828e1b3ae882b3bb5f0b8d8d`;
+  manifest-file SHA-256 is
+  `a4edfb6ee6d1c13b586f20dd53900580ff54dacae3f6d7df24042db444c26cd7`;
+  manifest payload is
+  `14783783fe5d63fb492462bf46fbaffd65e28993fd858f291c7c7d73c0df87b5`.
+- The fresh clean build passed in `1315.179208196` seconds under eight logical
+  CPUs, 32 GiB RAM, 512 tasks, and no swap. GNU time recorded 6,499.55 user
+  CPU seconds, 440.06 system CPU seconds, 527% CPU, and 8,406,028,288 bytes
+  peak RSS. Build-record SHA-256 is
+  `6f4581380982e51fd52a342cc380db5c8bae5d427d32be9c8f2aa9d136de8058`.
+  It produced 879 OLean files / 1,015,839,912 bytes and 4,425 complete output
+  files / 1,234,721,915 bytes. Memory, PID, and swap event deltas were zero.
+- Verify-release and doctor passed. N's treatment-absence scan covered
+  9,698,590,812 bytes in 127,166 files. The one-shot provider qualification
+  passed with record SHA-256
+  `ed0a3691c1cd2951b8e2ffdd0c9f4693f72f3d20f8c9d84ef7cce2097f49030b`
+  and roles-tree SHA-256
+  `36e52751a7bd768b9f515cf4cde886d13b36e61846e3f45356858ec22a4adc9d`.
+- The one-shot task-neutral scout completed successfully. Warm-root-record
+  SHA-256 is
+  `bf30ecb9c23108cb1b1b1aa39140247d7cd175454ec903753a07c07997142031`;
+  scout-turn SHA-256 is
+  `b5c1c80e0023554f51cc69cd9c734d442baa708a30a2abab6ea7cccaca29303b`;
+  checkpoint-tree SHA-256 is
+  `17ff4f5421b1ffcd4ca083251c00087a97d802cac8c2a9238876ba742a9d1cb7`;
+  and scout-artifacts-tree SHA-256 is
+  `81effa1e61245ed59c25f9442df5b9bbeadce785a1396e08c7f2ff4a59f5cc6d`.
+  It used 420.164831505 active seconds and 4,840,334 exact raw tokens. One
+  explicitly bracketed context-compaction response used 259,829 tokens; after
+  subtracting only that response, the expected and observed thread-cumulative
+  baselines both equal 4,580,505 tokens. Telemetry is complete.
+- A provider-free H22-11 dry run passed with zero contestant time and no model
+  call. All 18 Pilot-11 task slots were checked and remain `NOT_STARTED`; no
+  official pair has been created.
+
+**Current need:** Pilot-11 is ready. An explicit user request naming one task
+is required before starting an official pair.
