@@ -616,3 +616,26 @@ does not treat prose run summaries as substitutes for exact candidate bytes.
 Mathlib-only common statement per admitted task, freeze its bytes, cross-compile
 it in R0/R1, and keep proof-completion results separate from end-to-end
 formalization results.
+
+---
+
+## 2026-09-22 — Codex — codex/pilot-16-composition-packets — authenticated campaign reporter
+
+**Did:** Added the provider-free Design-16/17 campaign reporter at
+`formalization_benchmark/tools/design16_campaign_report.py`. It authenticates
+the nonce-bound campaign manifest, frozen-input identity, state/summary journal
+chains, pair attestations and artifact closures, condition reports, internal
+statement audits, and an optional external proof-audit batch. JSON and Markdown
+keep the 2/6/5 strata separate and report five per-task R1/R0 ratios without a
+pooled estimate. Focused reporter tests cover proof and statement modes,
+external audits, tampering, missing audits, and overwrite refusal.
+
+**Careful:** A proof pair with status `FORMALIZATION_FROZEN_PENDING_AUDIT` is
+never counted as an effect result, even when an external audit batch is shown.
+Only a primary `AUDITED_FAITHFUL_PAIR` is marked effect-analysis eligible;
+negative controls and excluded diagnostics remain separate. The Pilot-15
+manifest was deliberately not refreshed.
+
+**Needs:** Run the reporter only after the campaign journal is quiescent. Pass
+`--audit-batch-root` for proof-mode audit results; statement-only audits are
+read from each condition's sealed internal audit tree.
