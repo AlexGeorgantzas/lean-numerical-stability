@@ -409,6 +409,7 @@ class PairControllerDryRunTests(unittest.TestCase):
                     timed_out=False,
                     wall_seconds=13.0,
                     usage=usage,
+                    thread_cumulative_usage=usage,
                     usage_complete=True,
                     final_message="scouting complete",
                     event_count=1,
@@ -546,7 +547,7 @@ class PairControllerDryRunTests(unittest.TestCase):
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
 
-    def test_global_campaign_lock_serializes_releases_and_eight_predecessors(self) -> None:
+    def test_global_campaign_lock_serializes_releases_and_nine_predecessors(self) -> None:
         registry = self.root / "account-registry"
         predecessor = self.root / "pilot-7-runs"
         legacy_predecessor = self.root / "pilot-5-runs"
@@ -556,11 +557,13 @@ class PairControllerDryRunTests(unittest.TestCase):
         sixth_ancestral_predecessor = self.root / "pilot-1-runs"
         seventh_ancestral_predecessor = self.root / "pilot-0-runs"
         eighth_ancestral_predecessor = self.root / "pilot-minus-1-runs"
+        ninth_ancestral_predecessor = self.root / "pilot-minus-2-runs"
         with _campaign_lock(
             self.deployment.run_root, registry, predecessor, legacy_predecessor,
             ancestral_predecessor, great_ancestral_predecessor, fifth_ancestral_predecessor,
             sixth_ancestral_predecessor, seventh_ancestral_predecessor,
             eighth_ancestral_predecessor,
+            ninth_ancestral_predecessor,
         ):
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", registry):
@@ -588,6 +591,9 @@ class PairControllerDryRunTests(unittest.TestCase):
                     pass
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", None, eighth_ancestral_predecessor):
+                    pass
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(self.root / "another-release", None, ninth_ancestral_predecessor):
                     pass
 
     def test_official_pair_rejects_downgraded_qualification_binding(self) -> None:

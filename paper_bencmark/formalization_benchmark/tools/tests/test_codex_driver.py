@@ -320,6 +320,41 @@ while True:
             "totalTokens": 15,
         }
     )
+    if prompt_text == "context-compaction":
+        compaction_id = "compaction-" + turn_id
+        compaction_raw = {
+            "inputTokens": 100,
+            "cachedInputTokens": 80,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 20,
+            "reasoningOutputTokens": 0,
+            "totalTokens": 120,
+        }
+        send({
+            "method": "item/started",
+            "params": {
+                "threadId": thread_id,
+                "turnId": turn_id,
+                "item": {"id": compaction_id, "type": "contextCompaction"},
+            },
+        })
+        send({
+            "method": "rawResponse/completed",
+            "params": {
+                "responseId": "response-compaction-" + turn_id,
+                "threadId": thread_id,
+                "turnId": turn_id,
+                "usage": compaction_raw,
+            },
+        })
+        send({
+            "method": "item/completed",
+            "params": {
+                "threadId": thread_id,
+                "turnId": turn_id,
+                "item": {"id": compaction_id, "type": "contextCompaction"},
+            },
+        })
     send({
         "method": "rawResponse/completed",
         "params": {
@@ -570,6 +605,30 @@ class CodexDriverProtocolTests(unittest.TestCase):
             child_record["fork_cumulative_usage_semantics"], "parent_inherited"
         )
         forked.close(artifact_dir=self.root / "task-close")
+
+    def test_context_compaction_usage_is_exact_but_not_in_cumulative_cross_check(self) -> None:
+        driver = self.driver()
+        result = driver.run_turn(
+            prompt="context-compaction",
+            workspace=self.workspace,
+            artifact_dir=self.root / "compaction-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertTrue(result.usage_complete)
+        self.assertEqual(result.usage["total_tokens"], 135)
+        self.assertEqual(result.thread_cumulative_usage["total_tokens"], 15)
+        record = json.loads(
+            (self.root / "compaction-artifacts" / "turn.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(record["context_compaction_response_count"], 1)
+        self.assertEqual(record["context_compaction_usage"]["total_tokens"], 120)
+        self.assertEqual(
+            record["cumulative_usage_expected_from_raw_responses"],
+            record["cumulative_usage_delta_cross_check"],
+        )
+        driver.close(artifact_dir=self.root / "compaction-close")
 
     def test_late_raw_usage_is_drained_before_next_repair(self) -> None:
         driver = self.driver()

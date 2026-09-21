@@ -250,3 +250,62 @@ only after a new explicit user request naming that task.
 **Needs:** Commit and push Pilot-10, install it beside Pilot-9 on Titan, pass
 verify-release, doctor, provider qualification, and the one-shot warm-root
 preparation. Do not start an official task without a separate explicit request.
+
+### Titan completion and sealed scout failure
+
+- Pilot-10 was committed and pushed as
+  `c75840169037df96af3e4b946c8a6372e33f7377`, then installed at
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-10-r1`. Deployment-record
+  SHA-256 is
+  `18c67fd64df4ee5ef1c3802ab6399869fda273064be37de917243757eb8b876a`.
+- Its clean full NumStability build passed in `1297.901876704` seconds under
+  eight logical CPUs, 32 GiB RAM, 512 tasks, and no swap. GNU time recorded
+  6,537.4 user CPU seconds, 428.18 system CPU seconds, 536% CPU, and
+  8,440,983,552 bytes peak RSS. Build-record SHA-256 is
+  `3d9a00ac37216feaab03010538b992b9738d19b6ec3de53db35b32b62a0e6794`;
+  it produced 879 OLean files totaling 1,015,839,912 bytes, with no memory,
+  PID, or swap-limit event.
+- Verify-release, doctor, and the off-benchmark provider qualification passed.
+  Qualification SHA-256 is
+  `ba26624b9e4dba410c1d133667656967afe7508302a02168e8b3ca87709ed711`;
+  roles-tree SHA-256 is
+  `a54d41a8bad20547b3092966c91c3e58f3eadb6ba624190efaab8834c7129b4e`.
+- The one permitted scout completed its model turn, but the controller failed
+  closed at telemetry reconciliation. Codex emitted an automatic
+  `contextCompaction`; exact raw-response usage included that call while
+  thread-cumulative usage omitted it. The difference exactly equals the
+  compaction response: 248,955 input, 234,880 cached input, 4,500 output, and
+  253,455 total tokens. The sealed failed warm-root record SHA-256 is
+  `1f532db6810812309a8f36f6963fadd038851d95daa8a80cfa6540ede4399e08`.
+  Its checkpoint and scout artifacts remain immutable evidence. No official
+  Pilot-10 task started; all 18 task slots remain `NOT_STARTED`.
+
+**Current need:** Never retry or rewrite Pilot-10's one-shot scout. Use a new
+pilot identity for the telemetry repair.
+
+---
+
+## 2026-09-21 — Codex — formalization_benchmark — Pilot-11 compaction-aware warm-root successor in progress
+
+**Did:**
+- Preserved Pilot-10's failed scout and added exact hash-bound lineage for its
+  deployment, release, build, qualification, warm-root record, scout turn,
+  checkpoint tree, scout-artifact tree, and untouched official task namespace.
+- Corrected usage reconciliation narrowly: exact raw usage still includes and
+  reports every automatic context-compaction response, while the app-server
+  thread-cumulative cross-check subtracts only raw responses explicitly
+  bracketed by `contextCompaction` item events. Fork baselines use the actual
+  thread-cumulative usage; the separately reported scout cost remains full raw
+  usage.
+- Minted `formalization-benchmark-pilot-11`, shifted and retained all nine
+  predecessor locks, and added regression coverage for compaction telemetry.
+
+**Careful:**
+- Pilot-11 must create a fresh scout exactly once. Pilot-10's checkpoint is
+  evidence only and must not be used as the new root.
+- Installation, qualification, and scouting consume no official task slot and
+  do not authorize an official benchmark pair.
+
+**Needs:** Finish release validation, commit and push Pilot-11, install it
+beside Pilot-10 on Titan, then pass verify-release, doctor, qualification, and
+the one-shot warm-root preparation. Start no official task.

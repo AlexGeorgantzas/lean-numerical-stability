@@ -1,24 +1,28 @@
 # Source-first formalization protocol
 
-> Pilot-10 is a new frozen release. Pilot-9 and every earlier run remain sealed
+> Pilot-11 is a new frozen release. Pilot-10 and every earlier run remain sealed
 > under their original software, prompts, task set, and audit policy. No
 > observation is copied, resumed, or pooled across pilot identities.
 > Pilot-9's H22-11 cold-start pair is sealed as an infrastructure incident after
 > the final adjudicator returned `faithful` with unresolved uncertainty. Pilot-10
-> prevents that contradictory structured output and introduces the warm-start L
-> treatment. Pilot-9 observations remain L-cold evidence and are never pooled
-> with Pilot-10.
+> introduced the warm-start treatment, but its one permitted scout failed closed
+> after Codex automatically compacted the conversation: raw-response usage
+> included the compaction call while thread-cumulative usage did not. It started
+> no official task. Pilot-11 preserves both predecessors, accepts only explicitly
+> identified compaction usage in that cross-check, and creates a fresh one-shot
+> scout. Pilot-9 observations remain L-cold evidence and are never pooled with
+> Pilot-11.
 
 ## Purpose
 
-Pilot-10 measures whether a formalizer already oriented to a frozen
+Pilot-11 measures whether a formalizer already oriented to a frozen
 NumStability library can construct a faithful Lean formalization faster or with
 less net-new token work than an otherwise identical library-naive formalizer.
 It measures statement construction, not proof construction.
 
 ## Frozen release
 
-- Pilot ID: `formalization-benchmark-pilot-10`.
+- Pilot ID: `formalization-benchmark-pilot-11`.
 - One exact Git commit, manifest-file SHA-256, and self-hashed manifest payload
   define the release.
 - Formalizer: `gpt-5.6-sol` at `xhigh`, frozen in `config.json`.
@@ -41,7 +45,7 @@ The task order is frozen as follows:
 3. `H23-6`, `H5-5`, `H10-7`, `H12-4`, `H19-5`, `H7-14`, `H15-3`
 
 The condition order is precommitted per task in `config.json`, with nine
-N-first and nine L-first pairs. Pilot-10 creates fresh slots for all 18 tasks.
+N-first and nine L-first pairs. Pilot-11 creates fresh slots for all 18 tasks.
 
 The five `P..-T2` entries are paper tasks retained from Pilot-6. The thirteen
 `Hchapter-problem` entries are Higham textbook problems. Their source packets
@@ -155,7 +159,7 @@ available nor requested.
 
 The primary PDF and frozen source packet define the selected result. The packet
 may clarify which part of an exercise is selected, but the PDF controls if they
-conflict. Unlike the method paper's full audit, Pilot-10 omits a separate
+conflict. Unlike the method paper's full audit, Pilot-11 omits a separate
 source-contract model call because the source side is frozen and validated
 before release. This deliberate deviation is recorded; every generated
 candidate still receives a fresh candidate-side audit.
@@ -232,7 +236,7 @@ strengthening. A genuinely stronger candidate is faithful because it still
 implies the complete selected source result.
 
 The method paper permits a score-2 exception for multiple declarations that
-cover only a proper subset of the source domain. Pilot-10 deliberately rejects
+cover only a proper subset of the source domain. Pilot-11 deliberately rejects
 that exception: partial case-split coverage is `unfaithful`. This deviation is
 frozen and must not be inferred ad hoc during an audit.
 

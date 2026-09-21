@@ -4,7 +4,7 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-10 is a side-by-side warm-start successor. The pilot-1 through pilot-9
+Pilot-11 is a side-by-side warm-start successor. The pilot-1 through pilot-10
 deployments, launchers, and sealed runs must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
@@ -30,12 +30,27 @@ direct judges returned complete ordered dependency records whose descriptive
 labels differed from hidden controller expectations. It has no semantic
 verdict. Pilot-9 then completed a cold-start H22-11 L condition but sealed the
 pair as an incident when N's final adjudicator combined a faithful verdict with
-remaining uncertainty. Pilot-10 gives each of the 18 tasks a fresh warm-start slot
-under a binary `faithful`/`unfaithful` semantic policy; it neither relabels nor
-resumes any earlier-pilot evidence. Never combine observations across pilots. Setup
-authenticates the direct Pilot-9 predecessor, its qualification, build, and
-sealed H22-11 incident, plus the retained pilot-8/7/5/4/3/2/1 lineage before
-publication.
+remaining uncertainty. Pilot-10 installed and qualified the first warm-start
+release, then consumed its single permitted scout. The scout itself completed,
+but its controller failed closed because an automatic Codex context-compaction
+response appeared in exact raw usage while app-server thread-cumulative usage
+excluded it. No official Pilot-10 task started, and that scout is never retried
+or reused. Pilot-11 recognizes only explicitly classified compaction responses
+when reconciling the two usage views and gives each of the 18 tasks a fresh
+warm-start slot under a binary `faithful`/`unfaithful` semantic policy; it
+neither relabels nor resumes any earlier-pilot evidence. Never combine
+observations across pilots. Setup authenticates the direct Pilot-10 deployment,
+qualification, build, failed scout, untouched task set, and retained
+pilot-9/8/7/5/4/3/2/1 lineage before publication.
+
+The sealed Pilot-10 deployment SHA-256 is
+`18c67fd64df4ee5ef1c3802ab6399869fda273064be37de917243757eb8b876a`;
+its qualification record is
+`ba26624b9e4dba410c1d133667656967afe7508302a02168e8b3ca87709ed711`,
+its library build record is
+`3d9a00ac37216feaab03010538b992b9738d19b6ec3de53db35b32b62a0e6794`,
+and its failed warm-root record is
+`1f532db6810812309a8f36f6963fadd038851d95daa8a80cfa6540ede4399e08`.
 
 The sealed Pilot-9 deployment SHA-256 is
 `cf84e8cfeb47447be38055cb8cd2758c50ccb7ff98d6afe8bdf531e9ab480863`;
@@ -68,9 +83,9 @@ its qualification record is
 `0c0c4ccb252b432e41025fa1f4e17dfa1df78c1f6f8c9a54801a32bd5ee97e16`
 and its library build record is
 `d9abf28dfa5444a78fc88ce6818fc4c0e4ed166296d922f5b53b46476f4316db`.
-These identify retained older installation lineage, not Pilot-10 measurements.
+These identify retained older installation lineage, not Pilot-11 measurements.
 
-Pilot-10 must not be treated as ready merely because these repository files
+Pilot-11 must not be treated as ready merely because these repository files
 exist. Its own clean release, separate installation, provider-free gates, and
 live provider qualification must pass before an official pair starts. An
 integrity-valid candidate receives exactly one semantic verdict, `faithful`
@@ -85,7 +100,7 @@ its failed qualification record is
 `930a69c9a059f8e00590a6689ea9d15177e27b435e901e724e57861a1db79c9a`
 and its library build record is
 `42d1a09980a908d4b4757b174dff0239d20f9cc35e0e67dd7499a0bec60580ec`.
-These authenticate older predecessor evidence, not pilot-10 measurements.
+These authenticate older predecessor evidence, not pilot-11 measurements.
 
 ## Security first
 
@@ -152,12 +167,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-9-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-10-r1
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-10-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-11-r1
 ```
 
-The installer creates a user-private pilot-10 deployment below
-`~/.local/share/highambench-formalization-pilot-10-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-11 deployment below
+`~/.local/share/highambench-formalization-pilot-11-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -216,14 +231,14 @@ committed to Git.
 
 ## Run
 
-Once pilot-10 is installed and authenticated, its operator commands are:
+Once pilot-11 is installed and authenticated, its operator commands are:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-10-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-10-r1 doctor --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-10-r1 qualify-provider --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-10-r1 prepare-warm-root
-~/.local/bin/run-highambench-formalization-pilot-10-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-11-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-11-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-11-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-11-r1 prepare-warm-root
+~/.local/bin/run-highambench-formalization-pilot-11-r1 run --task-id H22-11
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -269,7 +284,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-10-r1 status --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-11-r1 status --task-id H22-11
 ```
 
 ## Storage separation

@@ -1,20 +1,22 @@
 ---
 name: run-highambench-experiments
-description: Operate Pilot-10 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
+description: Operate Pilot-11 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
 ---
 
 # Run HighamBench Formalization Experiments
 
 ## Scope
 
-Pilot-10 (`formalization-benchmark-pilot-10`) is a separate frozen release.
-Pilots 1--9 and all of their runs, incidents, and deployment records are
+Pilot-11 (`formalization-benchmark-pilot-11`) is a separate frozen release.
+Pilots 1--10 and all of their runs, incidents, and deployment records are
 read-only predecessor evidence. Never reinterpret an older decision, resume an
 older sealed condition, pool results across pilots, or use an older launcher as
 a substitute. Pilot-9's cold-start H22-11 pair is sealed; its measurements are
-L-cold evidence and are not pooled with Pilot-10 warm-start results.
+L-cold evidence and are not pooled with Pilot-11 warm-start results. Pilot-10's
+single scout failed closed on a context-compaction telemetry mismatch and no
+official Pilot-10 task began; never retry that scout or use its checkpoint.
 
-Preparing, installing, repairing, or qualifying Pilot-10 never authorizes an
+Preparing, installing, repairing, or qualifying Pilot-11 never authorizes an
 official pair. Run one only after an explicit request naming exactly one task.
 
 The allowlist is:
@@ -36,7 +38,7 @@ Before any provider call or benchmark-state mutation:
 
 1. Read [the operations reference](references/operations.md) completely.
 2. Require
-   `~/.local/bin/run-highambench-formalization-pilot-10-r1` and its distinct,
+   `~/.local/bin/run-highambench-formalization-pilot-11-r1` and its distinct,
    digest-bound deployment record.
 3. Run provider-free `verify-release`.
 4. Run provider-free `doctor --task-id <TASK>` through that launcher.

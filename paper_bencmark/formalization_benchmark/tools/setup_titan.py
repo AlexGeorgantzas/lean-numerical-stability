@@ -46,6 +46,38 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = ROOT.parents[1]
 FROZEN_LIBRARY_COMMIT = "45813a95dacf577461bae13f033af0dbc985a225"
 FROZEN_TOOLCHAIN = "leanprover/lean4:v4.29.0-rc3"
+PILOT10_PILOT_ID = "formalization-benchmark-pilot-10"
+PILOT10_RELEASE_COMMIT = "c75840169037df96af3e4b946c8a6372e33f7377"
+PILOT10_MANIFEST_PAYLOAD_SHA256 = (
+    "753396d3d41ee5fae0ac488afb76b0ecf67a2c9c677a7ee91bffd7caf7e9b60a"
+)
+PILOT10_MANIFEST_FILE_SHA256 = (
+    "36398dcefc3a24f68e0f647f4e19ea6ddc384eb70a1ce0994974e09d5955be72"
+)
+PILOT10_DEPLOYMENT_SHA256 = (
+    "18c67fd64df4ee5ef1c3802ab6399869fda273064be37de917243757eb8b876a"
+)
+PILOT10_BUILD_RECORD_SHA256 = (
+    "3d9a00ac37216feaab03010538b992b9738d19b6ec3de53db35b32b62a0e6794"
+)
+PILOT10_QUALIFICATION_SHA256 = (
+    "ba26624b9e4dba410c1d133667656967afe7508302a02168e8b3ca87709ed711"
+)
+PILOT10_QUALIFICATION_ROLES_TREE_SHA256 = (
+    "a54d41a8bad20547b3092966c91c3e58f3eadb6ba624190efaab8834c7129b4e"
+)
+PILOT10_FAILED_WARM_ROOT_SHA256 = (
+    "1f532db6810812309a8f36f6963fadd038851d95daa8a80cfa6540ede4399e08"
+)
+PILOT10_SCOUT_TURN_SHA256 = (
+    "b3e2663e125edd1cd661b70dec20591b66b1e0a30e3d924a76ab2c4056a776e6"
+)
+PILOT10_CHECKPOINT_TREE_SHA256 = (
+    "4d835bc3ac9c7643619ab9bd88e42ee0182197a3d81cdde96c80c168f60774ee"
+)
+PILOT10_SCOUT_ARTIFACTS_TREE_SHA256 = (
+    "7571bf6c4b8aa957efe8e2225ff63d923d87867632b9d0475580dfc62a90da8e"
+)
 PILOT9_PILOT_ID = "formalization-benchmark-pilot-9"
 PILOT9_RELEASE_COMMIT = "16172f249084b517b8069859760517297e4fb4cf"
 PILOT9_MANIFEST_PAYLOAD_SHA256 = (
@@ -1687,10 +1719,232 @@ def pilot9_lineage(root_argument: str, *, verify_status: bool = True) -> dict[st
     }
 
 
+def _pilot10_status(root: Path, deployment_record: Path) -> Mapping[str, Any]:
+    """Use the frozen Pilot-10 verifier without provider calls or state changes."""
+
+    runner = (
+        root / "release" / "paper_bencmark" / "formalization_benchmark"
+        / "tools" / "run_benchmark.py"
+    )
+    environment = os.environ.copy()
+    environment.pop("HIGHAMBENCH_COMMAND_CGROUP_PROCS", None)
+    environment["HIGHAMBENCH_FORMALIZATION_DEPLOYMENT"] = str(deployment_record)
+    environment["HIGHAMBENCH_FORMALIZATION_DEPLOYMENT_SHA256"] = (
+        PILOT10_DEPLOYMENT_SHA256
+    )
+    completed = run_bounded_command(
+        isolated_runner_command(
+            runner,
+            "--deployment",
+            str(deployment_record),
+            "status",
+            "--task-id",
+            "H22-11",
+        ),
+        cwd=root,
+        environment=environment,
+        timeout_seconds=600,
+        maximum_output_bytes=16 * 1024 * 1024,
+    )
+    if (
+        completed["timed_out"]
+        or completed["output_limit_exceeded"]
+        or completed["returncode"] != 0
+    ):
+        raise BenchmarkError("frozen pilot-10 status authentication failed for H22-11")
+    try:
+        result = json.loads(completed["output"])
+    except json.JSONDecodeError as error:
+        raise BenchmarkError("frozen pilot-10 status output is malformed") from error
+    if not isinstance(result, Mapping):
+        raise BenchmarkError("frozen pilot-10 status output is malformed")
+    return result
+
+
+def pilot10_lineage(root_argument: str, *, verify_status: bool = True) -> dict[str, str]:
+    """Authenticate Pilot-10's sealed, failed one-shot warm-root attempt."""
+
+    root = Path(root_argument).expanduser()
+    if not root.is_absolute() or root.is_symlink() or not root.is_dir():
+        raise BenchmarkError("pilot-10 predecessor deployment root is missing or unsafe")
+    root = root.resolve()
+    record_path = root / "deployment.json"
+    manifest_path = (
+        root / "release" / "paper_bencmark" / "formalization_benchmark" / "manifest.json"
+    )
+    build_path = root / "runtime" / "library" / "build" / "build-record.json"
+    run_root = root / "runs"
+    qualification_path = (
+        run_root / "qualifications" / PILOT10_MANIFEST_FILE_SHA256 / "qualification.json"
+    )
+    warm_root = run_root / "warm-roots" / PILOT10_MANIFEST_PAYLOAD_SHA256
+    warm_record_path = warm_root / "warm-root.json"
+    scout_turn_path = warm_root / "scout-artifacts" / "turn.json"
+    checkpoint_root = warm_root / "checkpoint"
+    scout_artifacts_root = warm_root / "scout-artifacts"
+    for path, expected in (
+        (record_path, PILOT10_DEPLOYMENT_SHA256),
+        (manifest_path, PILOT10_MANIFEST_FILE_SHA256),
+        (build_path, PILOT10_BUILD_RECORD_SHA256),
+        (qualification_path, PILOT10_QUALIFICATION_SHA256),
+        (warm_record_path, PILOT10_FAILED_WARM_ROOT_SHA256),
+        (scout_turn_path, PILOT10_SCOUT_TURN_SHA256),
+    ):
+        if not path.is_file() or path.is_symlink() or sha256_file(path) != expected:
+            raise BenchmarkError(f"sealed pilot-10 evidence is missing or changed: {path}")
+    if (
+        tree_manifest(checkpoint_root).get("tree_sha256")
+        != PILOT10_CHECKPOINT_TREE_SHA256
+        or tree_manifest(scout_artifacts_root).get("tree_sha256")
+        != PILOT10_SCOUT_ARTIFACTS_TREE_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-10 failed warm-root tree changed")
+
+    previous = load_json(record_path)
+    previous_manifest = load_json(manifest_path)
+    if (
+        previous.get("schema_version") != "formalization-deployment-1"
+        or previous.get("pilot_id") != PILOT10_PILOT_ID
+        or previous.get("release_commit") != PILOT10_RELEASE_COMMIT
+        or previous.get("release_manifest_sha256") != PILOT10_MANIFEST_FILE_SHA256
+        or previous.get("manifest_payload_sha256") != PILOT10_MANIFEST_PAYLOAD_SHA256
+        or previous.get("library_build_record") != str(build_path)
+        or previous.get("library_build_record_sha256") != PILOT10_BUILD_RECORD_SHA256
+        or previous.get("run_root") != str(run_root)
+        or previous_manifest.get("pilot_id") != PILOT10_PILOT_ID
+        or previous_manifest.get("manifest_payload_sha256")
+        != PILOT10_MANIFEST_PAYLOAD_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-10 release identity changed")
+    _pilot5_release_closure(root, previous_manifest)
+    old_lineage = pilot9_lineage(
+        str(Path(str(previous["predecessor_run_root"])).parent),
+        verify_status=verify_status,
+    )
+    if any(previous.get(key) != value for key, value in old_lineage.items()):
+        raise BenchmarkError("pilot-10 record does not bind the sealed prior lineage")
+
+    qualification = load_json(qualification_path)
+    roles_root = qualification_path.parent / "roles"
+    roles_manifest = tree_manifest(roles_root)
+    identity = qualification.get("identity")
+    if (
+        qualification.get("schema_version") != "formalization-provider-qualification-5"
+        or qualification.get("status") != "PASSED"
+        or qualification.get("charged_to_contestant") is not False
+        or qualification.get("roles_manifest") != roles_manifest
+        or roles_manifest.get("tree_sha256") != PILOT10_QUALIFICATION_ROLES_TREE_SHA256
+        or not isinstance(identity, Mapping)
+        or identity.get("pilot_id") != PILOT10_PILOT_ID
+        or identity.get("manifest_sha256") != PILOT10_MANIFEST_FILE_SHA256
+        or identity.get("manifest_payload_sha256") != PILOT10_MANIFEST_PAYLOAD_SHA256
+        or identity.get("deployment_sha256") != PILOT10_DEPLOYMENT_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-10 qualification identity changed")
+
+    warm_record = load_json(warm_record_path)
+    scout_turn = load_json(scout_turn_path)
+    expected_raw_usage = {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 2_939_136,
+        "input_tokens": 3_240_551,
+        "output_tokens": 19_132,
+        "reasoning_output_tokens": 3_938,
+        "total_tokens": 3_259_683,
+    }
+    expected_cumulative_usage = {
+        "cache_write_input_tokens": 0,
+        "cached_input_tokens": 2_704_256,
+        "input_tokens": 2_991_596,
+        "output_tokens": 14_632,
+        "reasoning_output_tokens": 3_938,
+        "total_tokens": 3_006_228,
+    }
+    if (
+        warm_record.get("schema_version") != "formalization-warm-root-1"
+        or warm_record.get("pilot_id") != PILOT10_PILOT_ID
+        or warm_record.get("manifest_payload_sha256")
+        != PILOT10_MANIFEST_PAYLOAD_SHA256
+        or warm_record.get("status") != "FAILED"
+        or warm_record.get("failure_kind") != "telemetry_invalid"
+        or warm_record.get("formalizer_exit_code") != 70
+        or warm_record.get("task_material_available") is not False
+        or warm_record.get("benchmark_charged") is not False
+        or warm_record.get("scout_runs_per_release") != 1
+        or scout_turn.get("terminal_status") != "completed"
+        or scout_turn.get("exit_code") != 70
+        or scout_turn.get("failure_kind") != "telemetry_invalid"
+        or scout_turn.get("usage_complete") is not False
+        or scout_turn.get("protocol_error")
+        != "Codex raw response usage disagrees with the cumulative usage delta"
+        or scout_turn.get("usage") != expected_raw_usage
+        or scout_turn.get("cumulative_usage_delta_cross_check")
+        != expected_cumulative_usage
+        or scout_turn.get("thread_id") != "01a0c34a-0076-7f52-bc73-b936ab93c15b"
+        or scout_turn.get("turn_id") != "01a0c34a-0082-7693-98a2-060f4d3157e9"
+    ):
+        raise BenchmarkError("sealed pilot-10 failed warm-root record changed")
+
+    local_index_root = run_root / "index"
+    registry_root = GLOBAL_REGISTRY_ROOT / "index" / PILOT10_PILOT_ID
+    if (
+        (local_index_root.exists() and any(local_index_root.iterdir()))
+        or (registry_root.exists() and any(registry_root.iterdir()))
+    ):
+        raise BenchmarkError("pilot-10 unexpectedly contains an official task observation")
+    if verify_status:
+        status = _pilot10_status(root, record_path)
+        if status != {"status": "NOT_STARTED", "task_id": "H22-11"}:
+            raise BenchmarkError("frozen pilot-10 H22-11 status changed")
+
+    def shift(key: str) -> str:
+        for source, destination in (
+            ("eighth_ancestral_predecessor_", "ninth_ancestral_predecessor_"),
+            ("seventh_ancestral_predecessor_", "eighth_ancestral_predecessor_"),
+            ("sixth_ancestral_predecessor_", "seventh_ancestral_predecessor_"),
+            ("fifth_ancestral_predecessor_", "sixth_ancestral_predecessor_"),
+            ("great_ancestral_predecessor_", "fifth_ancestral_predecessor_"),
+            ("ancestral_predecessor_", "great_ancestral_predecessor_"),
+            ("legacy_predecessor_", "ancestral_predecessor_"),
+            ("predecessor_", "legacy_predecessor_"),
+        ):
+            if key.startswith(source):
+                return destination + key.removeprefix(source)
+        raise BenchmarkError(f"unknown predecessor lineage field: {key}")
+
+    shifted_lineage = {shift(key): value for key, value in old_lineage.items()}
+    return {
+        "predecessor_pilot_id": PILOT10_PILOT_ID,
+        "predecessor_deployment_record": str(record_path),
+        "predecessor_deployment_record_sha256": PILOT10_DEPLOYMENT_SHA256,
+        "predecessor_release_manifest": str(manifest_path),
+        "predecessor_release_manifest_sha256": PILOT10_MANIFEST_FILE_SHA256,
+        "predecessor_library_build_record": str(build_path),
+        "predecessor_library_build_record_sha256": PILOT10_BUILD_RECORD_SHA256,
+        "predecessor_run_root": str(run_root),
+        "predecessor_qualification": str(qualification_path),
+        "predecessor_qualification_sha256": PILOT10_QUALIFICATION_SHA256,
+        "predecessor_qualification_roles_tree_sha256": (
+            PILOT10_QUALIFICATION_ROLES_TREE_SHA256
+        ),
+        "predecessor_failed_warm_root_record": str(warm_record_path),
+        "predecessor_failed_warm_root_record_sha256": PILOT10_FAILED_WARM_ROOT_SHA256,
+        "predecessor_failed_warm_root_checkpoint_tree_sha256": (
+            PILOT10_CHECKPOINT_TREE_SHA256
+        ),
+        "predecessor_failed_warm_root_scout_artifacts_tree_sha256": (
+            PILOT10_SCOUT_ARTIFACTS_TREE_SHA256
+        ),
+        "predecessor_failed_warm_root_scout_turn": str(scout_turn_path),
+        "predecessor_failed_warm_root_scout_turn_sha256": PILOT10_SCOUT_TURN_SHA256,
+        **shifted_lineage,
+    }
+
+
 def verify_predecessor_lineage(root_argument: str, deployment_record: Mapping[str, Any]) -> None:
-    observed = pilot9_lineage(root_argument)
+    observed = pilot10_lineage(root_argument)
     if any(deployment_record.get(field) != value for field, value in observed.items()):
-        raise BenchmarkError("predecessor evidence changed during pilot-10 setup")
+        raise BenchmarkError("predecessor evidence changed during pilot-11 setup")
 
 
 def fsync_directory(path: Path) -> None:
@@ -2747,30 +3001,32 @@ def _install_once(
     )
     if ancestry.returncode != 0:
         raise BenchmarkError("release branch is not descended from the frozen benchmark base")
-    if config.get("pilot_id") != "formalization-benchmark-pilot-10":
-        raise BenchmarkError("this installer requires the frozen pilot-10 identity")
-    predecessor = pilot9_lineage(args.predecessor_deployment_root)
+    if config.get("pilot_id") != "formalization-benchmark-pilot-11":
+        raise BenchmarkError("this installer requires the frozen pilot-11 identity")
+    predecessor = pilot10_lineage(args.predecessor_deployment_root)
     pilot6_root = (
         Path.home() / ".local" / "share" / "highambench-formalization-pilot-6-r1"
     ).resolve()
     if published_root == pilot6_root:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-6 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-6 deployment")
     if published_root == Path(predecessor["predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-9 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-10 deployment")
     if published_root == Path(predecessor["legacy_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-8 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-9 deployment")
     if published_root == Path(predecessor["ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-7 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-8 deployment")
     if published_root == Path(predecessor["great_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-5 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-7 deployment")
     if published_root == Path(predecessor["fifth_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-4 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-5 deployment")
     if published_root == Path(predecessor["sixth_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-3 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-4 deployment")
     if published_root == Path(predecessor["seventh_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-2 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-3 deployment")
     if published_root == Path(predecessor["eighth_ancestral_predecessor_run_root"]).parent:
-        raise BenchmarkError("pilot-10 must not overwrite the pilot-1 deployment")
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-2 deployment")
+    if published_root == Path(predecessor["ninth_ancestral_predecessor_run_root"]).parent:
+        raise BenchmarkError("pilot-11 must not overwrite the pilot-1 deployment")
     if GLOBAL_REGISTRY_ROOT.is_symlink() or (
         GLOBAL_REGISTRY_ROOT.exists() and not GLOBAL_REGISTRY_ROOT.is_dir()
     ):
@@ -3056,6 +3312,9 @@ def _install_once(
         ),
         eighth_ancestral_predecessor_run_root=Path(
             predecessor["eighth_ancestral_predecessor_run_root"]
+        ),
+        ninth_ancestral_predecessor_run_root=Path(
+            predecessor["ninth_ancestral_predecessor_run_root"]
         ),
     )
     command_canary = {
@@ -3401,17 +3660,17 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pdf-source-dir", required=True)
     parser.add_argument(
         "--deployment-root",
-        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-10-r1"),
+        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-11-r1"),
     )
     parser.add_argument(
         "--predecessor-deployment-root",
         required=True,
-        help="read-only path to sealed pilot-9 deployment and its eight-release lineage",
+        help="read-only path to sealed pilot-10 deployment and its nine-release lineage",
     )
     parser.add_argument("--auth-file", default=str(Path.home() / ".codex" / "auth.json"))
     parser.add_argument("--codex-binary")
     parser.add_argument(
-        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-10-r1")
+        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-11-r1")
     )
     return parser
 

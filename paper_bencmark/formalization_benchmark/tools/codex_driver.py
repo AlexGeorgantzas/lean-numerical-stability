@@ -414,6 +414,7 @@ class TurnResult:
     active_started_perf_ns: int | None
     active_ended_perf_ns: int | None
     failure_kind: str | None
+    thread_cumulative_usage: dict[str, int] | None = None
 
 
 def _zero_usage() -> dict[str, int]:
@@ -2193,6 +2194,7 @@ class CodexDriver:
         latest_cumulative_cache_write_defaulted: bool | None = None
         fork_cumulative_usage_semantics: str | None = None
         raw_responses: dict[str, dict[str, Any]] = {}
+        active_context_compactions: set[str] = set()
         background_terminal_cleanup: dict[str, Any] | None = None
         workspace_usage: dict[str, int] | None = None
         workspace_limit_violation = False
@@ -2479,6 +2481,11 @@ class CodexDriver:
                         isinstance(usage_payload, Mapping)
                         and "cacheWriteInputTokens" not in usage_payload
                     ),
+                    "usage_class": (
+                        "context_compaction"
+                        if active_context_compactions
+                        else "turn_work"
+                    ),
                 }
                 prior = raw_responses.get(response_id)
                 if prior is not None and prior != canonical:
@@ -2538,11 +2545,23 @@ class CodexDriver:
                     name in total_usage
                     for name in ("cacheWriteInputTokens", "cache_write_input_tokens")
                 )
+            elif method == "item/started":
+                item = params.get("item")
+                if isinstance(item, Mapping) and item.get("type") == "contextCompaction":
+                    item_id = item.get("id")
+                    if not isinstance(item_id, str) or not item_id:
+                        raise BenchmarkError("Codex context compaction has no identity")
+                    active_context_compactions.add(item_id)
             elif method == "item/completed":
                 candidate = params.get("turnId")
                 if observed_turn_id is not None and candidate != observed_turn_id:
                     raise BenchmarkError("Codex item/completed belongs to another turn")
                 item = params.get("item")
+                if isinstance(item, Mapping) and item.get("type") == "contextCompaction":
+                    item_id = item.get("id")
+                    if item_id not in active_context_compactions:
+                        raise BenchmarkError("Codex completed an unknown context compaction")
+                    active_context_compactions.remove(str(item_id))
                 item_type = item.get("type") if isinstance(item, Mapping) else None
                 normalized_item_type = (
                     "".join(character for character in item_type.casefold() if character.isalnum())
@@ -2948,6 +2967,16 @@ class CodexDriver:
         except BenchmarkError as error:
             protocol_error = protocol_error or str(error)
         usage = _usage_sum([record["usage"] for record in raw_responses.values()])
+        context_compaction_usage = _usage_sum(
+            [
+                record["usage"]
+                for record in raw_responses.values()
+                if record.get("usage_class") == "context_compaction"
+            ]
+        )
+        cumulative_cross_checked_usage = _usage_delta(
+            usage, context_compaction_usage
+        )
         cumulative_delta: dict[str, int] | None = None
         if latest_cumulative is not None:
             try:
@@ -2960,7 +2989,7 @@ class CodexDriver:
                 if (
                     self.fork_source_thread_id is not None
                     and not reused_session
-                    and latest_cumulative == usage
+                    and latest_cumulative == cumulative_cross_checked_usage
                 ):
                     cumulative_delta = dict(latest_cumulative)
                     fork_cumulative_usage_semantics = "child_reset"
@@ -2981,7 +3010,10 @@ class CodexDriver:
                 protocol_error = protocol_error or (
                     "Codex app-server supplied no valid cumulative usage cross-check"
                 )
-            elif any(cumulative_delta[field] != usage[field] for field in _zero_usage()):
+            elif any(
+                cumulative_delta[field] != cumulative_cross_checked_usage[field]
+                for field in _zero_usage()
+            ):
                 telemetry_invalid = True
                 protocol_error = protocol_error or (
                     "Codex raw response usage disagrees with the cumulative usage delta"
@@ -3170,6 +3202,9 @@ class CodexDriver:
                     )
                 )
             ),
+            thread_cumulative_usage=(
+                dict(latest_cumulative) if latest_cumulative is not None else None
+            ),
         )
         record: dict[str, Any] = {
             "schema_version": 3,
@@ -3208,7 +3243,10 @@ class CodexDriver:
             "app_server_command": inner,
             "usage": result.usage,
             "usage_complete": result.usage_complete,
-            "usage_measurement": "exact deduplicated app-server rawResponse/completed usage",
+            "usage_measurement": (
+                "exact deduplicated app-server rawResponse/completed usage, including "
+                "explicitly classified context-compaction responses"
+            ),
             "capability_attestation": capability_attestation,
             "usage_field_semantics": {
                 "cache_write_input_tokens": (
@@ -3230,6 +3268,16 @@ class CodexDriver:
                 for response_id in sorted(raw_responses)
             ],
             "cumulative_usage_delta_cross_check": cumulative_delta,
+            "cumulative_usage_expected_from_raw_responses": (
+                cumulative_cross_checked_usage
+            ),
+            "thread_cumulative_usage_after_turn": result.thread_cumulative_usage,
+            "context_compaction_usage": context_compaction_usage,
+            "context_compaction_response_count": sum(
+                1
+                for item in raw_responses.values()
+                if item.get("usage_class") == "context_compaction"
+            ),
             "fork_cumulative_usage_semantics": fork_cumulative_usage_semantics,
             "background_terminal_cleanup": background_terminal_cleanup,
             "workspace_resource_ceiling": {

@@ -1,8 +1,10 @@
 # Formalization benchmark architecture
 
-Pilot-10 is a side-by-side warm-start successor. Earlier deployments and
-results are read-only provenance, not Pilot-10 observations. The direct
-predecessor is Pilot-9, whose cold-start H22-11 pair remains sealed.
+Pilot-11 is a side-by-side warm-start successor. Earlier deployments and
+results are read-only provenance, not Pilot-11 observations. The direct
+predecessor is Pilot-10, whose one-shot scout failed closed at the telemetry
+gate during automatic context compaction and whose official task set remains
+untouched. Pilot-9's cold-start H22-11 pair also remains sealed.
 
 ## Operator path
 
@@ -38,7 +40,7 @@ one pair controller
 
 The controller pre-stages and compares both condition inputs before the first
 contestant call. An account-global registry reserves each
-`(formalization-benchmark-pilot-10, task_id)` once. A shared campaign lock and
+`(formalization-benchmark-pilot-11, task_id)` once. A shared campaign lock and
 predecessor locks prevent concurrent measured use of Titan. Reissuing a command
 returns the terminal pair or continues only at a safe boundary between sealed
 conditions.
@@ -129,7 +131,7 @@ incomplete telemetry fail closed as infrastructure incidents.
 
 | Script | Responsibility |
 | --- | --- |
-| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-10. |
+| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-11. |
 | `tools/measure_library_build.py` | Record the clean full NumStability build and resources. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary without provider calls. |
 | `tools/provider_capability_canary.py` | Exercise exact models, schemas, tools, and isolation off-benchmark. |
@@ -184,7 +186,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-pilot-10/H22-11.json
+  index/formalization-benchmark-pilot-11/H22-11.json
 ```
 
 Records bind prompts, candidates, source packets, semantic dossiers, role
