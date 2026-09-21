@@ -21,12 +21,22 @@ import json
 import os
 from pathlib import Path
 import re
+import shutil
 import subprocess
 import sys
 from typing import Any, Callable, Iterator, Mapping, Sequence
 
 from common import BenchmarkError, canonical_json_bytes, sha256_file, utc_now
+from hardware import (
+    EXPECTED_LOGICAL_CPUS,
+    EXPECTED_MEMORY_BYTES,
+    EXPECTED_TASKS_MAX,
+    frozen_hardware_identity,
+    snapshot_hardware,
+    systemd_service_envelope_prefix,
+)
 from manifest_control import ROOT
+from titan_envelope import COMMAND_CGROUP_VARIABLE, prepare_command_cgroup
 
 
 SCHEMA = "formalization-design16-exploratory-campaign-1"
@@ -74,6 +84,7 @@ TERMINAL_EVENT_TYPES = frozenset(
 )
 HEX40 = re.compile(r"[0-9a-f]{40}")
 HEX64 = re.compile(r"[0-9a-f]{64}")
+TITAN_ENVELOPE_MARKER = "HIGHAMBENCH_DESIGN16_TITAN_ENVELOPE"
 
 
 def _read_object(path: Path, label: str) -> dict[str, Any]:
@@ -282,7 +293,29 @@ def load_plan(config_path: Path, readiness_path: Path) -> list[dict[str, Any]]:
     return plan
 
 
-def _manifest_core(args: argparse.Namespace) -> dict[str, Any]:
+def _activate_hardware_envelope(args: argparse.Namespace) -> dict[str, Any] | None:
+    if not args.enforce_titan_envelope:
+        return None
+    command_cgroup = prepare_command_cgroup()
+    os.environ[COMMAND_CGROUP_VARIABLE] = str(command_cgroup)
+    snapshot = snapshot_hardware(strict=True)
+    return {
+        "identity": frozen_hardware_identity(snapshot),
+        "logical_cpus": EXPECTED_LOGICAL_CPUS,
+        "memory_bytes": EXPECTED_MEMORY_BYTES,
+        "tasks_max": EXPECTED_TASKS_MAX,
+        "swap_enabled": False,
+        "generated_command_cgroup": {
+            "memory_bytes": 24 * 1024 * 1024 * 1024,
+            "tasks_max": 384,
+            "swap_enabled": False,
+        },
+    }
+
+
+def _manifest_core(
+    args: argparse.Namespace, *, hardware_envelope: Mapping[str, Any] | None
+) -> dict[str, Any]:
     if args.model != "gpt-5.6-sol" or args.reasoning_effort != "xhigh":
         raise BenchmarkError("Design-16 campaign formalizer is frozen to gpt-5.6-sol xhigh")
     positive_limits = {
@@ -301,6 +334,15 @@ def _manifest_core(args: argparse.Namespace) -> dict[str, Any]:
         "tasks_run_sequentially": True,
         "pooled_effect_estimate_forbidden": True,
         "plan": plan,
+        "campaign_controller": (
+            _runner_identity(
+                Path(__file__).resolve(),
+                args.controller_commit,
+                args.controller_sha256,
+            )
+            if args.controller_commit is not None
+            else {"test_mode_unfrozen": True}
+        ),
         "runner": _runner_identity(args.runner, args.runner_commit, args.runner_sha256),
         "mathlib_atlas": _atlas_identity(args.mathlib_atlas.expanduser()),
         "config": {
@@ -318,6 +360,11 @@ def _manifest_core(args: argparse.Namespace) -> dict[str, Any]:
             "time_limit_seconds": args.time_limit_seconds,
             "validation_timeout_seconds": args.validation_timeout_seconds,
         },
+        "hardware_envelope": (
+            dict(hardware_envelope)
+            if hardware_envelope is not None
+            else {"enforced": False}
+        ),
         "retrieval": {
             "root_limit": args.root_limit,
             "dependency_limit": args.dependency_limit,
@@ -476,7 +523,7 @@ def _exclusive_host_lock(path: Path) -> Iterator[None]:
 
 
 def _command(args: argparse.Namespace, item: Mapping[str, Any], pair_root: Path) -> list[str]:
-    return [
+    command = [
         sys.executable,
         str(args.runner.resolve()),
         "--deployment",
@@ -504,6 +551,9 @@ def _command(args: argparse.Namespace, item: Mapping[str, Any], pair_root: Path)
         "--maximum-packet-bytes",
         str(args.maximum_packet_bytes),
     ]
+    if args.enforce_titan_envelope:
+        command.append("--require-titan-envelope")
+    return command
 
 
 def run_campaign(
@@ -511,7 +561,8 @@ def run_campaign(
     *,
     process_runner: Callable[..., subprocess.CompletedProcess[Any]] = subprocess.run,
 ) -> dict[str, Any]:
-    core = _manifest_core(args)
+    hardware_envelope = _activate_hardware_envelope(args)
+    core = _manifest_core(args, hardware_envelope=hardware_envelope)
     max_new_tasks = getattr(args, "max_new_tasks", None)
     if max_new_tasks is not None and (
         not isinstance(max_new_tasks, int) or max_new_tasks < 1
@@ -698,6 +749,8 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--runner", type=Path, required=True)
     parser.add_argument("--runner-commit", required=True)
     parser.add_argument("--runner-sha256", required=True)
+    parser.add_argument("--controller-commit", required=True)
+    parser.add_argument("--controller-sha256", required=True)
     parser.add_argument(
         "--config", type=Path, default=ROOT / "config.json"
     )
@@ -719,6 +772,14 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--dependency-limit", type=int, default=5)
     parser.add_argument("--maximum-packet-bytes", type=int, default=48 * 1024)
     parser.add_argument(
+        "--enforce-titan-envelope",
+        action="store_true",
+        help=(
+            "require a delegated systemd envelope, verify 8 CPUs/32 GiB/no swap, "
+            "and bound generated commands in a 24-GiB sub-cgroup"
+        ),
+    )
+    parser.add_argument(
         "--max-new-tasks",
         type=int,
         help="stop after this many previously nonterminal tasks; resume later",
@@ -736,7 +797,21 @@ def make_parser() -> argparse.ArgumentParser:
 
 
 def main() -> int:
-    result = run_campaign(make_parser().parse_args())
+    args = make_parser().parse_args()
+    if args.enforce_titan_envelope and os.environ.get(TITAN_ENVELOPE_MARKER) != "1":
+        systemd_run = shutil.which("systemd-run")
+        if systemd_run is None:
+            raise BenchmarkError("systemd-run is required for the Titan envelope")
+        command = [
+            *systemd_service_envelope_prefix(systemd_run),
+            "--setenv",
+            f"{TITAN_ENVELOPE_MARKER}=1",
+            sys.executable,
+            str(Path(__file__).resolve()),
+            *sys.argv[1:],
+        ]
+        return subprocess.run(command, check=False).returncode
+    result = run_campaign(args)
     print(json.dumps(result, indent=2, sort_keys=True))
     return 0
 

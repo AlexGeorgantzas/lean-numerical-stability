@@ -39,6 +39,7 @@ from formalization_validator import compiled_candidate_workspace, validate_candi
 from lean_sandbox import compiler_command
 from manifest_control import ROOT
 from pair_controller import _environment_note, _task_packet_markdown
+from hardware import snapshot_hardware
 
 
 SCIENTIFIC_STATUS = "UNSCORED_ENGINEERING_EXPLORATORY"
@@ -210,6 +211,10 @@ def _run_condition(
     condition_root = output_root / spec.name
     condition_root.mkdir(mode=0o700)
 
+    hardware_snapshot = (
+        snapshot_hardware(strict=True) if args.require_titan_envelope else None
+    )
+
     retrieval_started = time.monotonic()
     composition, api_markdown = build_composition_packet(
         source_packet_path=packet_path,
@@ -327,6 +332,8 @@ def _run_condition(
         "created_at_utc": utc_now(),
         "fresh_stateless_formalizer": True,
         "warm_or_forked_conversation": False,
+        "hardware_envelope_required": bool(args.require_titan_envelope),
+        "hardware_snapshot": hardware_snapshot,
         "model": args.model,
         "reasoning_effort": args.reasoning_effort,
         "route_status": composition["route_status"],
@@ -477,6 +484,11 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root-limit", type=int, default=3)
     parser.add_argument("--dependency-limit", type=int, default=5)
     parser.add_argument("--maximum-packet-bytes", type=int, default=48 * 1024)
+    parser.add_argument(
+        "--require-titan-envelope",
+        action="store_true",
+        help="fail closed unless the exact 8-CPU/32-GiB/no-swap envelope is active",
+    )
     return parser
 
 

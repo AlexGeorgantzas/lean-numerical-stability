@@ -116,6 +116,8 @@ def _args(root: Path, *, dry_run: bool) -> argparse.Namespace:
         runner=runner,
         runner_commit=commit,
         runner_sha256=digest,
+        controller_commit=None,
+        controller_sha256=None,
         config=CONFIG,
         readiness=READINESS,
         host_lock=root / "host.lock",
@@ -128,6 +130,7 @@ def _args(root: Path, *, dry_run: bool) -> argparse.Namespace:
         maximum_packet_bytes=48 * 1024,
         max_new_tasks=None,
         wave_task_ids=None,
+        enforce_titan_envelope=False,
         dry_run=dry_run,
     )
 
