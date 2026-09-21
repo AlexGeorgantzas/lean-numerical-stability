@@ -404,3 +404,60 @@ is required before starting an official pair.
 
 **Current need:** Pilot-12 is ready. Do not rerun Pilot-11 and do not rebuild or
 rescout. Start no Pilot-12 task until the user explicitly names it again.
+
+## 2026-09-21 — Codex — formalization_benchmark — Pilot-13 exact warm-fork telemetry successor
+
+**Did:**
+- Preserved Pilot-12 H22-11 as the immutable incident
+  `H22-11-20260921T113537Z-ac4c93f2`. Its L task completed in
+  308.111706846 active seconds, but app-server emitted no
+  `rawResponse/completed` usage. The controller therefore sealed L as
+  `TELEMETRY_FAILURE`; N never started. Pair-report SHA-256 is
+  `7d17491487b94243340466e243dfe2594137a72f30692678dcccac0c32298d6c`.
+- Added a narrow exact fallback for inherited warm forks only. Each ordered,
+  pre-`turn/completed` `thread/tokenUsage/updated` notification must contain an
+  exact `last` record equal field-by-field to its cumulative delta from the
+  authenticated fork baseline. Missing, late, duplicated, regressing, or
+  mismatched notifications fail closed. A context-compaction item without raw
+  response usage also fails closed. Fresh threads still require raw-response
+  usage.
+- Extended the one-shot provider qualification with a real task-neutral fork
+  from the frozen warm root, the exact formalizer model/effort, NumStability
+  mounts, and checked workspace read/write tools. Updated the deployment
+  lineage and campaign locks to authenticate Pilot-12 plus all eleven older
+  run roots.
+- Committed and pushed Pilot-13 as
+  `9296649b69bdac2b0d6722c1099a2f13a9ebedf6`. Manifest payload SHA-256 is
+  `1f2e2753e78c6a7d612a1958eb1293d0e4a82ab9bd1d87d21fc28253d2823b1b`;
+  manifest-file SHA-256 is
+  `3d927b34d5abd85fec7335ab149b3f6e1331311dbc5fb7a5d38109c88286a505`.
+  The complete formalization benchmark suite passed all 174 tests, and the
+  installed operator skill passed its validator.
+
+### Titan completion
+
+- Installed Pilot-13 at
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1`; deployment-record
+  SHA-256 is
+  `7e0fac28705562b1603b7f26dbf6bce2640de8116fbc5502b98cfde470372c84`.
+  Verify-release and doctor passed on eight logical CPUs, 32 GiB RAM, 512
+  tasks, and no swap.
+- Reused Pilot-11's authenticated build record
+  `6f4581380982e51fd52a342cc380db5c8bae5d427d32be9c8f2aa9d136de8058`
+  and the inherited task-neutral scout. The deployment records zero new
+  library builds and zero new scout turns. Pilot-13 warm-root-record SHA-256 is
+  `8a1df612f64b31ff4e8507fd5eda051cc51e4e9a8148a058fde491a5e0aa5c29`.
+- The seven-turn off-benchmark qualification passed. Record SHA-256 is
+  `7f42ca772f18b52b2ae430bdb855666879bbfbff57de6086cc21d1e9d05664b7`;
+  roles-tree SHA-256 is
+  `7389fc863e9ed6be718c2b9fb8ce4e641f7d5e08a1e2e29a1776d84d88276d77`.
+  The new live warm-fork probe reproduced the production provider surface:
+  zero raw-response usage events and four exact cumulative notifications. It
+  passed in `fork_cumulative_notifications` mode with 112,472 exact tokens.
+  Qualification is uncharged and consumed no official task slot.
+- All 18 Pilot-13 task statuses were checked and remain `NOT_STARTED`, including
+  H22-11.
+
+**Current need:** Pilot-13 is ready. Do not rebuild, rescout, reinterpret the
+Pilot-12 incident, or start an official pair without a new explicit task-run
+request.
