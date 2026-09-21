@@ -97,7 +97,7 @@
         "scout_token_cap": {"type": ["integer", "null"], "minimum": 1},
         "scout_runs_per_release": {"const": 0},
         "scout_runs_per_campaign": {"const": 1},
-        "inherited_from_pilot": {"const": "formalization-benchmark-pilot-11"},
+        "inherited_from_pilot": {"const": "formalization-benchmark-pilot-12"},
         "task_prompts_byte_identical": {"const": true},
         "task_clock_excludes_scout": {"const": true},
         "task_usage_headline": {"const": "net_new_tokens"},

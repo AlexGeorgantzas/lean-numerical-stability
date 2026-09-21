@@ -1,7 +1,7 @@
 {
   "$schema": "schemas/config.schema.json",
   "schema_version": "formalization-benchmark-config-1",
-  "pilot_id": "formalization-benchmark-pilot-12",
+  "pilot_id": "formalization-benchmark-pilot-13",
   "task_ids": [
     "P01-T2",
     "P02-T2",
@@ -65,7 +65,7 @@
     "scout_token_cap": null,
     "scout_runs_per_release": 0,
     "scout_runs_per_campaign": 1,
-    "inherited_from_pilot": "formalization-benchmark-pilot-11",
+    "inherited_from_pilot": "formalization-benchmark-pilot-12",
     "task_prompts_byte_identical": true,
     "task_clock_excludes_scout": true,
     "task_usage_headline": "net_new_tokens",
@@ -112,7 +112,7 @@
   },
   "measurement_scope": {
     "clock": "The one-time Condition-L library scout is logged separately and excluded. Per-task cumulative contestant-active time begins at task turn delivery and runs through charged background-terminal cleanup/quiescence and candidate freeze/hash. The ordered post-terminal telemetry barrier/drain, compilation, integrity checks, and faithfulness auditing are logged off-clock.",
-    "tokens": "The one-time scout usage is logged once and excluded from task totals. Every task retains exact raw-response input, cached-input, cache-write-input, output, reasoning-output, and total tokens, cross-checked against cumulative thread telemetry. The primary task-local headline is net-new tokens = uncached input plus output; raw totals remain available.",
+    "tokens": "The one-time scout usage is logged once and excluded from task totals. Fresh threads use exact raw-response usage cross-checked against cumulative thread telemetry. A warm fork may instead use its ordered per-response thread/tokenUsage/updated notifications only when each exact last usage equals the corresponding cumulative delta, all notifications arrive before turn completion, no context compaction occurs, and the inherited fork baseline is authenticated; otherwise measurement fails closed. Raw events are retained whenever supplied. The primary task-local headline is net-new tokens = uncached input plus output; all exact component totals remain available.",
     "audit": "Audit time and audit tokens are recorded separately and excluded from the contestant measurement."
   },
   "packet_policy": {

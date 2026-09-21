@@ -139,6 +139,10 @@ thread = {
     "ephemeral": ephemeral,
     "model": "test-model",
 }
+raw_events_enabled = not (
+    thread_request["method"] == "thread/fork"
+    and (workspace / "fork-no-raw-events").exists()
+)
 send({"method": "thread/started", "params": {"thread": thread}})
 send({"id": thread_request["id"], "result": {"thread": thread}})
 turn_number = 0
@@ -204,15 +208,16 @@ while True:
                 "reasoningOutputTokens": 1,
                 "totalTokens": 6,
             }
-            send({
-                "method": "rawResponse/completed",
-                "params": {
-                    "responseId": "response-late-" + str(late_turn_id),
-                    "threadId": thread_id,
-                    "turnId": late_turn_id,
-                    "usage": late_raw,
-                },
-            })
+            if raw_events_enabled:
+                send({
+                    "method": "rawResponse/completed",
+                    "params": {
+                        "responseId": "response-late-" + str(late_turn_id),
+                        "threadId": thread_id,
+                        "turnId": late_turn_id,
+                        "usage": late_raw,
+                    },
+                })
             for field in cumulative:
                 cumulative[field] += late_raw[field]
             send({
@@ -293,20 +298,21 @@ while True:
             "item": {"id": "message-" + turn_id, "type": "agentMessage", "text": turn_id},
         },
     })
-    send({
-        "method": "rawResponseItem/completed",
-        "params": {
-            "threadId": thread_id,
-            "turnId": turn_id,
-            "item": {
-                "id": "reasoning-" + turn_id,
-                "type": "reasoning",
-                "summary": [{"type": "summary_text", "text": "visible summary"}],
-                "content": [{"type": "reasoning_text", "text": "hidden reasoning"}],
-                "encrypted_content": "encrypted-hidden-payload",
+    if raw_events_enabled:
+        send({
+            "method": "rawResponseItem/completed",
+            "params": {
+                "threadId": thread_id,
+                "turnId": turn_id,
+                "item": {
+                    "id": "reasoning-" + turn_id,
+                    "type": "reasoning",
+                    "summary": [{"type": "summary_text", "text": "visible summary"}],
+                    "content": [{"type": "reasoning_text", "text": "hidden reasoning"}],
+                    "encrypted_content": "encrypted-hidden-payload",
+                },
             },
-        },
-    })
+        })
     if prompt_text == "missing-usage":
         send({
             "method": "turn/completed",
@@ -335,6 +341,35 @@ while True:
             "totalTokens": 15,
         }
     )
+    if prompt_text == "multi-usage":
+        earlier = {
+            "inputTokens": 4,
+            "cachedInputTokens": 1,
+            "cacheWriteInputTokens": 0,
+            "outputTokens": 2,
+            "reasoningOutputTokens": 1,
+            "totalTokens": 6,
+        }
+        if raw_events_enabled:
+            send({
+                "method": "rawResponse/completed",
+                "params": {
+                    "responseId": "response-earlier-" + turn_id,
+                    "threadId": thread_id,
+                    "turnId": turn_id,
+                    "usage": earlier,
+                },
+            })
+        for field in cumulative:
+            cumulative[field] += earlier[field]
+        send({
+            "method": "thread/tokenUsage/updated",
+            "params": {
+                "threadId": thread_id,
+                "turnId": turn_id,
+                "tokenUsage": {"total": dict(cumulative), "last": earlier},
+            },
+        })
     if prompt_text == "context-compaction":
         compaction_id = "compaction-" + turn_id
         compaction_raw = {
@@ -353,15 +388,16 @@ while True:
                 "item": {"id": compaction_id, "type": "contextCompaction"},
             },
         })
-        send({
-            "method": "rawResponse/completed",
-            "params": {
-                "responseId": "response-compaction-" + turn_id,
-                "threadId": thread_id,
-                "turnId": turn_id,
-                "usage": compaction_raw,
-            },
-        })
+        if raw_events_enabled:
+            send({
+                "method": "rawResponse/completed",
+                "params": {
+                    "responseId": "response-compaction-" + turn_id,
+                    "threadId": thread_id,
+                    "turnId": turn_id,
+                    "usage": compaction_raw,
+                },
+            })
         send({
             "method": "item/completed",
             "params": {
@@ -370,28 +406,42 @@ while True:
                 "item": {"id": compaction_id, "type": "contextCompaction"},
             },
         })
-    send({
-        "method": "rawResponse/completed",
-        "params": {
-            "responseId": "response-" + turn_id,
-            "threadId": thread_id,
-            "turnId": turn_id,
-            "usage": raw,
-        },
-    })
+    if raw_events_enabled:
+        send({
+            "method": "rawResponse/completed",
+            "params": {
+                "responseId": "response-" + turn_id,
+                "threadId": thread_id,
+                "turnId": turn_id,
+                "usage": raw,
+            },
+        })
     for field in cumulative:
         cumulative[field] += raw[field]
     reported = dict(cumulative)
+    reported_last = dict(raw)
     if prompt_text == "bad-usage":
         reported["totalTokens"] += 1
+    if (workspace / "fork-last-usage-mismatch").exists():
+        reported_last["inputTokens"] += 1
+        reported_last["totalTokens"] += 1
     send({
         "method": "thread/tokenUsage/updated",
         "params": {
             "threadId": thread_id,
             "turnId": turn_id,
-            "tokenUsage": {"total": reported, "last": raw},
+            "tokenUsage": {"total": reported, "last": reported_last},
         },
     })
+    if (workspace / "fork-duplicate-usage").exists():
+        send({
+            "method": "thread/tokenUsage/updated",
+            "params": {
+                "threadId": thread_id,
+                "turnId": turn_id,
+                "tokenUsage": {"total": reported, "last": reported_last},
+            },
+        })
     if prompt_text == "late-usage":
         late_pending = True
         late_turn_id = turn_id
@@ -628,6 +678,167 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertEqual(baseline["source_turn_id"], "turn-1")
         self.assertEqual(baseline["source_cumulative_usage"], source.usage)
         forked.close(artifact_dir=self.root / "task-close")
+
+    def test_fork_without_raw_events_uses_exact_cumulative_response_usage(self) -> None:
+        checkpoint = self.root / "notification-checkpoint"
+        checkpoint.mkdir()
+        scout = self.driver(state_root=checkpoint / "state")
+        source = scout.run_turn(
+            prompt="scout",
+            workspace=self.workspace,
+            artifact_dir=self.root / "notification-scout",
+            timeout_seconds=5,
+        )
+        scout.close(artifact_dir=self.root / "notification-scout-close")
+        source_turn = json.loads(
+            (self.root / "notification-scout" / "turn.json").read_text()
+        )["turn_id"]
+        seed = self.root / "notification-seed"
+        shutil.copytree(checkpoint, seed, symlinks=True)
+        task_workspace = self.root / "notification-workspace"
+        task_workspace.mkdir()
+        (task_workspace / "fork-no-raw-events").touch()
+        forked = self.driver(
+            state_root=seed / "state",
+            fork_source_thread_id=source.thread_id,
+            fork_source_last_turn_id=source_turn,
+            fork_source_cumulative_usage=source.usage,
+        )
+
+        child = forked.run_turn(
+            prompt="multi-usage",
+            workspace=task_workspace,
+            artifact_dir=self.root / "notification-task",
+            timeout_seconds=5,
+        )
+        self.assertTrue(child.usage_complete)
+        self.assertEqual(child.usage["total_tokens"], 21)
+        child_record = json.loads(
+            (self.root / "notification-task" / "turn.json").read_text()
+        )
+        self.assertEqual(child_record["raw_response_count"], 0)
+        self.assertEqual(child_record["cumulative_usage_notification_count"], 2)
+        self.assertTrue(child_record["fork_notification_fallback_admitted"])
+        self.assertEqual(
+            child_record["usage_measurement_mode"],
+            "fork_cumulative_notifications",
+        )
+        self.assertEqual(
+            sum(
+                item["last_usage"]["total_tokens"]
+                for item in child_record["cumulative_usage_notifications"]
+            ),
+            child.usage["total_tokens"],
+        )
+        self.assertTrue(
+            all(
+                not item["received_after_turn_completed"]
+                for item in child_record["cumulative_usage_notifications"]
+            )
+        )
+
+        repair = forked.run_turn(
+            prompt="repair",
+            workspace=task_workspace,
+            artifact_dir=self.root / "notification-repair",
+            timeout_seconds=5,
+            thread_id=child.thread_id,
+        )
+        self.assertTrue(repair.usage_complete)
+        self.assertEqual(repair.usage["total_tokens"], 18)
+        repair_record = json.loads(
+            (self.root / "notification-repair" / "turn.json").read_text()
+        )
+        self.assertEqual(
+            repair_record["usage_measurement_mode"],
+            "fork_cumulative_notifications",
+        )
+        forked.close(artifact_dir=self.root / "notification-close")
+
+    def test_fork_notification_usage_fails_closed_on_unmetered_compaction(self) -> None:
+        checkpoint = self.root / "compaction-notification-checkpoint"
+        checkpoint.mkdir()
+        scout = self.driver(state_root=checkpoint / "state")
+        source = scout.run_turn(
+            prompt="scout",
+            workspace=self.workspace,
+            artifact_dir=self.root / "compaction-notification-scout",
+            timeout_seconds=5,
+        )
+        scout.close()
+        source_turn = json.loads(
+            (self.root / "compaction-notification-scout" / "turn.json").read_text()
+        )["turn_id"]
+        seed = self.root / "compaction-notification-seed"
+        shutil.copytree(checkpoint, seed, symlinks=True)
+        workspace = self.root / "compaction-notification-workspace"
+        workspace.mkdir()
+        (workspace / "fork-no-raw-events").touch()
+        forked = self.driver(
+            state_root=seed / "state",
+            fork_source_thread_id=source.thread_id,
+            fork_source_last_turn_id=source_turn,
+            fork_source_cumulative_usage=source.usage,
+        )
+        result = forked.run_turn(
+            prompt="context-compaction",
+            workspace=workspace,
+            artifact_dir=self.root / "compaction-notification-task",
+            timeout_seconds=5,
+        )
+        self.assertEqual(result.failure_kind, "telemetry_invalid")
+        self.assertFalse(result.usage_complete)
+        record = json.loads(
+            (self.root / "compaction-notification-task" / "turn.json").read_text()
+        )
+        self.assertIn("context compaction", record["protocol_error"])
+        self.assertEqual(record["context_compaction_item_count"], 1)
+        forked.close()
+
+    def test_fork_notification_usage_rejects_last_delta_mismatch_and_duplicate(self) -> None:
+        checkpoint = self.root / "invalid-notification-checkpoint"
+        checkpoint.mkdir()
+        scout = self.driver(state_root=checkpoint / "state")
+        source = scout.run_turn(
+            prompt="scout",
+            workspace=self.workspace,
+            artifact_dir=self.root / "invalid-notification-scout",
+            timeout_seconds=5,
+        )
+        scout.close()
+        source_turn = json.loads(
+            (self.root / "invalid-notification-scout" / "turn.json").read_text()
+        )["turn_id"]
+        for marker in ("fork-last-usage-mismatch", "fork-duplicate-usage"):
+            with self.subTest(marker=marker):
+                seed = self.root / f"{marker}-seed"
+                shutil.copytree(checkpoint, seed, symlinks=True)
+                workspace = self.root / f"{marker}-workspace"
+                workspace.mkdir()
+                (workspace / "fork-no-raw-events").touch()
+                (workspace / marker).touch()
+                forked = self.driver(
+                    state_root=seed / "state",
+                    fork_source_thread_id=source.thread_id,
+                    fork_source_last_turn_id=source_turn,
+                    fork_source_cumulative_usage=source.usage,
+                )
+                result = forked.run_turn(
+                    prompt="task",
+                    workspace=workspace,
+                    artifact_dir=self.root / f"{marker}-artifacts",
+                    timeout_seconds=5,
+                )
+                self.assertEqual(result.failure_kind, "telemetry_invalid")
+                self.assertFalse(result.usage_complete)
+                record = json.loads(
+                    (self.root / f"{marker}-artifacts" / "turn.json").read_text()
+                )
+                self.assertIn(
+                    "last-response usage disagrees",
+                    record["protocol_error"],
+                )
+                forked.close()
 
     def test_provider_free_fork_preflight_accepts_only_frozen_parent_baseline(self) -> None:
         checkpoint = self.root / "fork-preflight-checkpoint"

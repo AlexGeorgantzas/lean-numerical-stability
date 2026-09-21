@@ -3,21 +3,24 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
-Pilot-12 is the separate warm-start successor. Pilots 1–11 are predecessor
-evidence, not Pilot-12 observations or runs to resume. Pilot-9's cold-start
+Pilot-13 is the separate warm-start successor. Pilots 1–12 are predecessor
+evidence, not Pilot-13 observations or runs to resume. Pilot-9's cold-start
 H22-11 pair remains sealed and must be labelled L-cold. The
 Pilot-10 one-shot scout also remains sealed: it failed closed because Codex's
 automatic context-compaction response was included in exact raw usage but
 omitted from thread-cumulative usage. No official Pilot-10 task started. Never
 retry its scout. Pilot-11 created the valid warm root, then sealed H22-11 as a
 pre-turn controller incident when an exact copied-parent usage notification was
-rejected after `thread/fork`. Pilot-12 inherits that exact root and the exact
-Pilot-11 library/runtime build, accepts only a fully matching baseline event,
-and charges neither its time nor tokens. Never rebuild or rescout. The
+rejected after `thread/fork`. Pilot-12 fixed that boundary, then sealed H22-11
+because its L fork emitted 18 exact cumulative/`last` usage notifications but
+no raw-response usage events. Pilot-13 inherits the same root and exact
+Pilot-11 library/runtime build, admits that telemetry only under strict
+per-response checks, and charges neither scout time nor tokens. Never rebuild
+or rescout. The
 installed pilot-5 release retains its three-way audit and sealed P01-T2 and
 P02-T2 records; its `unclear` decisions must not be relabeled or supplied with
 manufactured feedback. Do not pool data across pilots or use pilot-5 task slots
-to satisfy a pilot-12 request. Pilot-12 must have its own pilot ID, deployment,
+to satisfy a pilot-13 request. Pilot-13 must have its own pilot ID, deployment,
 launcher, task indices, and account-global reservations; it is not ready
 for measurement until its clean release and installation are authenticated and
 provider qualification passes. If any of these are missing, stop before an
@@ -107,19 +110,19 @@ every distinct semantic candidate still needs its own audit.
 
 ## Admission
 
-On Titan, first require the dedicated pilot-12 launcher and deployment. If
+On Titan, first require the dedicated pilot-13 launcher and deployment. If
 either is absent, stop with `source_first_runner_not_ready`; do not run pilot-5.
-Once installed, authenticate pilot-12 through its location-independent launcher:
+Once installed, authenticate pilot-13 through its location-independent launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-12-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-13-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-12-r1 doctor \
+~/.local/bin/run-highambench-formalization-pilot-13-r1 doctor \
   --task-id H22-11
 ```
 
@@ -158,8 +161,8 @@ their authenticated outputs jointly confirm all of the following:
   `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
   and stops without model inference or writing secrets to logs; the matching
   Code Mode host is hash-pinned and mounted read-only beside `/codex`;
-- the sealed pilot-1 through pilot-10 predecessor lineage and the
-  account-global campaign lock/registry match the pilot-12 deployment record.
+- the sealed pilot-1 through pilot-12 predecessor lineage and the
+  account-global campaign lock/registry match the pilot-13 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -170,7 +173,7 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-12-r1 run \
+~/.local/bin/run-highambench-formalization-pilot-13-r1 run \
   --task-id H22-11
 ```
 
@@ -184,7 +187,9 @@ output-schema probes for every frozen audit role: blind translation, direct
 judgment, round-trip judgment, and adjudication. The latter use the exact
 schemas that production auditing will submit, with synthetic checkable
 outputs. It must also perform trace-backed synthetic workspace reads and a
-checked formalizer write under the same sandbox, and reject actual Code Mode
+checked formalizer write under the same sandbox, plus a real task-neutral fork
+from the inherited root whose usage passes the exact warm-fork telemetry gate,
+and reject actual Code Mode
 startup failures in diagnostic events or stderr. Truncated tool-catalog text
 is not a startup diagnostic; pilot-4 falsely treated it as one. Static
 JSON-schema checks or a generic auditor probe do not establish provider
@@ -208,7 +213,7 @@ or retrieving the already terminal result. Recovery is supported before a
 condition's first turn and between terminal, hash-sealed condition records. A
 frozen-feedback transition continues automatically only while that condition's
 original app-server process remains alive. A controller or process interruption
-after any submission cannot be cold-resumed without losing exact raw usage and
+after any submission cannot be cold-resumed without losing exact usage and
 therefore becomes a fail-closed pair incident. Never edit the event stream or
 state files to advance a run.
 
@@ -323,7 +328,7 @@ library provenance wherever de-identification is reliable. The dossier
 contains candidate semantics under the explicit closure/frontier policy; paper
 and packet are supplied separately only to paper-facing roles.
 
-Acceptance requires the Pilot-12 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency. The Dxxx ID, not the descriptive `name`, is dependency identity. Both judges must complete S01--S16 plus both implication directions. Every material
+Acceptance requires the Pilot-13 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency. The Dxxx ID, not the descriptive `name`, is dependency identity. Both judges must complete S01--S16 plus both implication directions. Every material
 binder, premise, restriction, quantifier dependency, and conclusion must match
 the selected paper result without vacuity, unsupported assumptions, or narrower
 applicability. Auditor disagreement is resolved by adjudication against the
@@ -331,7 +336,7 @@ paper and candidate semantics. Provider failure, malformed auditor output,
 unavailable tools, or dossier failure is an unscored operational incident;
 it is not a semantic verdict.
 
-The only final semantic verdicts for a valid Pilot-12 candidate are `faithful` and
+The only final semantic verdicts for a valid Pilot-13 candidate are `faithful` and
 `unfaithful`. Equivalent and genuinely stronger candidates are faithful; weaker,
 different, restricted, vacuous, and partial-case candidates are unfaithful. An
 intermediate `undetermined` judge classification is an adjudication trigger,
@@ -346,7 +351,7 @@ malformed outputs, unavailable tools, and dossier failures stay unscored
 operational incidents, not candidate verdicts. A genuinely underdetermined
 source contract requires source-admissibility resolution or exclusion before
 scoring and must not be attributed to a candidate. This policy becomes
-operative only after the pilot-12 release and provider qualification pass;
+operative only after the pilot-13 release and provider qualification pass;
 the installed pilot-5 release remains historically unchanged.
 
 For an unfaithful candidate with a slot remaining, render feedback only through
@@ -369,12 +374,16 @@ Lean builds, background-terminal cleanup/quiescence, and all descendants.
 Ordered telemetry settling and trusted bookkeeping between quiescence and
 freeze are excluded. Multi-agent execution is disabled for this pilot.
 
-The contestant token ledger measures, without imposing a cap, every raw
-provider response in the formalizer conversation. One raw-event-enabled
-app-server process stays alive across all repairs. Usage is deduplicated by
-response ID and cross-checked against the cumulative thread delta for input,
-cached input, cache-write input, output, reasoning output, and total tokens.
-Missing completed-turn usage is `telemetry_invalid`, never zero. Usage observed
+The contestant token ledger imposes no cap. One app-server process stays alive
+across all repairs. Fresh threads require raw-response usage, deduplicated by
+response ID and cross-checked against cumulative thread deltas. Warm forks use
+the same surface when present; otherwise the controller accepts only ordered
+`thread/tokenUsage/updated` notifications received before `turn/completed`.
+Each notification's exact `last` usage must equal its fieldwise delta from the
+previous cumulative total, beginning at the authenticated fork baseline, and
+the turn total is the sum of those exact records. A duplicate, mismatch, late
+notification, missing notification, or context-compaction item without raw
+usage is `telemetry_invalid`, never zero. Usage observed
 before an active-time interruption is retained as a clearly labeled lower
 bound; it does not replace the valid `ACTIVE_TIME_LIMIT` endpoint.
 If the controller or host dies before a complete turn or final-freeze duration

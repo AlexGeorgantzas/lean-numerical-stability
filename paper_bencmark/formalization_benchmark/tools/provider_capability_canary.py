@@ -11,6 +11,7 @@ import json
 from pathlib import Path
 import re
 import secrets
+import shutil
 from typing import Any, Mapping
 
 from codex_driver import CodexDriver, TurnResult, command_cgroup_snapshot
@@ -24,6 +25,7 @@ from common import (
     sha256_file,
     tree_manifest,
     utc_now,
+    verify_tree_manifest,
     write_bytes_atomic,
     write_json_atomic,
 )
@@ -32,7 +34,8 @@ from hardware import snapshot_hardware, verify_frozen_hardware_identity
 from manifest_control import MANIFEST_PATH, verify_manifest
 
 
-SCHEMA = "formalization-provider-qualification-5"
+SCHEMA = "formalization-provider-qualification-6"
+WARM_FORK_ROLE = "warm-fork-formalizer"
 ROOT = Path(__file__).resolve().parents[1]
 AUDIT_SCHEMAS = ROOT / "audit" / "schemas"
 INPUT_NAME = "qualification_input.json"
@@ -261,6 +264,7 @@ def _check_turn(
     expected_output: Mapping[str, Any],
     ephemeral: bool,
     command_envelope: Mapping[str, Any],
+    usage_surface: str = "raw_response_events",
 ) -> None:
     """Require real, complete provider telemetry and the enforced capability gate."""
 
@@ -296,6 +300,38 @@ def _check_turn(
     capability = turn.get("capability_attestation")
     command_resources = turn.get("generated_command_cgroup")
     workspace_resources = turn.get("workspace_resource_ceiling")
+    if usage_surface == "raw_response_events":
+        usage_evidence_admitted = (
+            turn.get("usage_measurement_mode") == "raw_response_events"
+            and turn.get("raw_response_count", 0) >= 1
+        )
+    elif usage_surface == "warm_fork":
+        measurement_mode = turn.get("usage_measurement_mode")
+        fork_baseline = (
+            capability.get("fork_baseline_usage_notification")
+            if isinstance(capability, Mapping)
+            else None
+        )
+        usage_evidence_admitted = (
+            isinstance(fork_baseline, Mapping)
+            and fork_baseline.get("accepted") is True
+            and (
+                (
+                    measurement_mode == "raw_response_events"
+                    and turn.get("raw_response_count", 0) >= 1
+                )
+                or (
+                    measurement_mode == "fork_cumulative_notifications"
+                    and turn.get("raw_response_count") == 0
+                    and turn.get("cumulative_usage_notification_count", 0) >= 1
+                    and turn.get("fork_notification_fallback_admitted") is True
+                    and turn.get("cumulative_usage_expected_from_measurement")
+                    == result.usage
+                )
+            )
+        )
+    else:
+        raise BenchmarkError("provider qualification requested an unknown usage surface")
     if (
         turn.get("schema_version") != 3
         or turn.get("thread_id") != result.thread_id
@@ -306,7 +342,7 @@ def _check_turn(
         or turn.get("failure_kind") is not None
         or turn.get("usage_complete") is not True
         or turn.get("usage") != result.usage
-        or turn.get("raw_response_count", 0) < 1
+        or not usage_evidence_admitted
         or turn.get("cumulative_usage_delta_cross_check") != result.usage
         or turn.get("event_count") != result.event_count
         or not isinstance(capability, Mapping)
@@ -633,6 +669,34 @@ def qualification_identity(
         or manifest.get("pilot_id") != config.get("pilot_id")
     ):
         raise BenchmarkError("provider qualification deployment/release identity mismatch")
+    warm_root = (
+        deployment.run_root
+        / "warm-roots"
+        / str(manifest["manifest_payload_sha256"])
+    )
+    warm_record_path = warm_root / "warm-root.json"
+    checkpoint = warm_root / "checkpoint"
+    if not warm_record_path.is_file() or warm_record_path.is_symlink():
+        raise BenchmarkError("provider qualification warm-root record is missing")
+    warm_record = load_json(warm_record_path)
+    if (
+        warm_record.get("schema_version") != "formalization-warm-root-1"
+        or warm_record.get("status") != "READY"
+        or warm_record.get("pilot_id") != config.get("pilot_id")
+        or warm_record.get("manifest_payload_sha256")
+        != manifest.get("manifest_payload_sha256")
+        or not isinstance(warm_record.get("source_thread_id"), str)
+        or not warm_record.get("source_thread_id")
+        or not isinstance(warm_record.get("source_last_turn_id"), str)
+        or not warm_record.get("source_last_turn_id")
+        or not isinstance(warm_record.get("source_cumulative_usage"), Mapping)
+    ):
+        raise BenchmarkError("provider qualification warm-root record is malformed")
+    verify_tree_manifest(
+        checkpoint,
+        warm_record.get("checkpoint_manifest"),
+        label="provider qualification warm root",
+    )
     return {
         "pilot_id": config["pilot_id"],
         "manifest_sha256": manifest_sha256,
@@ -656,6 +720,21 @@ def qualification_identity(
             for (
                 role, model_key, effort_key, writable, ephemeral, schema_name, _expected
             ) in ROLES
+        },
+        "warm_fork": {
+            "role": WARM_FORK_ROLE,
+            "model": str(config["formalizer_model"]),
+            "reasoning_effort": str(config["formalizer_reasoning_effort"]),
+            "workspace_writable": True,
+            "ephemeral": False,
+            "output_schema_sha256": sha256_bytes(
+                canonical_json_bytes(OUTPUT_SCHEMA)
+            ),
+            "warm_root_record_sha256": sha256_file(warm_record_path),
+            "checkpoint_manifest": warm_record["checkpoint_manifest"],
+            "source_thread_id": warm_record["source_thread_id"],
+            "source_last_turn_id": warm_record["source_last_turn_id"],
+            "source_cumulative_usage": warm_record["source_cumulative_usage"],
         },
     }
 
@@ -829,6 +908,112 @@ def run_provider_capability_canary(
                 "turn_artifacts": tree_manifest(role_root),
             }
 
+        warm_identity = identity["warm_fork"]
+        warm_record_path = (
+            deployment.run_root
+            / "warm-roots"
+            / str(manifest["manifest_payload_sha256"])
+            / "warm-root.json"
+        )
+        warm_record = load_json(warm_record_path)
+        source_checkpoint = warm_record_path.parent / "checkpoint"
+        role_root = roles_root / WARM_FORK_ROLE
+        workspace = role_root / "workspace"
+        workspace.mkdir(parents=True, mode=0o700)
+        checkpoint = role_root / "checkpoint"
+        shutil.copytree(source_checkpoint, checkpoint, symlinks=True)
+        marker = "warm-fork-qualification-" + secrets.token_hex(16)
+        input_payload = {
+            "probe_marker": marker,
+            "odd_values": [3, 5, 7],
+            "even_values": [2, 4, 6],
+            "uppercase_text": "NUMERICAL",
+        }
+        input_path = workspace / INPUT_NAME
+        write_json_atomic(input_path, input_payload, mode=0o400)
+        input_sha256 = sha256_file(input_path)
+        schema_path = role_root / "output_schema.json"
+        write_json_atomic(schema_path, OUTPUT_SCHEMA, mode=0o400)
+        driver = CodexDriver(
+            codex_binary=deployment.codex_binary,
+            model=str(config["formalizer_model"]),
+            reasoning_effort=str(config["formalizer_reasoning_effort"]),
+            state_root=checkpoint / "state",
+            auth_file=deployment.auth_file,
+            bwrap_binary=deployment.bwrap_binary,
+            offline_shell=deployment.offline_shell,
+            toolchain_root=deployment.toolchain_root,
+            packages_root=deployment.packages_root,
+            library_source=deployment.library_source,
+            library_olean=deployment.library_olean,
+            workspace_writable=True,
+            code_mode_host_sha256=deployment.code_mode_host_sha256,
+            fork_source_thread_id=str(warm_record["source_thread_id"]),
+            fork_source_last_turn_id=str(warm_record["source_last_turn_id"]),
+            fork_source_cumulative_usage=warm_record["source_cumulative_usage"],
+        )
+        result = None
+        try:
+            result = driver.run_turn(
+                prompt=(
+                    PROMPT
+                    + f" Use a workspace file-writing tool to create {OUTPUT_NAME} "
+                    "containing exactly the same JSON object before returning it."
+                ),
+                workspace=workspace,
+                artifact_dir=role_root / "turn",
+                timeout_seconds=timeout_seconds,
+                output_schema=schema_path,
+                ephemeral=False,
+                sandbox="workspace-write",
+            )
+        finally:
+            driver.close(artifact_dir=role_root / "session-close")
+        assert result is not None
+        turn_path = role_root / "turn" / "turn.json"
+        if not turn_path.is_file() or turn_path.is_symlink():
+            raise BenchmarkError("warm-fork qualification turn record is missing")
+        turn = load_json(turn_path)
+        _check_turn(
+            result,
+            turn,
+            expected_output=EXPECTED_OUTPUT,
+            ephemeral=False,
+            command_envelope=config["command_resource_envelope"],
+            usage_surface="warm_fork",
+        )
+        tool_probe = _check_tool_trace(
+            role_root, turn, marker=marker, writable=True
+        )
+        _check_workspace_probe(
+            workspace,
+            input_sha256=input_sha256,
+            expected_output=EXPECTED_OUTPUT,
+            writable=True,
+        )
+        _check_shutdown(role_root, result.thread_id)
+        provider_responses = (
+            turn["raw_response_count"]
+            if turn.get("usage_measurement_mode") == "raw_response_events"
+            else turn["cumulative_usage_notification_count"]
+        )
+        outcomes[WARM_FORK_ROLE] = {
+            **warm_identity,
+            "thread_id": result.thread_id,
+            "usage": result.usage,
+            "usage_measurement_mode": turn["usage_measurement_mode"],
+            "provider_responses": provider_responses,
+            "raw_provider_responses": turn["raw_response_count"],
+            "cumulative_usage_notifications": turn.get(
+                "cumulative_usage_notification_count", 0
+            ),
+            "workspace_tool_probe": tool_probe,
+            "workspace_input_sha256": input_sha256,
+            "workspace_output_sha256": sha256_file(workspace / OUTPUT_NAME),
+            "turn_record_sha256": sha256_file(turn_path),
+            "turn_artifacts": tree_manifest(role_root),
+        }
+
         hardware_after = snapshot_hardware(strict=True)
         verify_frozen_hardware_identity(
             hardware_after, deployment_record.get("hardware_identity")
@@ -841,9 +1026,12 @@ def run_provider_capability_canary(
             "schema_version": SCHEMA,
             "status": "PASSED",
             "classification": "off_benchmark_provider_qualification",
-            "provider_turns": len(ROLES),
+            "provider_turns": len(ROLES) + 1,
             "provider_calls": sum(
-                outcome["raw_provider_responses"] for outcome in outcomes.values()
+                outcome.get(
+                    "provider_responses", outcome["raw_provider_responses"]
+                )
+                for outcome in outcomes.values()
             ),
             "charged_to_contestant": False,
             "created_at_utc": utc_now(),

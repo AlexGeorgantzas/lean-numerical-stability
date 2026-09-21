@@ -18,7 +18,12 @@ from audit_controller import (  # noqa: E402
     _validate_judgment,
     _validate_translation,
 )
-from common import BenchmarkError, sha256_file, write_json_atomic  # noqa: E402
+from common import (  # noqa: E402
+    BenchmarkError,
+    sha256_file,
+    tree_manifest,
+    write_json_atomic,
+)
 from deployment import Deployment  # noqa: E402
 import provider_capability_canary as canary  # noqa: E402
 
@@ -64,7 +69,12 @@ class FakeDriver:
         self.ephemeral = options["ephemeral"]
         artifact_dir = options["artifact_dir"]
         role = artifact_dir.parent.name
-        expected = next(item[-1] for item in canary.ROLES if item[0] == role)
+        expected = (
+            canary.EXPECTED_OUTPUT
+            if role == canary.WARM_FORK_ROLE
+            else next(item[-1] for item in canary.ROLES if item[0] == role)
+        )
+        warm_fork = self.options.get("fork_source_thread_id") is not None
         mode = self.role_trace_modes.get(role, self.trace_mode)
         source = options["workspace"] / canary.INPUT_NAME
         source_text = source.read_text(encoding="utf-8")
@@ -235,12 +245,25 @@ class FakeDriver:
             "failure_kind": None,
             "usage_complete": True,
             "usage": dict(USAGE),
-            "raw_response_count": 1,
+            "usage_measurement_mode": (
+                "fork_cumulative_notifications"
+                if warm_fork
+                else "raw_response_events"
+            ),
+            "raw_response_count": 0 if warm_fork else 1,
+            "cumulative_usage_notification_count": 1,
+            "fork_notification_fallback_admitted": warm_fork,
             "event_count": len(events),
             "events_sha256": sha256_file(artifact_dir / "events.jsonl"),
             "stderr_sha256": sha256_file(stderr),
             "cumulative_usage_delta_cross_check": dict(USAGE),
-            "capability_attestation": {"passed": True},
+            "cumulative_usage_expected_from_measurement": dict(USAGE),
+            "capability_attestation": {
+                "passed": True,
+                "fork_baseline_usage_notification": (
+                    {"accepted": True} if warm_fork else None
+                ),
+            },
             "protocol_error": None,
             "network_violation_attempts": 0,
             "event_archive_violated": False,
@@ -338,6 +361,39 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
                 "command_cpu_weight": 100,
             },
         }
+        for path in (
+            self.deployment.library_source,
+            self.deployment.library_olean,
+            self.deployment.toolchain_root,
+            self.deployment.packages_root,
+        ):
+            path.mkdir(parents=True, exist_ok=True)
+        warm_root = (
+            self.run_root
+            / "warm-roots"
+            / self.manifest["manifest_payload_sha256"]
+        )
+        checkpoint = warm_root / "checkpoint"
+        (checkpoint / "state").mkdir(parents=True)
+        (checkpoint / "state" / "fixture.txt").write_text(
+            "frozen scout state\n", encoding="utf-8"
+        )
+        write_json_atomic(
+            warm_root / "warm-root.json",
+            {
+                "schema_version": "formalization-warm-root-1",
+                "status": "READY",
+                "pilot_id": self.config["pilot_id"],
+                "manifest_payload_sha256": self.manifest[
+                    "manifest_payload_sha256"
+                ],
+                "source_thread_id": "scout-thread",
+                "source_last_turn_id": "scout-turn",
+                "source_cumulative_usage": dict(USAGE),
+                "checkpoint_manifest": tree_manifest(checkpoint),
+            },
+            mode=0o400,
+        )
         FakeDriver.calls = []
         FakeDriver.turn_overrides = {}
         FakeDriver.result_overrides = {}
@@ -369,8 +425,10 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
     def test_qualifies_exact_roles_off_benchmark_and_reuses_sealed_result(self) -> None:
         first = canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(first["status"], "PASSED")
-        self.assertEqual(len(FakeDriver.calls), len(canary.ROLES))
-        formalizer, auditor, *audit_schemas = FakeDriver.calls
+        self.assertEqual(len(FakeDriver.calls), len(canary.ROLES) + 1)
+        formalizer, auditor, *remaining = FakeDriver.calls
+        audit_schemas = remaining[:-1]
+        warm_fork = remaining[-1]
         self.assertEqual(
             (formalizer["driver"]["model"], formalizer["driver"]["reasoning_effort"]),
             ("exact-formalizer", "ultra"),
@@ -415,26 +473,42 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
                 )["expected_output"],
                 expected,
             )
+        self.assertEqual(
+            warm_fork["turn"]["artifact_dir"].parent.name,
+            canary.WARM_FORK_ROLE,
+        )
+        self.assertEqual(
+            warm_fork["driver"]["fork_source_thread_id"], "scout-thread"
+        )
+        self.assertEqual(
+            warm_fork["driver"]["fork_source_last_turn_id"], "scout-turn"
+        )
         for role, outcome in first["record"]["role_outcomes"].items():
             self.assertGreaterEqual(outcome["workspace_tool_probe"]["read_tool_items"], 1)
             self.assertEqual(
                 outcome["workspace_tool_probe"]["write_tool_items"] >= 1,
-                role == "formalizer",
+                role in {"formalizer", canary.WARM_FORK_ROLE},
             )
-        self.assertEqual(first["record"]["provider_turns"], 6)
-        self.assertEqual(first["record"]["provider_calls"], 6)
+        self.assertEqual(first["record"]["provider_turns"], 7)
+        self.assertEqual(first["record"]["provider_calls"], 7)
+        self.assertEqual(
+            first["record"]["role_outcomes"][canary.WARM_FORK_ROLE][
+                "usage_measurement_mode"
+            ],
+            "fork_cumulative_notifications",
+        )
         self.assertFalse(first["record"]["charged_to_contestant"])
         self.assertFalse((self.run_root / "pairs").exists())
         self.assertFalse((self.run_root / "index").exists())
         second = canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(second["record_sha256"], first["record_sha256"])
-        self.assertEqual(len(FakeDriver.calls), 6)
+        self.assertEqual(len(FakeDriver.calls), 7)
 
     def test_function_call_tool_trace_is_accepted_when_file_is_checked(self) -> None:
         FakeDriver.trace_mode = "function-call"
         result = canary.run_provider_capability_canary(self.deployment)
         self.assertEqual(result["status"], "PASSED")
-        self.assertEqual(len(FakeDriver.calls), 6)
+        self.assertEqual(len(FakeDriver.calls), 7)
 
     def test_raw_function_call_without_tool_result_is_not_a_write(self) -> None:
         FakeDriver.trace_mode = "function-call-no-write-result"
@@ -616,7 +690,7 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
         artifact.write_text("tampered\n", encoding="utf-8")
         with self.assertRaisesRegex(BenchmarkError, "sealed evidence changed"):
             canary.run_provider_capability_canary(self.deployment)
-        self.assertEqual(len(FakeDriver.calls), 6)
+        self.assertEqual(len(FakeDriver.calls), 7)
 
     def test_auditor_schema_probe_fails_closed_without_an_official_pair(self) -> None:
         FakeDriver.role_result_overrides = {

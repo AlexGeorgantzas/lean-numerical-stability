@@ -1,10 +1,11 @@
 # Formalization benchmark architecture
 
-Pilot-12 is a side-by-side warm-start successor. Earlier deployments and
-results are read-only provenance, not Pilot-12 observations. The direct
-predecessor is Pilot-11. Its task-neutral scout and frozen build are valid and
-reused unchanged; its H22-11 pair is sealed as a pre-turn controller incident.
-Pilot-10's failed scout and Pilot-9's cold-start H22-11 pair also remain sealed.
+Pilot-13 is a side-by-side warm-start successor. Earlier deployments and
+results are read-only provenance, not Pilot-13 observations. The direct
+predecessor is Pilot-12, whose H22-11 L turn is sealed as a telemetry incident.
+Pilot-11's task-neutral scout and frozen build remain valid and are reused
+unchanged through that lineage. Pilot-11's pre-turn incident, Pilot-10's failed
+scout, and Pilot-9's cold-start H22-11 pair also remain sealed.
 
 ## Operator path
 
@@ -16,7 +17,7 @@ installed run-highambench-experiments skill
         |
         +--> verify frozen release closure
         +--> Titan doctor: PDFs/runtime/build/hardware
-        +--> one-shot off-benchmark provider/schema/tool qualification
+        +--> one-shot off-benchmark provider/schema/tool/warm-fork qualification
         |
         v
 8 CPUs / 32 GiB / 512 tasks / no swap
@@ -40,7 +41,7 @@ one pair controller
 
 The controller pre-stages and compares both condition inputs before the first
 contestant call. An account-global registry reserves each
-`(formalization-benchmark-pilot-12, task_id)` once. A shared campaign lock and
+`(formalization-benchmark-pilot-13, task_id)` once. A shared campaign lock and
 predecessor locks prevent concurrent measured use of Titan. Reissuing a command
 returns the terminal pair or continues only at a safe boundary between sealed
 conditions.
@@ -83,8 +84,12 @@ recursive pseudonymized dependency dossier
 
 At most four immutable submissions are permitted. Compilation and auditing are
 off-clock. Auditor usage is stored in a separate overhead ledger. The same
-formalizer app-server remains alive so a repair continues the exact conversation
-and exact raw-response metering.
+formalizer app-server remains alive so a repair continues the exact
+conversation. Fresh threads use exact raw-response metering. Warm forks use it
+when available; otherwise each pre-completion cumulative notification must
+carry an exact `last` record equal to its fieldwise cumulative delta. The
+controller sums those records and fails closed on missing, mismatched, late,
+duplicated, or compacted-without-raw telemetry.
 
 ## Audit data flow
 
@@ -131,14 +136,14 @@ incomplete telemetry fail closed as infrastructure incidents.
 
 | Script | Responsibility |
 | --- | --- |
-| `tools/setup_titan.py` | Authenticate Pilot-11 reuse, run a provider-free real-fork canary, and atomically install Pilot-12. |
+| `tools/setup_titan.py` | Authenticate the sealed Pilot-12 incident and Pilot-11 reuse, run a provider-free real-fork canary, and atomically install Pilot-13. |
 | `tools/measure_library_build.py` | Record the clean full NumStability build and resources. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary without provider calls. |
-| `tools/provider_capability_canary.py` | Exercise exact models, schemas, tools, and isolation off-benchmark. |
+| `tools/provider_capability_canary.py` | Exercise exact models, schemas, tools, isolation, and a live inherited warm fork off-benchmark. |
 | `tools/titan_envelope.py` | Enter the fixed systemd/cgroup hardware envelope. |
 | `tools/run_benchmark.py` | Expose verify, doctor, qualify, prepare-warm-root, run, and status. |
 | `tools/pair_controller.py` | Own uniqueness, ordering, state, clocks, freeze, and repair. |
-| `tools/codex_driver.py` | Own persistent/fresh conversations and raw usage. |
+| `tools/codex_driver.py` | Own persistent/fresh conversations and exact raw-or-validated-fork-notification usage. |
 | `tools/formalization_validator.py` | Enforce the one-root/one-hole contract. |
 | `tools/lean_sandbox.py` | Compile untrusted Lean without network access. |
 | `tools/prepare_candidate_audit.py` | Build and pseudonymize the semantic closure. |
@@ -186,7 +191,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-pilot-12/H22-11.json
+  index/formalization-benchmark-pilot-13/H22-11.json
 ```
 
 Records bind prompts, candidates, source packets, semantic dossiers, role

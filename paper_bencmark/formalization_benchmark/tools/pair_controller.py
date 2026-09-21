@@ -439,8 +439,9 @@ def _campaign_lock(
     eighth_ancestral_predecessor_run_root: Path | None = None,
     ninth_ancestral_predecessor_run_root: Path | None = None,
     tenth_ancestral_predecessor_run_root: Path | None = None,
+    eleventh_ancestral_predecessor_run_root: Path | None = None,
 ) -> Iterator[None]:
-    """Serialize this release, the account registry, and all ten predecessors."""
+    """Serialize this release, the account registry, and all eleven predecessors."""
 
     paths = [run_root / "locks" / "formalization-pilot.lock"]
     if global_registry_root is not None:
@@ -465,6 +466,8 @@ def _campaign_lock(
         paths.append(ninth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     if tenth_ancestral_predecessor_run_root is not None:
         paths.append(tenth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
+    if eleventh_ancestral_predecessor_run_root is not None:
+        paths.append(eleventh_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     descriptors: list[int] = []
     try:
         for path in sorted(set(paths)):
@@ -517,6 +520,7 @@ class PairController:
             getattr(self.deployment, "eighth_ancestral_predecessor_run_root", None),
             getattr(self.deployment, "ninth_ancestral_predecessor_run_root", None),
             getattr(self.deployment, "tenth_ancestral_predecessor_run_root", None),
+            getattr(self.deployment, "eleventh_ancestral_predecessor_run_root", None),
         )
 
     def _qualify_provider(self) -> dict[str, Any]:
@@ -527,7 +531,12 @@ class PairController:
     def _verify_qualification_binding(self, admission: Mapping[str, Any]) -> None:
         if self.deployment.global_registry_root is None:
             return  # Non-admissible synthetic fixtures have no account registry.
-        from provider_capability_canary import ROLES, SCHEMA, qualification_identity
+        from provider_capability_canary import (
+            ROLES,
+            SCHEMA,
+            WARM_FORK_ROLE,
+            qualification_identity,
+        )
 
         binding = admission.get("provider_qualification")
         expected = (
@@ -550,13 +559,13 @@ class PairController:
         expected_identity = qualification_identity(
             self.deployment, self.manifest, self.config
         )
-        role_names = {role[0] for role in ROLES}
+        role_names = {role[0] for role in ROLES} | {WARM_FORK_ROLE}
         outcomes = record.get("role_outcomes")
         if (
             record.get("schema_version") != SCHEMA
             or record.get("status") != "PASSED"
             or identity != expected_identity
-            or record.get("provider_turns") != len(ROLES)
+            or record.get("provider_turns") != len(ROLES) + 1
             or not isinstance(outcomes, Mapping)
             or set(outcomes) != role_names
             or record.get("charged_to_contestant") is not False
@@ -565,7 +574,11 @@ class PairController:
             raise BenchmarkError("official pair provider qualification evidence changed")
         for role in role_names:
             outcome = outcomes[role]
-            expected_role = expected_identity["roles"][role]
+            expected_role = (
+                expected_identity["warm_fork"]
+                if role == WARM_FORK_ROLE
+                else expected_identity["roles"][role]
+            )
             if (
                 not isinstance(outcome, Mapping)
                 or any(outcome.get(field) != value for field, value in expected_role.items())
@@ -991,15 +1004,16 @@ class PairController:
                 or self.deployment.eighth_ancestral_predecessor_run_root is None
                 or self.deployment.ninth_ancestral_predecessor_run_root is None
                 or self.deployment.tenth_ancestral_predecessor_run_root is None
+                or self.deployment.eleventh_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-12 registry or predecessor locks are missing")
-            from setup_titan import pilot11_lineage
+                raise BenchmarkError("pilot-13 registry or predecessor locks are missing")
+            from setup_titan import pilot12_lineage
 
-            # Doctor is called under the pilot-12 campaign lock, including the
+            # Doctor is called under the pilot-13 campaign lock, including the
             # predecessor and account-global locks. Setup performs the full
             # predecessor check before publication; here compare pinned bytes
             # without invoking a verifier that would reacquire those locks.
-            lineage = pilot11_lineage(
+            lineage = pilot12_lineage(
                 str(self.deployment.predecessor_run_root.parent),
                 verify_status=False,
             )
@@ -1120,7 +1134,7 @@ class PairController:
                 or runtime_reuse.get("new_library_build_invocations") != 0
                 or runtime_reuse.get("new_scout_turns") != 0
             ):
-                raise BenchmarkError("Pilot-12 inherited-runtime admission evidence is missing")
+                raise BenchmarkError("Pilot-13 inherited-runtime admission evidence is missing")
             self._load_warm_root()
         order = _condition_order(self.config, task_id)
         if order not in (["N", "L"], ["L", "N"]):
@@ -1281,7 +1295,7 @@ class PairController:
                 raise BenchmarkError("warm-root directory exists without a trusted record")
             if int(self.config["warm_start"]["scout_runs_per_release"]) == 0:
                 raise BenchmarkError(
-                    "the inherited Condition L warm root is missing; Pilot-12 forbids "
+                    "the inherited Condition L warm root is missing; Pilot-13 forbids "
                     "a replacement scouting turn"
                 )
             root.mkdir(parents=True, mode=0o700)

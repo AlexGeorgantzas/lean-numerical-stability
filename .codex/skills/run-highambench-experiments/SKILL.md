@@ -1,25 +1,28 @@
 ---
 name: run-highambench-experiments
-description: Operate Pilot-12 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
+description: Operate Pilot-13 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
 ---
 
 # Run HighamBench Formalization Experiments
 
 ## Scope
 
-Pilot-12 (`formalization-benchmark-pilot-12`) is a separate frozen release.
-Pilots 1--11 and all of their runs, incidents, and deployment records are
+Pilot-13 (`formalization-benchmark-pilot-13`) is a separate frozen release.
+Pilots 1--12 and all of their runs, incidents, and deployment records are
 read-only predecessor evidence. Never reinterpret an older decision, resume an
 older sealed condition, pool results across pilots, or use an older launcher as
 a substitute. Pilot-9's cold-start H22-11 pair is sealed; its measurements are
-L-cold evidence and are not pooled with Pilot-12 warm-start results. Pilot-10's
+L-cold evidence and are not pooled with Pilot-13 warm-start results. Pilot-10's
 single scout failed closed on a context-compaction telemetry mismatch. Pilot-11
 then created the valid task-neutral warm root, but H22-11 failed before its L
-task turn because inherited fork-usage telemetry was rejected. Pilot-12 reuses
-that exact warm root and library build; never rerun scouting or rebuild the
-unchanged frozen library.
+task turn because inherited fork-usage telemetry was rejected. Pilot-12 fixed
+that boundary, then sealed H22-11 when the provider emitted exact per-response
+cumulative/`last` usage notifications but no raw-response usage events.
+Pilot-13 admits that surface under strict exactness checks and reuses the same
+warm root and library build; never rerun scouting or rebuild the unchanged
+frozen library.
 
-Preparing, installing, repairing, or qualifying Pilot-12 never authorizes an
+Preparing, installing, repairing, or qualifying Pilot-13 never authorizes an
 official pair. Run one only after an explicit request naming exactly one task.
 
 The allowlist is:
@@ -41,7 +44,7 @@ Before any provider call or benchmark-state mutation:
 
 1. Read [the operations reference](references/operations.md) completely.
 2. Require
-   `~/.local/bin/run-highambench-formalization-pilot-12-r1` and its distinct,
+   `~/.local/bin/run-highambench-formalization-pilot-13-r1` and its distinct,
    digest-bound deployment record.
 3. Run provider-free `verify-release`.
 4. Run provider-free `doctor --task-id <TASK>` through that launcher.
@@ -50,10 +53,11 @@ Before any provider call or benchmark-state mutation:
    registry/locks.
 6. Require the one-shot off-benchmark live qualification for the exact models,
    reasoning efforts, all four audit output schemas, workspace read paths,
-   formalizer write path, and Code Mode host.
-7. Require the authenticated Pilot-11 warm root inherited into Pilot-12 and the
-   provider-free real-fork canary. Never call `prepare-warm-root` to create a
-   second scout.
+   formalizer write path, Code Mode host, and a live task-neutral fork from the
+   inherited warm root with exact admissible usage telemetry.
+7. Require the authenticated Pilot-11 warm root inherited through Pilot-12 into
+   Pilot-13 and the provider-free real-fork canary. Never call
+   `prepare-warm-root` to create a second scout.
 8. Stop on any missing or failed gate. Never fall back to
    `paper_bencmark/highambench/tools/runner.py`, `run_matrix.py`, or an older
    launcher.
@@ -115,9 +119,13 @@ separate incidents.
 
 Use 18,000 cumulative contestant-active seconds per condition. Preserve any
 overshoot and terminate unscored as `ACTIVE_TIME_LIMIT`. There is no token
-cap; record exact token use rather than stopping on count. Validator and audit
+cap; record exact token use rather than stopping on count. Fresh threads require
+raw-response usage. Warm forks may instead use ordered pre-completion cumulative
+notifications only when every exact `last` record equals its fieldwise delta
+from the authenticated baseline and no context compaction lacks raw usage.
+Validator and audit
 overhead never enter contestant metrics. Log scouting time/tokens once and
-exclude them from task results. Retain raw per-task usage and report net-new
+exclude them from task results. Retain exact per-task usage and report net-new
 tokens (uncached input plus output) as the primary task-local token headline.
 
 ## Execute fail closed
@@ -131,7 +139,7 @@ Never edit, delete, overwrite, or reuse run directories, snapshots, ledgers,
 hashes, audit decisions, or active markers. Use provider-free `status` for
 inspection. Reissue `run` only to retrieve a terminal result or continue at an
 advertised safe boundary before the first turn or between sealed conditions.
-A submitted condition cannot be cold-resumed without its live raw-usage stream.
+A submitted condition cannot be cold-resumed without its live usage stream.
 
 Stop on missing telemetry, hash mismatch, unresolved source ambiguity,
 evaluator incident, unsupported transition, or isolation failure.

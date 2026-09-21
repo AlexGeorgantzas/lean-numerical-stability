@@ -2276,7 +2276,9 @@ class CodexDriver:
         latest_cumulative_cache_write_defaulted: bool | None = None
         fork_cumulative_usage_semantics: str | None = None
         raw_responses: dict[str, dict[str, Any]] = {}
+        cumulative_usage_notifications: list[dict[str, Any]] = []
         active_context_compactions: set[str] = set()
+        context_compaction_item_count = 0
         background_terminal_cleanup: dict[str, Any] | None = None
         workspace_usage: dict[str, int] | None = None
         workspace_limit_violation = False
@@ -2583,6 +2585,7 @@ class CodexDriver:
             nonlocal terminal_event_perf_ns, telemetry_deadline
             nonlocal post_terminal_timeout_kind
             nonlocal telemetry_invalid
+            nonlocal context_compaction_item_count
             method = message.get("method")
             params = message.get("params")
             if not isinstance(method, str):
@@ -2696,11 +2699,57 @@ class CodexDriver:
                 if cumulative is None:
                     telemetry_invalid = True
                     raise BenchmarkError("Codex app-server emitted malformed cumulative usage")
-                if latest_cumulative is not None and any(
-                    cumulative[field] < latest_cumulative[field] for field in cumulative
+                last_usage_payload = (
+                    token_usage.get("last")
+                    if isinstance(token_usage, Mapping)
+                    else None
+                )
+                last_usage = (
+                    _normalize_usage_breakdown(last_usage_payload)
+                    if isinstance(last_usage_payload, Mapping)
+                    else None
+                )
+                if last_usage is None:
+                    telemetry_invalid = True
+                    raise BenchmarkError(
+                        "Codex app-server emitted malformed last-response usage"
+                    )
+                previous_cumulative = latest_cumulative or baseline
+                child_reset = (
+                    latest_cumulative is None
+                    and self.fork_source_thread_id is not None
+                    and not reused_session
+                    and cumulative == last_usage
+                )
+                if child_reset:
+                    previous_cumulative = _zero_usage()
+                try:
+                    notification_delta = _usage_delta(
+                        cumulative, previous_cumulative
+                    )
+                except BenchmarkError as error:
+                    telemetry_invalid = True
+                    raise BenchmarkError(
+                        "Codex cumulative usage regressed within a turn"
+                    ) from error
+                if any(
+                    notification_delta[field] != last_usage[field]
+                    for field in _zero_usage()
                 ):
                     telemetry_invalid = True
-                    raise BenchmarkError("Codex cumulative usage regressed within a turn")
+                    raise BenchmarkError(
+                        "Codex last-response usage disagrees with the cumulative delta"
+                    )
+                cumulative_usage_notifications.append(
+                    {
+                        "sequence": len(cumulative_usage_notifications) + 1,
+                        "turn_id": candidate,
+                        "last_usage": last_usage,
+                        "cumulative_usage": cumulative,
+                        "cumulative_delta": notification_delta,
+                        "received_after_turn_completed": terminal_status is not None,
+                    }
+                )
                 latest_cumulative = cumulative
                 latest_cumulative_cache_write_defaulted = not any(
                     name in total_usage
@@ -2713,6 +2762,7 @@ class CodexDriver:
                     if not isinstance(item_id, str) or not item_id:
                         raise BenchmarkError("Codex context compaction has no identity")
                     active_context_compactions.add(item_id)
+                    context_compaction_item_count += 1
             elif method == "item/completed":
                 candidate = params.get("turnId")
                 if observed_turn_id is not None and candidate != observed_turn_id:
@@ -3127,7 +3177,12 @@ class CodexDriver:
             )
         except BenchmarkError as error:
             protocol_error = protocol_error or str(error)
-        usage = _usage_sum([record["usage"] for record in raw_responses.values()])
+        raw_usage = _usage_sum(
+            [record["usage"] for record in raw_responses.values()]
+        )
+        notification_usage = _usage_sum(
+            [record["last_usage"] for record in cumulative_usage_notifications]
+        )
         context_compaction_usage = _usage_sum(
             [
                 record["usage"]
@@ -3135,9 +3190,31 @@ class CodexDriver:
                 if record.get("usage_class") == "context_compaction"
             ]
         )
-        cumulative_cross_checked_usage = _usage_delta(
-            usage, context_compaction_usage
+        raw_cumulative_cross_checked_usage = _usage_delta(
+            raw_usage, context_compaction_usage
         )
+        fork_notification_fallback = (
+            self.fork_source_thread_id is not None
+            and not raw_responses
+            and bool(cumulative_usage_notifications)
+            and context_compaction_item_count == 0
+            and not any(
+                item["received_after_turn_completed"]
+                for item in cumulative_usage_notifications
+            )
+        )
+        if raw_responses:
+            usage = raw_usage
+            cumulative_cross_checked_usage = raw_cumulative_cross_checked_usage
+            usage_measurement_mode = "raw_response_events"
+        elif fork_notification_fallback:
+            usage = notification_usage
+            cumulative_cross_checked_usage = notification_usage
+            usage_measurement_mode = "fork_cumulative_notifications"
+        else:
+            usage = raw_usage
+            cumulative_cross_checked_usage = raw_cumulative_cross_checked_usage
+            usage_measurement_mode = "incomplete"
         cumulative_delta: dict[str, int] | None = None
         if latest_cumulative is not None:
             try:
@@ -3146,7 +3223,7 @@ class CodexDriver:
                 # App-server versions may report a fork's cumulative usage
                 # either including the copied parent history or starting at
                 # zero for the new child. Both are unambiguous when the first
-                # child turn is cross-checked against exact raw responses.
+                # child turn is cross-checked against exact response-level usage.
                 if (
                     self.fork_source_thread_id is not None
                     and not reused_session
@@ -3161,10 +3238,36 @@ class CodexDriver:
                     fork_cumulative_usage_semantics = "parent_inherited"
         usage_complete = False
         if terminal_status == "completed":
-            if not raw_responses:
+            if (
+                not raw_responses
+                and self.fork_source_thread_id is None
+            ):
                 telemetry_invalid = True
                 protocol_error = protocol_error or (
                     "Codex app-server supplied no exact raw response usage"
+                )
+            elif not raw_responses and context_compaction_item_count:
+                telemetry_invalid = True
+                protocol_error = protocol_error or (
+                    "Codex fork emitted a context compaction without exact raw usage"
+                )
+            elif not raw_responses and any(
+                item["received_after_turn_completed"]
+                for item in cumulative_usage_notifications
+            ):
+                telemetry_invalid = True
+                protocol_error = protocol_error or (
+                    "Codex fork emitted task usage only after turn completion"
+                )
+            elif not raw_responses and not cumulative_usage_notifications:
+                telemetry_invalid = True
+                protocol_error = protocol_error or (
+                    "Codex fork supplied no exact cumulative response usage"
+                )
+            elif not raw_responses and not fork_notification_fallback:
+                telemetry_invalid = True
+                protocol_error = protocol_error or (
+                    "Codex fork cumulative response usage was not admissible"
                 )
             if cumulative_delta is None:
                 telemetry_invalid = True
@@ -3177,10 +3280,10 @@ class CodexDriver:
             ):
                 telemetry_invalid = True
                 protocol_error = protocol_error or (
-                    "Codex raw response usage disagrees with the cumulative usage delta"
+                    "Codex response-level usage disagrees with the cumulative usage delta"
                 )
             else:
-                usage_complete = bool(raw_responses)
+                usage_complete = bool(raw_responses) or fork_notification_fallback
 
         current_network = monitor.checkpoint() if monitor is not None else network_before
         network_events = max(0, current_network - network_before)
@@ -3407,7 +3510,15 @@ class CodexDriver:
             "usage_measurement": (
                 "exact deduplicated app-server rawResponse/completed usage, including "
                 "explicitly classified context-compaction responses"
+                if usage_measurement_mode == "raw_response_events"
+                else (
+                    "exact fork-task thread/tokenUsage/updated last-response usage; "
+                    "each response is identity-bound and equals its cumulative delta"
+                    if usage_measurement_mode == "fork_cumulative_notifications"
+                    else "incomplete provider telemetry"
+                )
             ),
+            "usage_measurement_mode": usage_measurement_mode,
             "capability_attestation": capability_attestation,
             "usage_field_semantics": {
                 "cache_write_input_tokens": (
@@ -3428,8 +3539,16 @@ class CodexDriver:
                 {"response_id": response_id, **raw_responses[response_id]}
                 for response_id in sorted(raw_responses)
             ],
+            "cumulative_usage_notification_count": len(
+                cumulative_usage_notifications
+            ),
+            "cumulative_usage_notifications": cumulative_usage_notifications,
+            "fork_notification_fallback_admitted": fork_notification_fallback,
             "cumulative_usage_delta_cross_check": cumulative_delta,
             "cumulative_usage_expected_from_raw_responses": (
+                raw_cumulative_cross_checked_usage
+            ),
+            "cumulative_usage_expected_from_measurement": (
                 cumulative_cross_checked_usage
             ),
             "thread_cumulative_usage_after_turn": result.thread_cumulative_usage,
@@ -3439,6 +3558,7 @@ class CodexDriver:
                 for item in raw_responses.values()
                 if item.get("usage_class") == "context_compaction"
             ),
+            "context_compaction_item_count": context_compaction_item_count,
             "fork_cumulative_usage_semantics": fork_cumulative_usage_semantics,
             "background_terminal_cleanup": background_terminal_cleanup,
             "workspace_resource_ceiling": {

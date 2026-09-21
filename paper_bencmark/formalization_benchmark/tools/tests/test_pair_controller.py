@@ -565,7 +565,7 @@ class PairControllerDryRunTests(unittest.TestCase):
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
 
-    def test_global_campaign_lock_serializes_releases_and_ten_predecessors(self) -> None:
+    def test_global_campaign_lock_serializes_releases_and_eleven_predecessors(self) -> None:
         registry = self.root / "account-registry"
         predecessor = self.root / "pilot-7-runs"
         legacy_predecessor = self.root / "pilot-5-runs"
@@ -577,6 +577,7 @@ class PairControllerDryRunTests(unittest.TestCase):
         eighth_ancestral_predecessor = self.root / "pilot-minus-1-runs"
         ninth_ancestral_predecessor = self.root / "pilot-minus-2-runs"
         tenth_ancestral_predecessor = self.root / "pilot-minus-3-runs"
+        eleventh_ancestral_predecessor = self.root / "pilot-minus-4-runs"
         with _campaign_lock(
             self.deployment.run_root, registry, predecessor, legacy_predecessor,
             ancestral_predecessor, great_ancestral_predecessor, fifth_ancestral_predecessor,
@@ -584,6 +585,7 @@ class PairControllerDryRunTests(unittest.TestCase):
             eighth_ancestral_predecessor,
             ninth_ancestral_predecessor,
             tenth_ancestral_predecessor,
+            eleventh_ancestral_predecessor,
         ):
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", registry):
@@ -621,9 +623,16 @@ class PairControllerDryRunTests(unittest.TestCase):
                     None, None, None, None, None, tenth_ancestral_predecessor,
                 ):
                     pass
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(
+                    self.root / "another-release", None, None, None, None, None,
+                    None, None, None, None, None, None,
+                    eleventh_ancestral_predecessor,
+                ):
+                    pass
 
     def test_official_pair_rejects_downgraded_qualification_binding(self) -> None:
-        from provider_capability_canary import ROLES, SCHEMA
+        from provider_capability_canary import ROLES, SCHEMA, WARM_FORK_ROLE
 
         controller = object.__new__(PairController)
         controller.deployment = replace(
@@ -640,7 +649,13 @@ class PairControllerDryRunTests(unittest.TestCase):
                     "output_schema_sha256": "a" * 64,
                 }
                 for role in roles
-            }
+            },
+            "warm_fork": {
+                "role": WARM_FORK_ROLE,
+                "model": "fixture-model",
+                "reasoning_effort": "high",
+                "output_schema_sha256": "a" * 64,
+            },
         }
         qualification_root = (
             self.deployment.run_root / "qualifications"
@@ -654,9 +669,10 @@ class PairControllerDryRunTests(unittest.TestCase):
             "schema_version": SCHEMA,
             "status": "PASSED",
             "identity": identity,
-            "provider_turns": len(ROLES),
+            "provider_turns": len(ROLES) + 1,
             "role_outcomes": {
-                role: dict(identity["roles"][role]) for role in roles
+                **{role: dict(identity["roles"][role]) for role in roles},
+                WARM_FORK_ROLE: dict(identity["warm_fork"]),
             },
             "charged_to_contestant": False,
             "roles_manifest": tree_manifest(roles_root),

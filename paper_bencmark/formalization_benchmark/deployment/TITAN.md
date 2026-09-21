@@ -4,7 +4,7 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-12 is a side-by-side warm-start successor. The pilot-1 through pilot-11
+Pilot-13 is a side-by-side warm-start successor. The pilot-1 through pilot-12
 deployments, launchers, and sealed runs must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
@@ -38,13 +38,24 @@ excluded it. No official Pilot-10 task started, and that scout is never retried
 or reused. Pilot-11 corrected compaction accounting, completed and froze the
 valid task-neutral scout, and then sealed H22-11 when its controller rejected
 the copied parent's exact cumulative-usage notification before task
-`turn/start`. Pilot-12 reuses Pilot-11's authenticated library/runtime build
-and scout root, admits only the exact matching inherited baseline without
-charging it, and gives each of the 18 tasks a fresh warm-start slot; it
-neither relabels nor resumes any earlier-pilot evidence. Never combine
-observations across pilots. Setup authenticates the direct Pilot-11 deployment,
-qualification, build, warm root, H22-11 incident, and retained
-pilot-10/9/8/7/5/4/3/2/1 lineage before publication.
+`turn/start`. Pilot-12 corrected that boundary, then sealed H22-11 after its L
+turn completed with 18 exact cumulative/`last` usage notifications but no raw
+response usage events. Pilot-13 admits that surface only with strict
+per-notification delta checks, ordering, an authenticated fork baseline, and no
+unaccounted context compaction. It reuses the same Pilot-11 library build and
+task-neutral scout, creates fresh task slots, and neither relabels nor resumes
+earlier evidence. Setup authenticates the direct Pilot-12 deployment,
+qualification, warm root, H22-11 incident, and its retained lineage before
+publication.
+
+The sealed Pilot-12 deployment SHA-256 is
+`d6e2d93daaaa409b8d42545969d851966e9a8340d6152ee075f7e1fb78ca7074`;
+its qualification is
+`eb825b64d270b50fb5c05ea203ecda56d8c61a264368bef499c7d0ec33f83f19`,
+its inherited READY warm-root record is
+`c6fb31a2728e778f6f25b12cea7ccdff4dc87cc82ecd6311fd3cbc964a3ecc5d`,
+and its sealed H22-11 pair report is
+`7d17491487b94243340466e243dfe2594137a72f30692678dcccac0c32298d6c`.
 
 The sealed Pilot-11 deployment SHA-256 is
 `de9a9252a641272224c180f12036fc315b483cc4828e1b3ae882b3bb5f0b8d8d`;
@@ -97,9 +108,9 @@ its qualification record is
 `0c0c4ccb252b432e41025fa1f4e17dfa1df78c1f6f8c9a54801a32bd5ee97e16`
 and its library build record is
 `d9abf28dfa5444a78fc88ce6818fc4c0e4ed166296d922f5b53b46476f4316db`.
-These identify retained older installation lineage, not Pilot-12 measurements.
+These identify retained older installation lineage, not Pilot-13 measurements.
 
-Pilot-12 must not be treated as ready merely because these repository files
+Pilot-13 must not be treated as ready merely because these repository files
 exist. Its own clean release, separate installation, provider-free gates, and
 live provider qualification must pass before an official pair starts. An
 integrity-valid candidate receives exactly one semantic verdict, `faithful`
@@ -114,7 +125,7 @@ its failed qualification record is
 `930a69c9a059f8e00590a6689ea9d15177e27b435e901e724e57861a1db79c9a`
 and its library build record is
 `42d1a09980a908d4b4757b174dff0239d20f9cc35e0e67dd7499a0bec60580ec`.
-These authenticate older predecessor evidence, not pilot-12 measurements.
+These authenticate older predecessor evidence, not pilot-13 measurements.
 
 ## Security first
 
@@ -181,12 +192,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-11-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-12-r1
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-12-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1
 ```
 
-The installer creates a user-private pilot-12 deployment below
-`~/.local/share/highambench-formalization-pilot-12-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-13 deployment below
+`~/.local/share/highambench-formalization-pilot-13-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -199,11 +210,11 @@ quarantined under unique names; an unrecognized existing destination or
 launcher is never overwritten. It:
 
 1. verifies the release and all 18 task PDF identities (with reused chapter PDFs deduplicated by hash);
-2. authenticates and directly references Pilot-11's byte-identical Lean,
+2. authenticates Pilot-12's sealed incident and directly references Pilot-11's byte-identical Lean,
    Mathlib, NumStability source, compiled OLean tree, runtime snapshot, and
    measured build record; it performs no `lake update`, cache download, or
    library build;
-3. copies and authenticates Pilot-11's task-neutral READY scout checkpoint,
+3. copies and authenticates the inherited task-neutral READY scout checkpoint,
    records zero new scout turns, and preserves the original source thread,
    source turn, usage baseline, and tree hashes;
 
@@ -247,13 +258,13 @@ committed to Git.
 
 ## Run
 
-Once pilot-12 is installed and authenticated, its operator commands are:
+Once pilot-13 is installed and authenticated, its operator commands are:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-12-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-12-r1 doctor --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-12-r1 qualify-provider --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-12-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-13-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-13-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-13-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-13-r1 run --task-id H22-11
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -263,7 +274,10 @@ qualification. The same qualification submits the exact frozen response
 schemas for blind translation, direct judgment, round-trip judgment, and
 adjudication through live provider calls and verifies checkable synthetic
 outputs, then proves workspace-tool availability through trace-backed reads
-and a checked formalizer write under the real sandbox. Code Mode startup
+and a checked formalizer write under the real sandbox. It also performs a live,
+task-neutral fork from the inherited root and requires exact raw-response usage
+or exact, ordered, delta-matching cumulative/`last` notifications before turn
+completion. Code Mode startup
 warnings in diagnostic events or stderr fail the qualification; unrelated
 tool-catalog text does not. This guards against both the pilot-2 schema
 rejection and pilot-3 missing-command-host incidents. Its sealed, one-shot usage is separately recorded
@@ -298,7 +312,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-12-r1 status --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-13-r1 status --task-id H22-11
 ```
 
 ## Storage separation

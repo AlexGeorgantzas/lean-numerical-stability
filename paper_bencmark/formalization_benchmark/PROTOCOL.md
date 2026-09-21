@@ -1,6 +1,6 @@
 # Source-first formalization protocol
 
-> Pilot-12 is a new frozen release. Pilot-11 and every earlier run remain sealed
+> Pilot-13 is a new frozen release. Pilot-12 and every earlier run remain sealed
 > under their original software, prompts, task set, and audit policy. No
 > observation is copied, resumed, or pooled across pilot identities.
 > Pilot-9's H22-11 cold-start pair is sealed as an infrastructure incident after
@@ -10,22 +10,24 @@
 > valid one-time task-neutral scout root. Its first H22-11 L condition then
 > failed before task `turn/start`: app-server emitted the copied parent's exact
 > cumulative usage after `thread/fork`, and the controller incorrectly treated
-> that provenance event as premature model activity. Pilot-12 preserves the
-> complete Pilot-11 incident, reuses the exact Pilot-11 build and scout root,
-> validates the inherited baseline without charging it, and creates fresh task
-> slots. Pilot-9 observations remain L-cold evidence and are never pooled with
-> Pilot-12.
+> that provenance event as premature model activity. Pilot-12 corrected that
+> boundary, then its first H22-11 L task completed with no raw-response usage
+> events: the provider instead emitted 18 ordered cumulative notifications with
+> exact per-response `last` usage. Pilot-12 is sealed as a telemetry incident,
+> not reinterpreted. Pilot-13 admits that provider surface only under exact
+> delta/`last`, ordering, baseline, and no-compaction checks, and qualifies it
+> with a real off-benchmark warm fork before any task slot is created.
 
 ## Purpose
 
-Pilot-12 measures whether a formalizer already oriented to a frozen
+Pilot-13 measures whether a formalizer already oriented to a frozen
 NumStability library can construct a faithful Lean formalization faster or with
 less net-new token work than an otherwise identical library-naive formalizer.
 It measures statement construction, not proof construction.
 
 ## Frozen release
 
-- Pilot ID: `formalization-benchmark-pilot-12`.
+- Pilot ID: `formalization-benchmark-pilot-13`.
 - One exact Git commit, manifest-file SHA-256, and self-hashed manifest payload
   define the release.
 - Formalizer: `gpt-5.6-sol` at `xhigh`, frozen in `config.json`.
@@ -38,7 +40,7 @@ It measures statement construction, not proof construction.
   Generated command trees have a 24-GiB/384-task/no-swap child cgroup; trusted
   control has an 8-GiB `memory.low` reservation.
 - Pilot-11's clean full build of the identical frozen NumStability snapshot is
-  authenticated and reused directly. Pilot-12 invokes no new library build.
+  authenticated and reused directly. Pilot-13 invokes no new library build.
   The original wall/CPU/resource metrics and complete build output remain
   authenticated deployment evidence.
 
@@ -49,7 +51,7 @@ The task order is frozen as follows:
 3. `H23-6`, `H5-5`, `H10-7`, `H12-4`, `H19-5`, `H7-14`, `H15-3`
 
 The condition order is precommitted per task in `config.json`, with nine
-N-first and nine L-first pairs. Pilot-12 creates fresh slots for all 18 tasks.
+N-first and nine L-first pairs. Pilot-13 creates fresh slots for all 18 tasks.
 
 The five `P..-T2` entries are paper tasks retained from Pilot-6. The thirteen
 `Hchapter-problem` entries are Higham textbook problems. Their source packets
@@ -79,7 +81,7 @@ snapshot at commit
 `gpt-5.6-sol`/`xhigh` scouting conversation explored this
 snapshot and receives the frozen encouragement to inspect, import, reuse,
 adapt, or draw inspiration from it. The completed conversation is frozen and
-hashed in Pilot-11 and inherited unchanged by Pilot-12; no new scouting turn is
+hashed in Pilot-11 and inherited unchanged through Pilot-12 into Pilot-13; no new scouting turn is
 run. Every L task starts with an actual app-server `thread/fork` from that
 same root and then receives the byte-identical N/L task prompt. No task, paper,
 packet, candidate, or corpus list is visible during scouting; no L fork includes
@@ -140,18 +142,26 @@ End-to-end and audit overhead are reported separately. Any measured timeout or
 freeze overshoot is preserved in full and makes the condition unscored
 `ACTIVE_TIME_LIMIT`; it is never clamped.
 
-One raw-event-enabled app-server process remains alive for all attempts in a
-condition. Repair prompts therefore continue the exact same conversation.
-Input, cached-input, cache-write-input, output, reasoning-output, and total
-usage are deduplicated and cross-checked against cumulative thread telemetry.
+One app-server process remains alive for all attempts in a condition. Repair
+prompts therefore continue the exact same conversation. Fresh threads require
+deduplicated `rawResponse/completed` usage cross-checked against cumulative
+thread telemetry. A warm fork may use the same raw surface when present. If it
+is absent, the controller admits only the ordered `thread/tokenUsage/updated`
+notifications received before `turn/completed`: for every notification, the
+reported exact `last` usage must equal the fieldwise delta from the previous
+cumulative total, beginning at the authenticated fork baseline. The turn usage
+is the sum of those exact `last` records. Any mismatch, duplicate, late update,
+missing notification, or context-compaction item without raw usage fails
+closed as `telemetry_invalid`; cumulative totals alone are never treated as
+response usage.
 The scout's time and provider usage are logged once in the release-level warm
 root and excluded from every task. Raw task usage is retained. The primary
 token headline is `net_new_tokens = uncached_input_tokens + output_tokens`,
 where uncached input excludes both cache-read and cache-write input. This does
 not pretend to identify individual inherited-prefix tokens; it is a transparent
-derived measure alongside the raw fields.
+derived measure alongside the exact component fields.
 An interruption after a submission is fail-closed because cold resume cannot
-preserve this exact raw event stream.
+preserve the exact response-level usage stream.
 
 Artifacts retain observable prompts, final messages, tool events, concise
 API-exposed reasoning summaries, hashes, line counts, validation output, audit
@@ -164,7 +174,7 @@ available nor requested.
 
 The primary PDF and frozen source packet define the selected result. The packet
 may clarify which part of an exercise is selected, but the PDF controls if they
-conflict. Unlike the method paper's full audit, Pilot-12 omits a separate
+conflict. Unlike the method paper's full audit, Pilot-13 omits a separate
 source-contract model call because the source side is frozen and validated
 before release. This deliberate deviation is recorded; every generated
 candidate still receives a fresh candidate-side audit.
@@ -241,7 +251,7 @@ strengthening. A genuinely stronger candidate is faithful because it still
 implies the complete selected source result.
 
 The method paper permits a score-2 exception for multiple declarations that
-cover only a proper subset of the source domain. Pilot-12 deliberately rejects
+cover only a proper subset of the source domain. Pilot-13 deliberately rejects
 that exception: partial case-split coverage is `unfaithful`. This deviation is
 frozen and must not be inferred ad hoc during an audit.
 
@@ -274,8 +284,10 @@ Before any official pair, provider-free doctor verifies the frozen release,
 private PDFs, toolchain, Mathlib, NumStability build evidence, executables,
 hardware, and N/L isolation. A paid off-benchmark qualification exercises the
 exact formalizer and audit models/efforts, every frozen output schema, real
-workspace reads, and the formalizer write path. It consumes no official task
-slot and is excluded from contestant measurements.
+workspace reads, and the formalizer write path. It also executes one real,
+task-neutral formalizer fork from the inherited warm root and requires either
+exact raw-response usage or the strictly cross-checked notification mode above.
+It consumes no official task slot and is excluded from contestant measurements.
 
 The app-server globally and per thread disables agent delegation. Collaboration
 events or foreign-thread notifications are provider incompatibilities, not
