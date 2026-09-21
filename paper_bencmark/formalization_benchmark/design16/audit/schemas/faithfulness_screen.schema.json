@@ -18,8 +18,14 @@
     "rationale"
   ],
   "properties": {
-    "schema_version": {"const": "formalization-design16-faithfulness-screen-1"},
-    "role": {"const": "condition-blind-faithfulness-screen"},
+    "schema_version": {
+      "type": "string",
+      "const": "formalization-design16-faithfulness-screen-1"
+    },
+    "role": {
+      "type": "string",
+      "const": "condition-blind-faithfulness-screen"
+    },
     "paper_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "candidate_semantic_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "dependency_coverage": {

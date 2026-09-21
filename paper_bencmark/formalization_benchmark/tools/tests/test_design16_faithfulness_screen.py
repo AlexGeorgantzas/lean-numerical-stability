@@ -137,6 +137,28 @@ class ScreenPolicyTests(unittest.TestCase):
     def test_complete_equivalent_candidate_passes(self) -> None:
         self.validate(valid_output())
 
+    def test_provider_schema_consts_have_explicit_types(self) -> None:
+        schema_path = (
+            TOOLS.parent
+            / "design16"
+            / "audit"
+            / "schemas"
+            / "faithfulness_screen.schema.json"
+        )
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+        def walk(value: object) -> None:
+            if isinstance(value, dict):
+                if "const" in value:
+                    self.assertIn("type", value)
+                for child in value.values():
+                    walk(child)
+            elif isinstance(value, list):
+                for child in value:
+                    walk(child)
+
+        walk(schema)
+
     def test_complete_genuine_strengthening_passes(self) -> None:
         self.validate(valid_output(classification="faithful-stronger"))
 
