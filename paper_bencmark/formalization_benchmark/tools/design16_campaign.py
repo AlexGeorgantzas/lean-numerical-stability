@@ -14,6 +14,7 @@ reported as separate strata; no pooled treatment estimate is produced.
 from __future__ import annotations
 
 import argparse
+import ast
 from contextlib import contextmanager
 import fcntl
 import hashlib
@@ -21,6 +22,7 @@ import json
 import os
 from pathlib import Path
 import re
+import secrets
 import shutil
 import subprocess
 import sys
@@ -76,15 +78,26 @@ EXPECTED_STRATA = {
 }
 TERMINAL_EVENT_TYPES = frozenset(
     {
-        "TASK_COMPLETED",
+        "TASK_FORMALIZATION_COMPLETE",
+        "TASK_AUDITED_FAITHFUL",
+        "TASK_AUDITED_INELIGIBLE",
         "TASK_INCIDENT",
-        "TASK_RECOVERED_COMPLETED",
+        "TASK_RECOVERED_FORMALIZATION_COMPLETE",
+        "TASK_RECOVERED_AUDITED_FAITHFUL",
+        "TASK_RECOVERED_AUDITED_INELIGIBLE",
         "TASK_RECOVERED_INCIDENT",
     }
 )
 HEX40 = re.compile(r"[0-9a-f]{40}")
 HEX64 = re.compile(r"[0-9a-f]{64}")
 TITAN_ENVELOPE_MARKER = "HIGHAMBENCH_DESIGN16_TITAN_ENVELOPE"
+PAIR_ATTESTATION = "campaign-pair-attestation.json"
+AUDIT_PENDING = "FORMALIZATION_COMPLETE_AUDIT_PENDING"
+AUDITED_FAITHFUL = "AUDITED_FAITHFUL_PAIR"
+AUDITED_INELIGIBLE = "AUDITED_PAIR_INELIGIBLE"
+NONINCIDENT_PAIR_OUTCOMES = frozenset(
+    {AUDIT_PENDING, AUDITED_FAITHFUL, AUDITED_INELIGIBLE}
+)
 
 
 def _read_object(path: Path, label: str) -> dict[str, Any]:
@@ -101,6 +114,182 @@ def _read_object(path: Path, label: str) -> dict[str, Any]:
 
 def _canonical_hash(value: Mapping[str, Any]) -> str:
     return hashlib.sha256(canonical_json_bytes(value)).hexdigest()
+
+
+def _file_identity(path: Path, label: str) -> dict[str, Any]:
+    expanded = path.expanduser()
+    if expanded.is_symlink() or not expanded.is_file():
+        raise BenchmarkError(f"{label} is missing or unsafe: {expanded}")
+    resolved = expanded.resolve()
+    return {
+        "path": str(resolved),
+        "sha256": sha256_file(resolved),
+        "size_bytes": resolved.stat().st_size,
+    }
+
+
+def _local_python_closure(entrypoints: Sequence[Path]) -> list[dict[str, Any]]:
+    """Hash the statically discoverable local-Python import closure.
+
+    Design-16 tools deliberately use sibling modules rather than a package.
+    Resolving only imports that map to a ``.py`` file beside the importing
+    script is therefore both deterministic and fail-closed for this runner.
+    External/stdlib imports are runtime dependencies, not mutable controller
+    source inputs, and are authenticated by the deployment/runtime records.
+    """
+
+    pending = [path.resolve() for path in entrypoints]
+    observed: set[Path] = set()
+    while pending:
+        path = pending.pop()
+        if path in observed:
+            continue
+        _file_identity(path, "Python controller dependency")
+        observed.add(path)
+        try:
+            tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        except (OSError, SyntaxError, UnicodeError) as error:
+            raise BenchmarkError(f"cannot parse Python dependency {path}: {error}") from error
+        candidates: set[str] = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                candidates.update(alias.name.split(".", 1)[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom) and node.level == 0 and node.module:
+                candidates.add(node.module.split(".", 1)[0])
+        for module in sorted(candidates):
+            sibling = path.parent / f"{module}.py"
+            if sibling.is_file() and not sibling.is_symlink():
+                pending.append(sibling.resolve())
+    repository = ROOT.parents[1].resolve()
+    records: list[dict[str, Any]] = []
+    for path in sorted(observed):
+        identity = _file_identity(path, "Python controller dependency")
+        try:
+            identity["repository_relative_path"] = path.relative_to(repository).as_posix()
+        except ValueError:
+            identity["repository_relative_path"] = None
+        records.append(identity)
+    return records
+
+
+def _frozen_input_closure(args: argparse.Namespace) -> dict[str, Any]:
+    """Resolve and hash every readily discoverable campaign input."""
+
+    deployment_path = args.deployment.expanduser()
+    deployment_identity = _file_identity(deployment_path, "deployment JSON")
+    deployment = _read_object(deployment_path, "deployment JSON")
+    if deployment.get("schema_version") != "formalization-deployment-1":
+        raise BenchmarkError("campaign deployment has an unsupported schema")
+    raw_pdf_root = deployment.get("pdf_root")
+    if not isinstance(raw_pdf_root, str) or not raw_pdf_root:
+        raise BenchmarkError("campaign deployment has no PDF root")
+    pdf_root = Path(raw_pdf_root).expanduser()
+    if pdf_root.is_symlink() or not pdf_root.is_dir():
+        raise BenchmarkError("campaign deployment PDF root is missing or unsafe")
+    pdf_root = pdf_root.resolve()
+
+    prompt_names = (
+        (
+            "statement_formalizer.md",
+            "design17_statement_addendum.md",
+            "statement_repair.md",
+        )
+        if args.statement_only
+        else ("formalizer.md", "design16_matched_addendum.md")
+    )
+    prompts = [
+        _file_identity(ROOT / "prompts" / name, f"campaign prompt {name}")
+        for name in prompt_names
+    ]
+    audit_protocol_files: list[dict[str, Any]] = []
+    if args.statement_only:
+        for directory, pattern in (
+            (ROOT / "audit" / "prompts", "*.md"),
+            (ROOT / "audit" / "schemas", "*.json"),
+        ):
+            paths = sorted(directory.glob(pattern))
+            if not paths:
+                raise BenchmarkError(f"statement audit protocol directory is empty: {directory}")
+            audit_protocol_files.extend(
+                _file_identity(path, "statement audit protocol input") for path in paths
+            )
+        audit_protocol_files.append(
+            _file_identity(
+                Path(__file__).with_name("declaration_dossier.lean"),
+                "semantic dossier extractor",
+            )
+        )
+
+    packets: list[dict[str, Any]] = []
+    papers_by_name: dict[str, dict[str, Any]] = {}
+    for task_id in EXPECTED_TASKS:
+        packet_path = ROOT / "packets" / f"{task_id}.json"
+        packet_identity = _file_identity(packet_path, f"{task_id} source packet")
+        packet = _read_object(packet_path, f"{task_id} source packet")
+        paper_ref = packet.get("paper_pdf")
+        if packet.get("task_id") != task_id or not isinstance(paper_ref, dict):
+            raise BenchmarkError(f"{task_id} source packet identity is malformed")
+        basename = paper_ref.get("path_basename")
+        expected_pdf_sha = paper_ref.get("sha256")
+        if (
+            not isinstance(basename, str)
+            or not basename
+            or Path(basename).name != basename
+            or not isinstance(expected_pdf_sha, str)
+            or HEX64.fullmatch(expected_pdf_sha) is None
+        ):
+            raise BenchmarkError(f"{task_id} source PDF reference is malformed")
+        paper_identity = _file_identity(pdf_root / basename, f"{task_id} source PDF")
+        if paper_identity["sha256"] != expected_pdf_sha:
+            raise BenchmarkError(f"{task_id} source PDF hash does not match its packet")
+        existing = papers_by_name.get(basename)
+        if existing is not None and existing != paper_identity:
+            raise BenchmarkError(f"inconsistent repeated source PDF identity: {basename}")
+        papers_by_name[basename] = paper_identity
+        overlay_path = ROOT / "design16" / "contracts" / f"{task_id}.json"
+        overlay = (
+            {"present": True, **_file_identity(overlay_path, f"{task_id} contract overlay")}
+            if overlay_path.exists() or overlay_path.is_symlink()
+            else {"present": False, "expected_path": str(overlay_path.resolve())}
+        )
+        packets.append(
+            {
+                "task_id": task_id,
+                "packet": packet_identity,
+                "paper_basename": basename,
+                "paper_sha256": expected_pdf_sha,
+                "contract_overlay": overlay,
+            }
+        )
+
+    deployment_artifacts: dict[str, Any] = {}
+    for key in ("library_snapshot_record", "runtime_snapshot_record"):
+        raw = deployment.get(key)
+        if not isinstance(raw, str) or not raw:
+            raise BenchmarkError(f"deployment input {key} is missing")
+        deployment_artifacts[key] = _file_identity(Path(raw), f"deployment {key}")
+    raw_treatment_atlas = deployment.get("library_atlas")
+    if not isinstance(raw_treatment_atlas, str) or not raw_treatment_atlas:
+        raise BenchmarkError("deployment library_atlas is missing")
+    deployment_artifacts["library_atlas"] = _atlas_identity(
+        Path(raw_treatment_atlas).expanduser()
+    )
+
+    closure: dict[str, Any] = {
+        "deployment": deployment_identity,
+        "deployment_artifacts": deployment_artifacts,
+        "config": _file_identity(args.config, "condition-order config"),
+        "readiness": _file_identity(args.readiness, "Design-16 readiness screen"),
+        "prompts": prompts,
+        "audit_protocol_files": audit_protocol_files,
+        "task_packets": packets,
+        "source_pdfs": [papers_by_name[name] for name in sorted(papers_by_name)],
+        "python_modules": _local_python_closure(
+            [Path(__file__).resolve(), args.runner.expanduser().resolve()]
+        ),
+    }
+    closure["closure_sha256"] = _canonical_hash(closure)
+    return closure
 
 
 def _write_once(path: Path, value: Mapping[str, Any]) -> None:
@@ -327,7 +516,18 @@ def _manifest_core(
     }
     if any(not isinstance(value, int) or value < 1 for value in positive_limits.values()):
         raise BenchmarkError("all campaign limits must be positive integers")
+    if (
+        not isinstance(args.audit_timeout_seconds, (int, float))
+        or isinstance(args.audit_timeout_seconds, bool)
+        or args.audit_timeout_seconds <= 0
+        or not isinstance(args.audit_infrastructure_retries, int)
+        or args.audit_infrastructure_retries < 0
+        or not isinstance(args.submission_limit, int)
+        or args.submission_limit < 1
+    ):
+        raise BenchmarkError("audit/repair limits are malformed")
     plan = load_plan(args.config, args.readiness)
+    input_closure = _frozen_input_closure(args)
     core = {
         "schema_version": SCHEMA,
         "scientific_status": SCIENTIFIC_STATUS,
@@ -354,6 +554,7 @@ def _manifest_core(
             "sha256": sha256_file(args.readiness),
         },
         "deployment_path": str(args.deployment.resolve()),
+        "frozen_input_closure": input_closure,
         "formalizer": {
             "model": args.model,
             "reasoning_effort": args.reasoning_effort,
@@ -369,6 +570,11 @@ def _manifest_core(
                 if args.statement_only
                 else "complete-kernel-checked-proof"
             ),
+            "submission_limit": args.submission_limit,
+            "audit_model": args.audit_model,
+            "audit_reasoning_effort": args.audit_reasoning_effort,
+            "audit_timeout_seconds": args.audit_timeout_seconds,
+            "audit_infrastructure_retries": args.audit_infrastructure_retries,
         },
         "hardware_envelope": (
             dict(hardware_envelope)
@@ -387,17 +593,35 @@ def _manifest_core(
 def _load_or_create_manifest(root: Path, core: Mapping[str, Any]) -> dict[str, Any]:
     path = root / "campaign-manifest.json"
     identity = _canonical_hash(core)
+    input_closure = core.get("frozen_input_closure")
+    if not isinstance(input_closure, dict):
+        raise BenchmarkError("campaign core lacks a frozen input closure")
+    unsigned_closure = dict(input_closure)
+    observed_closure_hash = unsigned_closure.pop("closure_sha256", None)
+    if observed_closure_hash != _canonical_hash(unsigned_closure):
+        raise BenchmarkError("campaign frozen input closure self-hash is stale")
     if path.exists() or path.is_symlink():
         manifest = _read_object(path, "campaign manifest")
         observed_core = manifest.get("campaign_core")
-        if observed_core != core or manifest.get("campaign_identity_sha256") != identity:
+        unsigned = dict(manifest)
+        observed_payload_hash = unsigned.pop("manifest_payload_sha256", None)
+        nonce = manifest.get("campaign_nonce")
+        if (
+            observed_core != core
+            or manifest.get("campaign_identity_sha256") != identity
+            or not isinstance(nonce, str)
+            or HEX64.fullmatch(nonce) is None
+            or observed_payload_hash != _canonical_hash(unsigned)
+        ):
             raise BenchmarkError("campaign manifest does not match the requested frozen inputs")
         return manifest
     manifest = {
         "campaign_core": dict(core),
         "campaign_identity_sha256": identity,
+        "campaign_nonce": secrets.token_hex(32),
         "created_at_utc": utc_now(),
     }
+    manifest["manifest_payload_sha256"] = _canonical_hash(manifest)
     _write_once(path, manifest)
     return manifest
 
@@ -423,10 +647,20 @@ def _summary_payload(
     strata: dict[str, Any] = {}
     for stratum in EXPECTED_STRATA:
         entries = [item for item in plan if item["stratum"] == stratum]
-        completed = [
+        audit_pending = [
             item["task_id"]
             for item in entries
-            if terminals.get(item["task_id"], {}).get("outcome") == "COMPLETED"
+            if terminals.get(item["task_id"], {}).get("outcome") == AUDIT_PENDING
+        ]
+        audited_faithful = [
+            item["task_id"]
+            for item in entries
+            if terminals.get(item["task_id"], {}).get("outcome") == AUDITED_FAITHFUL
+        ]
+        audited_ineligible = [
+            item["task_id"]
+            for item in entries
+            if terminals.get(item["task_id"], {}).get("outcome") == AUDITED_INELIGIBLE
         ]
         incidents = [
             item["task_id"]
@@ -435,14 +669,27 @@ def _summary_payload(
         ]
         strata[stratum] = {
             "planned_task_ids": [item["task_id"] for item in entries],
-            "completed_task_ids": completed,
+            # Compilation/integrity validation is not a scientific completion.
+            "completed_task_ids": [],
+            "formalization_complete_audit_pending_task_ids": audit_pending,
+            "audited_faithful_pair_task_ids": audited_faithful,
+            "audited_ineligible_pair_task_ids": audited_ineligible,
             "incident_task_ids": incidents,
             "pending_task_ids": [
                 item["task_id"] for item in entries if item["task_id"] not in terminals
             ],
-            "completed_count": len(completed),
+            "completed_count": 0,
+            "formalization_complete_audit_pending_count": len(audit_pending),
+            "audited_faithful_pair_count": len(audited_faithful),
+            "audited_ineligible_pair_count": len(audited_ineligible),
             "incident_count": len(incidents),
-            "pending_count": len(entries) - len(completed) - len(incidents),
+            "pending_count": (
+                len(entries)
+                - len(audit_pending)
+                - len(audited_faithful)
+                - len(audited_ineligible)
+                - len(incidents)
+            ),
             "comparison": "SEPARATE_STRATUM_ONLY",
         }
     return {
@@ -497,22 +744,360 @@ def _sync_summaries(
         )
 
 
-def _pair_status(pair_root: Path, task_id: str) -> tuple[str, dict[str, Any]]:
+def _pair_artifact_closure(pair_root: Path) -> list[dict[str, Any]]:
+    if pair_root.is_symlink() or not pair_root.is_dir():
+        raise BenchmarkError("matched pair root is missing or unsafe")
+    records: list[dict[str, Any]] = []
+    for path in sorted(pair_root.rglob("*")):
+        if path.is_symlink():
+            raise BenchmarkError(f"matched pair artifact may not be a symlink: {path}")
+        if path.is_dir():
+            continue
+        if not path.is_file():
+            raise BenchmarkError(f"matched pair contains a non-regular artifact: {path}")
+        records.append(
+            {
+                "relative_path": path.relative_to(pair_root).as_posix(),
+                "sha256": sha256_file(path),
+                "size_bytes": path.stat().st_size,
+            }
+        )
+    if not records:
+        raise BenchmarkError("matched pair artifact closure is empty")
+    return records
+
+
+def _inspect_pair(
+    pair_root: Path,
+    *,
+    task_id: str,
+    condition_order: Sequence[str],
+    statement_only: bool,
+    require_titan_envelope: bool,
+) -> tuple[str, dict[str, Any]]:
     report_path = pair_root / "pair-report.json"
     if report_path.is_symlink() or not report_path.is_file():
         return "INCIDENT", {"reason": "pair report is absent"}
     report = _read_object(report_path, "matched pair report")
     if report.get("task_id") != task_id:
         return "INCIDENT", {"reason": "pair report task ID mismatch"}
+    expected_object = (
+        "FORMALIZED_STATEMENT_ONLY"
+        if statement_only
+        else "FORMALIZED_STATEMENT_AND_COMPLETE_PROOF"
+    )
+    expected_contract = (
+        "statement-only-single-target-sorry"
+        if statement_only
+        else "complete-kernel-checked-proof"
+    )
     status = report.get("pair_status")
+    expected_pair_faithfulness = (
+        "BOTH_FAITHFUL"
+        if status == AUDITED_FAITHFUL
+        else "PAIR_NOT_BOTH_FAITHFUL"
+        if status == AUDITED_INELIGIBLE
+        else "NOT_AUDITED"
+    )
+    if (
+        report.get("condition_order") != list(condition_order)
+        or report.get("conditions_run_sequentially") is not True
+        or report.get("benchmark_object") != expected_object
+        or report.get("source_contract") != expected_contract
+        or report.get("faithfulness_status") != expected_pair_faithfulness
+    ):
+        return "INCIDENT", {"reason": "pair report mode/order contract mismatch"}
     details = {
         "pair_status": status,
         "pair_report_sha256": sha256_file(report_path),
         "pair_report_path": str(report_path),
     }
-    if status == "COMPILED_UNAUDITED":
-        return "COMPLETED", details
-    return "INCIDENT", details
+    accepted_status = (
+        status in {AUDITED_FAITHFUL, AUDITED_INELIGIBLE}
+        if statement_only
+        else status in {"FORMALIZATION_FROZEN_PENDING_AUDIT", "COMPILED_UNAUDITED"}
+    )
+    if not accepted_status:
+        details["reason"] = "pair is not frozen and pending independent audit"
+        return "INCIDENT", details
+
+    condition_reports = report.get("condition_reports")
+    if not isinstance(condition_reports, dict) or set(condition_reports) != {"R0", "R1"}:
+        details["reason"] = "pair does not contain exactly R0 and R1 reports"
+        return "INCIDENT", details
+    prompt_path = pair_root / "prompt.txt"
+    if (
+        prompt_path.is_symlink()
+        or not prompt_path.is_file()
+        or sha256_file(prompt_path) != report.get("prompt_sha256")
+    ):
+        details["reason"] = "pair prompt is absent, unsafe, or hash-mismatched"
+        return "INCIDENT", details
+
+    source_packet_hashes: set[str] = set()
+    source_pdf_hashes: set[str] = set()
+    source_task_hashes: set[str] = set()
+    for condition in ("R0", "R1"):
+        condition_root = pair_root / condition
+        condition_report_path = condition_root / "report.json"
+        if condition_report_path.is_symlink() or not condition_report_path.is_file():
+            details["reason"] = f"{condition} report is absent or unsafe"
+            return "INCIDENT", details
+        condition_report = _read_object(condition_report_path, f"{condition} report")
+        if condition_reports.get(condition) != condition_report:
+            details["reason"] = f"{condition} embedded/on-disk reports disagree"
+            return "INCIDENT", details
+        common_contract_pass = (
+            condition_report.get("task_id") == task_id
+            and condition_report.get("condition") == condition
+            and condition_report.get("benchmark_object") == expected_object
+            and condition_report.get("source_contract") == expected_contract
+        )
+        if statement_only:
+            accepted_condition = condition_report.get("result_status") == "ACCEPTED_FAITHFUL"
+            condition_contract_pass = (
+                condition_report.get("faithfulness_status")
+                == ("FAITHFUL" if accepted_condition else "UNFAITHFUL_OR_INCIDENT")
+                and isinstance(condition_report.get("attempts"), list)
+                and bool(condition_report["attempts"])
+                and condition_report.get("submission_count")
+                == len(condition_report["attempts"])
+            )
+        else:
+            accepted_condition = False
+            condition_contract_pass = (
+                condition_report.get("faithfulness_status") == "NOT_AUDITED"
+                and condition_report.get("result_status")
+                == "COMPILED_AND_INTEGRITY_VALIDATED"
+                and condition_report.get("validation_pass") is True
+                and condition_report.get("prompt_sha256")
+                == report.get("prompt_sha256")
+            )
+        if not common_contract_pass or not condition_contract_pass:
+            details["reason"] = f"{condition} report contract mismatch"
+            return "INCIDENT", details
+        if require_titan_envelope and (
+            condition_report.get("hardware_envelope_required") is not True
+            or not isinstance(condition_report.get("hardware_snapshot"), dict)
+            or (
+                not statement_only
+                and not isinstance(condition_report.get("hardware_snapshot_after"), dict)
+            )
+        ):
+            details["reason"] = f"{condition} lacks the required Titan hardware evidence"
+            return "INCIDENT", details
+
+        candidate_record = condition_report.get("candidate")
+        if isinstance(candidate_record, dict):
+            recorded_path = candidate_record.get("path")
+            if not isinstance(recorded_path, str):
+                details["reason"] = f"{condition} frozen candidate path is malformed"
+                return "INCIDENT", details
+            candidate_path = Path(recorded_path)
+            if not candidate_path.is_absolute():
+                candidate_path = (pair_root / candidate_path).resolve()
+            else:
+                candidate_path = candidate_path.resolve()
+            submissions_root = (condition_root / "submissions").resolve()
+            expected_proof_candidate = (
+                condition_root / "submissions" / "01" / "Candidate.lean"
+            ).resolve()
+            if (
+                candidate_path.name != "Candidate.lean"
+                or (
+                    statement_only
+                    and submissions_root not in candidate_path.parents
+                )
+                or (not statement_only and candidate_path != expected_proof_candidate)
+            ):
+                details["reason"] = f"{condition} frozen candidate path is unexpected"
+                return "INCIDENT", details
+        else:
+            # Compatibility for already-produced proof-inclusive diagnostics.
+            candidate_path = condition_root / "workspace" / "Candidate.lean"
+        if (
+            candidate_path.is_symlink()
+            or not candidate_path.is_file()
+            or sha256_file(candidate_path) != condition_report.get("candidate_sha256")
+        ):
+            details["reason"] = f"{condition} candidate is absent, unsafe, or stale"
+            return "INCIDENT", details
+        for relative, field in (
+            (Path("composition-packet.json"), "composition_packet_sha256"),
+            (Path("workspace") / "LIBRARY_API.md", "library_api_sha256"),
+        ):
+            artifact = condition_root / relative
+            if (
+                artifact.is_symlink()
+                or not artifact.is_file()
+                or sha256_file(artifact) != condition_report.get(field)
+            ):
+                details["reason"] = f"{condition} {relative} is absent, unsafe, or stale"
+                return "INCIDENT", details
+        if statement_only:
+            attempts = condition_report["attempts"]
+            for attempt_number, attempt in enumerate(attempts, 1):
+                if not isinstance(attempt, dict) or attempt.get("attempt") != attempt_number:
+                    details["reason"] = f"{condition} attempt sequence is malformed"
+                    return "INCIDENT", details
+                attempt_root = condition_root / "submissions" / f"{attempt_number:02d}"
+                attempt_candidate = attempt_root / "Candidate.lean"
+                attempt_validation = attempt_root / "validation.json"
+                attempt_candidate_record = attempt.get("candidate")
+                if (
+                    not isinstance(attempt_candidate_record, dict)
+                    or attempt_candidate.is_symlink()
+                    or not attempt_candidate.is_file()
+                    or sha256_file(attempt_candidate)
+                    != attempt_candidate_record.get("sha256")
+                    or attempt_validation.is_symlink()
+                    or not attempt_validation.is_file()
+                    or sha256_file(attempt_validation) != attempt.get("validation_sha256")
+                    or not isinstance(attempt.get("hardware_after"), dict)
+                ):
+                    details["reason"] = f"{condition} attempt artifact closure is stale"
+                    return "INCIDENT", details
+            if condition_report.get("candidate") != attempts[-1].get("candidate"):
+                details["reason"] = f"{condition} final candidate is not the final submission"
+                return "INCIDENT", details
+            if accepted_condition and attempts[-1].get("status") != "ACCEPTED_FAITHFUL":
+                details["reason"] = f"{condition} accepted status lacks an accepted audit"
+                return "INCIDENT", details
+        else:
+            validation_path = condition_root / "validation.json"
+            if validation_path.is_symlink() or not validation_path.is_file():
+                details["reason"] = f"{condition} validation record is absent or unsafe"
+                return "INCIDENT", details
+            validation = _read_object(validation_path, f"{condition} validation record")
+            if validation.get("pass") is not True:
+                details["reason"] = f"{condition} validation record is not passing"
+                return "INCIDENT", details
+        source_paper = condition_root / "workspace" / "source" / "paper.pdf"
+        source_task = condition_root / "workspace" / "source" / "task.md"
+        if any(
+            path.is_symlink() or not path.is_file()
+            for path in (source_paper, source_task)
+        ):
+            details["reason"] = f"{condition} source artifacts are absent or unsafe"
+            return "INCIDENT", details
+        if statement_only:
+            if condition_report.get("source_pdf_sha256") != sha256_file(source_paper):
+                details["reason"] = f"{condition} source PDF report hash is stale"
+                return "INCIDENT", details
+            if condition_report.get("staged_task_sha256") != sha256_file(source_task):
+                details["reason"] = f"{condition} staged task report hash is stale"
+                return "INCIDENT", details
+        else:
+            source_packet_hashes.add(str(condition_report.get("source_packet_sha256")))
+        source_pdf_hashes.add(sha256_file(source_paper))
+        source_task_hashes.add(sha256_file(source_task))
+    if (
+        (not statement_only and source_packet_hashes != {str(report.get("source_packet_sha256"))})
+        or source_pdf_hashes != {str(report.get("source_pdf_sha256"))}
+        or len(source_task_hashes) != 1
+    ):
+        details["reason"] = "matched condition source identities disagree"
+        return "INCIDENT", details
+    details["pair_artifact_closure"] = _pair_artifact_closure(pair_root)
+    details["pair_artifact_closure_sha256"] = _canonical_hash(
+        {"files": details["pair_artifact_closure"]}
+    )
+    if statement_only:
+        accepted_conditions = {
+            condition
+            for condition, condition_report in condition_reports.items()
+            if condition_report.get("result_status") == "ACCEPTED_FAITHFUL"
+        }
+        if status == AUDITED_FAITHFUL and accepted_conditions != {"R0", "R1"}:
+            details["reason"] = "faithful pair status disagrees with condition audits"
+            return "INCIDENT", details
+        if status == AUDITED_INELIGIBLE and accepted_conditions == {"R0", "R1"}:
+            details["reason"] = "ineligible pair status disagrees with condition audits"
+            return "INCIDENT", details
+        return status, details
+    return AUDIT_PENDING, details
+
+
+def _attest_pair(
+    *,
+    task_root: Path,
+    manifest: Mapping[str, Any],
+    pair_nonce: str,
+    item: Mapping[str, Any],
+    details: Mapping[str, Any],
+    runner_return_code: int,
+) -> dict[str, Any]:
+    stdout_path = task_root / "runner.stdout.log"
+    stderr_path = task_root / "runner.stderr.log"
+    attestation = {
+        "schema_version": "formalization-design16-campaign-pair-attestation-1",
+        "campaign_identity_sha256": manifest["campaign_identity_sha256"],
+        "campaign_nonce": manifest["campaign_nonce"],
+        "pair_nonce": pair_nonce,
+        "task_id": item["task_id"],
+        "condition_order": list(item["condition_order"]),
+        "benchmark_object": manifest["campaign_core"]["formalizer"]["benchmark_object"],
+        "source_contract": manifest["campaign_core"]["formalizer"]["source_contract"],
+        "pair_status": details["pair_status"],
+        "pair_report_sha256": details["pair_report_sha256"],
+        "pair_artifact_closure": details["pair_artifact_closure"],
+        "pair_artifact_closure_sha256": details["pair_artifact_closure_sha256"],
+        "runner_return_code": runner_return_code,
+        "runner_stdout_sha256": sha256_file(stdout_path),
+        "runner_stderr_sha256": sha256_file(stderr_path),
+        "created_at_utc": utc_now(),
+    }
+    path = task_root / PAIR_ATTESTATION
+    _write_once(path, attestation)
+    return attestation
+
+
+def _verify_pair_attestation(
+    *,
+    task_root: Path,
+    manifest: Mapping[str, Any],
+    pair_nonce: str,
+    item: Mapping[str, Any],
+    details: Mapping[str, Any],
+) -> dict[str, Any]:
+    path = task_root / PAIR_ATTESTATION
+    if path.is_symlink() or not path.is_file():
+        raise BenchmarkError("paid pair has no campaign attestation; refusing recovery")
+    attestation = _read_object(path, "campaign pair attestation")
+    expected = {
+        "campaign_identity_sha256": manifest["campaign_identity_sha256"],
+        "campaign_nonce": manifest["campaign_nonce"],
+        "pair_nonce": pair_nonce,
+        "task_id": item["task_id"],
+        "condition_order": list(item["condition_order"]),
+        "benchmark_object": manifest["campaign_core"]["formalizer"]["benchmark_object"],
+        "source_contract": manifest["campaign_core"]["formalizer"]["source_contract"],
+        "pair_status": details["pair_status"],
+        "pair_report_sha256": details["pair_report_sha256"],
+        "pair_artifact_closure": details["pair_artifact_closure"],
+        "pair_artifact_closure_sha256": details["pair_artifact_closure_sha256"],
+    }
+    if attestation.get("schema_version") != "formalization-design16-campaign-pair-attestation-1":
+        raise BenchmarkError("campaign pair attestation schema is invalid")
+    if any(attestation.get(key) != value for key, value in expected.items()):
+        raise BenchmarkError("campaign pair attestation identity or artifact closure changed")
+    stdout_path = task_root / "runner.stdout.log"
+    stderr_path = task_root / "runner.stderr.log"
+    if (
+        attestation.get("runner_return_code") != 0
+        or stdout_path.is_symlink()
+        or not stdout_path.is_file()
+        or stderr_path.is_symlink()
+        or not stderr_path.is_file()
+        or attestation.get("runner_stdout_sha256") != sha256_file(stdout_path)
+        or attestation.get("runner_stderr_sha256") != sha256_file(stderr_path)
+    ):
+        raise BenchmarkError("campaign pair runner/log attestation changed")
+    return {
+        "pair_attestation_path": str(path),
+        "pair_attestation_sha256": sha256_file(path),
+        "pair_artifact_closure_sha256": details["pair_artifact_closure_sha256"],
+    }
 
 
 @contextmanager
@@ -560,6 +1145,16 @@ def _command(args: argparse.Namespace, item: Mapping[str, Any], pair_root: Path)
         str(args.dependency_limit),
         "--maximum-packet-bytes",
         str(args.maximum_packet_bytes),
+        "--submission-limit",
+        str(args.submission_limit),
+        "--audit-model",
+        args.audit_model,
+        "--audit-reasoning-effort",
+        args.audit_reasoning_effort,
+        "--audit-timeout-seconds",
+        str(args.audit_timeout_seconds),
+        "--audit-infrastructure-retries",
+        str(args.audit_infrastructure_retries),
     ]
     if args.enforce_titan_envelope:
         command.append("--require-titan-envelope")
@@ -573,6 +1168,10 @@ def run_campaign(
     *,
     process_runner: Callable[..., subprocess.CompletedProcess[Any]] = subprocess.run,
 ) -> dict[str, Any]:
+    if args.statement_only and not args.dry_run and not args.enforce_titan_envelope:
+        raise BenchmarkError(
+            "statement-only measured campaigns require --enforce-titan-envelope"
+        )
     hardware_envelope = _activate_hardware_envelope(args)
     core = _manifest_core(args, hardware_envelope=hardware_envelope)
     max_new_tasks = getattr(args, "max_new_tasks", None)
@@ -640,11 +1239,17 @@ def run_campaign(
             )
             events = _read_journal(state_path)
         terminals = _terminal_by_task(events)
-        started = {
-            event.get("task_id")
-            for event in events
-            if event.get("event_type") == "TASK_STARTED"
-        }
+        started_events: dict[str, Mapping[str, Any]] = {}
+        for event in events:
+            if event.get("event_type") != "TASK_STARTED":
+                continue
+            task_id = event.get("task_id")
+            if task_id not in EXPECTED_TASKS or task_id in started_events:
+                raise BenchmarkError("duplicate or malformed TASK_STARTED event")
+            pair_nonce = event.get("pair_nonce")
+            if not isinstance(pair_nonce, str) or HEX64.fullmatch(pair_nonce) is None:
+                raise BenchmarkError("TASK_STARTED event lacks a valid pair nonce")
+            started_events[task_id] = event
 
         terminalized_this_invocation = 0
         for item in invocation_plan:
@@ -660,15 +1265,66 @@ def run_campaign(
             pair_root = task_root / "pair"
             # A started event or an existing output tree means a paid call may
             # already have occurred.  Reconcile it; never silently rerun it.
-            if task_id in started or pair_root.exists() or pair_root.is_symlink():
-                outcome, details = _pair_status(pair_root, task_id)
+            if task_id in started_events or pair_root.exists() or pair_root.is_symlink():
+                started_event = started_events.get(task_id)
+                if started_event is None:
+                    outcome, details = "INCIDENT", {
+                        "reason": "unattributed pair output exists without TASK_STARTED"
+                    }
+                else:
+                    try:
+                        expected_started = {
+                            "task_id": task_id,
+                            "stratum": item["stratum"],
+                            "condition_order": item["condition_order"],
+                            "campaign_identity_sha256": manifest[
+                                "campaign_identity_sha256"
+                            ],
+                            "campaign_nonce": manifest["campaign_nonce"],
+                            "benchmark_object": core["formalizer"]["benchmark_object"],
+                            "source_contract": core["formalizer"]["source_contract"],
+                            "command": _command(args, item, pair_root),
+                            "outcome": "RUNNING",
+                        }
+                        if any(
+                            started_event.get(key) != value
+                            for key, value in expected_started.items()
+                        ):
+                            raise BenchmarkError(
+                                "TASK_STARTED campaign identity, mode, order, or command changed"
+                            )
+                        outcome, details = _inspect_pair(
+                            pair_root,
+                            task_id=task_id,
+                            condition_order=item["condition_order"],
+                            statement_only=bool(args.statement_only),
+                            require_titan_envelope=bool(args.enforce_titan_envelope),
+                        )
+                        if outcome in NONINCIDENT_PAIR_OUTCOMES:
+                            attestation_details = _verify_pair_attestation(
+                                task_root=task_root,
+                                manifest=manifest,
+                                pair_nonce=str(started_event["pair_nonce"]),
+                                item=item,
+                                details=details,
+                            )
+                            details = {**details, **attestation_details}
+                    except (BenchmarkError, OSError, ValueError) as error:
+                        outcome, details = "INCIDENT", {
+                            "reason": f"pair recovery authentication failed: {error}"
+                        }
+                details.pop("pair_artifact_closure", None)
                 _record_event(
                     root,
                     manifest,
                     {
                         "event_type": (
-                            "TASK_RECOVERED_COMPLETED"
-                            if outcome == "COMPLETED"
+                            "TASK_RECOVERED_FORMALIZATION_COMPLETE"
+                            if outcome == AUDIT_PENDING
+                            else "TASK_RECOVERED_AUDITED_FAITHFUL"
+                            if outcome == AUDITED_FAITHFUL
+                            else "TASK_RECOVERED_AUDITED_INELIGIBLE"
+                            if outcome == AUDITED_INELIGIBLE
                             else "TASK_RECOVERED_INCIDENT"
                         ),
                         "task_id": task_id,
@@ -683,6 +1339,7 @@ def run_campaign(
 
             task_root.mkdir(parents=True, mode=0o700)
             command = _command(args, item, pair_root)
+            pair_nonce = secrets.token_hex(32)
             _record_event(
                 root,
                 manifest,
@@ -691,6 +1348,11 @@ def run_campaign(
                     "task_id": task_id,
                     "stratum": item["stratum"],
                     "condition_order": item["condition_order"],
+                    "campaign_identity_sha256": manifest["campaign_identity_sha256"],
+                    "campaign_nonce": manifest["campaign_nonce"],
+                    "pair_nonce": pair_nonce,
+                    "benchmark_object": core["formalizer"]["benchmark_object"],
+                    "source_contract": core["formalizer"]["source_contract"],
                     "command": command,
                     "outcome": "RUNNING",
                 },
@@ -706,7 +1368,18 @@ def run_campaign(
                 process_error = {"type": type(error).__name__, "message": str(error)}
             else:
                 process_error = None
-            outcome, details = _pair_status(pair_root, task_id)
+            try:
+                outcome, details = _inspect_pair(
+                    pair_root,
+                    task_id=task_id,
+                    condition_order=item["condition_order"],
+                    statement_only=bool(args.statement_only),
+                    require_titan_envelope=bool(args.enforce_titan_envelope),
+                )
+            except (BenchmarkError, OSError, ValueError) as error:
+                outcome, details = "INCIDENT", {
+                    "reason": f"pair output authentication failed: {error}"
+                }
             details.update(
                 {
                     "runner_return_code": return_code,
@@ -717,11 +1390,42 @@ def run_campaign(
             )
             if return_code != 0 or process_error is not None:
                 outcome = "INCIDENT"
+            elif outcome in NONINCIDENT_PAIR_OUTCOMES:
+                try:
+                    _attest_pair(
+                        task_root=task_root,
+                        manifest=manifest,
+                        pair_nonce=pair_nonce,
+                        item=item,
+                        details=details,
+                        runner_return_code=return_code,
+                    )
+                    details.update(
+                        _verify_pair_attestation(
+                            task_root=task_root,
+                            manifest=manifest,
+                            pair_nonce=pair_nonce,
+                            item=item,
+                            details=details,
+                        )
+                    )
+                except (BenchmarkError, OSError, ValueError) as error:
+                    outcome = "INCIDENT"
+                    details["attestation_error"] = str(error)
+            details.pop("pair_artifact_closure", None)
             _record_event(
                 root,
                 manifest,
                 {
-                    "event_type": "TASK_COMPLETED" if outcome == "COMPLETED" else "TASK_INCIDENT",
+                    "event_type": (
+                        "TASK_FORMALIZATION_COMPLETE"
+                        if outcome == AUDIT_PENDING
+                        else "TASK_AUDITED_FAITHFUL"
+                        if outcome == AUDITED_FAITHFUL
+                        else "TASK_AUDITED_INELIGIBLE"
+                        if outcome == AUDITED_INELIGIBLE
+                        else "TASK_INCIDENT"
+                    ),
                     "task_id": task_id,
                     "stratum": item["stratum"],
                     "outcome": outcome,
@@ -734,18 +1438,41 @@ def run_campaign(
         events = _read_journal(state_path)
         terminals = _terminal_by_task(events)
         if set(terminals) == set(EXPECTED_TASKS) and not any(
-            event.get("event_type") == "CAMPAIGN_COMPLETED" for event in events
+            event.get("event_type") == "CAMPAIGN_FORMALIZATION_COMPLETE"
+            for event in events
         ):
             incident_count = sum(
                 event.get("outcome") == "INCIDENT" for event in terminals.values()
             )
+            audit_pending_count = sum(
+                event.get("outcome") == AUDIT_PENDING for event in terminals.values()
+            )
+            audited_faithful_count = sum(
+                event.get("outcome") == AUDITED_FAITHFUL
+                for event in terminals.values()
+            )
+            audited_ineligible_count = sum(
+                event.get("outcome") == AUDITED_INELIGIBLE
+                for event in terminals.values()
+            )
+            if incident_count:
+                campaign_outcome = "FORMALIZATION_COMPLETE_WITH_INCIDENTS"
+            elif audit_pending_count:
+                campaign_outcome = "AUDIT_PENDING"
+            elif audited_ineligible_count:
+                campaign_outcome = "AUDITED_CAMPAIGN_WITH_INELIGIBLE_PAIRS"
+            else:
+                campaign_outcome = "AUDITED_FAITHFUL_CAMPAIGN_READY"
             _record_event(
                 root,
                 manifest,
                 {
-                    "event_type": "CAMPAIGN_COMPLETED",
-                    "outcome": "COMPLETE" if incident_count == 0 else "COMPLETE_WITH_INCIDENTS",
-                    "completed_task_count": len(EXPECTED_TASKS) - incident_count,
+                    "event_type": "CAMPAIGN_FORMALIZATION_COMPLETE",
+                    "outcome": campaign_outcome,
+                    "scientifically_completed_task_count": 0,
+                    "formalization_complete_audit_pending_task_count": audit_pending_count,
+                    "audited_faithful_pair_task_count": audited_faithful_count,
+                    "audited_ineligible_pair_task_count": audited_ineligible_count,
                     "incident_task_count": incident_count,
                 },
             )
@@ -783,6 +1510,11 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--root-limit", type=int, default=3)
     parser.add_argument("--dependency-limit", type=int, default=5)
     parser.add_argument("--maximum-packet-bytes", type=int, default=48 * 1024)
+    parser.add_argument("--submission-limit", type=int, default=4)
+    parser.add_argument("--audit-model", default="gpt-6-astra")
+    parser.add_argument("--audit-reasoning-effort", default="high")
+    parser.add_argument("--audit-timeout-seconds", type=float, default=7200)
+    parser.add_argument("--audit-infrastructure-retries", type=int, default=2)
     parser.add_argument(
         "--enforce-titan-envelope",
         action="store_true",
