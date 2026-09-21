@@ -804,6 +804,8 @@ def main() -> int:
             raise BenchmarkError("systemd-run is required for the Titan envelope")
         command = [
             *systemd_service_envelope_prefix(systemd_run),
+            "--working-directory",
+            str(Path.cwd().resolve()),
             "--setenv",
             f"{TITAN_ENVELOPE_MARKER}=1",
             sys.executable,
