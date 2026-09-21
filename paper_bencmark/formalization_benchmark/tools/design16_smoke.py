@@ -46,6 +46,39 @@ def _net_new(usage: dict[str, int]) -> int:
     )
 
 
+def _routed_candidate_template(composition: dict[str, object]) -> str:
+    roots = composition.get("retrieved_roots")
+    if not isinstance(roots, list) or not roots:
+        return _candidate_template()
+    primary = roots[0]
+    if not isinstance(primary, dict) or not isinstance(primary.get("declaration"), dict):
+        raise BenchmarkError("composition primary route is malformed")
+    declaration = primary["declaration"]
+    module = str(declaration["module"])
+    names = [str(declaration["name"])]
+    dependencies = primary.get("dependencies", [])
+    if isinstance(dependencies, list):
+        names.extend(
+            str(item["name"])
+            for item in dependencies
+            if isinstance(item, dict) and isinstance(item.get("name"), str)
+        )
+    checks = "\n".join(f"#check {name}" for name in dict.fromkeys(names))
+    return f"""import {module}
+
+namespace HighamBenchCandidate
+
+/- The controller compiled these exact API checks before the measured turn. -/
+{checks}
+
+/- Replace this placeholder with the faithful paper result and complete proof. -/
+theorem target : True := by
+  trivial
+
+end HighamBenchCandidate
+"""
+
+
 def run(args: argparse.Namespace) -> dict[str, object]:
     task_id = args.task_id.strip().upper().replace("_", "-")
     if task_id not in ALLOWED_DEVELOPMENT_TASKS:
@@ -81,7 +114,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         atlas_paths=[deployment.library_atlas / "declarations.jsonl"],
         corpus_id="mathlib-plus-numstability",
         contract_additions=contract_additions,
-        root_limit=6,
+        root_limit=3,
         dependency_limit=5,
         maximum_markdown_bytes=48 * 1024,
     )
@@ -102,7 +135,10 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         _task_packet_markdown(staged_packet).encode("utf-8"),
         mode=0o400,
     )
-    write_bytes_atomic(workspace / "Candidate.lean", _candidate_template().encode("utf-8"))
+    write_bytes_atomic(
+        workspace / "Candidate.lean",
+        _routed_candidate_template(composition).encode("utf-8"),
+    )
     write_bytes_atomic(
         workspace / "ENVIRONMENT.md", _environment_note().encode("utf-8"), mode=0o400
     )
@@ -114,6 +150,20 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         + (ROOT / "prompts" / "design16_addendum.md").read_text(encoding="utf-8")
     )
     write_bytes_atomic(output_root / "prompt.txt", prompt.encode("utf-8"), mode=0o400)
+
+    template_validation_scratch = output_root / "template-validation-scratch"
+    template_validation_scratch.mkdir(mode=0o700)
+    template_validation = validate_candidate(
+        workspace / "Candidate.lean",
+        compiler_command=compiler_command(deployment, "L"),
+        scratch_root=template_validation_scratch,
+        timeout_seconds=float(args.validation_timeout_seconds),
+    )
+    write_json_atomic(
+        output_root / "template-validation.json", template_validation, mode=0o400
+    )
+    if template_validation.get("pass") is not True:
+        raise BenchmarkError("controller-generated primary-route template did not compile")
 
     driver = CodexDriver(
         codex_binary=deployment.codex_binary,
@@ -147,10 +197,12 @@ def run(args: argparse.Namespace) -> dict[str, object]:
     formalizer_seconds = time.monotonic() - formalizer_started
     candidate = workspace / "Candidate.lean"
     validation_started = time.monotonic()
+    validation_scratch = output_root / "validation-scratch"
+    validation_scratch.mkdir(mode=0o700)
     validation = validate_candidate(
         candidate,
         compiler_command=compiler_command(deployment, "L"),
-        scratch_root=output_root / "validation-scratch",
+        scratch_root=validation_scratch,
         timeout_seconds=float(args.validation_timeout_seconds),
     )
     validation_seconds = time.monotonic() - validation_started
@@ -166,6 +218,7 @@ def run(args: argparse.Namespace) -> dict[str, object]:
         "model": args.model,
         "reasoning_effort": args.reasoning_effort,
         "route_status": composition["route_status"],
+        "primary_route": composition["retrieved_roots"][0]["declaration"]["name"],
         "composition_packet_sha256": sha256_file(output_root / "composition-packet.json"),
         "library_api_sha256": sha256_file(workspace / "LIBRARY_API.md"),
         "candidate_sha256": sha256_file(candidate),

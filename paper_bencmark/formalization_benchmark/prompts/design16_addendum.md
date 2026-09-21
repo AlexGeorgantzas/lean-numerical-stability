@@ -9,3 +9,9 @@ definitions, and try at most one fallback route. Treat every alignment warning
 as a requirement to verify rather than an invitation to weaken the source. If
 it reports `NO_ROUTE`, do not search for a substitute; formalize locally with
 Mathlib.
+
+`Candidate.lean` has already been populated and compiler-checked with the
+primary route's narrow import and exact declaration checks. Preserve that
+working import and begin the paper formalization directly. The signatures in
+`LIBRARY_API.md` are complete; do not repeat interface discovery unless a
+concrete elaboration error shows that a listed signature is insufficient.
