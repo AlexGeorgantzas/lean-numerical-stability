@@ -3,15 +3,13 @@
 Paths in this reference are relative to the repository root. The spelling
 `paper_bencmark` is intentional.
 
-Pilot-9 is the separate audit-interface-repaired successor. Pilots 1–8
-are predecessor evidence, not pilot-9 observations or runs to resume. Pilot-8's
-H22-11 attempt is sealed as an infrastructure incident after its direct judges
-used valid human-readable dependency labels that a hidden controller check
-mistook for identity fields. The
+Pilot-10 is the separate warm-start successor. Pilots 1–9 are predecessor
+evidence, not Pilot-10 observations or runs to resume. Pilot-9's cold-start
+H22-11 pair remains sealed and must be labelled L-cold. The
 installed pilot-5 release retains its three-way audit and sealed P01-T2 and
 P02-T2 records; its `unclear` decisions must not be relabeled or supplied with
 manufactured feedback. Do not pool data across pilots or use pilot-5 task slots
-to satisfy a pilot-9 request. Pilot-9 must have its own pilot ID, deployment,
+to satisfy a pilot-10 request. Pilot-10 must have its own pilot ID, deployment,
 launcher, task indices, and account-global reservations; it is not ready
 for measurement until its clean release and installation are authenticated and
 provider qualification passes. If any of these are missing, stop before an
@@ -27,7 +25,7 @@ official pair; never substitute the pilot-5 runner.
 | Frozen release manifest | `paper_bencmark/formalization_benchmark/manifest.json` |
 | Task packet | `paper_bencmark/formalization_benchmark/packets/<TASK-ID>.json` |
 | Common prompt | `paper_bencmark/formalization_benchmark/prompts/formalizer.md` |
-| L-only encouragement | `paper_bencmark/formalization_benchmark/prompts/condition_L.md` |
+| One-time L scout | `paper_bencmark/formalization_benchmark/prompts/library_scout.md` |
 | Repair prompt | `paper_bencmark/formalization_benchmark/prompts/repair.md` |
 | Repair-feedback schema | `paper_bencmark/formalization_benchmark/schemas/repair_feedback.schema.json` |
 
@@ -101,19 +99,19 @@ every distinct semantic candidate still needs its own audit.
 
 ## Admission
 
-On Titan, first require the dedicated pilot-9 launcher and deployment. If
+On Titan, first require the dedicated pilot-10 launcher and deployment. If
 either is absent, stop with `source_first_runner_not_ready`; do not run pilot-5.
-Once installed, authenticate pilot-9 through its location-independent launcher:
+Once installed, authenticate pilot-10 through its location-independent launcher:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-9-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-10-r1 verify-release
 ```
 
 Then run the canonical non-provider gate through the same installed hardware
 envelope:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-9-r1 doctor \
+~/.local/bin/run-highambench-formalization-pilot-10-r1 doctor \
   --task-id H22-11
 ```
 
@@ -123,8 +121,8 @@ their authenticated outputs jointly confirm all of the following:
 - the task is pilot-allowlisted and the requested manifest resolves uniquely;
 - the exact PDF, cited source locations, neutral source contract packet, and
   result ID match their recorded SHA-256 values;
-- the common prompt is byte-identical between conditions and only L receives
-  the separately hashed encouragement appendix;
+- the task prompt is byte-identical between conditions and L is bound to the
+  separately hashed, task-neutral warm root;
 - N has no tool-visible NumStability bytes or metadata, while L has exactly the
   frozen authenticated source and compiled snapshot;
 - the NumStability snapshot includes an authenticated clean-build record,
@@ -152,8 +150,8 @@ their authenticated outputs jointly confirm all of the following:
   `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
   and stops without model inference or writing secrets to logs; the matching
   Code Mode host is hash-pinned and mounted read-only beside `/codex`;
-- the sealed pilot-1 through pilot-8 predecessor lineage and the
-  account-global campaign lock/registry match the pilot-9 deployment record.
+- the sealed pilot-1 through pilot-9 predecessor lineage and the
+  account-global campaign lock/registry match the pilot-10 deployment record.
 
 CLI arguments may assert frozen values but may not override them. A mismatch is
 a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
@@ -164,7 +162,7 @@ the task order, or use a force flag during admission.
 After successful admission, invoke exactly one pair:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-9-r1 run \
+~/.local/bin/run-highambench-formalization-pilot-10-r1 run \
   --task-id H22-11
 ```
 
@@ -190,7 +188,9 @@ foreign-thread events are provider infrastructure incompatibilities, never
 contestant rule violations.
 
 The explicit `qualify-provider --task-id H22-11` command may establish this
-readiness without starting a benchmark. After setup or repair, inspect all
+readiness without starting a benchmark. Then run `prepare-warm-root` exactly
+once. Reissuing it may only authenticate and return the same frozen READY root;
+it must never launch a second scouting turn. After setup or repair, inspect all
 18 task statuses with provider-free `status`. Do not invoke official `run`
 until the user explicitly asks to start that task.
 
@@ -216,24 +216,27 @@ base:
 | Common base prompt | identical | identical |
 | Lean and Mathlib | frozen | same frozen versions |
 | NumStability source/object/index | absent | frozen authenticated snapshot |
-| Prompt treatment appendix | absent | explicit frozen encouragement |
+| Task prompt | frozen common prompt | byte-identical common prompt |
+| Prior library orientation | absent | independent fork of the frozen scout root |
 
-The L appendix must encourage active library discovery and reuse, import,
-adaptation, or inspiration. It must also say that library material is not
-automatically source-faithful. Do not dilute this message, inject a neutralized
-version into N, or add condition-specific tips elsewhere. The frozen appendix
-must identify `/library/NumStability`, `/library/NumStability.lean`, compiled
-declarations on `LEAN_PATH`, and concrete `find`, `rg`, and
-`import NumStability` discovery/import options.
+The one-time scout prompt must encourage active library discovery and reuse,
+import, adaptation, or inspiration. It must also say that library material is
+not automatically source-faithful. It identifies
+`/library/NumStability`, `/library/NumStability.lean`, and compiled
+declarations on `LEAN_PATH`. No task material is present during scouting.
+Each L run copies the authenticated checkpoint privately and calls
+`thread/fork` from the scout thread and final scout turn. Do not start a new
+conversation with a dossier and do not reuse a task child as the next parent.
 
 The common prompt must require the exact selected result, say that faithful
 formalization is known to be achievable and has been achieved before, explain
 the independent audit, and direct the formalizer to inspect the target and all
 supporting definitions before submitting.
 
-Use fresh workspaces, caches, process namespaces, Codex homes, and formalizer
-conversations for N and L. Nothing learned from one condition, task, or run may
-enter another. Keep both conditions of the pair on the same authenticated
+Use fresh workspaces, caches, process namespaces, and task child conversations
+for N and L. The sole permitted shared model history is L's task-neutral frozen
+scout root; nothing learned from one benchmark task may enter another. Keep
+both conditions of the pair on the same authenticated
 hardware allocation. The account-global and predecessor locks must admit only one pilot pair
 at a time; do not bypass it to run separate tasks concurrently.
 
@@ -313,7 +316,7 @@ library provenance wherever de-identification is reliable. The dossier
 contains candidate semantics under the explicit closure/frontier policy; paper
 and packet are supplied separately only to paper-facing roles.
 
-Acceptance requires the Pilot-9 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency. The Dxxx ID, not the descriptive `name`, is dependency identity. Both judges must complete S01--S16 plus both implication directions. Every material
+Acceptance requires the Pilot-10 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency. The Dxxx ID, not the descriptive `name`, is dependency identity. Both judges must complete S01--S16 plus both implication directions. Every material
 binder, premise, restriction, quantifier dependency, and conclusion must match
 the selected paper result without vacuity, unsupported assumptions, or narrower
 applicability. Auditor disagreement is resolved by adjudication against the
@@ -321,7 +324,7 @@ paper and candidate semantics. Provider failure, malformed auditor output,
 unavailable tools, or dossier failure is an unscored operational incident;
 it is not a semantic verdict.
 
-The only final semantic verdicts for a valid Pilot-9 candidate are `faithful` and
+The only final semantic verdicts for a valid Pilot-10 candidate are `faithful` and
 `unfaithful`. Equivalent and genuinely stronger candidates are faithful; weaker,
 different, restricted, vacuous, and partial-case candidates are unfaithful. An
 intermediate `undetermined` judge classification is an adjudication trigger,
@@ -336,7 +339,7 @@ malformed outputs, unavailable tools, and dossier failures stay unscored
 operational incidents, not candidate verdicts. A genuinely underdetermined
 source contract requires source-admissibility resolution or exclusion before
 scoring and must not be attributed to a candidate. This policy becomes
-operative only after the pilot-9 release and provider qualification pass;
+operative only after the pilot-10 release and provider qualification pass;
 the installed pilot-5 release remains historically unchanged.
 
 For an unfaithful candidate with a slot remaining, render feedback only through

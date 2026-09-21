@@ -1,8 +1,8 @@
 # Formalization benchmark architecture
 
-Pilot-9 is a side-by-side successor. Earlier deployments and results are
-read-only provenance, not Pilot-9 observations. The direct predecessor is
-Pilot-8, whose H22-11 attempt is sealed as an audit-interface incident.
+Pilot-10 is a side-by-side warm-start successor. Earlier deployments and
+results are read-only provenance, not Pilot-10 observations. The direct
+predecessor is Pilot-9, whose cold-start H22-11 pair remains sealed.
 
 ## Operator path
 
@@ -23,15 +23,22 @@ installed run-highambench-experiments skill
         `--> generated-command child: 24 GiB / 384 tasks / no swap
         |
         v
+one release-level scout (once, before task clocks)
+        |
+        `--> frozen NumStability orientation root
+                    |
+                    `--> independent thread/fork for each L task
+        |
+        v
 one pair controller
         |
         +--> N: PDF + packet + Lean/Mathlib
-        `--> L: identical base + frozen NumStability + encouragement appendix
+        `--> L: identical task prompt + frozen NumStability + forked familiarity
 ```
 
 The controller pre-stages and compares both condition inputs before the first
 contestant call. An account-global registry reserves each
-`(formalization-benchmark-pilot-9, task_id)` once. A shared campaign lock and
+`(formalization-benchmark-pilot-10, task_id)` once. A shared campaign lock and
 predecessor locks prevent concurrent measured use of Titan. Reissuing a command
 returns the terminal pair or continues only at a safe boundary between sealed
 conditions.
@@ -100,12 +107,15 @@ multiple declarations.
 ## Isolation
 
 N has no NumStability sources, objects, caches, names, documentation, Git
-history, or prior artifacts. L adds only the frozen source and compiled trees.
-The L prompt appendix identifies their mounted locations and gives practical
-search/import guidance.
+history, or prior artifacts. L adds the frozen source and compiled trees and
+forks the single task-neutral scout history. The library encouragement and
+practical discovery guidance occur in that scout history, not in the task
+prompt. Each task gets a private copy of the authenticated root checkpoint and
+a new child thread, so L tasks cannot contaminate one another.
 
-Each formalizer has a fresh Codex state and workspace inside a minimal
-Bubblewrap filesystem. The exact same-package Code Mode host is hash-pinned and
+N has fresh Codex state. Each L child has a private copy of the same frozen
+scout checkpoint and a fresh workspace inside a minimal Bubblewrap filesystem.
+The exact same-package Code Mode host is hash-pinned and
 mounted read-only. Model-selected commands pass through a frozen offline
 Landlock/seccomp launcher and a bounded command cgroup. Untrusted Lean is
 compiled only in a separate no-network namespace with a fresh candidate
@@ -119,12 +129,12 @@ incomplete telemetry fail closed as infrastructure incidents.
 
 | Script | Responsibility |
 | --- | --- |
-| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-9. |
+| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-10. |
 | `tools/measure_library_build.py` | Record the clean full NumStability build and resources. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary without provider calls. |
 | `tools/provider_capability_canary.py` | Exercise exact models, schemas, tools, and isolation off-benchmark. |
 | `tools/titan_envelope.py` | Enter the fixed systemd/cgroup hardware envelope. |
-| `tools/run_benchmark.py` | Expose verify, doctor, qualify, run, and status. |
+| `tools/run_benchmark.py` | Expose verify, doctor, qualify, prepare-warm-root, run, and status. |
 | `tools/pair_controller.py` | Own uniqueness, ordering, state, clocks, freeze, and repair. |
 | `tools/codex_driver.py` | Own persistent/fresh conversations and raw usage. |
 | `tools/formalization_validator.py` | Enforce the one-root/one-hole contract. |
@@ -146,6 +156,10 @@ runtime/library/
     gnu-time.txt
 runs/
   qualifications/<manifest-sha256>/
+  warm-roots/<manifest-payload-sha256>/
+    warm-root.json
+    checkpoint/
+    scout-artifacts/
   index/H22-11.json
   pairs/<run-id>/
     admission.json
@@ -170,7 +184,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-pilot-9/H22-11.json
+  index/formalization-benchmark-pilot-10/H22-11.json
 ```
 
 Records bind prompts, candidates, source packets, semantic dossiers, role

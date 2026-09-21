@@ -25,7 +25,7 @@ def normalized_task_id(value: str) -> str:
     rendered = value.strip().upper().replace("_", "-")
     if rendered not in TASK_IDS:
         raise argparse.ArgumentTypeError(
-            "task must be one of the 18 task IDs frozen in pilot-9"
+            "task must be one of the 18 task IDs frozen in pilot-10"
         )
     return rendered
 
@@ -52,6 +52,7 @@ def make_parser() -> argparse.ArgumentParser:
         help="stage and authenticate the pair without provider calls",
     )
     subparsers.add_parser("verify-release")
+    subparsers.add_parser("prepare-warm-root")
     return parser
 
 
@@ -86,7 +87,19 @@ def main() -> int:
         deployment,
         allow_unenforced_hardware=args.development_no_hardware_enforcement,
     )
-    if args.command == "doctor":
+    if args.command == "prepare-warm-root":
+        if (
+            args.development_no_hardware_enforcement
+            or not deployment.strict_hardware
+            or os.environ.get("HIGHAMBENCH_TITAN_ENVELOPE") != "1"
+            or not bound_path
+            or not bound_sha256
+        ):
+            raise BenchmarkError(
+                "warm-root preparation requires the digest-bound strict Titan launcher"
+            )
+        result = controller.prepare_warm_root_when_idle()
+    elif args.command == "doctor":
         result = controller.doctor_when_idle(args.task_id)
     elif args.command == "status":
         result = controller.status(args.task_id)

@@ -270,6 +270,20 @@ class AuditControllerPolicyTests(unittest.TestCase):
                 dependencies=DEPENDENCIES,
             )
 
+    def test_adjudicator_cannot_leave_uncertainty_on_unfaithful_verdict(self) -> None:
+        trigger = ["direct and round-trip classifications differ"]
+        malformed_adjudication = unfaithful_adjudication(trigger)
+        malformed_adjudication["remaining_uncertainties"] = [
+            "The disputed domain relationship remains unresolved."
+        ]
+        with self.assertRaisesRegex(BenchmarkError, "unresolved uncertainty"):
+            _validate_adjudication(
+                malformed_adjudication,
+                paper_sha256=PAPER_HASH,
+                semantic_sha256=SEMANTIC_HASH,
+                trigger=trigger,
+            )
+
     def test_dependency_identity_is_ordered_id_not_descriptive_name(self) -> None:
         translated = translation()
         translated["dependency_coverage"][0]["name"] = "Natural-number dimension"

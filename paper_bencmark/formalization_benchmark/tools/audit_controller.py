@@ -424,6 +424,8 @@ def _validate_adjudication(
         value["mismatches"] or value["remaining_uncertainties"]
     ):
         raise BenchmarkError("adjudicator returned a contradictory faithful judgment")
+    if value["remaining_uncertainties"]:
+        raise BenchmarkError("adjudicator left an unresolved uncertainty")
     if value["verdict"] == "unfaithful" and not value["mismatches"]:
         raise BenchmarkError("adjudicator returned unfaithful without a concrete mismatch")
 

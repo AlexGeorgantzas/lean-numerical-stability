@@ -4,6 +4,7 @@ import json
 import hashlib
 import os
 from pathlib import Path
+import shutil
 import sys
 import tempfile
 import unittest
@@ -96,7 +97,7 @@ def capability_response(request):
         if scoped is None:
             global_feature_count += 1
         else:
-            assert scoped == "thread-test"
+            assert scoped in ("thread-test", "thread-fork-test")
             thread_feature_count += 1
         enabled = (
             (workspace / "capability-feature-enabled").exists()
@@ -119,13 +120,19 @@ thread_request = receive()
 while thread_request is not None and capability_response(thread_request):
     thread_request = receive()
 assert thread_request is not None
-assert thread_request["method"] == "thread/start"
-assert thread_request["params"]["config"] == {
-    "agents": {"enabled": False},
-    "features": {"multi_agent": False, "multi_agent_v2": False},
-}
+assert thread_request["method"] in ("thread/start", "thread/fork")
+if thread_request["method"] == "thread/start":
+    assert thread_request["params"]["config"] == {
+        "agents": {"enabled": False},
+        "features": {"multi_agent": False, "multi_agent_v2": False},
+    }
+else:
+    assert thread_request["params"]["threadId"] == "thread-test"
+    assert thread_request["params"]["lastTurnId"] == "turn-1"
 assert (state / "auth.json").is_file()
-thread_id = "thread-test"
+thread_id = (
+    "thread-fork-test" if thread_request["method"] == "thread/fork" else "thread-test"
+)
 ephemeral = bool(thread_request["params"].get("ephemeral", False))
 thread = {
     "id": thread_id,
@@ -143,6 +150,15 @@ cumulative = {
     "reasoningOutputTokens": 0,
     "totalTokens": 0,
 }
+if thread_request["method"] == "thread/fork":
+    cumulative = {
+        "inputTokens": 10,
+        "cachedInputTokens": 2,
+        "cacheWriteInputTokens": 1,
+        "outputTokens": 5,
+        "reasoningOutputTokens": 2,
+        "totalTokens": 15,
+    }
 late_pending = False
 late_turn_id = None
 exit_code_on_eof = 0
@@ -500,6 +516,60 @@ class CodexDriverProtocolTests(unittest.TestCase):
                 encoding="utf-8"
             ),
         )
+
+    def test_fork_starts_from_frozen_parent_and_meters_only_child_turn(self) -> None:
+        checkpoint = self.root / "checkpoint"
+        checkpoint.mkdir()
+        scout = self.driver(state_root=checkpoint / "state")
+        source = scout.run_turn(
+            prompt="scout",
+            workspace=self.workspace,
+            artifact_dir=self.root / "scout-artifacts",
+            timeout_seconds=5,
+        )
+        scout.close(artifact_dir=self.root / "scout-close")
+        self.assertEqual(source.thread_id, "thread-test")
+        source_turn = json.loads(
+            (self.root / "scout-artifacts" / "turn.json").read_text(
+                encoding="utf-8"
+            )
+        )["turn_id"]
+
+        seed = self.root / "seed"
+        shutil.copytree(checkpoint, seed, symlinks=True)
+        task_workspace = self.root / "task-workspace"
+        task_workspace.mkdir()
+        forked = self.driver(
+            state_root=seed / "state",
+            fork_source_thread_id=source.thread_id,
+            fork_source_last_turn_id=source_turn,
+            fork_source_cumulative_usage=source.usage,
+        )
+        child = forked.run_turn(
+            prompt="task",
+            workspace=task_workspace,
+            artifact_dir=self.root / "task-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertEqual(child.thread_id, "thread-fork-test")
+        self.assertEqual(child.usage["total_tokens"], 15)
+        self.assertTrue(child.usage_complete)
+        child_record = json.loads(
+            (self.root / "task-artifacts" / "turn.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertEqual(
+            child_record["capability_attestation"]["thread_creation"]["method"],
+            "thread/fork",
+        )
+        self.assertEqual(
+            child_record["fork_provenance"]["source_thread_id"], "thread-test"
+        )
+        self.assertEqual(
+            child_record["fork_cumulative_usage_semantics"], "parent_inherited"
+        )
+        forked.close(artifact_dir=self.root / "task-close")
 
     def test_late_raw_usage_is_drained_before_next_repair(self) -> None:
         driver = self.driver()

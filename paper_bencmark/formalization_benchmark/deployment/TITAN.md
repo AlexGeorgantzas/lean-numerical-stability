@@ -4,7 +4,7 @@ The benchmark must be installed from the `formalization_benchmark` branch at an
 exact commit. Do not run it from a moving checkout or from the historical
 `benchmark` branch.
 
-Pilot-9 is a side-by-side expanded successor. The pilot-1 through pilot-8
+Pilot-10 is a side-by-side warm-start successor. The pilot-1 through pilot-9
 deployments, launchers, and sealed runs must remain unchanged. Pilot-2 P01-T2
 (`P01-T2-20260916T084145Z-6dad064a`) reached one compiling N candidate but
 stopped before a faithfulness verdict because the provider rejected the
@@ -28,12 +28,23 @@ because its copied ChatGPT refresh token was stale; that failure is sealed.
 Pilot-8's H22-11 attempt ended as a sealed audit-interface incident after its
 direct judges returned complete ordered dependency records whose descriptive
 labels differed from hidden controller expectations. It has no semantic
-verdict. Pilot-9 gives each of the 18 tasks a fresh slot
+verdict. Pilot-9 then completed a cold-start H22-11 L condition but sealed the
+pair as an incident when N's final adjudicator combined a faithful verdict with
+remaining uncertainty. Pilot-10 gives each of the 18 tasks a fresh warm-start slot
 under a binary `faithful`/`unfaithful` semantic policy; it neither relabels nor
 resumes any earlier-pilot evidence. Never combine observations across pilots. Setup
-authenticates the direct Pilot-8 predecessor, its qualification, build, and
-sealed H22-11 incident, plus the retained pilot-7/5/4/3/2/1 lineage before
+authenticates the direct Pilot-9 predecessor, its qualification, build, and
+sealed H22-11 incident, plus the retained pilot-8/7/5/4/3/2/1 lineage before
 publication.
+
+The sealed Pilot-9 deployment SHA-256 is
+`cf84e8cfeb47447be38055cb8cd2758c50ccb7ff98d6afe8bdf531e9ab480863`;
+its qualification record is
+`54efe6d01d9ef0a50235c905298779876a338e1f12806432a0f4f6b16ea2ca2a`,
+its library build record is
+`7f12698294c2e10f68431d86a959bccf34698bda1dbf3fd236a7993349ae80fa`,
+and its H22-11 pair report is
+`14df6656ebbaeb861447bb4eeebf162660d72e8cbb438edfc87c900440698de7`.
 
 The sealed Pilot-8 deployment SHA-256 is
 `3c680b39563e3e7c66e2892a16d7cb72f541ed04631d4b134cee101acda04588`;
@@ -57,9 +68,9 @@ its qualification record is
 `0c0c4ccb252b432e41025fa1f4e17dfa1df78c1f6f8c9a54801a32bd5ee97e16`
 and its library build record is
 `d9abf28dfa5444a78fc88ce6818fc4c0e4ed166296d922f5b53b46476f4316db`.
-These identify retained older installation lineage, not Pilot-9 measurements.
+These identify retained older installation lineage, not Pilot-10 measurements.
 
-Pilot-9 must not be treated as ready merely because these repository files
+Pilot-10 must not be treated as ready merely because these repository files
 exist. Its own clean release, separate installation, provider-free gates, and
 live provider qualification must pass before an official pair starts. An
 integrity-valid candidate receives exactly one semantic verdict, `faithful`
@@ -74,7 +85,7 @@ its failed qualification record is
 `930a69c9a059f8e00590a6689ea9d15177e27b435e901e724e57861a1db79c9a`
 and its library build record is
 `42d1a09980a908d4b4757b174dff0239d20f9cc35e0e67dd7499a0bec60580ec`.
-These authenticate older predecessor evidence, not pilot-9 measurements.
+These authenticate older predecessor evidence, not pilot-10 measurements.
 
 ## Security first
 
@@ -141,12 +152,12 @@ From the exact release checkout:
 ```bash
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /private/path/to/reference_papers \
-  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-8-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-9-r1
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-9-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-10-r1
 ```
 
-The installer creates a user-private pilot-9 deployment below
-`~/.local/share/highambench-formalization-pilot-9-r1`, unless `--deployment-root` says
+The installer creates a user-private pilot-10 deployment below
+`~/.local/share/highambench-formalization-pilot-10-r1`, unless `--deployment-root` says
 otherwise. A fresh install is built in a uniquely named sibling transaction and
 atomically renamed into the final path only after its deployment record is
 ready. An authenticated published transaction interrupted during finalization
@@ -205,13 +216,14 @@ committed to Git.
 
 ## Run
 
-Once pilot-9 is installed and authenticated, its operator commands are:
+Once pilot-10 is installed and authenticated, its operator commands are:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-9-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-9-r1 doctor --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-9-r1 qualify-provider --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-9-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-10-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 prepare-warm-root
+~/.local/bin/run-highambench-formalization-pilot-10-r1 run --task-id H22-11
 ```
 
 It enters the fixed systemd hardware envelope, then invokes the authenticated
@@ -232,7 +244,10 @@ the corresponding command.
 Repeating the request returns the existing pilot run for that task rather than
 creating a repetition.
 The explicit `qualify-provider` command can be run immediately after setup to
-establish live provider readiness without starting a benchmark; a later fresh
+establish live provider readiness without starting a benchmark. The separate
+`prepare-warm-root` command then runs the one task-neutral library exploration,
+freezes its conversation checkpoint, and records its time/tokens as off-task
+overhead. A later fresh
 `run` authenticates and reuses the sealed qualification record. A failed live
 probe remains failed evidence for this release; do not silently retry it or
 bypass the gate.
@@ -254,7 +269,7 @@ exceed the threshold.
 Status is provider-free:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-9-r1 status --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 status --task-id H22-11
 ```
 
 ## Storage separation

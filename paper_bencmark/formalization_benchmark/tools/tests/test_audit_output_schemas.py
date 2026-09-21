@@ -73,6 +73,15 @@ class AuditorOutputSchemaTests(unittest.TestCase):
                 self.assertNotIn("verdict", judge["properties"])
                 self.assertIn("undetermined", judge["properties"]["classification"]["enum"])
 
+    def test_adjudicator_schema_cannot_report_remaining_uncertainty(self) -> None:
+        schema = json.loads(
+            (SCHEMAS / "adjudication.schema.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(
+            schema["properties"]["remaining_uncertainties"]["maxItems"],
+            0,
+        )
+
     def test_regression_catches_untyped_role_before_provider_call(self) -> None:
         schema = json.loads(
             (SCHEMAS / "blind_translation.schema.json").read_text(encoding="utf-8")

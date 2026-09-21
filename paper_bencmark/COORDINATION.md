@@ -213,3 +213,40 @@ one-shot provider qualification without starting an official task.
 
 **Current need:** Pilot-9 is ready. Start H22-11 or another allowlisted task
 only after a new explicit user request naming that task.
+
+---
+
+## 2026-09-21 — Codex — formalization_benchmark — Pilot-10 warm-root successor prepared
+
+**Did:**
+- Preserved all Pilot-9 results as the cold-library-discovery predecessor and
+  minted `formalization-benchmark-pilot-10` for the new primary warm-start
+  experiment.
+- Added one task-neutral, one-shot NumStability scouting turn per release. Its
+  persistent Codex checkpoint, source thread/turn IDs, cumulative usage,
+  timing, prompt, environment, and tree hashes are sealed separately from task
+  results. Every condition-L task copies that frozen checkpoint and uses the
+  app-server `thread/fork` method; condition N still starts from a fresh thread.
+- Made the N/L task prompt bytes identical. The task clock begins only with the
+  task turn. Raw usage remains recorded, while the headline task usage removes
+  cached/cache-write input so the inherited scouting prefix is not counted as
+  newly generated task work.
+- Tightened binary adjudication so a final adjudicator can return only faithful
+  or unfaithful, cannot retain uncertainty, and must attach a concrete mismatch
+  to an unfaithful verdict.
+- Added Pilot-9 release/build/qualification/pair/condition/audit-incident
+  lineage and shifted the complete predecessor chain. All 166 unit tests,
+  Python compilation, release freeze, and skill structure checks pass. The
+  frozen manifest payload is
+  `753396d3d41ee5fae0ac488afb76b0ecf67a2c9c677a7ee91bffd7caf7e9b60a`.
+
+**Careful:**
+- The warm-root command may run exactly once for this release. Failure is
+  fail-closed; it must not silently create a replacement root.
+- Preparing the warm root is off the task clock and consumes no official task
+  slot. It does not authorize any benchmark pair.
+- Pilot-9 and its cold-start results remain immutable predecessor evidence.
+
+**Needs:** Commit and push Pilot-10, install it beside Pilot-9 on Titan, pass
+verify-release, doctor, provider qualification, and the one-shot warm-root
+preparation. Do not start an official task without a separate explicit request.

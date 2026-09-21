@@ -165,6 +165,7 @@
     },
     "remaining_uncertainties": {
       "type": "array",
+      "maxItems": 0,
       "items": {
         "type": "string",
         "minLength": 1

@@ -1,24 +1,24 @@
 # Source-first formalization protocol
 
-> Pilot-9 is a new frozen release. Pilot-8 and every earlier run remain sealed
+> Pilot-10 is a new frozen release. Pilot-9 and every earlier run remain sealed
 > under their original software, prompts, task set, and audit policy. No
 > observation is copied, resumed, or pooled across pilot identities.
-> Pilot-8's H22-11 attempt is sealed as an infrastructure incident: its direct
-> judges returned complete, ordered dependency records, but the controller
-> rejected their human-readable dependency labels as if those labels were
-> identities. Pilot-9 corrects that interface mismatch. It does not reinterpret
-> Pilot-8 evidence or retry under the Pilot-8 identity.
+> Pilot-9's H22-11 cold-start pair is sealed as an infrastructure incident after
+> the final adjudicator returned `faithful` with unresolved uncertainty. Pilot-10
+> prevents that contradictory structured output and introduces the warm-start L
+> treatment. Pilot-9 observations remain L-cold evidence and are never pooled
+> with Pilot-10.
 
 ## Purpose
 
-Pilot-9 measures whether access to, and explicit encouragement to use, a frozen
-NumStability library helps Codex construct a faithful Lean formalization of a
-selected numerical-analysis result. It measures statement construction, not
-proof construction.
+Pilot-10 measures whether a formalizer already oriented to a frozen
+NumStability library can construct a faithful Lean formalization faster or with
+less net-new token work than an otherwise identical library-naive formalizer.
+It measures statement construction, not proof construction.
 
 ## Frozen release
 
-- Pilot ID: `formalization-benchmark-pilot-9`.
+- Pilot ID: `formalization-benchmark-pilot-10`.
 - One exact Git commit, manifest-file SHA-256, and self-hashed manifest payload
   define the release.
 - Formalizer: `gpt-5.6-sol` at `xhigh`, frozen in `config.json`.
@@ -41,7 +41,7 @@ The task order is frozen as follows:
 3. `H23-6`, `H5-5`, `H10-7`, `H12-4`, `H19-5`, `H7-14`, `H15-3`
 
 The condition order is precommitted per task in `config.json`, with nine
-N-first and nine L-first pairs. Pilot-9 creates fresh slots for all 18 tasks.
+N-first and nine L-first pairs. Pilot-10 creates fresh slots for all 18 tasks.
 
 The five `P..-T2` entries are paper tasks retained from Pilot-6. The thirteen
 `Hchapter-problem` entries are Higham textbook problems. Their source packets
@@ -67,10 +67,14 @@ prior condition output.
 
 Condition L receives the same base environment plus the read-only NumStability
 snapshot at commit
-`45813a95dacf577461bae13f033af0dbc985a225`. The common prompt is followed by
-one frozen L-only appendix. It explicitly encourages the model to inspect,
-import, reuse, adapt, or draw inspiration from the library and gives concrete
-discovery/import guidance. This encouragement is part of the treatment.
+`45813a95dacf577461bae13f033af0dbc985a225`. Before any official task, exactly
+one task-neutral `gpt-5.6-sol`/`xhigh` scouting conversation explores this
+snapshot and receives the frozen encouragement to inspect, import, reuse,
+adapt, or draw inspiration from it. The completed conversation is frozen and
+hashed. Every L task starts with an actual app-server `thread/fork` from that
+same root and then receives the byte-identical N/L task prompt. No task, paper,
+packet, candidate, or corpus list is visible during scouting; no L fork includes
+another task's history.
 
 ## Candidate contract
 
@@ -131,6 +135,12 @@ One raw-event-enabled app-server process remains alive for all attempts in a
 condition. Repair prompts therefore continue the exact same conversation.
 Input, cached-input, cache-write-input, output, reasoning-output, and total
 usage are deduplicated and cross-checked against cumulative thread telemetry.
+The scout's time and provider usage are logged once in the release-level warm
+root and excluded from every task. Raw task usage is retained. The primary
+token headline is `net_new_tokens = uncached_input_tokens + output_tokens`,
+where uncached input excludes both cache-read and cache-write input. This does
+not pretend to identify individual inherited-prefix tokens; it is a transparent
+derived measure alongside the raw fields.
 An interruption after a submission is fail-closed because cold resume cannot
 preserve this exact raw event stream.
 
@@ -145,7 +155,7 @@ available nor requested.
 
 The primary PDF and frozen source packet define the selected result. The packet
 may clarify which part of an exercise is selected, but the PDF controls if they
-conflict. Unlike the method paper's full audit, Pilot-9 omits a separate
+conflict. Unlike the method paper's full audit, Pilot-10 omits a separate
 source-contract model call because the source side is frozen and validated
 before release. This deliberate deviation is recorded; every generated
 candidate still receives a fresh candidate-side audit.
@@ -222,7 +232,7 @@ strengthening. A genuinely stronger candidate is faithful because it still
 implies the complete selected source result.
 
 The method paper permits a score-2 exception for multiple declarations that
-cover only a proper subset of the source domain. Pilot-9 deliberately rejects
+cover only a proper subset of the source domain. Pilot-10 deliberately rejects
 that exception: partial case-split coverage is `unfaithful`. This deviation is
 frozen and must not be inferred ad hoc during an audit.
 
@@ -234,7 +244,9 @@ are sealed infrastructure incidents, not semantic verdicts.
 Adjudication is mandatory when classifications differ, a judge requests it, or
 a dependency or semantic check remains unclear. The adjudicator resolves
 evidence item by item and returns both implication directions, a four-way
-classification, and the binary final verdict. When judges agree conclusively
+classification, and the binary final verdict. It may not retain uncertainty:
+if full faithfulness is not affirmatively established, it must return
+`unfaithful` with a concrete mismatch. When judges agree conclusively
 and no trigger remains, the controller derives the binary verdict without an
 extra model call.
 

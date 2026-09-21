@@ -143,15 +143,15 @@ class SkillInstallTests(unittest.TestCase):
             with self.assertRaisesRegex(BenchmarkError, "gained or lost"):
                 _pilot5_release_closure(root, manifest)
 
-    def test_pilot9_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
+    def test_pilot10_launcher_defaults_are_distinct_and_predecessor_is_required(self) -> None:
         parser = make_parser()
         with self.assertRaises(SystemExit):
             parser.parse_args(["--pdf-source-dir", "/tmp"])
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-9-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-9-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-10-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-10-r1"))
 
     def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -782,7 +782,7 @@ class SkillInstallTests(unittest.TestCase):
                     seals["P02-T2"]["report_sha256"],
                 )
                 older.assert_called_with(str(old_roots["predecessor_run_root"].parent))
-                with mock.patch("setup_titan.pilot8_lineage", return_value=lineage):
+                with mock.patch("setup_titan.pilot9_lineage", return_value=lineage):
                     verify_predecessor_lineage(str(root), lineage)
                 self.assertEqual(before, {path: sha256_file(path) for path in before})
 
@@ -897,7 +897,7 @@ class SkillInstallTests(unittest.TestCase):
                     str(older_roots["predecessor_run_root"].parent.resolve()),
                     verify_status=True,
                 )
-                with mock.patch("setup_titan.pilot8_lineage", return_value=lineage):
+                with mock.patch("setup_titan.pilot9_lineage", return_value=lineage):
                     verify_predecessor_lineage(str(root), lineage)
 
                 qualification.write_text('{"status":"PASSED"}', encoding="utf-8")

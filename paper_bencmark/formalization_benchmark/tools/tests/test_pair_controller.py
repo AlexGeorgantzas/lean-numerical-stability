@@ -5,6 +5,7 @@ import json
 import os
 from dataclasses import replace
 from pathlib import Path
+import shutil
 import stat
 import sys
 import tempfile
@@ -27,6 +28,7 @@ from common import (  # noqa: E402
     tree_manifest,
 )
 from deployment import Deployment  # noqa: E402
+from codex_driver import TurnResult  # noqa: E402
 from manifest_control import verify_manifest  # noqa: E402
 from pair_controller import PairController  # noqa: E402
 from pair_controller import _campaign_lock  # noqa: E402
@@ -293,6 +295,44 @@ class PairControllerDryRunTests(unittest.TestCase):
         controller = PairController(
             self.deployment, allow_unenforced_hardware=True
         )
+        warm_root = (
+            self.deployment.run_root
+            / "warm-roots"
+            / controller.manifest["manifest_payload_sha256"]
+        )
+        checkpoint = warm_root / "checkpoint"
+        checkpoint.mkdir(parents=True, exist_ok=True)
+        warm_record = warm_root / "warm-root.json"
+        if not warm_record.exists():
+            usage = {
+                "input_tokens": 10,
+                "cached_input_tokens": 2,
+                "cache_write_input_tokens": 1,
+                "output_tokens": 5,
+                "reasoning_output_tokens": 2,
+                "total_tokens": 15,
+            }
+            warm_record.write_text(
+                json.dumps(
+                    {
+                        "schema_version": "formalization-warm-root-1",
+                        "status": "READY",
+                        "pilot_id": controller.config["pilot_id"],
+                        "manifest_payload_sha256": controller.manifest[
+                            "manifest_payload_sha256"
+                        ],
+                        "scout_prompt_sha256": sha256_file(
+                            ROOT / "prompts" / "library_scout.md"
+                        ),
+                        "source_thread_id": "synthetic-scout-thread",
+                        "source_last_turn_id": "synthetic-scout-turn",
+                        "source_cumulative_usage": usage,
+                        "scout_usage": usage,
+                        "checkpoint_manifest": tree_manifest(checkpoint),
+                    }
+                ),
+                encoding="utf-8",
+            )
         packet_path = ROOT / "packets" / "P01-T2.json"
         packet = json.loads(packet_path.read_text(encoding="utf-8"))
 
@@ -316,6 +356,83 @@ class PairControllerDryRunTests(unittest.TestCase):
             fake_provider_qualification, controller
         )
         return controller
+
+    def test_warm_root_scout_runs_once_and_reuses_exact_checkpoint(self) -> None:
+        controller = self.controller()
+        warm_root, _record_path, _checkpoint = controller._warm_root_paths()
+        shutil.rmtree(warm_root)
+        controller.strict_hardware = True
+        controller.doctor = types.MethodType(
+            lambda _self, _task_id: {"status": "PASSED"}, controller
+        )
+        calls: list[dict] = []
+
+        class ScoutDriver:
+            def __init__(_self, **kwargs):
+                calls.append(kwargs)
+                _self.state_root = Path(kwargs["state_root"])
+                _self.state_root.mkdir(parents=True)
+                (_self.state_root / "scout-state.json").write_text(
+                    '{"thread":"scout-thread"}\n', encoding="utf-8"
+                )
+
+            def run_turn(_self, *, prompt, workspace, artifact_dir, timeout_seconds):
+                self.assertIn("NumStability", prompt)
+                self.assertFalse(calls[-1]["workspace_writable"])
+                self.assertEqual(timeout_seconds, 18000.0)
+                self.assertFalse(any(workspace.joinpath("source").glob("*")))
+                artifact_dir.mkdir(parents=True)
+                (artifact_dir / "turn.json").write_text(
+                    json.dumps(
+                        {
+                            "terminal_status": "completed",
+                            "turn_id": "scout-turn",
+                            "active_seconds_through_quiescence": 12.5,
+                        }
+                    ),
+                    encoding="utf-8",
+                )
+                (artifact_dir / "last_message.txt").write_text(
+                    "scouting complete\n", encoding="utf-8"
+                )
+                usage = {
+                    "input_tokens": 100,
+                    "cached_input_tokens": 10,
+                    "cache_write_input_tokens": 20,
+                    "output_tokens": 30,
+                    "reasoning_output_tokens": 15,
+                    "total_tokens": 130,
+                }
+                return TurnResult(
+                    thread_id="scout-thread",
+                    exit_code=0,
+                    timed_out=False,
+                    wall_seconds=13.0,
+                    usage=usage,
+                    usage_complete=True,
+                    final_message="scouting complete",
+                    event_count=1,
+                    command=["codex", "app-server"],
+                    active_started_perf_ns=1,
+                    active_ended_perf_ns=2,
+                    failure_kind=None,
+                )
+
+            def close(_self, *, artifact_dir):
+                artifact_dir.mkdir(parents=True)
+
+        with mock.patch("pair_controller.CodexDriver", ScoutDriver):
+            first = controller.prepare_warm_root_when_idle()
+            second = controller.prepare_warm_root_when_idle()
+
+        self.assertEqual(len(calls), 1)
+        self.assertEqual(first, second)
+        self.assertEqual(first["status"], "READY")
+        self.assertEqual(first["source_thread_id"], "scout-thread")
+        self.assertFalse(first["benchmark_charged"])
+        self.assertEqual(
+            first["checkpoint_manifest"], tree_manifest(warm_root / "checkpoint")
+        )
 
     @staticmethod
     def write_fake_shutdown(condition_root: Path) -> None:
@@ -414,9 +531,8 @@ class PairControllerDryRunTests(unittest.TestCase):
         n_prompt = (pair_root / "conditions" / "N" / "prompt.txt").read_bytes()
         l_prompt = (pair_root / "conditions" / "L" / "prompt.txt").read_bytes()
         common = (ROOT / "prompts" / "formalizer.md").read_bytes()
-        appendix = (ROOT / "prompts" / "condition_L.md").read_bytes()
         self.assertEqual(n_prompt, common)
-        self.assertEqual(l_prompt, common + appendix)
+        self.assertEqual(l_prompt, common)
         n_workspace = pair_root / "conditions" / "N" / "workspace"
         n_surface = b"".join(
             path.read_bytes() for path in n_workspace.rglob("*") if path.is_file()
@@ -430,7 +546,7 @@ class PairControllerDryRunTests(unittest.TestCase):
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
 
-    def test_global_campaign_lock_serializes_releases_and_seven_predecessors(self) -> None:
+    def test_global_campaign_lock_serializes_releases_and_eight_predecessors(self) -> None:
         registry = self.root / "account-registry"
         predecessor = self.root / "pilot-7-runs"
         legacy_predecessor = self.root / "pilot-5-runs"
@@ -439,10 +555,12 @@ class PairControllerDryRunTests(unittest.TestCase):
         fifth_ancestral_predecessor = self.root / "pilot-2-runs"
         sixth_ancestral_predecessor = self.root / "pilot-1-runs"
         seventh_ancestral_predecessor = self.root / "pilot-0-runs"
+        eighth_ancestral_predecessor = self.root / "pilot-minus-1-runs"
         with _campaign_lock(
             self.deployment.run_root, registry, predecessor, legacy_predecessor,
             ancestral_predecessor, great_ancestral_predecessor, fifth_ancestral_predecessor,
             sixth_ancestral_predecessor, seventh_ancestral_predecessor,
+            eighth_ancestral_predecessor,
         ):
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", registry):
@@ -467,6 +585,9 @@ class PairControllerDryRunTests(unittest.TestCase):
                     pass
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", None, seventh_ancestral_predecessor):
+                    pass
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(self.root / "another-release", None, eighth_ancestral_predecessor):
                     pass
 
     def test_official_pair_rejects_downgraded_qualification_binding(self) -> None:

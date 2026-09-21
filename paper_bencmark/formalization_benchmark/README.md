@@ -1,16 +1,15 @@
 # HighamBench source-first formalization benchmark
 
-This directory is the frozen Pilot-9 control plane. It does not use the legacy
-fixed-target proof runner. Pilot-8 and earlier evidence remain sealed and are
-never reinterpreted, resumed, or pooled with Pilot-9. Pilot-8's H22-11 attempt
-ended in an audit-interface incident; Pilot-9 corrects that interface mismatch
-without weakening the audit.
+This directory is the frozen Pilot-10 warm-start control plane. It does not use
+the legacy fixed-target proof runner. Pilot-9 and earlier evidence remain
+sealed and are never reinterpreted, resumed, or pooled with Pilot-10. Existing
+Pilot-9 observations are retained as L-cold evidence.
 
-Pilot ID: `formalization-benchmark-pilot-9`.
+Pilot ID: `formalization-benchmark-pilot-10`.
 
 ## Tasks
 
-Pilot-9 supports 18 fresh N/L pairs:
+Pilot-10 supports 18 fresh N/L pairs:
 
 - Paper tasks: `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, `P14-T2`.
 - Higham problems: `H22-11`, `H22-5`, `H20-6`, `H7-12`,
@@ -20,10 +19,10 @@ Pilot-9 supports 18 fresh N/L pairs:
 The condition order is frozen in `config.json` and balanced nine N-first /
 nine L-first. Each task has one official pair slot.
 
-Both formalizers receive the same PDF, task packet, common prompt, Lean, and
-Mathlib. L alone receives the read-only NumStability snapshot and the frozen
-appendix that explicitly encourages discovery, import, reuse, adaptation, or
-inspiration from the library. N has no direct or indirect NumStability
+Both formalizers receive the same PDF, task packet, common task prompt, Lean,
+and Mathlib. Before tasks begin, L performs exactly one task-neutral library
+scout. Every L task is a genuine independent fork of that frozen root and has
+read-only NumStability access. N has no direct or indirect NumStability
 material.
 
 The formalizer is `gpt-5.6-sol` at `xhigh`. Each condition has one initial
@@ -49,14 +48,15 @@ See [PROTOCOL.md](PROTOCOL.md) for the complete frozen contract.
 
 ## Titan commands
 
-After Pilot-9 is installed and provider-qualified on Titan:
+After Pilot-10 is installed and provider-qualified on Titan:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-9-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-9-r1 doctor --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-9-r1 qualify-provider --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-9-r1 run --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-9-r1 status --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-10-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 prepare-warm-root
+~/.local/bin/run-highambench-formalization-pilot-10-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-10-r1 status --task-id H22-11
 ```
 
 `run --dry-run` checks admission and staging without model calls or consuming

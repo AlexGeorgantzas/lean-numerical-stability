@@ -149,8 +149,9 @@ Run this exact command from the workspace:
 lean --root . -o Candidate.olean Candidate.lean
 ```
 
-The controller supplies the frozen Lean/Mathlib search path. Condition L's
-prompt identifies its additional read-only library source mount when present.
+The controller supplies the frozen Lean/Mathlib search path. Condition L also
+inherits prior library orientation from its frozen scout root and receives the
+same task prompt as condition N.
 Do not add package files, download dependencies, or access the network.
 Positive-PID/process-group signaling and file metadata mutation syscalls are
 disabled by the common command sandbox. Use ordinary file writes and renames;
@@ -211,6 +212,34 @@ def _usage_add(total: dict[str, int], usage: Mapping[str, Any]) -> dict[str, int
         if isinstance(value, int) and not isinstance(value, bool) and value >= 0:
             result[key] = result.get(key, 0) + value
     return result
+
+
+def _net_new_usage(usage: Mapping[str, Any]) -> dict[str, int]:
+    """Derived task-local headline; raw provider usage remains authoritative."""
+
+    values: dict[str, int] = {}
+    for key in (
+        "input_tokens",
+        "cached_input_tokens",
+        "cache_write_input_tokens",
+        "output_tokens",
+    ):
+        value = usage.get(key)
+        if not isinstance(value, int) or isinstance(value, bool) or value < 0:
+            raise BenchmarkError("contestant usage is malformed")
+        values[key] = value
+    uncached = (
+        values["input_tokens"]
+        - values["cached_input_tokens"]
+        - values["cache_write_input_tokens"]
+    )
+    if uncached < 0:
+        raise BenchmarkError("contestant cached input exceeds input usage")
+    return {
+        "uncached_input_tokens": uncached,
+        "output_tokens": values["output_tokens"],
+        "net_new_tokens": uncached + values["output_tokens"],
+    }
 
 
 def _measured_active_seconds(value: Any, *, label: str) -> float:
@@ -407,8 +436,9 @@ def _campaign_lock(
     fifth_ancestral_predecessor_run_root: Path | None = None,
     sixth_ancestral_predecessor_run_root: Path | None = None,
     seventh_ancestral_predecessor_run_root: Path | None = None,
+    eighth_ancestral_predecessor_run_root: Path | None = None,
 ) -> Iterator[None]:
-    """Serialize this release, the account registry, and all seven predecessors."""
+    """Serialize this release, the account registry, and all eight predecessors."""
 
     paths = [run_root / "locks" / "formalization-pilot.lock"]
     if global_registry_root is not None:
@@ -427,6 +457,8 @@ def _campaign_lock(
         paths.append(sixth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     if seventh_ancestral_predecessor_run_root is not None:
         paths.append(seventh_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
+    if eighth_ancestral_predecessor_run_root is not None:
+        paths.append(eighth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     descriptors: list[int] = []
     try:
         for path in sorted(set(paths)):
@@ -476,6 +508,7 @@ class PairController:
             getattr(self.deployment, "fifth_ancestral_predecessor_run_root", None),
             getattr(self.deployment, "sixth_ancestral_predecessor_run_root", None),
             getattr(self.deployment, "seventh_ancestral_predecessor_run_root", None),
+            getattr(self.deployment, "eighth_ancestral_predecessor_run_root", None),
         )
 
     def _qualify_provider(self) -> dict[str, Any]:
@@ -888,7 +921,7 @@ class PairController:
                 "condition N runtime treatment-absence record changed after deployment"
             )
         common_prompt = ROOT / "prompts" / "formalizer.md"
-        l_prompt = ROOT / "prompts" / "condition_L.md"
+        l_prompt = ROOT / str(self.config["warm_start"]["scout_prompt"])
         repair_prompt = ROOT / "prompts" / "repair.md"
         for path in (common_prompt, l_prompt, repair_prompt):
             if not path.is_file() or path.is_symlink():
@@ -947,15 +980,16 @@ class PairController:
                 or self.deployment.fifth_ancestral_predecessor_run_root is None
                 or self.deployment.sixth_ancestral_predecessor_run_root is None
                 or self.deployment.seventh_ancestral_predecessor_run_root is None
+                or self.deployment.eighth_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-9 registry or predecessor locks are missing")
-            from setup_titan import pilot8_lineage
+                raise BenchmarkError("pilot-10 registry or predecessor locks are missing")
+            from setup_titan import pilot9_lineage
 
-            # Doctor is called under the pilot-9 campaign lock, including the
+            # Doctor is called under the pilot-10 campaign lock, including the
             # predecessor and account-global locks. Setup performs the full
             # predecessor check before publication; here compare pinned bytes
             # without invoking a verifier that would reacquire those locks.
-            lineage = pilot8_lineage(
+            lineage = pilot9_lineage(
                 str(self.deployment.predecessor_run_root.parent),
                 verify_status=False,
             )
@@ -1074,7 +1108,7 @@ class PairController:
             "packet_sha256": sha256_file(packet_path),
             "paper_sha256": sha256_file(paper_path),
             "common_prompt_sha256": sha256_file(common_prompt),
-            "condition_L_appendix_sha256": sha256_file(l_prompt),
+            "condition_L_scout_prompt_sha256": sha256_file(l_prompt),
             "repair_prompt_sha256": sha256_file(repair_prompt),
             "condition_order": order,
             "task_destination": destination,
@@ -1156,6 +1190,174 @@ class PairController:
                 "official_slot_consumed": False,
             }
 
+    def _warm_root_paths(self) -> tuple[Path, Path, Path]:
+        root = (
+            self.deployment.run_root
+            / "warm-roots"
+            / self.manifest["manifest_payload_sha256"]
+        )
+        return root, root / "warm-root.json", root / "checkpoint"
+
+    def _load_warm_root(self) -> dict[str, Any]:
+        root, record_path, checkpoint = self._warm_root_paths()
+        if not record_path.is_file() or record_path.is_symlink():
+            raise BenchmarkError(
+                "Condition L warm root is not prepared; run prepare-warm-root first"
+            )
+        record = load_json(record_path)
+        prompt = ROOT / str(self.config["warm_start"]["scout_prompt"])
+        usage = record.get("source_cumulative_usage")
+        if (
+            record.get("schema_version") != "formalization-warm-root-1"
+            or record.get("status") != "READY"
+            or record.get("pilot_id") != self.config["pilot_id"]
+            or record.get("manifest_payload_sha256")
+            != self.manifest["manifest_payload_sha256"]
+            or record.get("scout_prompt_sha256") != sha256_file(prompt)
+            or not isinstance(record.get("source_thread_id"), str)
+            or not record.get("source_thread_id")
+            or not isinstance(record.get("source_last_turn_id"), str)
+            or not record.get("source_last_turn_id")
+            or not isinstance(usage, Mapping)
+        ):
+            raise BenchmarkError("Condition L warm-root record is malformed")
+        verify_tree_manifest(
+            checkpoint, record.get("checkpoint_manifest"), label="Condition L warm root"
+        )
+        assert_no_credentials_in_tree(checkpoint, self.deployment.auth_file)
+        return record
+
+    def prepare_warm_root_when_idle(self) -> dict[str, Any]:
+        """Run the release's sole task-neutral library scout and freeze its thread."""
+
+        if not self.strict_hardware:
+            raise BenchmarkError("warm-root preparation requires strict hardware")
+        with self._campaign_lock():
+            self.doctor(str(self.config["task_ids"][0]))
+            root, record_path, checkpoint = self._warm_root_paths()
+            if record_path.is_file() and not record_path.is_symlink():
+                existing = load_json(record_path)
+                if existing.get("status") == "READY":
+                    return self._load_warm_root()
+                raise BenchmarkError(
+                    "the single warm-root scouting attempt already exists and is not reusable"
+                )
+            if root.exists():
+                raise BenchmarkError("warm-root directory exists without a trusted record")
+            root.mkdir(parents=True, mode=0o700)
+            checkpoint.mkdir(mode=0o700)
+            workspace = root / "scout-workspace"
+            workspace.mkdir(mode=0o700)
+            write_bytes_atomic(
+                workspace / "ENVIRONMENT.md",
+                (
+                    "# NumStability scout environment\n\n"
+                    "This task-neutral workspace contains no benchmark task, task list, "
+                    "source PDF, or candidate. Explore only the read-only library mounts.\n"
+                ).encode("utf-8"),
+                mode=0o400,
+            )
+            prompt_path = ROOT / str(self.config["warm_start"]["scout_prompt"])
+            planned = {
+                "schema_version": "formalization-warm-root-1",
+                "status": "SCOUTING",
+                "pilot_id": self.config["pilot_id"],
+                "manifest_payload_sha256": self.manifest["manifest_payload_sha256"],
+                "scout_prompt_sha256": sha256_file(prompt_path),
+                "scout_runs_per_release": 1,
+                "task_material_available": False,
+                "benchmark_charged": False,
+                "created_at_utc": utc_now(),
+            }
+            write_json_atomic(record_path, planned, mode=0o400)
+            driver = CodexDriver(
+                codex_binary=self.deployment.codex_binary,
+                code_mode_host_sha256=self.deployment.code_mode_host_sha256,
+                model=str(self.config["formalizer_model"]),
+                reasoning_effort=str(self.config["formalizer_reasoning_effort"]),
+                state_root=checkpoint / "state",
+                auth_file=self.deployment.auth_file,
+                bwrap_binary=self.deployment.bwrap_binary,
+                offline_shell=self.deployment.offline_shell,
+                toolchain_root=self.deployment.toolchain_root,
+                packages_root=self.deployment.packages_root,
+                library_source=self.deployment.library_source,
+                library_olean=self.deployment.library_olean,
+                workspace_writable=False,
+                protected_workspace_paths=[workspace / "ENVIRONMENT.md"],
+            )
+            result = None
+            try:
+                result = driver.run_turn(
+                    prompt=prompt_path.read_text(encoding="utf-8"),
+                    workspace=workspace,
+                    artifact_dir=root / "scout-artifacts",
+                    timeout_seconds=float(
+                        self.config["warm_start"]["scout_active_time_limit_seconds"]
+                    ),
+                )
+            finally:
+                driver.close(artifact_dir=root / "scout-session-close")
+            assert result is not None
+            turn_path = root / "scout-artifacts" / "turn.json"
+            turn = load_json(turn_path)
+            if (
+                result.exit_code != 0
+                or result.timed_out
+                or not result.usage_complete
+                or turn.get("terminal_status") != "completed"
+                or not isinstance(turn.get("turn_id"), str)
+                or not turn.get("turn_id")
+                or not isinstance(result.thread_id, str)
+                or not result.thread_id
+            ):
+                failed = dict(planned)
+                failed.update(
+                    {
+                        "status": "FAILED",
+                        "failure_kind": result.failure_kind,
+                        "formalizer_exit_code": result.exit_code,
+                        "completed_at_utc": utc_now(),
+                    }
+                )
+                write_json_atomic(record_path, failed, mode=0o400)
+                raise BenchmarkError("the single Condition L scouting turn failed")
+            marker = checkpoint / ".state-network-violations.bin"
+            if marker.exists() or marker.is_symlink():
+                if marker.is_symlink() or not marker.is_file() or marker.stat().st_size:
+                    raise BenchmarkError("warm-root scout recorded a network violation")
+                marker.unlink()
+            ephemeral_tmp = checkpoint / "state" / "tmp"
+            if ephemeral_tmp.exists() or ephemeral_tmp.is_symlink():
+                if ephemeral_tmp.is_symlink() or not ephemeral_tmp.is_dir():
+                    raise BenchmarkError("warm-root scout left an unsafe temporary tree")
+                shutil.rmtree(ephemeral_tmp)
+            assert_no_credentials_in_tree(checkpoint, self.deployment.auth_file)
+            ready = dict(planned)
+            ready.update(
+                {
+                    "status": "READY",
+                    "source_thread_id": result.thread_id,
+                    "source_last_turn_id": turn["turn_id"],
+                    "source_cumulative_usage": result.usage,
+                    "scout_usage": result.usage,
+                    "scout_usage_complete": result.usage_complete,
+                    "scout_active_seconds": turn.get(
+                        "active_seconds_through_quiescence"
+                    ),
+                    "scout_wall_seconds": result.wall_seconds,
+                    "scout_turn_sha256": sha256_file(turn_path),
+                    "scout_final_message_sha256": sha256_file(
+                        root / "scout-artifacts" / "last_message.txt"
+                    ),
+                    "checkpoint_manifest": tree_manifest(checkpoint),
+                    "completed_at_utc": utc_now(),
+                    "cost_accounting": "logged_once_excluded_from_all_task_metrics",
+                }
+            )
+            write_json_atomic(record_path, ready, mode=0o400)
+            return self._load_warm_root()
+
     def _stage_condition(
         self,
         *,
@@ -1171,9 +1373,7 @@ class PairController:
         workspace = (condition_root / "workspace").resolve()
         common_bytes = (ROOT / "prompts" / "formalizer.md").read_bytes()
         prompt_bytes = common_bytes
-        if condition == "L":
-            prompt_bytes += (ROOT / "prompts" / "condition_L.md").read_bytes()
-        elif condition != "N":
+        if condition not in {"N", "L"}:
             raise BenchmarkError(f"unknown condition: {condition}")
         if workspace.exists():
             prompt_path = condition_root / "prompt.txt"
@@ -1203,7 +1403,7 @@ class PairController:
                 "task_packet_render_sha256": sha256_file(packet_copy),
                 "common_prompt_sha256": sha256_file(ROOT / "prompts" / "formalizer.md"),
                 "effective_prompt_sha256": sha256_file(prompt_path),
-                "condition_L_appendix": condition == "L",
+                "condition_L_warm_start": condition == "L",
             }
             changed_staging_fields = sorted(
                 key
@@ -1256,7 +1456,7 @@ class PairController:
             "candidate_template_sha256": sha256_file(workspace / "Candidate.lean"),
             "common_prompt_sha256": sha256_file(ROOT / "prompts" / "formalizer.md"),
             "effective_prompt_sha256": sha256_file(condition_root / "prompt.txt"),
-            "condition_L_appendix": condition == "L",
+            "condition_L_warm_start": condition == "L",
             "staged_at_utc": utc_now(),
         }
         write_json_atomic(condition_root / "staging.json", staged, mode=0o400)
@@ -1297,18 +1497,14 @@ class PairController:
                 )["candidate_template_sha256"],
             }
         common_hash = sha256_file(ROOT / "prompts" / "formalizer.md")
-        l_appendix = (ROOT / "prompts" / "condition_L.md").read_bytes()
         if staged["N"]["paper_sha256"] != staged["L"]["paper_sha256"] or staged[
             "N"
         ]["packet_sha256"] != staged["L"]["packet_sha256"]:
             raise BenchmarkError("N/L source staging is not byte-identical")
         if staged["N"]["effective_prompt_sha256"] != common_hash:
             raise BenchmarkError("condition N prompt is not the frozen common prompt")
-        expected_l = sha256_bytes(
-            (ROOT / "prompts" / "formalizer.md").read_bytes() + l_appendix
-        )
-        if staged["L"]["effective_prompt_sha256"] != expected_l:
-            raise BenchmarkError("condition L prompt composition mismatch")
+        if staged["L"]["effective_prompt_sha256"] != common_hash:
+            raise BenchmarkError("condition L task prompt is not byte-identical to N")
         staging_path = pair_root / "pair_staging.json"
         if staging_path.exists():
             if staging_path.is_symlink() or load_json(staging_path) != staged:
@@ -1321,6 +1517,31 @@ class PairController:
         library_source = self.deployment.library_source if condition == "L" else None
         library_olean = self.deployment.library_olean if condition == "L" else None
         workspace = condition_root / "workspace"
+        state_root = None
+        fork: dict[str, Any] = {}
+        if condition == "L":
+            warm = self._load_warm_root()
+            _root, _record, checkpoint = self._warm_root_paths()
+            seed = condition_root / "warm-seed"
+            if seed.exists():
+                verify_tree_manifest(
+                    seed,
+                    warm["checkpoint_manifest"],
+                    label="Condition L private warm seed",
+                )
+            else:
+                shutil.copytree(checkpoint, seed, symlinks=True)
+                verify_tree_manifest(
+                    seed,
+                    warm["checkpoint_manifest"],
+                    label="Condition L private warm seed",
+                )
+            state_root = seed / "state"
+            fork = {
+                "fork_source_thread_id": warm["source_thread_id"],
+                "fork_source_last_turn_id": warm["source_last_turn_id"],
+                "fork_source_cumulative_usage": warm["source_cumulative_usage"],
+            }
         return CodexDriver(
             codex_binary=self.deployment.codex_binary,
             code_mode_host_sha256=self.deployment.code_mode_host_sha256,
@@ -1329,7 +1550,7 @@ class PairController:
             # Provider credentials are staged only in a private tmpfs/runtime
             # control directory owned and removed by the driver. They never
             # enter the result closure under condition_root.
-            state_root=None,
+            state_root=state_root,
             auth_file=self.deployment.auth_file,
             bwrap_binary=self.deployment.bwrap_binary,
             offline_shell=self.deployment.offline_shell,
@@ -1339,6 +1560,7 @@ class PairController:
             library_olean=library_olean,
             workspace_writable=True,
             protected_workspace_paths=[workspace / "source", workspace / "ENVIRONMENT.md"],
+            **fork,
         )
 
     def _prepare_dossier(
@@ -1539,6 +1761,9 @@ class PairController:
                     state["contestant_usage"] = _usage_add(
                         state["contestant_usage"], recovered_usage
                     )
+                    state["contestant_net_new_usage"] = _net_new_usage(
+                        state["contestant_usage"]
+                    )
                     if not recovered_turn["usage_complete"]:
                         state["contestant_usage_complete"] = False
                         state["contestant_usage_interpretation"] = (
@@ -1603,6 +1828,11 @@ class PairController:
                 },
                 "contestant_usage_complete": True,
                 "contestant_usage_interpretation": "exact",
+                "contestant_net_new_usage": {
+                    "uncached_input_tokens": 0,
+                    "output_tokens": 0,
+                    "net_new_tokens": 0,
+                },
                 "contestant_active_time_complete": True,
                 "contestant_active_time_interpretation": "exact",
                 "attempts": [],
@@ -1690,6 +1920,9 @@ class PairController:
                 state["contestant_usage"] = _usage_add(
                     state["contestant_usage"], result.usage
                 )
+            state["contestant_net_new_usage"] = _net_new_usage(
+                state["contestant_usage"]
+            )
             if not result.usage_complete:
                 state["contestant_usage_complete"] = False
                 state["contestant_usage_interpretation"] = "observed lower bound"
@@ -1773,8 +2006,10 @@ class PairController:
                 "formalizer_wall_seconds": result.wall_seconds,
                 "active_seconds_cumulative": state["active_seconds"],
                 "usage": result.usage,
+                "net_new_usage": _net_new_usage(result.usage),
                 "usage_complete": usage_complete,
                 "usage_cumulative": state["contestant_usage"],
+                "net_new_usage_cumulative": state["contestant_net_new_usage"],
                 "thread_id": result.thread_id,
                 "formalizer_exit_code": result.exit_code,
                 "formalizer_timed_out": result.timed_out,
@@ -2176,6 +2411,9 @@ class PairController:
                 "excluded_end_to_end_wall_seconds"
             ),
             "contestant_usage": result["contestant_usage"],
+            "contestant_net_new_usage": result.get(
+                "contestant_net_new_usage", _net_new_usage(result["contestant_usage"])
+            ),
             "contestant_usage_complete": result["contestant_usage_complete"],
             "contestant_usage_interpretation": result[
                 "contestant_usage_interpretation"
@@ -2216,6 +2454,10 @@ class PairController:
                 "contestant_active_time_interpretation"
             ),
             "contestant_usage": state.get("contestant_usage"),
+            "contestant_net_new_usage": state.get(
+                "contestant_net_new_usage",
+                _net_new_usage(state.get("contestant_usage", {})),
+            ),
             "contestant_usage_complete": state.get("contestant_usage_complete"),
             "contestant_usage_interpretation": state.get(
                 "contestant_usage_interpretation"
@@ -2254,6 +2496,11 @@ class PairController:
             or state.get("contestant_active_time_interpretation")
             != partial.get("contestant_active_time_interpretation")
             or state.get("contestant_usage") != partial.get("contestant_usage")
+            or state.get(
+                "contestant_net_new_usage",
+                _net_new_usage(state.get("contestant_usage", {})),
+            )
+            != partial.get("contestant_net_new_usage")
             or state.get("contestant_usage_complete")
             != partial.get("contestant_usage_complete")
             or state.get("contestant_usage_interpretation")
@@ -2458,6 +2705,11 @@ class PairController:
             or summary.get("excluded_end_to_end_wall_seconds")
             != condition_state.get("excluded_end_to_end_wall_seconds")
             or summary.get("contestant_usage") != condition_state.get("contestant_usage")
+            or summary.get("contestant_net_new_usage")
+            != condition_state.get(
+                "contestant_net_new_usage",
+                _net_new_usage(condition_state.get("contestant_usage", {})),
+            )
             or summary.get("contestant_usage_complete")
             != condition_state.get("contestant_usage_complete")
             or summary.get("contestant_usage_interpretation")
@@ -3216,6 +3468,9 @@ class PairController:
             self.deployment.run_root, task_id
         ):
             if not dry_run:
+                # Admit no official slot until the single release-level scout
+                # exists and its frozen checkpoint authenticates.
+                self._load_warm_root()
                 self._reconcile_global_reservation(task_id)
             indexed = self._load_indexed_pair(task_id)
             if indexed is not None:
@@ -3240,6 +3495,20 @@ class PairController:
                 ):
                     raise BenchmarkError("provider qualification record failed authentication")
                 admission = dict(admission)
+                warm_root, warm_record_path, _checkpoint = self._warm_root_paths()
+                warm_record = self._load_warm_root()
+                admission["condition_L_warm_root"] = {
+                    "record_path": str(warm_record_path),
+                    "record_sha256": sha256_file(warm_record_path),
+                    "checkpoint_tree_sha256": warm_record["checkpoint_manifest"][
+                        "tree_sha256"
+                    ],
+                    "source_thread_id": warm_record["source_thread_id"],
+                    "source_last_turn_id": warm_record["source_last_turn_id"],
+                    "scout_usage": warm_record["scout_usage"],
+                    "scout_cost_charged_to_task": False,
+                    "warm_root": str(warm_root),
+                }
                 admission["provider_qualification"] = {
                     "record_path": str(qualification_path),
                     "record_sha256": qualification["record_sha256"],

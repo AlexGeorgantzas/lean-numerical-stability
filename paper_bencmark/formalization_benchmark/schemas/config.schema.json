@@ -21,6 +21,7 @@
     "validation_timeout_seconds",
     "audit_timeout_seconds",
     "audit_infrastructure_retries",
+    "warm_start",
     "lean_toolchain",
     "mathlib_commit",
     "numstability_commit",
@@ -84,6 +85,23 @@
     "validation_timeout_seconds": {"type": "integer", "minimum": 1},
     "audit_timeout_seconds": {"type": "integer", "minimum": 1},
     "audit_infrastructure_retries": {"type": "integer", "minimum": 0},
+    "warm_start": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition", "mode", "scout_prompt", "scout_active_time_limit_seconds", "scout_token_cap", "scout_runs_per_release", "task_prompts_byte_identical", "task_clock_excludes_scout", "task_usage_headline", "raw_provider_usage_retained"],
+      "properties": {
+        "condition": {"const": "L"},
+        "mode": {"const": "single-frozen-library-scout-root-with-thread-fork"},
+        "scout_prompt": {"const": "prompts/library_scout.md"},
+        "scout_active_time_limit_seconds": {"type": "integer", "minimum": 1},
+        "scout_token_cap": {"type": ["integer", "null"], "minimum": 1},
+        "scout_runs_per_release": {"const": 1},
+        "task_prompts_byte_identical": {"const": true},
+        "task_clock_excludes_scout": {"const": true},
+        "task_usage_headline": {"const": "net_new_tokens"},
+        "raw_provider_usage_retained": {"const": true}
+      }
+    },
     "lean_toolchain": {"const": "leanprover/lean4:v4.29.0-rc3"},
     "mathlib_commit": {"const": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b"},
     "numstability_commit": {"const": "45813a95dacf577461bae13f033af0dbc985a225"},

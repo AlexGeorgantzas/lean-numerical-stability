@@ -744,6 +744,9 @@ class CodexDriver:
         library_olean: Path | None = None,
         workspace_writable: bool = True,
         protected_workspace_paths: list[Path] | None = None,
+        fork_source_thread_id: str | None = None,
+        fork_source_last_turn_id: str | None = None,
+        fork_source_cumulative_usage: Mapping[str, int] | None = None,
     ) -> None:
         self.codex_binary = codex_binary
         self.model = model
@@ -821,6 +824,28 @@ class CodexDriver:
         self.library_olean = library_olean
         self.workspace_writable = workspace_writable
         self.protected_workspace_paths = protected_workspace_paths or []
+        self.fork_source_thread_id = fork_source_thread_id
+        self.fork_source_last_turn_id = fork_source_last_turn_id
+        self.fork_source_cumulative_usage = (
+            _normalize_usage_breakdown(fork_source_cumulative_usage)
+            if fork_source_cumulative_usage is not None
+            else None
+        )
+        fork_fields = (
+            self.fork_source_thread_id,
+            self.fork_source_last_turn_id,
+            self.fork_source_cumulative_usage,
+        )
+        if any(value is not None for value in fork_fields) and not all(
+            value is not None for value in fork_fields
+        ):
+            raise BenchmarkError("a Codex fork requires source thread, turn, and usage")
+        for label, value in (
+            ("source thread", self.fork_source_thread_id),
+            ("source turn", self.fork_source_last_turn_id),
+        ):
+            if value is not None and (not isinstance(value, str) or not value):
+                raise BenchmarkError(f"Codex fork {label} is malformed")
         if (bwrap_binary is None) != (offline_shell is None):
             raise BenchmarkError("bwrap and offline shell must be configured together")
         if bwrap_binary is not None and (toolchain_root is None or packages_root is None):
@@ -2110,8 +2135,15 @@ class CodexDriver:
                 raise BenchmarkError(
                     "cold thread/resume cannot preserve exact raw usage; the condition is nonresumable"
                 )
-            if self._usage_record.exists() or self._usage_record.is_symlink():
-                raise BenchmarkError("completed Codex conversation cannot be restarted")
+            if self.fork_source_thread_id is None:
+                if self._usage_record.exists() or self._usage_record.is_symlink():
+                    raise BenchmarkError("completed Codex conversation cannot be restarted")
+            else:
+                expected_source_usage = self._load_usage_baseline(
+                    self.fork_source_thread_id
+                )
+                if expected_source_usage != self.fork_source_cumulative_usage:
+                    raise BenchmarkError("fork checkpoint usage does not match its source")
             if self._control_baseline.is_file():
                 self.assert_safe_control_surfaces(workspace)
             else:
@@ -2159,6 +2191,7 @@ class CodexDriver:
         terminal_event_perf_ns: int | None = None
         latest_cumulative: dict[str, int] | None = None
         latest_cumulative_cache_write_defaulted: bool | None = None
+        fork_cumulative_usage_semantics: str | None = None
         raw_responses: dict[str, dict[str, Any]] = {}
         background_terminal_cleanup: dict[str, Any] | None = None
         workspace_usage: dict[str, int] | None = None
@@ -2211,7 +2244,11 @@ class CodexDriver:
                 self._assert_private_auth_file() == live.auth_path
             )
         else:
-            baseline = _zero_usage()
+            baseline = (
+                dict(self.fork_source_cumulative_usage)
+                if self.fork_source_cumulative_usage is not None
+                else _zero_usage()
+            )
             command_codex = "/codex" if self.externally_sandboxed else str(self.codex_binary)
             inner = self._app_server_command(command_codex)
             marker = self._session_marker if not ephemeral else artifact_dir / "network_violations.bin"
@@ -2591,27 +2628,38 @@ class CodexDriver:
                 capability_attestation["global_features"] = self._attest_feature_list(
                     request_capability, thread_id=None
                 )
-                thread_params: dict[str, Any] = {
-                    "approvalPolicy": "never",
-                    "config": self._thread_config(),
-                    "cwd": cwd,
-                    "ephemeral": ephemeral,
-                    "experimentalRawEvents": True,
-                    "historyMode": "legacy",
-                    "model": self.model,
-                    "sandbox": "workspace-write" if self.workspace_writable else "read-only",
-                }
+                if self.fork_source_thread_id is None:
+                    thread_method = "thread/start"
+                    thread_params: dict[str, Any] = {
+                        "approvalPolicy": "never",
+                        "config": self._thread_config(),
+                        "cwd": cwd,
+                        "ephemeral": ephemeral,
+                        "experimentalRawEvents": True,
+                        "historyMode": "legacy",
+                        "model": self.model,
+                        "sandbox": "workspace-write" if self.workspace_writable else "read-only",
+                    }
+                else:
+                    if ephemeral:
+                        raise BenchmarkError("a benchmark warm-start fork must be persistent")
+                    thread_method = "thread/fork"
+                    thread_params = {
+                        "threadId": self.fork_source_thread_id,
+                        "lastTurnId": self.fork_source_last_turn_id,
+                        "ephemeral": False,
+                    }
                 self._write_rpc(
                     process.stdin,
                     {
                         "id": THREAD_REQUEST_ID,
-                        "method": "thread/start",
+                        "method": thread_method,
                         "params": thread_params,
                     },
                 )
                 thread_result = await_response(
                     request_id=THREAD_REQUEST_ID,
-                    method="thread/start",
+                    method=thread_method,
                     notification=startup_notification,
                 )
                 resolved_thread_id, thread_record = self._thread_from_result(
@@ -2626,6 +2674,12 @@ class CodexDriver:
                 capability_attestation["thread_features"] = self._attest_feature_list(
                     request_capability, thread_id=observed_thread_id
                 )
+                capability_attestation["thread_creation"] = {
+                    "method": thread_method,
+                    "fork_source_thread_id": self.fork_source_thread_id,
+                    "fork_source_last_turn_id": self.fork_source_last_turn_id,
+                    "fork_source_cumulative_usage": self.fork_source_cumulative_usage,
+                }
                 private_auth_ready_before_turn_start = (
                     self._assert_private_auth_file() == staged_auth
                 )
@@ -2643,7 +2697,7 @@ class CodexDriver:
                         inner=inner,
                         workspace=workspace,
                         thread_id=resolved_thread_id,
-                        cumulative_usage=_zero_usage(),
+                        cumulative_usage=dict(baseline),
                         network_marker=marker,
                         network_monitor=monitor,
                         network_checkpoint=network_before,
@@ -2899,7 +2953,22 @@ class CodexDriver:
             try:
                 cumulative_delta = _usage_delta(latest_cumulative, baseline)
             except BenchmarkError as error:
-                protocol_error = protocol_error or str(error)
+                # App-server versions may report a fork's cumulative usage
+                # either including the copied parent history or starting at
+                # zero for the new child. Both are unambiguous when the first
+                # child turn is cross-checked against exact raw responses.
+                if (
+                    self.fork_source_thread_id is not None
+                    and not reused_session
+                    and latest_cumulative == usage
+                ):
+                    cumulative_delta = dict(latest_cumulative)
+                    fork_cumulative_usage_semantics = "child_reset"
+                else:
+                    protocol_error = protocol_error or str(error)
+            else:
+                if self.fork_source_thread_id is not None and not reused_session:
+                    fork_cumulative_usage_semantics = "parent_inherited"
         usage_complete = False
         if terminal_status == "completed":
             if not raw_responses:
@@ -3111,6 +3180,15 @@ class CodexDriver:
             "completed_at_utc": utc_now(),
             "thread_id": result.thread_id,
             "turn_id": observed_turn_id,
+            "fork_provenance": (
+                {
+                    "source_thread_id": self.fork_source_thread_id,
+                    "source_last_turn_id": self.fork_source_last_turn_id,
+                    "source_cumulative_usage": self.fork_source_cumulative_usage,
+                }
+                if self.fork_source_thread_id is not None
+                else None
+            ),
             "terminal_status": terminal_status,
             "exit_code": result.exit_code,
             "timed_out": result.timed_out,
@@ -3152,6 +3230,7 @@ class CodexDriver:
                 for response_id in sorted(raw_responses)
             ],
             "cumulative_usage_delta_cross_check": cumulative_delta,
+            "fork_cumulative_usage_semantics": fork_cumulative_usage_semantics,
             "background_terminal_cleanup": background_terminal_cleanup,
             "workspace_resource_ceiling": {
                 "maximum_entries": MAX_WORKSPACE_ENTRIES,

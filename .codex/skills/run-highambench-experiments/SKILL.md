@@ -1,20 +1,20 @@
 ---
 name: run-highambench-experiments
-description: Operate Pilot-9 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
+description: Operate Pilot-10 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
 ---
 
 # Run HighamBench Formalization Experiments
 
 ## Scope
 
-Pilot-9 (`formalization-benchmark-pilot-9`) is a separate frozen release.
-Pilots 1--8 and all of their runs, incidents, and deployment records are
+Pilot-10 (`formalization-benchmark-pilot-10`) is a separate frozen release.
+Pilots 1--9 and all of their runs, incidents, and deployment records are
 read-only predecessor evidence. Never reinterpret an older decision, resume an
 older sealed condition, pool results across pilots, or use an older launcher as
-a substitute. Pilot-8's H22-11 attempt is sealed as an audit-interface
-incident; Pilot-9 corrects that interface mismatch without reusing its result.
+a substitute. Pilot-9's cold-start H22-11 pair is sealed; its measurements are
+L-cold evidence and are not pooled with Pilot-10 warm-start results.
 
-Preparing, installing, repairing, or qualifying Pilot-9 never authorizes an
+Preparing, installing, repairing, or qualifying Pilot-10 never authorizes an
 official pair. Run one only after an explicit request naming exactly one task.
 
 The allowlist is:
@@ -36,7 +36,7 @@ Before any provider call or benchmark-state mutation:
 
 1. Read [the operations reference](references/operations.md) completely.
 2. Require
-   `~/.local/bin/run-highambench-formalization-pilot-9-r1` and its distinct,
+   `~/.local/bin/run-highambench-formalization-pilot-10-r1` and its distinct,
    digest-bound deployment record.
 3. Run provider-free `verify-release`.
 4. Run provider-free `doctor --task-id <TASK>` through that launcher.
@@ -46,7 +46,9 @@ Before any provider call or benchmark-state mutation:
 6. Require the one-shot off-benchmark live qualification for the exact models,
    reasoning efforts, all four audit output schemas, workspace read paths,
    formalizer write path, and Code Mode host.
-7. Stop on any missing or failed gate. Never fall back to
+7. Require the authenticated release-level warm root. If it has not yet been
+   created, use `prepare-warm-root` exactly once before any official task.
+8. Stop on any missing or failed gate. Never fall back to
    `paper_bencmark/highambench/tools/runner.py`, `run_matrix.py`, or an older
    launcher.
 
@@ -68,11 +70,13 @@ old Lean target, shared task scaffold, proof, prior audit, or NumStability name.
 N must have no tool-visible NumStability source, object, cache, index,
 documentation, history, environment value, or path.
 
-L adds the frozen NumStability source and compiled snapshot. Append only the
-frozen L message, which explicitly encourages inspection, import, reuse,
-adaptation, or inspiration. It points to `/library/NumStability`,
-`/library/NumStability.lean`, compiled declarations on `LEAN_PATH`, and
-concrete `find`, `rg`, and import examples.
+L adds the frozen NumStability source and compiled snapshot. Exactly once per
+release, a task-neutral root conversation receives the frozen encouragement
+and explores `/library/NumStability`, `/library/NumStability.lean`, and the
+compiled declarations on `LEAN_PATH`. Every L task must use `thread/fork` from
+that frozen root, then receive the same task prompt as N. Never seed a new chat
+with a dossier, repeat the scouting turn, expose tasks during scouting, or fork
+from an earlier task child.
 
 ## Enforce the loop
 
@@ -106,7 +110,9 @@ separate incidents.
 Use 18,000 cumulative contestant-active seconds per condition. Preserve any
 overshoot and terminate unscored as `ACTIVE_TIME_LIMIT`. There is no token
 cap; record exact token use rather than stopping on count. Validator and audit
-overhead never enter contestant metrics.
+overhead never enter contestant metrics. Log scouting time/tokens once and
+exclude them from task results. Retain raw per-task usage and report net-new
+tokens (uncached input plus output) as the primary task-local token headline.
 
 ## Execute fail closed
 
