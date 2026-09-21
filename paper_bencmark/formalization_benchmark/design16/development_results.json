@@ -1,0 +1,137 @@
+{
+  "schema_version": 1,
+  "design": "Design-16 bounded composition packets",
+  "status": "UNSCORED_ENGINEERING_EXPLORATORY",
+  "faithfulness_status": "PENDING_INDEPENDENT_SCREEN",
+  "interpretation_policy": {
+    "scientific_score": false,
+    "compilation_pass_is_not_faithfulness": true,
+    "primary_development_comparison": "design16_l_dev_vs_sealed_pilot15_l",
+    "secondary_context_only_comparison": "design16_l_dev_vs_sealed_pilot15_n",
+    "notes": [
+      "These consumed development tasks are not official successor-pilot observations.",
+      "The Pilot-15 H10-7 L baseline is cumulative across the initial submission and repair.",
+      "No semantic claim may be made until an independent condition-blind faithfulness screen passes."
+    ]
+  },
+  "metrics": {
+    "time_seconds": "contestant/formalizer wall time represented by the cited run",
+    "net_new_tokens": "net-new provider tokens",
+    "candidate_lines": "candidate line count represented by the cited run",
+    "ratio": "design16_value / baseline_value",
+    "percent_change": "100 * (design16_value / baseline_value - 1); negative is lower"
+  },
+  "tasks": {
+    "H5-5": {
+      "design16_l_dev": {
+        "time_seconds": 488.45608889,
+        "net_new_tokens": 81111,
+        "candidate_lines": 85,
+        "compilation_integrity": "PASS",
+        "faithfulness": "PENDING_INDEPENDENT_SCREEN"
+      },
+      "sealed_pilot15_l": {
+        "time_seconds": 476.9451,
+        "net_new_tokens": 110588,
+        "candidate_lines": 131
+      },
+      "sealed_pilot15_n": {
+        "time_seconds": 638.6405,
+        "net_new_tokens": 77709,
+        "candidate_lines": 211
+      },
+      "comparisons": {
+        "adaptation_vs_sealed_pilot15_l": {
+          "time_seconds": {
+            "delta": 11.51098889,
+            "ratio": 1.02413483,
+            "percent_change": 2.413483
+          },
+          "net_new_tokens": {
+            "delta": -29477,
+            "ratio": 0.733452092,
+            "percent_change": -26.654791
+          },
+          "candidate_lines": {
+            "delta": -46,
+            "ratio": 0.648854962,
+            "percent_change": -35.114504
+          }
+        },
+        "context_vs_sealed_pilot15_n": {
+          "time_seconds": {
+            "delta": -150.18441111,
+            "ratio": 0.764837321,
+            "percent_change": -23.516268
+          },
+          "net_new_tokens": {
+            "delta": 3402,
+            "ratio": 1.043778713,
+            "percent_change": 4.377871
+          },
+          "candidate_lines": {
+            "delta": -126,
+            "ratio": 0.402843602,
+            "percent_change": -59.71564
+          }
+        }
+      }
+    },
+    "H10-7": {
+      "design16_l_dev": {
+        "time_seconds": 854.250334632,
+        "net_new_tokens": 86725,
+        "candidate_lines": 158,
+        "compilation_integrity": "PASS",
+        "faithfulness": "PENDING_INDEPENDENT_SCREEN"
+      },
+      "sealed_pilot15_l_cumulative": {
+        "time_seconds": 1517.499,
+        "net_new_tokens": 237128,
+        "candidate_lines": 127,
+        "includes_repair": true
+      },
+      "sealed_pilot15_n": {
+        "time_seconds": 536.626,
+        "net_new_tokens": 68203,
+        "candidate_lines": 139
+      },
+      "comparisons": {
+        "adaptation_vs_sealed_pilot15_l_cumulative": {
+          "time_seconds": {
+            "delta": -663.248665368,
+            "ratio": 0.562933046,
+            "percent_change": -43.706695
+          },
+          "net_new_tokens": {
+            "delta": -150403,
+            "ratio": 0.365730745,
+            "percent_change": -63.426926
+          },
+          "candidate_lines": {
+            "delta": 31,
+            "ratio": 1.244094488,
+            "percent_change": 24.409449
+          }
+        },
+        "context_vs_sealed_pilot15_n": {
+          "time_seconds": {
+            "delta": 317.624334632,
+            "ratio": 1.591891438,
+            "percent_change": 59.189144
+          },
+          "net_new_tokens": {
+            "delta": 18522,
+            "ratio": 1.271571632,
+            "percent_change": 27.157163
+          },
+          "candidate_lines": {
+            "delta": 19,
+            "ratio": 1.136690647,
+            "percent_change": 13.669065
+          }
+        }
+      }
+    }
+  }
+}
