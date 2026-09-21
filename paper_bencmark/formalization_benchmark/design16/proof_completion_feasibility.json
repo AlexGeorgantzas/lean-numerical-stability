@@ -1,0 +1,358 @@
+{
+  "schema_version": "design16-proof-completion-feasibility-1",
+  "status": "provider-free-repository-only-assessment",
+  "assessment_date": "2026-09-22",
+  "assessment_scope": {
+    "repository_commit_observed": "899cef80230f4561b2a5b13bd41731b6dce502f9",
+    "titan_access": false,
+    "paid_model_calls": false,
+    "provider_calls": false,
+    "claim_boundary": "This report establishes only whether the checked-out repository already contains a usable common Lean statement and repository-verifiable independent validation. It does not infer missing candidate contents from Titan-only run summaries.",
+    "task_ids": [
+      "H22-11",
+      "H22-5",
+      "H20-6",
+      "H7-12",
+      "H20-9",
+      "H20-8",
+      "H23-6",
+      "H5-5",
+      "H10-7",
+      "H12-4",
+      "H19-5",
+      "H7-14",
+      "H15-3"
+    ]
+  },
+  "eligibility_rule": {
+    "required": [
+      "The repository contains the exact Lean statement and every statement-side helper definition as ordinary source text.",
+      "The exact statement artifact is bound by SHA-256 to an independent source-faithfulness decision, or to equally strong independent validation.",
+      "The common statement artifact imports Mathlib only and contains no NumStability declaration names, source imports, proof terms, theorem bodies, or generated proof hints.",
+      "The identical statement bytes elaborate in both R0 and R1 before either timed proof-completion run.",
+      "The selected conclusion is not already a NumStability theorem or source-specific result family; R1 may expose building blocks, not the answer.",
+      "Any source ambiguity has been resolved before the common statement is frozen."
+    ],
+    "rationale": "A fixed-statement proof-completion fallback is defensible only if statement construction is removed equally from both conditions without handing R1 an already-proved target or allowing the shared file to carry NumStability-derived proof content."
+  },
+  "summary": {
+    "eligible_now_count": 0,
+    "eligible_now_task_ids": [],
+    "audited_candidate_signal_but_artifact_missing_count": 2,
+    "audited_candidate_signal_but_artifact_missing_task_ids": [
+      "H22-11",
+      "H5-5"
+    ],
+    "potential_after_statement_construction_and_audit_count": 9,
+    "potential_after_statement_construction_and_audit_task_ids": [
+      "H22-11",
+      "H22-5",
+      "H20-6",
+      "H7-12",
+      "H5-5",
+      "H10-7",
+      "H12-4",
+      "H19-5",
+      "H7-14"
+    ],
+    "exclude_for_direct_result_leakage_count": 3,
+    "exclude_for_direct_result_leakage_task_ids": [
+      "H20-9",
+      "H20-8",
+      "H23-6"
+    ],
+    "hold_for_collision_review_count": 1,
+    "hold_for_collision_review_task_ids": [
+      "H15-3"
+    ],
+    "conclusion": "No Higham task is immediately usable as a repository-verifiable common-statement proof-completion pair. The repository contains natural-language source packets but no common Lean statement artifacts for these tasks. H22-11 and H5-5 have repository summaries of faithful completed candidates, but the exact candidate sources are Titan-only and therefore cannot be supplied, inspected, or hash-verified from this assessment. Nine tasks could become usable after a common Mathlib-only statement is independently audited and frozen. Three are disqualified because the frozen NumStability snapshot already contains the selected result family, and H15-3 requires a collision decision first."
+  },
+  "fallback_protocol_minimum": {
+    "construction": [
+      "Write one Mathlib-only CommonStatement.lean per task, including only definitions required to state the target and a theorem ending in a proof hole.",
+      "Run the full independent source-faithfulness audit on the exact statement and helper definitions, then freeze their bytes and SHA-256 values.",
+      "Compile the exact frozen statement in R0 and R1 and verify that its transitive imports contain no NumStability module.",
+      "Run a direct-result collision scan against the frozen NumStability snapshot. Exclude any task whose selected conclusion or source-specific result family is present.",
+      "Give both contestants the identical frozen statement. Count task-specific retrieval and proof completion, but not the one-time statement audit.",
+      "Require the completed file to preserve the statement hash exactly; only imports and proof bodies may differ. Kernel-check both proofs and record library uptake separately."
+    ],
+    "measurement_interpretation": "This measures marginal assistance for proof completion of a fixed faithful formalization. It does not measure end-to-end paper formalization and must be reported as a separate experiment, not merged with formalization timing.",
+    "anti_leakage_guards": [
+      "Never select the R1 candidate's statement because it happens to match a convenient NumStability theorem without independently deriving and auditing the statement from the source.",
+      "Do not include theorem names, route cards, proof sketches, tactics, or dependency lists in the common statement artifact.",
+      "Do not count a declaration as a building block when its conclusion is the selected result under a source-specific alias, branch split, or representation wrapper.",
+      "Do not use candidates whose only audit evidence is a prose run summary unless the exact candidate bytes and decision binding are recovered and verified."
+    ]
+  },
+  "tasks": [
+    {
+      "task_id": "H22-11",
+      "source_packet": {
+        "path": "packets/H22-11.json",
+        "sha256": "2b6c9563cf4361e240c4c67088934a56e86b6cd1e5402e1cfcbd7fedfff1f19e",
+        "source_selection_status": "verbatim-source-target"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": {
+        "status": "hash-only-titan-artifact-summary",
+        "provenance": "paper_bencmark/COORDINATION.md records completed Pilot-13 faithful-equivalent audits for two different H22-11 candidates, including candidate, semantic, and decision hashes.",
+        "n_candidate_sha256": "683782798008ae10b916be4d7de10366e91535638095f828b3d2229bd581fe04",
+        "n_semantic_sha256": "37c9870cba6c12a995cff2e4f50cc29c84be48f0ef5408f1baa9a5754934d312",
+        "n_decision_sha256": "65ca67bcc15f4effdba1d9a43ba457187a06c78be84606c0335f610c591d971c",
+        "limitation": "The exact candidate source and audit decision are not repository artifacts, and the two conditions did not use one fixed statement."
+      },
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "design16/higham13_readiness.json classifies the task as NO_ROUTE with adjacent definitions only and no selected-result collision."
+      },
+      "eligibility": "INELIGIBLE_ARTIFACT_MISSING",
+      "minimum_work": [
+        "Recover the exact N candidate and audit decision by their recorded hashes without modifying them.",
+        "Extract a proof-free, Mathlib-only statement unit and all local statement definitions.",
+        "Re-audit the extracted common statement because extraction changes the audited artifact.",
+        "Freeze and compile identical bytes in R0 and R1."
+      ]
+    },
+    {
+      "task_id": "H22-5",
+      "source_packet": {
+        "path": "packets/H22-5.json",
+        "sha256": "6220b890dc88014468ce5aaeebdd17c5110415479f240ebf8f9bd047c7a86579",
+        "source_selection_status": "verbatim-source-target"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "The readiness screen finds a topical router false positive but no selected-result collision."
+      },
+      "eligibility": "INELIGIBLE_STATEMENT_NOT_CONSTRUCTED_OR_AUDITED",
+      "minimum_work": [
+        "Construct and audit a Mathlib-only statement for the rowwise inverse comparison and infinity-norm consequence.",
+        "Ensure the common statement does not encode NumStability's root-of-unity special case or route-card vocabulary.",
+        "Freeze and cross-compile it in both conditions."
+      ]
+    },
+    {
+      "task_id": "H20-6",
+      "source_packet": {
+        "path": "packets/H20-6.json",
+        "sha256": "454684a87f4edb48aa4498eaa1511a0b149f812055ef4e47eec95c0bcd3c613d",
+        "source_selection_status": "verbatim-source-target"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "The readiness screen finds adjacent least-squares infrastructure but no compatible selected-result route."
+      },
+      "eligibility": "INELIGIBLE_STATEMENT_NOT_CONSTRUCTED_OR_AUDITED",
+      "minimum_work": [
+        "Choose and document a formal representation of the modest constant and first-order O(u^2) remainder.",
+        "Construct and audit the common Mathlib-only residual statement and rounding assumptions.",
+        "Freeze and cross-compile it in both conditions."
+      ]
+    },
+    {
+      "task_id": "H7-12",
+      "source_packet": {
+        "path": "packets/H7-12.json",
+        "sha256": "a2f29f3753f07fee77d183c1fcaa12c0334e55abc925b410af3734d07ac18ca9",
+        "source_selection_status": "verbatim-source-target"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "The readiness screen reports unrelated symmetry hits and no symmetric-linear-system perturbation route."
+      },
+      "eligibility": "INELIGIBLE_STATEMENT_NOT_CONSTRUCTED_OR_AUDITED",
+      "minimum_work": [
+        "Resolve the exact norm and comparison constant from the source before writing Lean.",
+        "Construct and audit the common existence statement for a symmetric perturbation.",
+        "Freeze and cross-compile it in both conditions."
+      ]
+    },
+    {
+      "task_id": "H20-9",
+      "source_packet": {
+        "path": "packets/H20-9.json",
+        "sha256": "673e45806fbaf40c031a9ed36ee608eb04a4df94d5fadc1d0f8e1029a10c7115",
+        "source_selection_status": "verbatim-source-target"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "disqualifying",
+        "basis": "The readiness screen identifies source-specific EtaF equality declarations that encode equation (20.21), split into the same formula's branches."
+      },
+      "eligibility": "INELIGIBLE_DIRECT_RESULT_LEAKAGE",
+      "minimum_work": [
+        "Do not use this task in an R0/R1 proof-completion comparison against the current frozen snapshot.",
+        "Only a different frozen library snapshot predating the result family, selected independently of outcomes, could make the task eligible."
+      ]
+    },
+    {
+      "task_id": "H20-8",
+      "source_packet": {
+        "path": "packets/H20-8.json",
+        "sha256": "c827a9857a26c787c5139f50fef599dea2b042111b59f22fecfdf08ec5c6d355",
+        "source_selection_status": "verbatim-source-target"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "disqualifying",
+        "basis": "The readiness screen identifies lsNormwiseBackwardErrorEtaF_tendsto_matrixOnlyEtaF_atTop and supporting matrix-only definitions as the selected limiting result."
+      },
+      "eligibility": "INELIGIBLE_DIRECT_RESULT_LEAKAGE",
+      "minimum_work": [
+        "Do not use this task in an R0/R1 proof-completion comparison against the current frozen snapshot.",
+        "Only a different independently selected snapshot without the limiting theorem could make it eligible."
+      ]
+    },
+    {
+      "task_id": "H23-6",
+      "source_packet": {
+        "path": "packets/H23-6.json",
+        "sha256": "60627c400d4b8631a1efb070a1fc35610ba59183067492e05cfd6d2d951a5a0a",
+        "source_selection_status": "source-admissibility-flag-resolved-in-packet-but-not-common-lean-audited"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "disqualifying",
+        "basis": "The readiness screen identifies the ThreeMStrassen source-specific first-order theorem and coefficient as the selected result family."
+      },
+      "eligibility": "INELIGIBLE_DIRECT_RESULT_LEAKAGE",
+      "minimum_work": [
+        "Do not use this task in an R0/R1 proof-completion comparison against the current frozen snapshot.",
+        "Retain the packet's resolved coefficient reading only as source documentation, not as evidence that the target is leakage-free."
+      ]
+    },
+    {
+      "task_id": "H5-5",
+      "source_packet": {
+        "path": "packets/H5-5.json",
+        "sha256": "0f13524bca1d31649b51cf05ea1fbd1ea6ecf6fc3bf5a46cf9769b34ad84861e",
+        "source_selection_status": "source-admissibility-flag-resolved-in-packet-but-not-common-lean-audited"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": {
+        "status": "titan-run-summary-without-candidate-binding-in-repository",
+        "provenance": "paper_bencmark/COORDINATION.md records that both Pilot-14 H5-5 conditions compiled and were accepted faithful.",
+        "run_id": "H5-5-20260921T154540Z-9a55852a",
+        "limitation": "The repository summary does not contain either exact Candidate.lean artifact or its candidate and audit-decision hash binding."
+      },
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "The readiness screen classifies root-product error results as useful building blocks with a gamma and representation gap, not the selected statement."
+      },
+      "eligibility": "INELIGIBLE_ARTIFACT_MISSING",
+      "minimum_work": [
+        "Recover a faithful candidate plus its exact independent audit binding from sealed evidence.",
+        "Extract and independently re-audit a proof-free Mathlib-only statement, preserving the exact gamma(2*n+1), evaluation order, and rounding model.",
+        "Freeze and cross-compile identical statement bytes in R0 and R1."
+      ]
+    },
+    {
+      "task_id": "H10-7",
+      "source_packet": {
+        "path": "packets/H10-7.json",
+        "sha256": "e2fd7c3a9e6c5ceeca5e8cc8545bd637778ecac7e43f086126da6ac226160e63",
+        "source_selection_status": "verbatim-source-target-with-design16-contract-overlay"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "medium",
+        "basis": "The readiness screen finds a powerful existential tail inequality, but it does not visibly identify the actual deterministic complete-pivoting output or least-index tie-break."
+      },
+      "eligibility": "INELIGIBLE_STATEMENT_NOT_CONSTRUCTED_OR_AUDITED",
+      "minimum_work": [
+        "Construct the common statement from the source and design16/contracts/H10-7.json, explicitly binding the actual algorithm output and pivot tie-break.",
+        "Audit the statement against the source before any proof run.",
+        "Confirm by declaration-level review that the common statement is not definitionally or trivially identical to psd_pivoted_cholesky_exists_tail, then freeze and cross-compile it."
+      ]
+    },
+    {
+      "task_id": "H12-4",
+      "source_packet": {
+        "path": "packets/H12-4.json",
+        "sha256": "b59a098b0a316fcef51ed0ddfba08cfb66559e4ca8d358bfad3dfb52562b8935",
+        "source_selection_status": "source-admissibility-flag-resolved-in-packet-but-not-common-lean-audited"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "The readiness screen finds no route to the selected GEPP refinement residual conclusion."
+      },
+      "eligibility": "INELIGIBLE_STATEMENT_NOT_CONSTRUCTED_OR_AUDITED",
+      "minimum_work": [
+        "Independently validate the packet's selection of the cited Demmel-Higham residual theorem as the answer to the open-ended exercise.",
+        "Fix the formal meaning of O(u^2), the fast-multiplication assumption, and the columnwise residual model.",
+        "Construct, audit, freeze, and cross-compile the common statement."
+      ]
+    },
+    {
+      "task_id": "H19-5",
+      "source_packet": {
+        "path": "packets/H19-5.json",
+        "sha256": "d9edb37b2df7ab1b0395ec9ef62edd39339b7f4678ea5ecf2627fded73ad3d71",
+        "source_selection_status": "verbatim-source-target"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "The readiness screen finds only a cross-algorithm Cholesky analogy and no QR column-pivoting result."
+      },
+      "eligibility": "INELIGIBLE_STATEMENT_NOT_CONSTRUCTED_OR_AUDITED",
+      "minimum_work": [
+        "Construct a Mathlib-only statement whose specification binds the actual QR column-pivoting factor and exact index ranges.",
+        "Audit, freeze, and cross-compile it without importing the analogous Cholesky result into the shared statement."
+      ]
+    },
+    {
+      "task_id": "H7-14",
+      "source_packet": {
+        "path": "packets/H7-14.json",
+        "sha256": "ed8a69758fa476c9dcaae406d96a7566f0a9dff3b42c8ef9b0b4d4d1383942d1",
+        "source_selection_status": "source-admissibility-flag-resolved-in-packet-but-not-common-lean-audited"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "low",
+        "basis": "The readiness screen finds deterministic perturbation primitives but no independent random-variable or expectation result."
+      },
+      "eligibility": "INELIGIBLE_STATEMENT_NOT_CONSTRUCTED_OR_AUDITED",
+      "minimum_work": [
+        "Independently validate that only part (a) is selected and fix a Mathlib probability-space and independence representation.",
+        "Construct and audit the first-order expectation identity, including the elementwise-square notation.",
+        "Freeze and cross-compile it in both conditions."
+      ]
+    },
+    {
+      "task_id": "H15-3",
+      "source_packet": {
+        "path": "packets/H15-3.json",
+        "sha256": "72c4730270af5772b9595616837224c47b94805d17072ae0dbf1d094479c92d6",
+        "source_selection_status": "source-admissibility-flag-resolved-in-packet-but-not-common-lean-audited"
+      },
+      "existing_common_lean_statement": null,
+      "independent_validation_signal": null,
+      "numstability_leakage_risk": {
+        "level": "unresolved-medium",
+        "basis": "The readiness screen finds a source-near H15_eq15_6_lapackNormEstimator declaration and generic estimator APIs, but has not resolved whether their content materially supplies the selected multi-part trace."
+      },
+      "eligibility": "INELIGIBLE_PENDING_COLLISION_REVIEW",
+      "minimum_work": [
+        "Complete a declaration-level content comparison against the whole selected Algorithm 15.3 and 15.4 result before constructing a statement.",
+        "If the target family is not already present, construct and independently audit all selected iteration, ratio-limit, and factor-3 conclusions as one common statement package.",
+        "Freeze and cross-compile only after the collision review passes."
+      ]
+    }
+  ]
+}

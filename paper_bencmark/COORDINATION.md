@@ -594,3 +594,25 @@ The Pilot-15 manifest was deliberately not refreshed or edited.
 **Needs:** Build one frozen Mathlib atlas on Titan, then invoke the runner with
 an explicit counterbalanced `--condition-order`. Do not run timed conditions
 concurrently on the eight-core host.
+
+---
+
+## 2026-09-22 — Codex — codex/pilot-16-composition-packets — proof-completion feasibility screen
+
+**Did:** Added the provider-free, repository-only machine-readable screen at
+`formalization_benchmark/design16/proof_completion_feasibility.json`. It finds
+zero immediately usable common Lean statements: the repository has source
+packets but no exact proof-free Lean statement plus independent audit binding
+for any of the thirteen tasks. H22-11 and H5-5 have faithful-run signals but
+their candidate sources are Titan-only. Nine tasks are potentially
+constructible; H20-8, H20-9, and H23-6 are excluded for direct result-family
+leakage, and H15-3 needs a collision review.
+
+**Careful:** This is a feasibility report, not a benchmark result. It did not
+access Titan or a provider, did not alter a router or frozen Pilot-15 file, and
+does not treat prose run summaries as substitutes for exact candidate bytes.
+
+**Needs:** Before using the fallback, construct and independently audit one
+Mathlib-only common statement per admitted task, freeze its bytes, cross-compile
+it in R0/R1, and keep proof-completion results separate from end-to-end
+formalization results.
