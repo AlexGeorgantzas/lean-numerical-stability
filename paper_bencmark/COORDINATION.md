@@ -353,3 +353,54 @@ the one-shot warm-root preparation. Start no official task.
 
 **Current need:** Pilot-11 is ready. An explicit user request naming one task
 is required before starting an official pair.
+
+### Sealed H22-11 incident and Pilot-12 controller successor
+
+- Pilot-11 H22-11 is now sealed as
+  `H22-11-20260921T104855Z-31f586ee` with `PAIR_INCIDENT`. Condition L
+  failed before task `turn/start`; active time and task usage are zero, N never
+  started, and no candidate, compilation, or audit exists. App-server emitted
+  the forked child's inherited cumulative-usage notification after
+  `thread/fork`; it named the Pilot-11 scout's final turn and exactly matched
+  its 4,580,505-token cumulative baseline. The Pilot-11 controller incorrectly
+  classified that provenance event as premature model activity. Pair-report
+  SHA-256 is
+  `b55af582e935bbd655b8d9dca3376a4dd3d48aeb0c526539fabbde4798c2e801`.
+- Pilot-12 was committed and pushed as
+  `e886cfbff3f58498f41bea3f36759588f26c5597`, then installed at
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-12-r1`. Deployment-record
+  SHA-256 is
+  `d6e2d93daaaa409b8d42545969d851966e9a8340d6152ee075f7e1fb78ca7074`;
+  manifest-file SHA-256 is
+  `89a6681427d25dff5e0a3d335d42ebeb1fa67d5a199eed6234427794534ad8fc`;
+  manifest payload is
+  `0ed3c7e090efd8f3f580215afd1a469b6431571a50e1103ff697820996831499`.
+- The fix admits exactly one pre-turn fork-baseline event only when child
+  thread, frozen source turn, and all cumulative usage fields match. It logs
+  the event as excluded provenance, does not assign it to the child task turn,
+  and still fails closed on a wrong turn, total, foreign thread, malformed
+  payload, or duplicate. Regression coverage includes the exact event order
+  and mismatch rejection.
+- Pilot-12 directly reuses Pilot-11's authenticated Lean/Mathlib runtime,
+  NumStability source/OLean tree, and measured build record
+  `6f4581380982e51fd52a342cc380db5c8bae5d427d32be9c8f2aa9d136de8058`.
+  Its deployment records `new_library_build_invocations = 0` and
+  `new_scout_turns = 0`. It inherits the exact Pilot-11 scout checkpoint;
+  missing inherited state fails closed and cannot trigger a replacement scout.
+- A provider-free real `thread/fork` installation canary passed against a copy
+  of that inherited checkpoint. It observed the exact 4,580,505-token source
+  baseline, charged zero task time/tokens, and sent no `turn/start`.
+  Canary-record SHA-256 is
+  `f1a0e810f14cef23cf4814f3e6de53e3464997188670f3773d8d3b094a57d806`;
+  inherited Pilot-12 warm-root-record SHA-256 is
+  `c6fb31a2728e778f6f25b12cea7ccdff4dc87cc82ecd6311fd3cbc964a3ecc5d`.
+- Verify-release and doctor passed on the exact eight-CPU/32-GiB/no-swap
+  envelope. The separate live formalizer/auditor/schema qualification passed;
+  record SHA-256 is
+  `eb825b64d270b50fb5c05ea203ecda56d8c61a264368bef499c7d0ec33f83f19`
+  and roles-tree SHA-256 is
+  `cd6313d0e26ef3985f7e158aeccfc0b3fce1d9a2a6d16d1de450ba5776aaf8f0`.
+  All 18 Pilot-12 task slots were checked and remain `NOT_STARTED`.
+
+**Current need:** Pilot-12 is ready. Do not rerun Pilot-11 and do not rebuild or
+rescout. Start no Pilot-12 task until the user explicitly names it again.
