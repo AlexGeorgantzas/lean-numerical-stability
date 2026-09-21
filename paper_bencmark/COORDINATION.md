@@ -461,3 +461,51 @@ rescout. Start no Pilot-12 task until the user explicitly names it again.
 **Current need:** Pilot-13 is ready. Do not rebuild, rescout, reinterpret the
 Pilot-12 incident, or start an official pair without a new explicit task-run
 request.
+
+## 2026-09-21 — Codex — formalization_benchmark — Pilot-13 H22-11 official pair
+
+**Did:**
+- Ran exactly one user-authorized official Pilot-13 pair for H22-11. Run ID is
+  `H22-11-20260921T124400Z-b9314206`; frozen condition order was L then N.
+  The pair completed at `2026-09-21T13:21:50.152617+00:00` with status
+  `COMPLETE`, `measurement_admissible = true`, and strict hardware enforcement.
+- Both conditions compiled, passed proof-integrity checks, and were accepted
+  faithful on their first submission. Both audits classified the candidate
+  `faithful-equivalent`, judged both implication directions `yes`, reported no
+  mismatches or remaining uncertainties, and did not require adjudication.
+- L used 436.405785288 contestant-active seconds and 147,099 exact net-new
+  contestant tokens (131,536 uncached input plus 15,563 output; 934,299 total
+  provider tokens including cached input). Its candidate is 106 lines,
+  Candidate.lean SHA-256 is
+  `5a14030502aea74d1ebdb97d178146338ad3b781a57d8212c742eb43529e3464`,
+  and semantic SHA-256 is
+  `874b195088342b759d0c6fcb9e898dc1829925a82661fe5a6b9450b7e33fb089`.
+- N used 207.567803626 contestant-active seconds and 39,499 exact net-new
+  contestant tokens (29,818 uncached input plus 9,681 output; 226,891 total
+  provider tokens including cached input). Its candidate is 92 lines,
+  Candidate.lean SHA-256 is
+  `683782798008ae10b916be4d7de10366e91535638095f828b3d2229bd581fe04`,
+  and semantic SHA-256 is
+  `37c9870cba6c12a995cff2e4f50cc29c84be48f0ef5408f1baa9a5754934d312`.
+- L's audit consumed 776.757844736 excluded wall seconds and 264,415 auditor
+  tokens across blind translation, direct judgment, and round-trip judgment;
+  its decision SHA-256 is
+  `36c6869a46224b01e43516e73a15b48dad61779b8a816dcc782b19ad99419c2f`.
+  N's audit consumed 786.521991498 excluded wall seconds and 308,682 auditor
+  tokens across the same three roles; its decision SHA-256 is
+  `65ca67bcc15f4effdba1d9a43ba457187a06c78be84606c0335f610c591d971c`.
+  Auditor usage was recorded and excluded from benchmark scores.
+- Total contestant-active time was 643.973588914 seconds. Total end-to-end wall
+  time was 2269.825632396 seconds, of which 1625.852043482 seconds were
+  excluded overhead. The reused frozen library build and inherited scout were
+  not rebuilt or rerun. No network violations or credential-scan failures were
+  recorded.
+- Pair-report SHA-256 is
+  `bcc10950f86b99dd934206e1828bdb03898b171994964e81309a5c63843eb958`;
+  pair root is
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1/runs/pairs/H22-11-20260921T124400Z-b9314206`.
+
+**Result:** H22-11 is a valid completed Pilot-13 observation. On this single
+pair, N was 228.837981662 contestant seconds faster and used 107,600 fewer
+net-new contestant tokens than L. Preserve the raw sealed artifacts; do not
+rerun H22-11 as another official Pilot-13 observation.
