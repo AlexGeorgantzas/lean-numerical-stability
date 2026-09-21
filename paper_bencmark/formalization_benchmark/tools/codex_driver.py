@@ -1584,9 +1584,10 @@ class CodexDriver:
     ) -> dict[str, Any]:
         """Provider-free app-server compatibility and credential-boundary canary.
 
-        This exercises the exact benchmark command through initialize and an
-        ephemeral thread/start, then removes auth and shuts down. It deliberately
-        never sends turn/start, so it cannot launch a model inference.
+        This exercises the exact benchmark command through initialize and either
+        an ephemeral ``thread/start`` or the configured warm ``thread/fork``,
+        then removes auth and shuts down. It deliberately never sends
+        ``turn/start``, so it cannot launch a model inference.
         """
 
         if not workspace.is_dir() or workspace.is_symlink():
@@ -1649,6 +1650,7 @@ class CodexDriver:
             "schema_version": 1,
             "thread_start_config": self._thread_config(),
             "off_contestant_clock": True,
+            "fork_baseline_usage_notification": None,
         }
         capability_violation = False
         stderr_capture = _BoundedStderrCapture()
@@ -1692,6 +1694,61 @@ class CodexDriver:
                         _reject_collaboration_item(params.get("item"))
                 if notification_method == "model/rerouted":
                     raise BenchmarkError("Codex preflight rerouted the frozen model")
+                if (
+                    notification_method == "thread/tokenUsage/updated"
+                    and self.fork_source_thread_id is not None
+                ):
+                    if not isinstance(params, Mapping):
+                        raise ProviderCapabilityViolation(
+                            "Codex preflight fork baseline usage is malformed"
+                        )
+                    token_usage = params.get("tokenUsage")
+                    total_payload = (
+                        token_usage.get("total")
+                        if isinstance(token_usage, Mapping)
+                        else None
+                    )
+                    cumulative = (
+                        _normalize_usage_breakdown(total_payload)
+                        if isinstance(total_payload, Mapping)
+                        else None
+                    )
+                    last_payload = (
+                        token_usage.get("last")
+                        if isinstance(token_usage, Mapping)
+                        else None
+                    )
+                    last_usage = (
+                        _normalize_usage_breakdown(last_payload)
+                        if isinstance(last_payload, Mapping)
+                        else None
+                    )
+                    if (
+                        observed_thread_id is None
+                        or params.get("threadId") != observed_thread_id
+                        or params.get("turnId") != self.fork_source_last_turn_id
+                        or cumulative != self.fork_source_cumulative_usage
+                        or last_usage is None
+                        or capability_attestation[
+                            "fork_baseline_usage_notification"
+                        ]
+                        is not None
+                    ):
+                        raise ProviderCapabilityViolation(
+                            "Codex preflight fork baseline does not match the frozen source"
+                        )
+                    capability_attestation[
+                        "fork_baseline_usage_notification"
+                    ] = {
+                        "accepted": True,
+                        "child_thread_id": observed_thread_id,
+                        "source_turn_id": self.fork_source_last_turn_id,
+                        "source_cumulative_usage": cumulative,
+                        "source_last_usage": last_usage,
+                        "excluded_from_contestant_usage": True,
+                        "excluded_from_contestant_time": True,
+                    }
+                    continue
                 if notification_method.startswith("turn/") or notification_method in (
                     "item/started", "item/updated", "item/completed",
                     "rawResponse/completed", "rawResponseItem/completed",
@@ -1771,28 +1828,47 @@ class CodexDriver:
                 lambda method, params: request_capability(reader, method, params),
                 thread_id=None,
             )
+            if self.fork_source_thread_id is None:
+                thread_method = "thread/start"
+                thread_params: dict[str, Any] = {
+                    "approvalPolicy": "never",
+                    "config": self._thread_config(),
+                    "cwd": cwd,
+                    "ephemeral": True,
+                    "experimentalRawEvents": True,
+                    "historyMode": "legacy",
+                    "model": self.model,
+                    "sandbox": (
+                        "workspace-write" if self.workspace_writable else "read-only"
+                    ),
+                }
+                expected_ephemeral = True
+            else:
+                expected_source_usage = self._load_usage_baseline(
+                    self.fork_source_thread_id
+                )
+                if expected_source_usage != self.fork_source_cumulative_usage:
+                    raise BenchmarkError(
+                        "fork preflight checkpoint usage does not match its source"
+                    )
+                thread_method = "thread/fork"
+                thread_params = {
+                    "threadId": self.fork_source_thread_id,
+                    "lastTurnId": self.fork_source_last_turn_id,
+                    "ephemeral": False,
+                }
+                expected_ephemeral = False
             self._write_rpc(
                 process.stdin,
                 {
                     "id": THREAD_REQUEST_ID,
-                    "method": "thread/start",
-                    "params": {
-                        "approvalPolicy": "never",
-                        "config": self._thread_config(),
-                        "cwd": cwd,
-                        "ephemeral": True,
-                        "experimentalRawEvents": True,
-                        "historyMode": "legacy",
-                        "model": self.model,
-                        "sandbox": (
-                            "workspace-write" if self.workspace_writable else "read-only"
-                        ),
-                    },
+                    "method": thread_method,
+                    "params": thread_params,
                 },
             )
-            thread_result = await_result(reader, THREAD_REQUEST_ID, "thread/start")
+            thread_result = await_result(reader, THREAD_REQUEST_ID, thread_method)
             resolved_thread_id, thread_record = self._thread_from_result(
-                thread_result, expected=None, expected_ephemeral=True
+                thread_result, expected=None, expected_ephemeral=expected_ephemeral
             )
             if observed_thread_id is not None and observed_thread_id != resolved_thread_id:
                 raise ProviderCapabilityViolation("Codex preflight thread notification/result mismatch")
@@ -1804,6 +1880,12 @@ class CodexDriver:
                 lambda method, params: request_capability(reader, method, params),
                 thread_id=observed_thread_id,
             )
+            capability_attestation["thread_creation"] = {
+                "method": thread_method,
+                "fork_source_thread_id": self.fork_source_thread_id,
+                "fork_source_last_turn_id": self.fork_source_last_turn_id,
+                "fork_source_cumulative_usage": self.fork_source_cumulative_usage,
+            }
             capability_attestation["passed"] = True
             self._sync_private_auth_to_storage()
             self._remove_auth(staged_auth)
@@ -2207,6 +2289,7 @@ class CodexDriver:
             "thread_start_config": self._thread_config(),
             "off_contestant_clock": True,
             "reused_thread": self._live_session is not None,
+            "fork_baseline_usage_notification": None,
         }
         telemetry_invalid = False
         timed_out = False
@@ -2391,6 +2474,78 @@ class CodexDriver:
                     f"Codex capability attestation failed at {method}: {error}"
                 ) from error
 
+        def accept_fork_baseline_usage(
+            message: Mapping[str, Any], *, phase: str
+        ) -> bool:
+            """Validate copied-parent usage telemetry without charging the child.
+
+            App-server may emit the forked thread's inherited cumulative usage
+            immediately after ``thread/fork`` and before the child task turn.
+            This is provenance telemetry for the copied history, not a model
+            response.  Admit exactly one such notification only when every
+            identity and usage field matches the frozen source checkpoint.
+            """
+
+            if (
+                message.get("method") != "thread/tokenUsage/updated"
+                or self.fork_source_thread_id is None
+                or observed_turn_id is not None
+            ):
+                return False
+            params = message.get("params")
+            if not isinstance(params, Mapping):
+                raise ProviderCapabilityViolation(
+                    "Codex fork baseline usage notification is malformed"
+                )
+            if observed_thread_id is None or params.get("threadId") != observed_thread_id:
+                raise ProviderCapabilityViolation(
+                    "Codex fork baseline usage belongs to another thread"
+                )
+            if params.get("turnId") != self.fork_source_last_turn_id:
+                raise ProviderCapabilityViolation(
+                    "Codex fork baseline usage names the wrong source turn"
+                )
+            token_usage = params.get("tokenUsage")
+            total_payload = (
+                token_usage.get("total") if isinstance(token_usage, Mapping) else None
+            )
+            cumulative = (
+                _normalize_usage_breakdown(total_payload)
+                if isinstance(total_payload, Mapping)
+                else None
+            )
+            if cumulative != self.fork_source_cumulative_usage:
+                raise ProviderCapabilityViolation(
+                    "Codex fork baseline usage does not match the frozen source"
+                )
+            if capability_attestation["fork_baseline_usage_notification"] is not None:
+                raise ProviderCapabilityViolation(
+                    "Codex emitted duplicate fork baseline usage telemetry"
+                )
+            last_payload = (
+                token_usage.get("last") if isinstance(token_usage, Mapping) else None
+            )
+            last_usage = (
+                _normalize_usage_breakdown(last_payload)
+                if isinstance(last_payload, Mapping)
+                else None
+            )
+            if last_usage is None:
+                raise ProviderCapabilityViolation(
+                    "Codex fork baseline last-turn usage is malformed"
+                )
+            capability_attestation["fork_baseline_usage_notification"] = {
+                "accepted": True,
+                "phase": phase,
+                "child_thread_id": observed_thread_id,
+                "source_turn_id": self.fork_source_last_turn_id,
+                "source_cumulative_usage": cumulative,
+                "source_last_usage": last_usage,
+                "excluded_from_contestant_usage": True,
+                "excluded_from_contestant_time": True,
+            }
+            return True
+
         def startup_notification(message: Mapping[str, Any]) -> None:
             nonlocal observed_thread_id
             method = message.get("method")
@@ -2409,6 +2564,8 @@ class CodexDriver:
                 "rawResponse/completed",
                 "rawResponseItem/completed",
             ):
+                if accept_fork_baseline_usage(message, phase="startup_attestation"):
+                    return
                 raise BenchmarkError(f"Codex app-server emitted premature {method}")
             if method == "thread/started":
                 params = message.get("params")
@@ -2434,6 +2591,10 @@ class CodexDriver:
                 raise BenchmarkError("Codex app-server rerouted the frozen model")
             if method == "thread/started":
                 raise ProviderCapabilityViolation("Codex started a child thread during a turn")
+            if accept_fork_baseline_usage(
+                message, phase="after_turn_request_before_turn_started"
+            ):
+                return
             if isinstance(params, Mapping):
                 if "threadId" in params and params["threadId"] != observed_thread_id:
                     raise ProviderCapabilityViolation("Codex emitted a foreign-thread notification")

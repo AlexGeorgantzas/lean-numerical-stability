@@ -1,22 +1,25 @@
 ---
 name: run-highambench-experiments
-description: Operate Pilot-11 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
+description: Operate Pilot-12 of the source-first HighamBench faithful-formalization benchmark for one frozen paper task or Higham problem. Use when the user says "Run benchmark for H22-11", "Run benchmark for P01-T2", or asks to preflight, run, resume, validate, or report exactly one N/L pair. Do not use for the legacy fixed-target proof benchmark or task construction.
 ---
 
 # Run HighamBench Formalization Experiments
 
 ## Scope
 
-Pilot-11 (`formalization-benchmark-pilot-11`) is a separate frozen release.
-Pilots 1--10 and all of their runs, incidents, and deployment records are
+Pilot-12 (`formalization-benchmark-pilot-12`) is a separate frozen release.
+Pilots 1--11 and all of their runs, incidents, and deployment records are
 read-only predecessor evidence. Never reinterpret an older decision, resume an
 older sealed condition, pool results across pilots, or use an older launcher as
 a substitute. Pilot-9's cold-start H22-11 pair is sealed; its measurements are
-L-cold evidence and are not pooled with Pilot-11 warm-start results. Pilot-10's
-single scout failed closed on a context-compaction telemetry mismatch and no
-official Pilot-10 task began; never retry that scout or use its checkpoint.
+L-cold evidence and are not pooled with Pilot-12 warm-start results. Pilot-10's
+single scout failed closed on a context-compaction telemetry mismatch. Pilot-11
+then created the valid task-neutral warm root, but H22-11 failed before its L
+task turn because inherited fork-usage telemetry was rejected. Pilot-12 reuses
+that exact warm root and library build; never rerun scouting or rebuild the
+unchanged frozen library.
 
-Preparing, installing, repairing, or qualifying Pilot-11 never authorizes an
+Preparing, installing, repairing, or qualifying Pilot-12 never authorizes an
 official pair. Run one only after an explicit request naming exactly one task.
 
 The allowlist is:
@@ -38,7 +41,7 @@ Before any provider call or benchmark-state mutation:
 
 1. Read [the operations reference](references/operations.md) completely.
 2. Require
-   `~/.local/bin/run-highambench-formalization-pilot-11-r1` and its distinct,
+   `~/.local/bin/run-highambench-formalization-pilot-12-r1` and its distinct,
    digest-bound deployment record.
 3. Run provider-free `verify-release`.
 4. Run provider-free `doctor --task-id <TASK>` through that launcher.
@@ -48,8 +51,9 @@ Before any provider call or benchmark-state mutation:
 6. Require the one-shot off-benchmark live qualification for the exact models,
    reasoning efforts, all four audit output schemas, workspace read paths,
    formalizer write path, and Code Mode host.
-7. Require the authenticated release-level warm root. If it has not yet been
-   created, use `prepare-warm-root` exactly once before any official task.
+7. Require the authenticated Pilot-11 warm root inherited into Pilot-12 and the
+   provider-free real-fork canary. Never call `prepare-warm-root` to create a
+   second scout.
 8. Stop on any missing or failed gate. Never fall back to
    `paper_bencmark/highambench/tools/runner.py`, `run_matrix.py`, or an older
    launcher.
@@ -72,8 +76,8 @@ old Lean target, shared task scaffold, proof, prior audit, or NumStability name.
 N must have no tool-visible NumStability source, object, cache, index,
 documentation, history, environment value, or path.
 
-L adds the frozen NumStability source and compiled snapshot. Exactly once per
-release, a task-neutral root conversation receives the frozen encouragement
+L adds the frozen NumStability source and compiled snapshot. Exactly once for
+the warm-start campaign, a task-neutral root conversation receives the frozen encouragement
 and explores `/library/NumStability`, `/library/NumStability.lean`, and the
 compiled declarations on `LEAN_PATH`. Every L task must use `thread/fork` from
 that frozen root, then receive the same task prompt as N. Never seed a new chat

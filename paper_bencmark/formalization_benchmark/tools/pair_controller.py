@@ -438,8 +438,9 @@ def _campaign_lock(
     seventh_ancestral_predecessor_run_root: Path | None = None,
     eighth_ancestral_predecessor_run_root: Path | None = None,
     ninth_ancestral_predecessor_run_root: Path | None = None,
+    tenth_ancestral_predecessor_run_root: Path | None = None,
 ) -> Iterator[None]:
-    """Serialize this release, the account registry, and all nine predecessors."""
+    """Serialize this release, the account registry, and all ten predecessors."""
 
     paths = [run_root / "locks" / "formalization-pilot.lock"]
     if global_registry_root is not None:
@@ -462,6 +463,8 @@ def _campaign_lock(
         paths.append(eighth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     if ninth_ancestral_predecessor_run_root is not None:
         paths.append(ninth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
+    if tenth_ancestral_predecessor_run_root is not None:
+        paths.append(tenth_ancestral_predecessor_run_root / "locks" / "formalization-pilot.lock")
     descriptors: list[int] = []
     try:
         for path in sorted(set(paths)):
@@ -513,6 +516,7 @@ class PairController:
             getattr(self.deployment, "seventh_ancestral_predecessor_run_root", None),
             getattr(self.deployment, "eighth_ancestral_predecessor_run_root", None),
             getattr(self.deployment, "ninth_ancestral_predecessor_run_root", None),
+            getattr(self.deployment, "tenth_ancestral_predecessor_run_root", None),
         )
 
     def _qualify_provider(self) -> dict[str, Any]:
@@ -986,15 +990,16 @@ class PairController:
                 or self.deployment.seventh_ancestral_predecessor_run_root is None
                 or self.deployment.eighth_ancestral_predecessor_run_root is None
                 or self.deployment.ninth_ancestral_predecessor_run_root is None
+                or self.deployment.tenth_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-11 registry or predecessor locks are missing")
-            from setup_titan import pilot10_lineage
+                raise BenchmarkError("pilot-12 registry or predecessor locks are missing")
+            from setup_titan import pilot11_lineage
 
-            # Doctor is called under the pilot-11 campaign lock, including the
+            # Doctor is called under the pilot-12 campaign lock, including the
             # predecessor and account-global locks. Setup performs the full
             # predecessor check before publication; here compare pinned bytes
             # without invoking a verifier that would reacquire those locks.
-            lineage = pilot10_lineage(
+            lineage = pilot11_lineage(
                 str(self.deployment.predecessor_run_root.parent),
                 verify_status=False,
             )
@@ -1052,6 +1057,11 @@ class PairController:
                     "Codex preflight record",
                 ),
                 (
+                    "warm_fork_preflight_record",
+                    "warm_fork_preflight_record_sha256",
+                    "inherited warm-fork preflight record",
+                ),
+                (
                     "visible_system_runtime_record",
                     "visible_system_runtime_record_sha256",
                     "visible common system runtime record",
@@ -1092,6 +1102,26 @@ class PairController:
                 )
             ):
                 raise BenchmarkError("Codex private-auth tmpfs preflight is missing")
+            fork_preflight = load_json(
+                Path(str(deployment_record["warm_fork_preflight_record"])).resolve()
+            )
+            fork_baseline = fork_preflight.get("capability_attestation", {}).get(
+                "fork_baseline_usage_notification"
+            )
+            runtime_reuse = deployment_record.get("runtime_reuse")
+            if (
+                fork_preflight.get("provider_call_permitted") is not False
+                or fork_preflight.get("turn_start_sent") is not False
+                or not isinstance(fork_baseline, Mapping)
+                or fork_baseline.get("accepted") is not True
+                or not isinstance(runtime_reuse, Mapping)
+                or runtime_reuse.get("source_pilot_id")
+                != "formalization-benchmark-pilot-11"
+                or runtime_reuse.get("new_library_build_invocations") != 0
+                or runtime_reuse.get("new_scout_turns") != 0
+            ):
+                raise BenchmarkError("Pilot-12 inherited-runtime admission evidence is missing")
+            self._load_warm_root()
         order = _condition_order(self.config, task_id)
         if order not in (["N", "L"], ["L", "N"]):
             raise BenchmarkError("invalid frozen condition order")
@@ -1249,6 +1279,11 @@ class PairController:
                 )
             if root.exists():
                 raise BenchmarkError("warm-root directory exists without a trusted record")
+            if int(self.config["warm_start"]["scout_runs_per_release"]) == 0:
+                raise BenchmarkError(
+                    "the inherited Condition L warm root is missing; Pilot-12 forbids "
+                    "a replacement scouting turn"
+                )
             root.mkdir(parents=True, mode=0o700)
             checkpoint.mkdir(mode=0o700)
             workspace = root / "scout-workspace"
@@ -1269,7 +1304,9 @@ class PairController:
                 "pilot_id": self.config["pilot_id"],
                 "manifest_payload_sha256": self.manifest["manifest_payload_sha256"],
                 "scout_prompt_sha256": sha256_file(prompt_path),
-                "scout_runs_per_release": 1,
+                "scout_runs_per_release": int(
+                    self.config["warm_start"]["scout_runs_per_release"]
+                ),
                 "task_material_available": False,
                 "benchmark_charged": False,
                 "created_at_utc": utc_now(),

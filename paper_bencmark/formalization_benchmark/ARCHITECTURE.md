@@ -1,10 +1,10 @@
 # Formalization benchmark architecture
 
-Pilot-11 is a side-by-side warm-start successor. Earlier deployments and
-results are read-only provenance, not Pilot-11 observations. The direct
-predecessor is Pilot-10, whose one-shot scout failed closed at the telemetry
-gate during automatic context compaction and whose official task set remains
-untouched. Pilot-9's cold-start H22-11 pair also remains sealed.
+Pilot-12 is a side-by-side warm-start successor. Earlier deployments and
+results are read-only provenance, not Pilot-12 observations. The direct
+predecessor is Pilot-11. Its task-neutral scout and frozen build are valid and
+reused unchanged; its H22-11 pair is sealed as a pre-turn controller incident.
+Pilot-10's failed scout and Pilot-9's cold-start H22-11 pair also remain sealed.
 
 ## Operator path
 
@@ -25,7 +25,7 @@ installed run-highambench-experiments skill
         `--> generated-command child: 24 GiB / 384 tasks / no swap
         |
         v
-one release-level scout (once, before task clocks)
+one campaign-level scout inherited from Pilot-11 (no new scout turn)
         |
         `--> frozen NumStability orientation root
                     |
@@ -40,7 +40,7 @@ one pair controller
 
 The controller pre-stages and compares both condition inputs before the first
 contestant call. An account-global registry reserves each
-`(formalization-benchmark-pilot-11, task_id)` once. A shared campaign lock and
+`(formalization-benchmark-pilot-12, task_id)` once. A shared campaign lock and
 predecessor locks prevent concurrent measured use of Titan. Reissuing a command
 returns the terminal pair or continues only at a safe boundary between sealed
 conditions.
@@ -131,7 +131,7 @@ incomplete telemetry fail closed as infrastructure incidents.
 
 | Script | Responsibility |
 | --- | --- |
-| `tools/setup_titan.py` | Build, measure, authenticate, and atomically install Pilot-11. |
+| `tools/setup_titan.py` | Authenticate Pilot-11 reuse, run a provider-free real-fork canary, and atomically install Pilot-12. |
 | `tools/measure_library_build.py` | Record the clean full NumStability build and resources. |
 | `tools/runtime_canary.py` | Prove the N/L import boundary without provider calls. |
 | `tools/provider_capability_canary.py` | Exercise exact models, schemas, tools, and isolation off-benchmark. |
@@ -186,7 +186,7 @@ runs/
       decision.json
 ~/.local/share/highambench-formalization-registry/
   locks/campaign.lock
-  index/formalization-benchmark-pilot-11/H22-11.json
+  index/formalization-benchmark-pilot-12/H22-11.json
 ```
 
 Records bind prompts, candidates, source packets, semantic dossiers, role

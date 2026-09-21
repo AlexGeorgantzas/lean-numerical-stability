@@ -362,6 +362,13 @@ class PairControllerDryRunTests(unittest.TestCase):
         warm_root, _record_path, _checkpoint = controller._warm_root_paths()
         shutil.rmtree(warm_root)
         controller.strict_hardware = True
+        controller.config = {
+            **controller.config,
+            "warm_start": {
+                **controller.config["warm_start"],
+                "scout_runs_per_release": 1,
+            },
+        }
         controller.doctor = types.MethodType(
             lambda _self, _task_id: {"status": "PASSED"}, controller
         )
@@ -434,6 +441,17 @@ class PairControllerDryRunTests(unittest.TestCase):
         self.assertEqual(
             first["checkpoint_manifest"], tree_manifest(warm_root / "checkpoint")
         )
+
+    def test_pilot12_refuses_a_replacement_scout_when_inherited_root_is_missing(self) -> None:
+        controller = self.controller()
+        warm_root, _record_path, _checkpoint = controller._warm_root_paths()
+        shutil.rmtree(warm_root)
+        controller.strict_hardware = True
+        controller.doctor = types.MethodType(
+            lambda _self, _task_id: {"status": "PASSED"}, controller
+        )
+        with self.assertRaisesRegex(BenchmarkError, "forbids a replacement scouting turn"):
+            controller.prepare_warm_root_when_idle()
 
     @staticmethod
     def write_fake_shutdown(condition_root: Path) -> None:
@@ -547,7 +565,7 @@ class PairControllerDryRunTests(unittest.TestCase):
             len(list((self.deployment.run_root / "preflights").iterdir())), 2
         )
 
-    def test_global_campaign_lock_serializes_releases_and_nine_predecessors(self) -> None:
+    def test_global_campaign_lock_serializes_releases_and_ten_predecessors(self) -> None:
         registry = self.root / "account-registry"
         predecessor = self.root / "pilot-7-runs"
         legacy_predecessor = self.root / "pilot-5-runs"
@@ -558,12 +576,14 @@ class PairControllerDryRunTests(unittest.TestCase):
         seventh_ancestral_predecessor = self.root / "pilot-0-runs"
         eighth_ancestral_predecessor = self.root / "pilot-minus-1-runs"
         ninth_ancestral_predecessor = self.root / "pilot-minus-2-runs"
+        tenth_ancestral_predecessor = self.root / "pilot-minus-3-runs"
         with _campaign_lock(
             self.deployment.run_root, registry, predecessor, legacy_predecessor,
             ancestral_predecessor, great_ancestral_predecessor, fifth_ancestral_predecessor,
             sixth_ancestral_predecessor, seventh_ancestral_predecessor,
             eighth_ancestral_predecessor,
             ninth_ancestral_predecessor,
+            tenth_ancestral_predecessor,
         ):
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", registry):
@@ -594,6 +614,12 @@ class PairControllerDryRunTests(unittest.TestCase):
                     pass
             with self.assertRaisesRegex(BenchmarkError, "already active"):
                 with _campaign_lock(self.root / "another-release", None, ninth_ancestral_predecessor):
+                    pass
+            with self.assertRaisesRegex(BenchmarkError, "already active"):
+                with _campaign_lock(
+                    self.root / "another-release", None, None, None, None, None,
+                    None, None, None, None, None, tenth_ancestral_predecessor,
+                ):
                     pass
 
     def test_official_pair_rejects_downgraded_qualification_binding(self) -> None:

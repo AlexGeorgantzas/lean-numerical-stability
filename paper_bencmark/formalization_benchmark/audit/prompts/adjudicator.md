@@ -14,7 +14,7 @@ implication directions to yes or no. Classify yes/yes as faithful-equivalent;
 yes/no as faithful-stronger only for genuine added generality or conclusion
 strength; no/yes as unfaithful-weaker; and no/no as unfaithful-different.
 Extra assumptions, restricted domains, and vacuity are not strengthening.
-Partial case-split coverage is always unfaithful in Pilot-11, even though the
+Partial case-split coverage is always unfaithful in Pilot-12, even though the
 method paper's appendix permits a score-2 partial-coverage exception.
 
 Choose faithful only when the candidate affirmatively covers every material

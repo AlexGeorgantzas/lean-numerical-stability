@@ -159,6 +159,21 @@ if thread_request["method"] == "thread/fork":
         "reasoningOutputTokens": 2,
         "totalTokens": 15,
     }
+    fork_baseline = dict(cumulative)
+    if (workspace / "fork-baseline-mismatch").exists():
+        fork_baseline["totalTokens"] += 1
+    send({
+        "method": "thread/tokenUsage/updated",
+        "params": {
+            "threadId": thread_id,
+            "turnId": (
+                "wrong-source-turn"
+                if (workspace / "fork-baseline-turn-mismatch").exists()
+                else "turn-1"
+            ),
+            "tokenUsage": {"total": fork_baseline, "last": dict(cumulative)},
+        },
+    })
 late_pending = False
 late_turn_id = None
 exit_code_on_eof = 0
@@ -604,7 +619,98 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertEqual(
             child_record["fork_cumulative_usage_semantics"], "parent_inherited"
         )
+        baseline = child_record["capability_attestation"][
+            "fork_baseline_usage_notification"
+        ]
+        self.assertTrue(baseline["accepted"])
+        self.assertTrue(baseline["excluded_from_contestant_usage"])
+        self.assertTrue(baseline["excluded_from_contestant_time"])
+        self.assertEqual(baseline["source_turn_id"], "turn-1")
+        self.assertEqual(baseline["source_cumulative_usage"], source.usage)
         forked.close(artifact_dir=self.root / "task-close")
+
+    def test_provider_free_fork_preflight_accepts_only_frozen_parent_baseline(self) -> None:
+        checkpoint = self.root / "fork-preflight-checkpoint"
+        checkpoint.mkdir()
+        scout = self.driver(state_root=checkpoint / "state")
+        source = scout.run_turn(
+            prompt="scout",
+            workspace=self.workspace,
+            artifact_dir=self.root / "fork-preflight-scout",
+            timeout_seconds=5,
+        )
+        scout.close(artifact_dir=self.root / "fork-preflight-scout-close")
+        source_turn = json.loads(
+            (self.root / "fork-preflight-scout" / "turn.json").read_text()
+        )["turn_id"]
+        seed = self.root / "fork-preflight-seed"
+        shutil.copytree(checkpoint, seed, symlinks=True)
+        preflight_workspace = self.root / "fork-preflight-workspace"
+        preflight_workspace.mkdir()
+        forked = self.driver(
+            state_root=seed / "state",
+            fork_source_thread_id=source.thread_id,
+            fork_source_last_turn_id=source_turn,
+            fork_source_cumulative_usage=source.usage,
+        )
+        record = forked.preflight(
+            workspace=preflight_workspace,
+            artifact_dir=self.root / "fork-preflight-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertFalse(record["turn_start_sent"])
+        self.assertEqual(
+            record["capability_attestation"]["thread_creation"]["method"],
+            "thread/fork",
+        )
+        baseline = record["capability_attestation"][
+            "fork_baseline_usage_notification"
+        ]
+        self.assertTrue(baseline["accepted"])
+        self.assertEqual(baseline["source_cumulative_usage"], source.usage)
+        self.assertFalse((preflight_workspace / "observations.jsonl").exists())
+        forked.close()
+
+    def test_fork_rejects_mismatched_inherited_usage_before_task_turn(self) -> None:
+        checkpoint = self.root / "fork-rejection-checkpoint"
+        checkpoint.mkdir()
+        scout = self.driver(state_root=checkpoint / "state")
+        source = scout.run_turn(
+            prompt="scout",
+            workspace=self.workspace,
+            artifact_dir=self.root / "fork-rejection-scout",
+            timeout_seconds=5,
+        )
+        scout.close(artifact_dir=self.root / "fork-rejection-scout-close")
+        source_turn = json.loads(
+            (self.root / "fork-rejection-scout" / "turn.json").read_text()
+        )["turn_id"]
+        for index, marker in enumerate(
+            ("fork-baseline-mismatch", "fork-baseline-turn-mismatch")
+        ):
+            with self.subTest(marker=marker):
+                seed = self.root / f"fork-rejection-seed-{index}"
+                shutil.copytree(checkpoint, seed, symlinks=True)
+                workspace = self.root / f"fork-rejection-workspace-{index}"
+                workspace.mkdir()
+                (workspace / marker).touch()
+                forked = self.driver(
+                    state_root=seed / "state",
+                    fork_source_thread_id=source.thread_id,
+                    fork_source_last_turn_id=source_turn,
+                    fork_source_cumulative_usage=source.usage,
+                )
+                result = forked.run_turn(
+                    prompt="task",
+                    workspace=workspace,
+                    artifact_dir=self.root / f"fork-rejection-artifacts-{index}",
+                    timeout_seconds=5,
+                )
+                self.assertEqual(result.failure_kind, "provider_capability_violation")
+                self.assertIsNone(result.active_started_perf_ns)
+                self.assertEqual(result.usage["total_tokens"], 0)
+                self.assertFalse((workspace / "observations.jsonl").exists())
+                forked.close()
 
     def test_context_compaction_usage_is_exact_but_not_in_cumulative_cross_check(self) -> None:
         driver = self.driver()

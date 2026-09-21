@@ -1,17 +1,19 @@
 # HighamBench source-first formalization benchmark
 
-This directory is the frozen Pilot-11 warm-start control plane. It does not use
-the legacy fixed-target proof runner. Pilot-10 and earlier evidence remain
-sealed and are never reinterpreted, resumed, or pooled with Pilot-11. Pilot-9
-observations are retained as L-cold evidence. Pilot-10's sole scout completed
-but failed its telemetry gate during automatic context compaction, so it
-started no official task; Pilot-11 is the corrected fresh warm-start release.
+This directory is the frozen Pilot-12 warm-start control plane. It does not use
+the legacy fixed-target proof runner. Pilot-11 and earlier evidence remain
+sealed and are never reinterpreted, resumed, or pooled with Pilot-12. Pilot-9
+observations are retained as L-cold evidence. Pilot-11 produced a valid,
+task-neutral warm root, but its first H22-11 L fork failed before `turn/start`
+because the controller rejected exact inherited-history usage telemetry.
+Pilot-12 corrects that controller boundary while reusing the authenticated
+Pilot-11 library build and warm root byte-for-byte.
 
-Pilot ID: `formalization-benchmark-pilot-11`.
+Pilot ID: `formalization-benchmark-pilot-12`.
 
 ## Tasks
 
-Pilot-11 supports 18 fresh N/L pairs:
+Pilot-12 supports 18 fresh N/L pairs:
 
 - Paper tasks: `P01-T2`, `P02-T2`, `P03-T2`, `P13-T2`, `P14-T2`.
 - Higham problems: `H22-11`, `H22-5`, `H20-6`, `H7-12`,
@@ -50,15 +52,14 @@ See [PROTOCOL.md](PROTOCOL.md) for the complete frozen contract.
 
 ## Titan commands
 
-After Pilot-11 is installed and provider-qualified on Titan:
+After Pilot-12 is installed and provider-qualified on Titan:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-11-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-11-r1 doctor --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-11-r1 qualify-provider --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-11-r1 prepare-warm-root
-~/.local/bin/run-highambench-formalization-pilot-11-r1 run --task-id H22-11
-~/.local/bin/run-highambench-formalization-pilot-11-r1 status --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-12-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-12-r1 doctor --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-12-r1 qualify-provider --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-12-r1 run --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-12-r1 status --task-id H22-11
 ```
 
 `run --dry-run` checks admission and staging without model calls or consuming
@@ -77,11 +78,12 @@ Run benchmark for P03-T2
 
 The 18 source PDFs are private and are matched by basename and SHA-256 from
 `manifest.json`. Reused chapter PDFs are stored once in the deployment.
-Setup also performs and records a clean full NumStability build under the same
-eight-CPU/32-GiB/no-swap outer envelope. Build duration, GNU `time` metrics,
-hardware/cgroup observations, complete output, source/object counts, and hashes
-are authenticated under `runtime/library/build/` and excluded from contestant
-measurements.
+Pilot-12 authenticates and directly reuses Pilot-11's clean full NumStability
+build under the same eight-CPU/32-GiB/no-swap outer envelope. Its build
+duration, GNU `time` metrics, hardware/cgroup observations, complete output,
+source/object counts, and hashes remain the one build record for this frozen
+library snapshot. Pilot-12 records zero new library builds and zero new scout
+turns.
 
 The controller never stages old targets, shared benchmark scaffolds, prior
 audit history, Git history, or the other condition's output into a contestant
