@@ -1,0 +1,267 @@
+{
+  "schema_version": "design16-higham-readiness-1",
+  "status": "provider-free-predeclared-screen",
+  "task_set": [
+    "H22-11",
+    "H22-5",
+    "H20-6",
+    "H7-12",
+    "H20-9",
+    "H20-8",
+    "H23-6",
+    "H5-5",
+    "H10-7",
+    "H12-4",
+    "H19-5",
+    "H7-14",
+    "H15-3"
+  ],
+  "inputs": {
+    "numstability_commit": "45813a95dacf577461bae13f033af0dbc985a225",
+    "atlas_schema_version": "numstability-library-atlas-2",
+    "atlas_declarations_sha256": "fbba9043a1117dbf4862cff10ab2af44e7b19abe909d026e9afd30a24896299b",
+    "composition_packet_schema_version": "formalization-composition-packet-1",
+    "root_limit": 3,
+    "dependency_limit_per_root": 5,
+    "contract_overlays": {
+      "H10-7": "design16/contracts/H10-7.json"
+    }
+  },
+  "policy": {
+    "outcomes_consulted": false,
+    "paid_model_calls": false,
+    "titan_runs": false,
+    "route_categories": {
+      "DIRECT": "A library declaration states the selected conclusion, modulo routine representation adapters.",
+      "COMPOSITION": "Useful library results exist, but at least one substantive source requirement still must be constructed.",
+      "NO_ROUTE": "The current bounded packet exposes no semantically adequate route."
+    },
+    "primary_inclusion_rule": "Include only tasks for which the current packet exposes useful building blocks without exposing the selected result itself.",
+    "result_collision_rule": "A direct declaration of the selected conclusion or its source-specific result family excludes the task from the primary marginal-value analysis, even if the declaration carries extra branch hypotheses.",
+    "no_route_rule": "A NO_ROUTE task is not a primary treatment observation because the protected interface intentionally exposes no NumStability declarations; it may be retained only as a predeclared negative control."
+  },
+  "summary": {
+    "router_direct_or_composition_count": 4,
+    "router_no_route_count": 9,
+    "assessed_direct_count": 3,
+    "assessed_composition_count": 2,
+    "assessed_no_route_count": 8,
+    "primary_ready_count": 2,
+    "primary_ready_task_ids": [
+      "H5-5",
+      "H10-7"
+    ],
+    "negative_control_count": 6,
+    "negative_control_task_ids": [
+      "H22-11",
+      "H20-6",
+      "H7-12",
+      "H12-4",
+      "H19-5",
+      "H7-14"
+    ],
+    "excluded_collision_or_router_error_count": 5,
+    "excluded_collision_or_router_error_task_ids": [
+      "H22-5",
+      "H20-9",
+      "H20-8",
+      "H23-6",
+      "H15-3"
+    ],
+    "conclusion": "The current frozen router does not support an honest 13-task primary campaign. It yields two building-block cases, six possible negative controls, two likely result-collision false negatives, one direct result-family collision, and two topical false positives."
+  },
+  "tasks": [
+    {
+      "task_id": "H22-11",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "adjacent-definitions-only",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "low",
+      "decision": "NEGATIVE_CONTROL_ONLY",
+      "evidence": [
+        "The highest diagnostic hit, NumStability.higham22_rootUnityVandermonde_eq_fourier, covers a special root-of-unity matrix identity rather than the nodewise structured condition-number limit.",
+        "The other leading hits concern generic Frobenius conditioning or an unrelated triangular residual bound.",
+        "No exposed card represents the perturbation supremum, its epsilon limit, or the dual-system formula."
+      ],
+      "rationale": "The current treatment would expose no NumStability API, so this can test null-routing behavior but not marginal library assistance."
+    },
+    {
+      "task_id": "H22-5",
+      "router_status": "DIRECT_OR_COMPOSITION",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "topical-false-positive",
+      "packet_false_positive_risk": "high",
+      "result_collision_risk": "low",
+      "decision": "EXCLUDE_UNTIL_ROUTER_FIX",
+      "evidence": [
+        "NumStability.higham22_table22_2_chebyshev states a three-term recurrence, not an inverse-row-sum comparison.",
+        "NumStability.higham22_rootUnityInverse_mul_vandermonde is restricted to root-of-unity nodes and does not compare Chebyshev-Vandermonde and ordinary Vandermonde inverses.",
+        "The third card is a bidiagonal comparison-matrix identity from Chapter 8."
+      ],
+      "rationale": "The coupled lexical threshold fires on chapter vocabulary, but none of the three cards supplies the selected inequality. Counting this as routed would introduce search distraction rather than treatment support."
+    },
+    {
+      "task_id": "H20-6",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "adjacent-least-squares-infrastructure",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "low",
+      "decision": "NEGATIVE_CONTROL_ONLY",
+      "evidence": [
+        "The leading theorem concerns a different constrained least-squares data-correction residual.",
+        "No card encodes the normal-equations computed solution, the difference of squared true and computed residual norms, or its first-order coefficient."
+      ],
+      "rationale": "Least-squares primitives exist in the corpus, but the protected interface exposes no compatible route for this statement."
+    },
+    {
+      "task_id": "H7-12",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "unrelated-symmetry-hits",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "low",
+      "decision": "NEGATIVE_CONTROL_ONLY",
+      "evidence": [
+        "The first diagnostic theorem proves symmetry of a least-squares eigenmatrix, not existence of a symmetric perturbation for Ax=b.",
+        "The remaining cards are Lyapunov-equation backward-error results with different objects and hypotheses."
+      ],
+      "rationale": "No semantically relevant symmetric-linear-system perturbation route is exposed."
+    },
+    {
+      "task_id": "H20-9",
+      "router_status": "DIRECT_OR_COMPOSITION",
+      "assessed_route": "DIRECT",
+      "coverage_stratum": "source-specific-result-family-present",
+      "packet_false_positive_risk": "medium",
+      "result_collision_risk": "high",
+      "decision": "EXCLUDE_RESULT_COLLISION",
+      "evidence": [
+        "The first two cards conclude lsNormwiseBackwardErrorEtaF = lsNormwiseBackwardErrorFormulaRHS.",
+        "The referenced FormulaRHS is the library's source-specific representation of equation (20.21), including the outer minimum of phi and the source-block sigma_min.",
+        "The card theorems split the same formula into phi<=sigma_min and sigma_min<=phi branches and add rank/non-minimizer hypotheses."
+      ],
+      "rationale": "This is target-family retrieval, not reuse of lower-level building blocks; the extra branch hypotheses do not remove the leakage risk."
+    },
+    {
+      "task_id": "H20-8",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "DIRECT",
+      "coverage_stratum": "hidden-direct-result",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "high",
+      "decision": "EXCLUDE_RESULT_COLLISION_AND_ROUTER_FALSE_NEGATIVE",
+      "evidence": [
+        "The atlas contains NumStability.lsNormwiseBackwardErrorEtaF_tendsto_matrixOnlyEtaF_atTop, which directly states convergence as theta tends to infinity to the matrix-only Delta b = 0 infimum.",
+        "The atlas also contains the matrix-only feasible-value set, its infimum, and the equality with the nonnegative supremum of finite-theta errors.",
+        "The current top-three diagnostic cards miss this direct declaration and therefore expose no cards."
+      ],
+      "rationale": "The selected limiting result is already in the corpus, while the current router fails to reveal it; either fact prevents use as a clean primary task."
+    },
+    {
+      "task_id": "H23-6",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "DIRECT",
+      "coverage_stratum": "hidden-direct-result",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "high",
+      "decision": "EXCLUDE_RESULT_COLLISION_AND_ROUTER_FALSE_NEGATIVE",
+      "evidence": [
+        "The frozen source contains the ThreeMStrassen development, including NumStability.higham23_threeMStrassen_firstOrder and NumStability.higham23_threeMStrassen_sourceCoefficient.",
+        "That development is source-specific to the requested 3M-plus-Strassen first-order coefficient.",
+        "The current top-three diagnostics return only coefficient nonnegativity and a Winograd abbreviation, so the direct result remains hidden."
+      ],
+      "rationale": "The selected result is already formalized under source-specific declaration names, and the router's NO_ROUTE decision is a false negative."
+    },
+    {
+      "task_id": "H5-5",
+      "router_status": "DIRECT_OR_COMPOSITION",
+      "assessed_route": "COMPOSITION",
+      "coverage_stratum": "useful-building-blocks-with-gap",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "low",
+      "decision": "INCLUDE_PRIMARY_ENGINEERING",
+      "evidence": [
+        "The first two cards provide executable root-product evaluators and a forward-error bound with gamma(2*n).",
+        "The packet includes gammaValid_mono, gamma_mono, and gamma_nonneg as signature bridges.",
+        "The selected statement still requires the source's gamma(2*n+1) coefficient, the theta representation, and the explicit rounded-operation accounting."
+      ],
+      "rationale": "This has the intended benchmark shape: useful reusable infrastructure is present, but the selected source statement is not supplied verbatim."
+    },
+    {
+      "task_id": "H10-7",
+      "router_status": "DIRECT_OR_COMPOSITION",
+      "assessed_route": "COMPOSITION",
+      "coverage_stratum": "near-target-building-block-with-contract-gap",
+      "packet_false_positive_risk": "high",
+      "result_collision_risk": "medium",
+      "decision": "INCLUDE_PRIMARY_ENGINEERING_WITH_STRICT_AUDIT",
+      "evidence": [
+        "NumStability.psd_pivoted_cholesky_exists_tail supplies the tail-square inequality inside an existential PivotedCholeskySpec.",
+        "The other two cards supply rank and uniqueness properties for a related higham10_9_PivotedCholeskySpec.",
+        "The exposed declarations do not visibly identify the actual deterministic algorithm output or enforce the source's largest-diagonal pivot choice with least-index tie-breaking."
+      ],
+      "rationale": "There is a powerful reusable inequality, but a candidate must bridge two specifications and prove that it describes the required algorithm rather than choosing arbitrary existential witnesses."
+    },
+    {
+      "task_id": "H12-4",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "unrelated-floating-point-hits",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "low",
+      "decision": "NEGATIVE_CONTROL_ONLY",
+      "evidence": [
+        "The top card is a FastTwoSum certificate unrelated to iterative refinement.",
+        "The second card is a constrained least-squares multiplier bound, and the third is a correction-formula trace for addition.",
+        "No card represents the GEPP refinement step or the componentwise (n+2)u residual conclusion."
+      ],
+      "rationale": "The corpus contains generic arithmetic pieces but no bounded route to the selected refinement theorem."
+    },
+    {
+      "task_id": "H19-5",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "cross-algorithm-analogy-only",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "low",
+      "decision": "NEGATIVE_CONTROL_ONLY",
+      "evidence": [
+        "Two leading diagnostics are componentwise LU perturbation theorems.",
+        "The only matching inequality shape is psd_pivoted_cholesky_exists_tail, which concerns Cholesky complete pivoting rather than QR column pivoting.",
+        "No exposed card connects that analogy to the QR factor produced at (19.15)."
+      ],
+      "rationale": "An analogous result in another algorithm is not a reusable proof route under the protected interface."
+    },
+    {
+      "task_id": "H7-14",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "deterministic-perturbation-only",
+      "packet_false_positive_risk": "low",
+      "result_collision_risk": "low",
+      "decision": "NEGATIVE_CONTROL_ONLY",
+      "evidence": [
+        "The inversePerturbation cards provide deterministic first-order operator-norm estimates.",
+        "They do not encode independent zero-mean perturbations, common variance, expectation of squared 2-norm, or the elementwise-square identity."
+      ],
+      "rationale": "The algebraic first-order background is adjacent, but the statistical conclusion has no exposed route."
+    },
+    {
+      "task_id": "H15-3",
+      "router_status": "NO_ROUTE",
+      "assessed_route": "NO_ROUTE",
+      "coverage_stratum": "generic-estimator-api-with-source-near-miss",
+      "packet_false_positive_risk": "medium",
+      "result_collision_risk": "medium",
+      "decision": "EXCLUDE_PENDING_CONTENT_COLLISION_REVIEW",
+      "evidence": [
+        "The first and third cards prove only generic one-norm lower-estimator properties.",
+        "NumStability.Higham15.H15_eq15_6_lapackNormEstimator is source-near but concerns equation (15.6), not the full parametrized T_n(alpha) iteration trace selected here.",
+        "No card covers all Algorithm 15.3 and 15.4 iteration, ratio-limit, and factor-3 conclusions."
+      ],
+      "rationale": "The current packet has no route, while a nearby source-specific declaration makes the content-collision boundary uncertain; resolve that boundary before inclusion."
+    }
+  ]
+}
