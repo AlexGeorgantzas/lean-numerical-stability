@@ -1,17 +1,17 @@
-# Pilot-14 operations
+# Pilot-15 operations
 
 ## Identity and paths
 
-- Pilot: `formalization-benchmark-pilot-14`
-- Launcher: `~/.local/bin/run-highambench-formalization-pilot-14-r1`
-- Deployment: `/hdd/alexgeorgantzas/highambench/deployment-pilot-14-r1`
+- Pilot: `formalization-benchmark-pilot-15`
+- Launcher: `~/.local/bin/run-highambench-formalization-pilot-15-r1`
+- Deployment: `/hdd/alexgeorgantzas/highambench/deployment-pilot-15-r1`
 - Predecessor: `/hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1`
 - Formalizer: `gpt-5.6-sol`, `xhigh`
 - Auditors: `gpt-6-astra`, `high`
 - Candidate: one final `HighamBenchCandidate.target`, complete proof, no holes
 
 The release files under `paper_bencmark/formalization_benchmark/` are
-authoritative. Pilot-13 and earlier run roots are read-only.
+authoritative. Pilot-14 and earlier run roots are read-only.
 
 ## Install once
 
@@ -21,8 +21,8 @@ From a clean release checkout:
 python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
   --pdf-source-dir /ABSOLUTE/PATH/TO/FROZEN/PDFS \
   --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1 \
-  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-14-r1 \
-  --launcher ~/.local/bin/run-highambench-formalization-pilot-14-r1
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-15-r1 \
+  --launcher ~/.local/bin/run-highambench-formalization-pilot-15-r1
 ```
 
 Setup must authenticate Pilot 13 and reuse its toolchain, packages, library
@@ -34,9 +34,9 @@ build`, package update, cache download, or model scout is permitted.
 ## Readiness
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-14-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-14-r1 doctor --task-id H00-00
-~/.local/bin/run-highambench-formalization-pilot-14-r1 qualify-provider --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-15-r1 doctor --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 qualify-provider --task-id H00-00
 ```
 
 Qualification is one-shot and off-benchmark. A previous PASSED record is reused
@@ -55,8 +55,8 @@ only after full hash verification. Doctor must prove:
 Run the synthetic end-to-end pair exactly once:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H00-00
-~/.local/bin/run-highambench-formalization-pilot-14-r1 status --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 run --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 status --task-id H00-00
 ```
 
 Require `COMPLETE`, both N and L `ACCEPTED_FAITHFUL`, complete exact active-time
@@ -69,9 +69,9 @@ scientific summaries regardless of performance.
 Normalize case and hyphens, check the allowlist, then:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-14-r1 doctor --task-id H5-5
-~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H5-5
-~/.local/bin/run-highambench-formalization-pilot-14-r1 status --task-id H5-5
+~/.local/bin/run-highambench-formalization-pilot-15-r1 doctor --task-id H5-5
+~/.local/bin/run-highambench-formalization-pilot-15-r1 run --task-id H5-5
+~/.local/bin/run-highambench-formalization-pilot-15-r1 status --task-id H5-5
 ```
 
 The controller owns ordering, prompt delivery, warm fork, metering, command
@@ -89,11 +89,11 @@ After the canary succeeds, and only under explicit campaign authorization, run
 these frozen slots once each:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H5-5
-~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H7-12
-~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H10-7
-~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H23-6
-~/.local/bin/run-highambench-formalization-pilot-14-r1 evaluate-gate
+~/.local/bin/run-highambench-formalization-pilot-15-r1 run --task-id H5-5
+~/.local/bin/run-highambench-formalization-pilot-15-r1 run --task-id H7-12
+~/.local/bin/run-highambench-formalization-pilot-15-r1 run --task-id H10-7
+~/.local/bin/run-highambench-formalization-pilot-15-r1 run --task-id H23-6
+~/.local/bin/run-highambench-formalization-pilot-15-r1 evaluate-gate
 ```
 
 Never substitute a task, rerun a slot, or weaken the gate after observing data.
@@ -111,9 +111,10 @@ For every frozen attempt, require:
 - in N, zero treatment import/path/closure/trace evidence.
 
 The atlas is a discovery surface, not a gold mapping. L should run the ranked,
-bounded `/usr/bin/python3 /library-index/query.py <terms>` command, inspect only
-plausible source locations, and confirm exact types with Lean. Whole-library
-recursive scans are fallback.
+bounded `/usr/bin/python3 /library-index/query.py <terms>` command, inspect an
+exact hit with `/usr/bin/python3 /library-index/show.py <declaration>`, then
+compile a minimal direct wrapper before adding paper-specific bridges.
+Whole-library recursive scans are fallback.
 
 ## Audit checks
 

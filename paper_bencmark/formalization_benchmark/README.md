@@ -1,10 +1,10 @@
-# HighamBench formalization benchmark - Pilot 14
+# HighamBench formalization benchmark - Pilot 15
 
-Pilot 14 is the proof-required, retrieval-indexed successor to Pilot 13. All
-Pilot 13 runs remain sealed cold/warm-statement evidence and are never resumed,
-rewritten, or pooled with Pilot 14.
+Pilot 15 is the proof-required, retrieval-indexed successor to Pilot 14. All
+Pilot 14 and earlier runs remain sealed evidence and are never resumed,
+rewritten, or pooled with Pilot 15.
 
-Pilot ID: `formalization-benchmark-pilot-14`.
+Pilot ID: `formalization-benchmark-pilot-15`.
 
 ## What changed
 
@@ -14,8 +14,14 @@ Pilot ID: `formalization-benchmark-pilot-14`.
 - Condition L receives a deterministic, task-neutral declaration atlas at
   `/library-index` and `LIBRARY_GUIDE.md`. It must search this compact surface
   before recursively scanning source and must reuse compatible declarations.
+- Exact declaration hits have a bounded `show.py` API/source view. The guide
+  tells L to stop broad discovery, compile a minimal library wrapper first, and
+  add only paper-specific bridges afterward.
+- Exact duplicate provider token-usage notifications are recorded as
+  idempotent repeats. Changed duplicates and genuine usage disagreements still
+  fail closed.
 - The atlas is generated once at installation from the already frozen
-  NumStability source. Pilot 14 performs no new library build and no new scout
+  NumStability source. Pilot 15 performs no new library build and no new scout
   turn; it inherits the one frozen task-neutral warm root.
 - Each submission records imports, raw and non-comment code lines, declaration
   count, reached NumStability declarations/modules, and atlas/source-search
@@ -39,7 +45,7 @@ audit roles use `gpt-6-astra` at `high`.
 There are 19 fresh one-shot pair slots: the previous 18 paper/Higham tasks plus
 H00-00. The predeclared primary effect set is H5-5, H7-12, H10-7, and H23-6.
 
-The Pilot-14 gate passes only when all four pairs complete with both conditions
+The Pilot-15 gate passes only when all four pairs complete with both conditions
 faithful, at least three tasks have lower L active time, median L active-time
 reduction is at least 20%, and median L net-new-token reduction is at least
 20%. H00-00 never contributes to this calculation.
@@ -47,12 +53,12 @@ reduction is at least 20%, and median L net-new-token reduction is at least
 ## Titan commands
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-14-r1 verify-release
-~/.local/bin/run-highambench-formalization-pilot-14-r1 doctor --task-id H00-00
-~/.local/bin/run-highambench-formalization-pilot-14-r1 qualify-provider --task-id H00-00
-~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H00-00
-~/.local/bin/run-highambench-formalization-pilot-14-r1 status --task-id H00-00
-~/.local/bin/run-highambench-formalization-pilot-14-r1 evaluate-gate
+~/.local/bin/run-highambench-formalization-pilot-15-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-15-r1 doctor --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 qualify-provider --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 run --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 status --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-15-r1 evaluate-gate
 ```
 
 Each `(pilot_id, task_id)` can consume exactly one official N/L pair. Repairs

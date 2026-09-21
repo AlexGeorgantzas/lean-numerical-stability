@@ -531,3 +531,46 @@ rebuild NumStability or run another scout. H00-00 is not scientific evidence.
 
 **Needs:** Push the branch, install Pilot-14 beside Pilot-13, qualify once, run
 H00-00, then run the four predeclared primary pairs and evaluate the frozen gate.
+
+---
+
+## 2026-09-21 — Codex — Pilot-14 execution and Pilot-15 successor
+
+**Pilot-14 evidence preserved:**
+- Installed and qualified Pilot-14 at
+  `/hdd/alexgeorgantzas/highambench/deployment-pilot-14-r1` without a new
+  NumStability build or scout turn. H00-00 completed with both conditions
+  faithful and validated the end-to-end proof/audit/telemetry path.
+- H5-5 run `H5-5-20260921T154540Z-9a55852a` completed with both conditions
+  faithful. N used 409.356090076 active seconds, 77,755 net-new tokens, and 251
+  final lines. L used NumStability, used 537.723999656 active seconds, 102,606
+  net-new tokens, and 149 lines. L therefore reduced code size by about 41%
+  but lost on time and task-local tokens. Its trace found the exact Horner
+  declarations by 33 seconds; most remaining cost was semantic adaptation.
+- H7-12 run `H7-12-20260921T164426Z-d75c302c` is a sealed `PAIR_INCIDENT`.
+  N accumulated 1135.529578188 active seconds and 155,470 observed net-new
+  tokens before the driver rejected an exact duplicate token-usage
+  notification. The provider repeated an identical cumulative and last-usage
+  payload after 57 seconds without a new raw response. The old driver treated
+  that idempotent replay as a delta mismatch, aborted the live turn, and then
+  rejected one late shutdown message. L never ran. Pair-report SHA-256 is
+  `7f095fcac73bd26f0ab1066cac1d24b909e9af0b7a4d67846e350dc9b7a7a93b`.
+  Do not rerun either Pilot-14 slot.
+
+**Pilot-15 prepared:**
+- Created branch `codex/pilot-15-adaptation-runtime-fix` and pilot identity
+  `formalization-benchmark-pilot-15` with manifest payload SHA-256
+  `0b54fc94945f993ac59aa76f239a7e09aef6a2f1f2d6f73abeb31ed225552228`.
+- Exact duplicate cumulative/last-usage notifications are now recorded as
+  idempotent replays and not counted twice. Changed duplicates, regressions,
+  and raw/cumulative disagreements still fail closed.
+- The deterministic atlas is version 2 and adds bounded `show.py` declaration
+  inspection. The L-only guide now stops broad discovery after a plausible
+  hit, asks for a minimal direct wrapper compile first, and only then adds
+  paper-specific bridges. No new scout turn is allowed.
+- All 178 controller tests, release verification, focused atlas/telemetry
+  tests, `git diff --check`, and the operator-skill validator pass.
+
+**Needs:** Commit and push Pilot-15, install it beside all predecessors using
+the same frozen Pilot-13 runtime/build/scout lineage, qualify once, run H00-00,
+then run the four predeclared primary tasks and evaluate the unchanged gate.

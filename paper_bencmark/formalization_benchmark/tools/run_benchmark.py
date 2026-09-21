@@ -27,7 +27,7 @@ def normalized_task_id(value: str) -> str:
     rendered = value.strip().upper().replace("_", "-")
     if rendered not in TASK_IDS:
         raise argparse.ArgumentTypeError(
-            "task must be one of the 19 task IDs frozen in pilot-14"
+            "task must be one of the 19 task IDs frozen in pilot-15"
         )
     return rendered
 

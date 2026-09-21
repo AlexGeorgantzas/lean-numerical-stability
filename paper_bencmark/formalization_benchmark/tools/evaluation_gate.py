@@ -1,4 +1,4 @@
-"""Evaluate the frozen Pilot-14 effect gate from authenticated pair states."""
+"""Evaluate the frozen Pilot-15 effect gate from authenticated pair states."""
 
 from __future__ import annotations
 

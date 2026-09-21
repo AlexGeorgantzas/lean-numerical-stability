@@ -1030,11 +1030,13 @@ class PairController:
         atlas_guide_path = self.deployment.library_atlas / "GUIDE.md"
         atlas_declarations_path = self.deployment.library_atlas / "declarations.jsonl"
         atlas_query_path = self.deployment.library_atlas / "query.py"
+        atlas_show_path = self.deployment.library_atlas / "show.py"
         for path in (
             atlas_metadata_path,
             atlas_guide_path,
             atlas_declarations_path,
             atlas_query_path,
+            atlas_show_path,
         ):
             if not path.is_file() or path.is_symlink():
                 raise BenchmarkError(f"library atlas artifact is missing or unsafe: {path}")
@@ -1108,10 +1110,10 @@ class PairController:
                 or self.deployment.tenth_ancestral_predecessor_run_root is None
                 or self.deployment.eleventh_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-14 registry or predecessor locks are missing")
+                raise BenchmarkError("pilot-15 registry or predecessor locks are missing")
             from setup_titan import pilot13_lineage
 
-            # Doctor is called under the pilot-14 campaign lock, including the
+            # Doctor is called under the pilot-15 campaign lock, including the
             # predecessor and account-global locks. Setup performs the full
             # predecessor check before publication; here compare pinned bytes
             # without invoking a verifier that would reacquire those locks.
@@ -1236,7 +1238,7 @@ class PairController:
                 or runtime_reuse.get("new_library_build_invocations") != 0
                 or runtime_reuse.get("new_scout_turns") != 0
             ):
-                raise BenchmarkError("Pilot-14 inherited-runtime admission evidence is missing")
+                raise BenchmarkError("Pilot-15 inherited-runtime admission evidence is missing")
             self._load_warm_root()
         order = _condition_order(self.config, task_id)
         if order not in (["N", "L"], ["L", "N"]):
@@ -1402,7 +1404,7 @@ class PairController:
                 raise BenchmarkError("warm-root directory exists without a trusted record")
             if int(self.config["warm_start"]["scout_runs_per_release"]) == 0:
                 raise BenchmarkError(
-                    "the inherited Condition L warm root is missing; Pilot-14 forbids "
+                    "the inherited Condition L warm root is missing; Pilot-15 forbids "
                     "a replacement scouting turn"
                 )
             root.mkdir(parents=True, mode=0o700)

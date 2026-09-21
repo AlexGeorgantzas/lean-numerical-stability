@@ -19,7 +19,7 @@ from typing import Any, Iterable
 from common import BenchmarkError, canonical_json_bytes, sha256_file, write_bytes_atomic, write_json_atomic
 
 
-SCHEMA_VERSION = "numstability-library-atlas-1"
+SCHEMA_VERSION = "numstability-library-atlas-2"
 DECLARATION_RE = re.compile(
     r"^\s*(?:(?:private|protected|noncomputable)\s+)*"
     r"(theorem|lemma|def|abbrev|structure|class|inductive|instance)\s+"
@@ -76,6 +76,88 @@ hits.sort(key=lambda item: item[:3])
 for _, _, _, record in hits[: args.limit]:
     print(json.dumps(record, sort_keys=True, ensure_ascii=False))
 print(f"matched={len(hits)} returned={min(len(hits), args.limit)}", file=__import__("sys").stderr)
+'''
+
+INSPECT_SCRIPT = r'''#!/usr/bin/env python3
+"""Inspect one exact atlas declaration with a bounded source/API window."""
+from __future__ import annotations
+import argparse
+import json
+from pathlib import Path
+
+parser = argparse.ArgumentParser()
+parser.add_argument("declaration")
+parser.add_argument("--source-root", type=Path, default=Path("/library"))
+parser.add_argument("--before", type=int, default=10)
+parser.add_argument("--after", type=int, default=60)
+parser.add_argument("--neighbors", type=int, default=12)
+args = parser.parse_args()
+if not (0 <= args.before <= 40 and 0 <= args.after <= 120):
+    parser.error("source context must stay within --before 0-40 and --after 0-120")
+if not (0 <= args.neighbors <= 30):
+    parser.error("--neighbors must be between 0 and 30")
+
+records = [
+    json.loads(line)
+    for line in Path(__file__).with_name("declarations.jsonl").read_text(
+        encoding="utf-8"
+    ).splitlines()
+]
+needle = args.declaration.casefold()
+matches = [record for record in records if str(record["name"]).casefold() == needle]
+if not matches:
+    matches = [
+        record
+        for record in records
+        if str(record["name"]).casefold().endswith("." + needle)
+    ]
+if len(matches) != 1:
+    names = sorted(str(record["name"]) for record in matches)[:20]
+    parser.error(
+        f"declaration must resolve uniquely; matched={len(matches)} candidates={names}"
+    )
+record = matches[0]
+print("PRIMARY")
+print(json.dumps(record, sort_keys=True, ensure_ascii=False))
+
+source_root = args.source_root.resolve()
+source_path = (source_root / str(record["source_file"])).resolve()
+try:
+    source_path.relative_to(source_root)
+except ValueError:
+    parser.error("atlas source path escapes --source-root")
+if not source_path.is_file() or source_path.is_symlink():
+    parser.error(f"authoritative source is missing or unsafe: {source_path}")
+lines = source_path.read_text(encoding="utf-8").splitlines()
+line_number = int(record["source_line"])
+start = max(1, line_number - args.before)
+end = min(len(lines), line_number + args.after)
+print(f"SOURCE {record['source_file']}:{start}-{end}")
+for index in range(start, end + 1):
+    print(f"{index:6d}  {lines[index - 1]}")
+
+nearby = [
+    candidate
+    for candidate in records
+    if candidate["module"] == record["module"]
+    and candidate["name"] != record["name"]
+]
+nearby.sort(
+    key=lambda candidate: (
+        abs(int(candidate["source_line"]) - line_number),
+        int(candidate["source_line"]),
+        str(candidate["name"]),
+    )
+)
+print("NEARBY_API")
+for candidate in nearby[: args.neighbors]:
+    compact = {
+        key: candidate[key]
+        for key in ("name", "kind", "module", "source_file", "source_line", "signature")
+    }
+    if candidate.get("documentation"):
+        compact["documentation"] = candidate["documentation"]
+    print(json.dumps(compact, sort_keys=True, ensure_ascii=False))
 '''
 
 
@@ -216,6 +298,9 @@ def build_library_atlas(
     }
     write_json_atomic(output_root / "atlas.json", metadata, mode=0o400)
     write_bytes_atomic(output_root / "query.py", QUERY_SCRIPT.encode("utf-8"), mode=0o500)
+    write_bytes_atomic(
+        output_root / "show.py", INSPECT_SCRIPT.encode("utf-8"), mode=0o500
+    )
     guide = f"""# NumStability library guide
 
 This read-only, task-neutral atlas indexes the frozen NumStability snapshot.
@@ -230,23 +315,34 @@ source and compiled OLean files remain authoritative.
 2. Search the compact atlas first. The ranked query requires every term and
    returns at most 30 hits by default:
    `/usr/bin/python3 /library-index/query.py gamma root product`
-   If that has no result, retry once with fewer terms or `--any --limit 30`.
-3. Inspect only the returned source locations under `/library/NumStability` and
-   confirm promising declarations with a tiny temporary `#check` file.
-4. Prefer importing and reusing a semantically compatible declaration or theorem.
+   If that has no result, retry once with fewer terms. Use `--any` only after
+   conjunctive searches have produced no plausible declaration.
+3. As soon as a plausible exact hit appears, stop broad discovery and inspect it
+   through the bounded API/source view:
+   `/usr/bin/python3 /library-index/show.py NumStability.someDeclaration`
+   This returns the declaration, a small authoritative source window, and nearby
+   API signatures. Avoid reading whole modules or running recursive source
+   searches when this view answers the question.
+4. First write and compile the smallest wrapper that imports and applies the
+   compatible library result. Only then add paper-specific representation or
+   strengthening bridges. Do not recreate a parallel numerical model before
+   testing direct reuse.
+5. Prefer importing and reusing a semantically compatible declaration or theorem.
    Define a local replacement only when the paper materially differs; explain
    that mismatch in a nearby Lean comment.
-5. Do not scan the whole library unless the atlas has no plausible hit.
+6. Do not scan the whole library unless the atlas and exact inspector have no
+   plausible hit.
 
 Files:
 - `/library-index/declarations.jsonl`: one searchable JSON object per declaration.
 - `/library-index/query.py`: ranked, bounded atlas lookup (limit 1-100).
+- `/library-index/show.py`: one exact declaration, bounded source, and nearby API.
 - `/library-index/modules.tsv`: module inventory and declaration counts.
 - `/library-index/atlas.json`: frozen identity and closure statistics.
 """
     write_bytes_atomic(output_root / "GUIDE.md", guide.encode("utf-8"), mode=0o400)
     for path in output_root.iterdir():
-        path.chmod(0o500 if path.name == "query.py" else 0o400)
+        path.chmod(0o500 if path.name in {"query.py", "show.py"} else 0o400)
     output_root.chmod(0o500)
     return metadata
 

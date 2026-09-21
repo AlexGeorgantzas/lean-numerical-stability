@@ -2563,7 +2563,7 @@ def pilot13_lineage(root_argument: str, *, verify_status: bool = True) -> dict[s
 def verify_predecessor_lineage(root_argument: str, deployment_record: Mapping[str, Any]) -> None:
     observed = pilot13_lineage(root_argument)
     if any(deployment_record.get(field) != value for field, value in observed.items()):
-        raise BenchmarkError("predecessor evidence changed during pilot-14 setup")
+        raise BenchmarkError("predecessor evidence changed during pilot-15 setup")
 
 
 def fsync_directory(path: Path) -> None:
@@ -4038,7 +4038,7 @@ def _install_once(
     owned_root_identity: tuple[int, int],
     published_root: Path,
 ) -> Path:
-    """Install Pilot-14 by reusing the authenticated runtime and scout lineage.
+    """Install Pilot-15 by reusing the authenticated runtime and scout lineage.
 
     The library commit, toolchain, Mathlib packages, compiled OLean tree, and
     task-neutral scout checkpoint are byte-identical to Pilot-11. This path
@@ -4081,9 +4081,12 @@ def _install_once(
 
     release_commit = run(["git", "rev-parse", "HEAD"], cwd=REPOSITORY_ROOT)
     release_branch = run(["git", "branch", "--show-current"], cwd=REPOSITORY_ROOT)
-    if release_branch not in {"formalization_benchmark", "codex/pilot-14-retrieval-proof"}:
+    if release_branch not in {
+        "formalization_benchmark",
+        "codex/pilot-15-adaptation-runtime-fix",
+    }:
         raise BenchmarkError(
-            "setup must run from formalization_benchmark or the frozen Pilot-14 "
+            "setup must run from formalization_benchmark or the frozen Pilot-15 "
             f"release branch, not {release_branch or 'detached HEAD'}"
         )
     if run(["git", "status", "--porcelain"], cwd=REPOSITORY_ROOT):
@@ -4097,8 +4100,8 @@ def _install_once(
     )
     if ancestry.returncode != 0:
         raise BenchmarkError("release branch is not descended from the frozen benchmark base")
-    if config.get("pilot_id") != "formalization-benchmark-pilot-14":
-        raise BenchmarkError("this installer requires the frozen pilot-14 identity")
+    if config.get("pilot_id") != "formalization-benchmark-pilot-15":
+        raise BenchmarkError("this installer requires the frozen pilot-15 identity")
 
     predecessor = pilot13_lineage(args.predecessor_deployment_root)
     predecessor_root = Path(args.predecessor_deployment_root).expanduser().resolve()
@@ -4111,7 +4114,7 @@ def _install_once(
     }
     protected_roots.add(predecessor_root)
     if published_root in protected_roots:
-        raise BenchmarkError("pilot-14 must not overwrite any predecessor deployment")
+        raise BenchmarkError("pilot-15 must not overwrite any predecessor deployment")
     if GLOBAL_REGISTRY_ROOT.is_symlink() or (
         GLOBAL_REGISTRY_ROOT.exists() and not GLOBAL_REGISTRY_ROOT.is_dir()
     ):
@@ -4732,7 +4735,7 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pdf-source-dir", required=True)
     parser.add_argument(
         "--deployment-root",
-        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-14-r1"),
+        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-15-r1"),
     )
     parser.add_argument(
         "--predecessor-deployment-root",
@@ -4742,7 +4745,7 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--auth-file", default=str(Path.home() / ".codex" / "auth.json"))
     parser.add_argument("--codex-binary")
     parser.add_argument(
-        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-14-r1")
+        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-15-r1")
     )
     return parser
 

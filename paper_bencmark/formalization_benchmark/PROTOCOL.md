@@ -1,11 +1,11 @@
-# Pilot-14 protocol
+# Pilot-15 protocol
 
-Pilot 14 is a new frozen release. Pilot 13 and every earlier release, build,
+Pilot 15 is a new frozen release. Pilot 14 and every earlier release, build,
 qualification, run, incident, and audit remain immutable predecessor evidence.
 
 ## Frozen identity
 
-- Pilot: `formalization-benchmark-pilot-14`.
+- Pilot: `formalization-benchmark-pilot-15`.
 - Formalizer: `gpt-5.6-sol`, `xhigh`.
 - Auditors: `gpt-6-astra`, `high`.
 - Lean: `leanprover/lean4:v4.29.0-rc3`.
@@ -33,6 +33,8 @@ task-neutral scout conversation, and receives:
 
 - `/library-index/declarations.jsonl`, mapping declaration names to modules,
   source lines, compact signatures, documentation, and searchable text;
+- `/library-index/show.py`, returning one exact declaration with a bounded
+  authoritative source window and nearby API signatures;
 - `/library-index/modules.tsv` and `atlas.json`;
 - a protected `LIBRARY_GUIDE.md` prescribing atlas-first, reuse-first discovery.
 
@@ -92,7 +94,9 @@ work are measured separately and excluded.
 
 Raw exact provider usage is retained. The primary token measure is task-local
 net-new tokens (uncached input plus output); inherited scout/cache tokens are
-not charged. Every attempt also records raw lines, nonblank code lines,
+not charged. An exact repeated cumulative/last-usage notification is logged as
+an idempotent provider replay and not counted twice; a changed duplicate,
+regression, or raw/cumulative disagreement fails closed. Every attempt also records raw lines, nonblank code lines,
 declarations, imports, reached NumStability declarations/modules, and
 atlas/source-search activity.
 
@@ -104,7 +108,7 @@ usage events, and final responses are retained instead.
 
 H00-00 exercises the complete N/L, proof, audit, telemetry, and sealing path but
 is synthetic and excluded from results. The scientific set is frozen as H5-5,
-H7-12, H10-7, and H23-6. Pilot 14 passes its predeclared effect gate only if:
+H7-12, H10-7, and H23-6. Pilot 15 passes its predeclared effect gate only if:
 
 - all four pairs complete without incidents and both conditions are faithful;
 - L is faster on at least three pairs;
@@ -112,4 +116,4 @@ H7-12, H10-7, and H23-6. Pilot 14 passes its predeclared effect gate only if:
 - median net-new-token reduction is at least 20%.
 
 Failure mints a successor pilot with a changed, predeclared design. It never
-authorizes rerunning a consumed Pilot-14 slot or selecting tasks after results.
+authorizes rerunning a consumed Pilot-15 slot or selecting tasks after results.

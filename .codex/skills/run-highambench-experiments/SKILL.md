@@ -1,15 +1,15 @@
 ---
 name: run-highambench-experiments
-description: Operate Pilot-14 of the proof-required, retrieval-indexed HighamBench source-first benchmark. Use when the user says "Run benchmark for H5-5", "Run benchmark for P01-T2", asks for the H00-00 canary, requests the predeclared four-task Pilot-14 campaign, or asks to install, preflight, resume, validate, or report Pilot-14 N/L evidence. Do not use for legacy fixed-target proof runs or task construction.
+description: Operate Pilot-15 of the proof-required, retrieval-indexed HighamBench source-first benchmark. Use when the user says "Run benchmark for H5-5", "Run benchmark for P01-T2", asks for the H00-00 canary, requests the predeclared four-task Pilot-15 campaign, or asks to install, preflight, resume, validate, or report Pilot-15 N/L evidence. Do not use for legacy fixed-target proof runs or task construction.
 ---
 
 # Run HighamBench Formalization Experiments
 
 ## Frozen scope
 
-Pilot 14 (`formalization-benchmark-pilot-14`) is a distinct successor. Every
-Pilot-13 and earlier artifact is immutable predecessor evidence; never resume,
-rewrite, or pool it with Pilot 14. Reuse the exact frozen library build and
+Pilot 15 (`formalization-benchmark-pilot-15`) is a distinct successor. Every
+Pilot-14 and earlier artifact is immutable predecessor evidence; never resume,
+rewrite, or pool it with Pilot 15. Reuse the exact frozen library build and
 single inherited task-neutral warm root. Never rebuild the unchanged library or
 run another scout.
 
@@ -20,7 +20,7 @@ scientific evidence.
 
 One named-task request normally authorizes exactly one N/L pair. A multi-task
 campaign is allowed only when the user explicitly names or authorizes it. The
-current Pilot-14 primary campaign is frozen as H5-5, H7-12, H10-7, H23-6.
+current Pilot-15 primary campaign is frozen as H5-5, H7-12, H10-7, H23-6.
 
 Every candidate must formalize the exact source result and give
 `HighamBenchCandidate.target` a complete kernel-checked proof. Reject all proof
@@ -30,7 +30,7 @@ holes and trust escapes.
 
 Read [references/operations.md](references/operations.md) completely. Then:
 
-1. Require the dedicated digest-bound Pilot-14 launcher and deployment.
+1. Require the dedicated digest-bound Pilot-15 launcher and deployment.
 2. Run provider-free `verify-release` and `doctor --task-id <TASK>`.
 3. Require authenticated release/PDF/packet/prompt/runtime/build/atlas/warm-root,
    hardware, predecessor lineage, registry, and condition-isolation evidence.
@@ -49,8 +49,9 @@ environment value.
 
 L forks the one inherited scout root and adds frozen NumStability source/OLean,
 `/library-index`, and protected `LIBRARY_GUIDE.md`. It must query the atlas
-before recursively scanning source, prefer compatible library declarations and
-proofs, and define local replacements only for material semantic mismatches.
+before recursively scanning source, inspect exact hits through the bounded
+`show.py` view, compile the smallest direct wrapper first, prefer compatible
+library declarations and proofs, and define local replacements only for material semantic mismatches.
 Never expose task identities during scouting or use an earlier task child as a
 new root.
 

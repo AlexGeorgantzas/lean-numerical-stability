@@ -279,10 +279,11 @@ class PairControllerDryRunTests(unittest.TestCase):
         declarations = library_atlas / "declarations.jsonl"
         declarations.write_text('{"name":"fixture"}\n', encoding="utf-8")
         (library_atlas / "query.py").write_text("print('fixture')\n", encoding="utf-8")
+        (library_atlas / "show.py").write_text("print('fixture')\n", encoding="utf-8")
         (library_atlas / "atlas.json").write_text(
             json.dumps(
                 {
-                    "schema_version": "numstability-library-atlas-1",
+                    "schema_version": "numstability-library-atlas-2",
                     "library_commit": source_commit,
                     "declaration_count": 1,
                     "module_count": 1,

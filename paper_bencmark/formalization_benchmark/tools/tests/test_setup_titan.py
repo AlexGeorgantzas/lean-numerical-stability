@@ -150,8 +150,8 @@ class SkillInstallTests(unittest.TestCase):
         parsed = parser.parse_args(
             ["--pdf-source-dir", "/tmp", "--predecessor-deployment-root", "/tmp/old"]
         )
-        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-14-r1"))
-        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-14-r1"))
+        self.assertTrue(parsed.deployment_root.endswith("highambench-formalization-pilot-15-r1"))
+        self.assertTrue(parsed.launcher.endswith("run-highambench-formalization-pilot-15-r1"))
 
     def test_pilot2_incident_and_legacy_lock_are_read_only_and_hash_bound(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

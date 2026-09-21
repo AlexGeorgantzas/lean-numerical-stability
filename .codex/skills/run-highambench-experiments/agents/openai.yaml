@@ -1,4 +1,4 @@
 interface:
-  display_name: "Run HighamBench Pilot 14"
+  display_name: "Run HighamBench Pilot 15"
   short_description: "Run one proof-required N/L formalization pair"
-  default_prompt: "Use $run-highambench-experiments to run Pilot-14 for H5-5."
+  default_prompt: "Use $run-highambench-experiments to run Pilot-15 for H5-5."

@@ -1,7 +1,7 @@
 {
   "$schema": "schemas/config.schema.json",
   "schema_version": "formalization-benchmark-config-1",
-  "pilot_id": "formalization-benchmark-pilot-14",
+  "pilot_id": "formalization-benchmark-pilot-15",
   "task_ids": [
     "H00-00",
     "P01-T2",
@@ -89,7 +89,7 @@
   },
   "library_retrieval": {
     "condition": "L",
-    "atlas_schema_version": "numstability-library-atlas-1",
+    "atlas_schema_version": "numstability-library-atlas-2",
     "guide_workspace_file": "LIBRARY_GUIDE.md",
     "atlas_mount": "/library-index",
     "source_mount": "/library/NumStability",

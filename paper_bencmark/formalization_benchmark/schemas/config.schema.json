@@ -137,7 +137,7 @@
       "required": ["condition", "atlas_schema_version", "guide_workspace_file", "atlas_mount", "source_mount", "reuse_first", "whole_source_scan_fallback_only", "record_uptake_telemetry"],
       "properties": {
         "condition": {"const": "L"},
-        "atlas_schema_version": {"const": "numstability-library-atlas-1"},
+        "atlas_schema_version": {"const": "numstability-library-atlas-2"},
         "guide_workspace_file": {"const": "LIBRARY_GUIDE.md"},
         "atlas_mount": {"const": "/library-index"},
         "source_mount": {"const": "/library/NumStability"},

@@ -52,7 +52,7 @@ class DeploymentIdentityTests(unittest.TestCase):
             eleventh_ancestral_predecessor.mkdir()
             record = {
                 "schema_version": "formalization-deployment-1",
-                "pilot_id": "formalization-benchmark-pilot-14",
+                "pilot_id": "formalization-benchmark-pilot-15",
                 "release_commit": "a" * 40,
                 "release_manifest_sha256": "b" * 64,
                 "manifest_payload_sha256": "c" * 64,
@@ -93,7 +93,7 @@ class DeploymentIdentityTests(unittest.TestCase):
                 return load_deployment(path)
 
             loaded = read(record)
-            self.assertEqual(loaded.pilot_id, "formalization-benchmark-pilot-14")
+            self.assertEqual(loaded.pilot_id, "formalization-benchmark-pilot-15")
             self.assertEqual(loaded.global_registry_root, GLOBAL_REGISTRY_ROOT)
             self.assertEqual(loaded.predecessor_run_root, predecessor.resolve())
             self.assertEqual(

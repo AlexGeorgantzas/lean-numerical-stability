@@ -1,6 +1,6 @@
-# Pilot-14 architecture
+# Pilot-15 architecture
 
-Pilot 14 keeps all Pilot-13 evidence read-only and creates a new deployment,
+Pilot 15 keeps all Pilot-14 and earlier evidence read-only and creates a new deployment,
 manifest, registry namespace, run root, warm-root record, qualification, and
 task slots.
 
@@ -39,15 +39,22 @@ contains a protected byte copy of `GUIDE.md`; N's does not.
 
 The atlas is intentionally not a task-to-declaration oracle. It replaces a
 1.47-million-line recursive scan with a compact lexical lookup, after which the
-formalizer uses a ranked, bounded top-N query before it inspects and `#check`s
-only plausible hits.
+formalizer uses a ranked, bounded top-N query before `show.py` returns one
+exact declaration, a small source window, and nearby API signatures. The guide
+then requires a minimal wrapper compile before paper-specific bridges. This
+reduces broad source reading without making the atlas task-specific.
+
+The usage meter accepts an exact repeated cumulative/last-usage notification
+as an idempotent provider replay and records it separately. Any repeat that
+changes either payload, any regression, or any raw/cumulative disagreement
+still makes the turn unscoreable.
 
 ## Trust boundaries
 
 - The release manifest hashes every controller, prompt, schema, packet, canary,
   and repository-level dependency.
 - Titan setup authenticates Pilot 13 and its predecessor chain, reuses the
-  frozen runtime/build/warm state, and atomically publishes a distinct Pilot-14
+  frozen runtime/build/warm state, and atomically publishes a distinct Pilot-15
   deployment.
 - Bubblewrap removes network access and exposes only condition-appropriate
   read-only mounts. Generated commands run inside a subordinate cgroup.

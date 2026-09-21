@@ -2290,6 +2290,7 @@ class CodexDriver:
         fork_cumulative_usage_semantics: str | None = None
         raw_responses: dict[str, dict[str, Any]] = {}
         cumulative_usage_notifications: list[dict[str, Any]] = []
+        duplicate_cumulative_usage_notifications: list[dict[str, Any]] = []
         active_context_compactions: set[str] = set()
         context_compaction_item_count = 0
         background_terminal_cleanup: dict[str, Any] | None = None
@@ -2728,6 +2729,28 @@ class CodexDriver:
                         "Codex app-server emitted malformed last-response usage"
                     )
                 previous_cumulative = latest_cumulative or baseline
+                if latest_cumulative is not None and cumulative == latest_cumulative:
+                    previous = (
+                        cumulative_usage_notifications[-1]
+                        if cumulative_usage_notifications
+                        else None
+                    )
+                    if previous is None or previous["last_usage"] != last_usage:
+                        telemetry_invalid = True
+                        raise BenchmarkError(
+                            "Codex duplicate cumulative usage changed last-response usage"
+                        )
+                    duplicate_cumulative_usage_notifications.append(
+                        {
+                            "sequence": len(duplicate_cumulative_usage_notifications) + 1,
+                            "duplicate_of_sequence": previous["sequence"],
+                            "turn_id": candidate,
+                            "last_usage": last_usage,
+                            "cumulative_usage": cumulative,
+                            "received_after_turn_completed": terminal_status is not None,
+                        }
+                    )
+                    return
                 child_reset = (
                     latest_cumulative is None
                     and self.fork_source_thread_id is not None
@@ -3556,6 +3579,12 @@ class CodexDriver:
                 cumulative_usage_notifications
             ),
             "cumulative_usage_notifications": cumulative_usage_notifications,
+            "duplicate_cumulative_usage_notification_count": len(
+                duplicate_cumulative_usage_notifications
+            ),
+            "duplicate_cumulative_usage_notifications": (
+                duplicate_cumulative_usage_notifications
+            ),
             "fork_notification_fallback_admitted": fork_notification_fallback,
             "cumulative_usage_delta_cross_check": cumulative_delta,
             "cumulative_usage_expected_from_raw_responses": (

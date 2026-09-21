@@ -90,7 +90,7 @@ def verify_manifest() -> tuple[dict[str, Any], dict[str, Any]]:
         raise BenchmarkError("pilot requires a complete kernel-checked target proof")
     if config.get("library_retrieval") != {
         "condition": "L",
-        "atlas_schema_version": "numstability-library-atlas-1",
+        "atlas_schema_version": "numstability-library-atlas-2",
         "guide_workspace_file": "LIBRARY_GUIDE.md",
         "atlas_mount": "/library-index",
         "source_mount": "/library/NumStability",

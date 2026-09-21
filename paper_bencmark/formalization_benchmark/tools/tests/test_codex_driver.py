@@ -795,7 +795,7 @@ class CodexDriverProtocolTests(unittest.TestCase):
         self.assertEqual(record["context_compaction_item_count"], 1)
         forked.close()
 
-    def test_fork_notification_usage_rejects_last_delta_mismatch_and_duplicate(self) -> None:
+    def test_fork_notification_usage_rejects_last_delta_mismatch(self) -> None:
         checkpoint = self.root / "invalid-notification-checkpoint"
         checkpoint.mkdir()
         scout = self.driver(state_root=checkpoint / "state")
@@ -809,36 +809,59 @@ class CodexDriverProtocolTests(unittest.TestCase):
         source_turn = json.loads(
             (self.root / "invalid-notification-scout" / "turn.json").read_text()
         )["turn_id"]
-        for marker in ("fork-last-usage-mismatch", "fork-duplicate-usage"):
-            with self.subTest(marker=marker):
-                seed = self.root / f"{marker}-seed"
-                shutil.copytree(checkpoint, seed, symlinks=True)
-                workspace = self.root / f"{marker}-workspace"
-                workspace.mkdir()
-                (workspace / "fork-no-raw-events").touch()
-                (workspace / marker).touch()
-                forked = self.driver(
-                    state_root=seed / "state",
-                    fork_source_thread_id=source.thread_id,
-                    fork_source_last_turn_id=source_turn,
-                    fork_source_cumulative_usage=source.usage,
-                )
-                result = forked.run_turn(
-                    prompt="task",
-                    workspace=workspace,
-                    artifact_dir=self.root / f"{marker}-artifacts",
-                    timeout_seconds=5,
-                )
-                self.assertEqual(result.failure_kind, "telemetry_invalid")
-                self.assertFalse(result.usage_complete)
-                record = json.loads(
-                    (self.root / f"{marker}-artifacts" / "turn.json").read_text()
-                )
-                self.assertIn(
-                    "last-response usage disagrees",
-                    record["protocol_error"],
-                )
-                forked.close()
+        marker = "fork-last-usage-mismatch"
+        seed = self.root / f"{marker}-seed"
+        shutil.copytree(checkpoint, seed, symlinks=True)
+        workspace = self.root / f"{marker}-workspace"
+        workspace.mkdir()
+        (workspace / "fork-no-raw-events").touch()
+        (workspace / marker).touch()
+        forked = self.driver(
+            state_root=seed / "state",
+            fork_source_thread_id=source.thread_id,
+            fork_source_last_turn_id=source_turn,
+            fork_source_cumulative_usage=source.usage,
+        )
+        result = forked.run_turn(
+            prompt="task",
+            workspace=workspace,
+            artifact_dir=self.root / f"{marker}-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertEqual(result.failure_kind, "telemetry_invalid")
+        self.assertFalse(result.usage_complete)
+        record = json.loads(
+            (self.root / f"{marker}-artifacts" / "turn.json").read_text()
+        )
+        self.assertIn(
+            "last-response usage disagrees",
+            record["protocol_error"],
+        )
+        forked.close()
+
+    def test_exact_duplicate_usage_notification_is_idempotent(self) -> None:
+        workspace = self.root / "duplicate-usage-workspace"
+        workspace.mkdir()
+        (workspace / "fork-duplicate-usage").touch()
+        driver = self.driver(state_root=self.root / "duplicate-usage-state")
+        result = driver.run_turn(
+            prompt="task",
+            workspace=workspace,
+            artifact_dir=self.root / "duplicate-usage-artifacts",
+            timeout_seconds=5,
+        )
+        self.assertEqual(result.exit_code, 0)
+        self.assertTrue(result.usage_complete)
+        self.assertEqual(result.usage["total_tokens"], 15)
+        record = json.loads(
+            (self.root / "duplicate-usage-artifacts" / "turn.json").read_text()
+        )
+        self.assertEqual(record["cumulative_usage_notification_count"], 1)
+        self.assertEqual(record["duplicate_cumulative_usage_notification_count"], 1)
+        duplicate = record["duplicate_cumulative_usage_notifications"][0]
+        self.assertEqual(duplicate["duplicate_of_sequence"], 1)
+        self.assertFalse(duplicate["received_after_turn_completed"])
+        driver.close()
 
     def test_provider_free_fork_preflight_accepts_only_frozen_parent_baseline(self) -> None:
         checkpoint = self.root / "fork-preflight-checkpoint"

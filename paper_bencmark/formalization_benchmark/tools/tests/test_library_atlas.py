@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -47,6 +48,22 @@ class LibraryAtlasTests(unittest.TestCase):
             self.assertIn("reuse-first", (output / "GUIDE.md").read_text().lower())
             query = (output / "query.py").read_text(encoding="utf-8")
             self.assertIn("--limit", query)
+            inspector = subprocess.run(
+                [
+                    sys.executable,
+                    str(output / "show.py"),
+                    "NumStability.gamma",
+                    "--source-root",
+                    str(root),
+                ],
+                check=True,
+                capture_output=True,
+                text=True,
+            )
+            self.assertIn("PRIMARY", inspector.stdout)
+            self.assertIn("SOURCE NumStability/FloatingPoint/Model.lean", inspector.stdout)
+            self.assertIn("NumStability.gamma_nonneg", inspector.stdout)
+            self.assertIn("bounded API/source view", (output / "GUIDE.md").read_text())
 
             output_b = root / "atlas-b"
             metadata_b = build_library_atlas(
