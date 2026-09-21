@@ -509,3 +509,25 @@ request.
 pair, N was 228.837981662 contestant seconds faster and used 107,600 fewer
 net-new contestant tokens than L. Preserve the raw sealed artifacts; do not
 rerun H22-11 as another official Pilot-13 observation.
+
+---
+
+## 2026-09-21 — Codex — codex/pilot-14-retrieval-proof — proof-required retrieval-indexed Pilot-14 prepared
+
+**Did:** Minted `formalization-benchmark-pilot-14` in commit
+`65049ebed42b6cc3ebf1417d503535921250caf1`, manifest payload
+`07a7cbbf10cec79fa2f6900ff15fabf2d6a47e3f2f891bf9e829d82e74aa5fdd`.
+Candidates now require complete kernel-checked proofs. L receives a deterministic
+ranked declaration atlas and reuse-first guide; every attempt records private
+uptake/code/search telemetry. Added excluded synthetic canary H00-00 and froze
+the scientific gate to H5-5, H7-12, H10-7, H23-6. All 177 controller tests,
+release verification, skill validation, and an actual Titan-source atlas smoke
+test pass; the atlas builds in 2.6 seconds, is 39 MiB, and returns bounded ranked
+queries in about 0.33 seconds.
+
+**Careful:** Pilot-13 evidence and task slots remain immutable. Pilot-14 setup
+must reuse `/hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1`; it must not
+rebuild NumStability or run another scout. H00-00 is not scientific evidence.
+
+**Needs:** Push the branch, install Pilot-14 beside Pilot-13, qualify once, run
+H00-00, then run the four predeclared primary pairs and evaluate the frozen gate.
