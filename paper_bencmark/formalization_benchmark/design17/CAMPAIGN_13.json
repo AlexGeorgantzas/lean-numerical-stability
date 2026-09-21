@@ -1,0 +1,371 @@
+{
+  "schema_version": "design17-campaign-13-schedule-1",
+  "campaign_label": "design17-higham13-consumed-development",
+  "status": "PREDECLARED_CONSUMED_DEVELOPMENT",
+  "confirmatory": false,
+  "task_count": 13,
+  "condition_labels": {
+    "R0": "matched Mathlib retrieval only",
+    "R1": "matched Mathlib plus frozen NumStability retrieval"
+  },
+  "condition_order_balance": {
+    "R0_first": 6,
+    "R1_first": 7,
+    "building_block_primary": {
+      "R0_first": 1,
+      "R1_first": 1
+    },
+    "negative_control": {
+      "R0_first": 3,
+      "R1_first": 3
+    },
+    "collision_router_diagnostic": {
+      "R0_first": 2,
+      "R1_first": 3
+    }
+  },
+  "fixed_limits": {
+    "runs_per_task_per_condition": 1,
+    "submission_limit_per_condition": 4,
+    "contestant_active_time_limit_seconds_per_condition": 18000,
+    "token_cap": null,
+    "formalizer_model": "gpt-5.6-sol",
+    "formalizer_reasoning_effort": "xhigh",
+    "audit_model": "gpt-6-astra",
+    "audit_reasoning_effort": "high",
+    "audit_infrastructure_retries": 2,
+    "formalizer_parallelism_on_titan": 1
+  },
+  "analysis_policy": {
+    "entire_corpus_status": "consumed development evidence",
+    "rationale": "The corpus, routing rules, readiness labels, and protocol were developed with knowledge of these tasks. H5-5, H10-7, and H7-12 were explicitly used as Design-16 engineering cases. The conservative classification is therefore to treat all thirteen observations as development evidence, not untouched confirmatory evidence.",
+    "no_post_hoc_exclusion": true,
+    "all_scheduled_tasks_retained": true,
+    "unfavourable_results_do_not_stop_campaign": true,
+    "pooling": {
+      "building_block_primary": "Report audited faithful paired R1/R0 effects as consumed engineering evidence only.",
+      "negative_control": "Report separately as a predeclared null-routing stratum.",
+      "collision_router_diagnostic": "Report each task descriptively; never pool with treatment-efficacy estimates, even if both candidates are faithful.",
+      "all_thirteen": "Never calculate or present a pooled thirteen-task treatment effect."
+    }
+  },
+  "eligibility_policy": {
+    "audited_faithful_pair_requires": [
+      "Both condition candidates compile with exactly the one permitted target proof sorry and no other integrity escape.",
+      "Both final frozen candidates receive a binary faithful verdict from the canonical condition-blind audit.",
+      "Both candidates cover the full source domain; partial-domain or partial case-split coverage fails.",
+      "The candidate and source satisfy the required two-direction implication check, except that a genuinely stronger full-domain candidate may pass under the frozen rubric.",
+      "The pair has complete time, token, hardware, freeze, validation, audit, and attestation records.",
+      "No infrastructure, provenance, treatment-leakage, or measurement incident affects the pair."
+    ],
+    "audited_pair_ineligible_if": [
+      "Either condition exhausts four submissions without a faithful final candidate.",
+      "Either condition reaches the cumulative active-time limit.",
+      "Either condition has no compiling integrity-valid final candidate.",
+      "Either condition ends with a binary unfaithful verdict."
+    ],
+    "incident_is_not_contestant_failure": true,
+    "success_conditioned_effects_require_audited_faithful_pair": true,
+    "success_rates_and_ineligible_reasons_always_reported": true
+  },
+  "stopping_policy": {
+    "continue_after": [
+      "A negative, null, or unexpectedly slow treatment result.",
+      "A contestant timeout, invalid submission, or audited unfaithful final submission that is fully attributable and isolated.",
+      "A task-specific direct-result guard rejection in the collision/router diagnostic stratum."
+    ],
+    "halt_before_next_timed_condition_for": [
+      "Any frozen-input, candidate, journal, attestation, or artifact hash mismatch.",
+      "Failure to enforce or authenticate the Titan hardware envelope.",
+      "Uncertain contestant time or token accounting.",
+      "Source, index, conversation, or condition leakage across R0 and R1.",
+      "A source packet, contract overlay, or PDF identity mismatch.",
+      "A systematic validator, audit, sandbox, provider, or controller failure that may affect another task."
+    ],
+    "recovery": "Retain the incident and all prior artifacts. Resume the same campaign only when exact hash-verified recovery proves that no completed observation or treatment assignment changed. Any protocol or frozen-input change creates a new campaign identity; observations from different identities are not silently combined.",
+    "reruns": "No silent rerun. A model/provider failure is either an in-protocol repair in the same persisted condition conversation or a recorded incident. Auditor infrastructure may be retried at most twice from the same frozen candidate."
+  },
+  "input_references": {
+    "readiness": {
+      "path": "design16/higham13_readiness.json",
+      "sha256": "0f2d67b51fff2ce6f384d2a254cec146468c9d29208597df1120c666153244ca"
+    },
+    "config": {
+      "path": "config.json",
+      "sha256": "f59afe4c994edb26aec58a9231b6ae40ce2c366aaa4c3677400426392761d67d"
+    },
+    "source_packet_schema": {
+      "path": "schemas/source-packet.schema.json",
+      "sha256": "33f9f89107fac56dd9e676099d53818dc4af6dba602acffc61eff7772753ec06"
+    },
+    "manifest_payload_sha256": "0b54fc94945f993ac59aa76f239a7e09aef6a2f1f2d6f73abeb31ed225552228",
+    "contract_overlays": {
+      "H10-7": {
+        "path": "design16/contracts/H10-7.json",
+        "sha256": "52cd2f35a5557980d3392f0da951948f685176a9c9ea666642e62fc036c2786d"
+      }
+    }
+  },
+  "execution_schedule": [
+    {
+      "sequence": 1,
+      "wave": "engineering_gate",
+      "task_id": "H5-5",
+      "stratum": "building_block_primary",
+      "condition_order": ["R0", "R1"],
+      "readiness_decision": "INCLUDE_PRIMARY_ENGINEERING",
+      "consumed_status": "EXPLICIT_DESIGN16_ENGINEERING_CASE",
+      "source_packet": {
+        "path": "packets/H5-5.json",
+        "sha256": "0f13524bca1d31649b51cf05ea1fbd1ea6ecf6fc3bf5a46cf9769b34ad84861e"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch5.pdf",
+        "sha256": "504df359b0adacff8255df6d165cf6d4bad0c465a02bb86fa6851209fdf171e1",
+        "page_count": 12,
+        "referenced_pdf_pages": [12]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 2,
+      "wave": "engineering_gate",
+      "task_id": "H10-7",
+      "stratum": "building_block_primary",
+      "condition_order": ["R1", "R0"],
+      "readiness_decision": "INCLUDE_PRIMARY_ENGINEERING_WITH_STRICT_AUDIT",
+      "consumed_status": "EXPLICIT_DESIGN16_ENGINEERING_CASE",
+      "source_packet": {
+        "path": "packets/H10-7.json",
+        "sha256": "e2fd7c3a9e6c5ceeca5e8cc8545bd637778ecac7e43f086126da6ac226160e63"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch10.pdf",
+        "sha256": "50cc14881f265b9c465aefbdadf457c0671ef5c3470485c4eba29f2bcda722b4",
+        "page_count": 18,
+        "referenced_pdf_pages": [17]
+      },
+      "contract_overlay": "design16/contracts/H10-7.json"
+    },
+    {
+      "sequence": 3,
+      "wave": "engineering_gate",
+      "task_id": "H7-12",
+      "stratum": "negative_control",
+      "condition_order": ["R0", "R1"],
+      "readiness_decision": "NEGATIVE_CONTROL_ONLY",
+      "consumed_status": "EXPLICIT_DESIGN16_ENGINEERING_CASE",
+      "source_packet": {
+        "path": "packets/H7-12.json",
+        "sha256": "a2f29f3753f07fee77d183c1fcaa12c0334e55abc925b410af3734d07ac18ca9"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch7.pdf",
+        "sha256": "14e70e41c8881f866003246b806bd116ca79f59af3d3bf0b24a6d7fc8ebe24c2",
+        "page_count": 19,
+        "referenced_pdf_pages": [18]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 4,
+      "wave": "remaining_negative_controls",
+      "task_id": "H22-11",
+      "stratum": "negative_control",
+      "condition_order": ["R1", "R0"],
+      "readiness_decision": "NEGATIVE_CONTROL_ONLY",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H22-11.json",
+        "sha256": "2b6c9563cf4361e240c4c67088934a56e86b6cd1e5402e1cfcbd7fedfff1f19e"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch22.pdf",
+        "sha256": "8769dde6594809436213c55939fe9dd4100c0ab025a45cac91bec465dca0cc5e",
+        "page_count": 18,
+        "referenced_pdf_pages": [17]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 5,
+      "wave": "remaining_negative_controls",
+      "task_id": "H20-6",
+      "stratum": "negative_control",
+      "condition_order": ["R1", "R0"],
+      "readiness_decision": "NEGATIVE_CONTROL_ONLY",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H20-6.json",
+        "sha256": "454684a87f4edb48aa4498eaa1511a0b149f812055ef4e47eec95c0bcd3c613d"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch20.pdf",
+        "sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814",
+        "page_count": 26,
+        "referenced_pdf_pages": [26]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 6,
+      "wave": "remaining_negative_controls",
+      "task_id": "H12-4",
+      "stratum": "negative_control",
+      "condition_order": ["R0", "R1"],
+      "readiness_decision": "NEGATIVE_CONTROL_ONLY",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H12-4.json",
+        "sha256": "b59a098b0a316fcef51ed0ddfba08cfb66559e4ca8d358bfad3dfb52562b8935"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch12.pdf",
+        "sha256": "9aa86285b2a3e0bc6de4eaeadd63f40f479d3fdbeb319c43f7260a2f5e42a9b1",
+        "page_count": 14,
+        "referenced_pdf_pages": [12]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 7,
+      "wave": "remaining_negative_controls",
+      "task_id": "H19-5",
+      "stratum": "negative_control",
+      "condition_order": ["R1", "R0"],
+      "readiness_decision": "NEGATIVE_CONTROL_ONLY",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H19-5.json",
+        "sha256": "d9edb37b2df7ab1b0395ec9ef62edd39339b7f4678ea5ecf2627fded73ad3d71"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch19.pdf",
+        "sha256": "04169bb8bfda76a09bb831b45640d9bcce6393d243d666b72bae856d3f9c2b57",
+        "page_count": 28,
+        "referenced_pdf_pages": [26]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 8,
+      "wave": "remaining_negative_controls",
+      "task_id": "H7-14",
+      "stratum": "negative_control",
+      "condition_order": ["R0", "R1"],
+      "readiness_decision": "NEGATIVE_CONTROL_ONLY",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H7-14.json",
+        "sha256": "ed8a69758fa476c9dcaae406d96a7566f0a9dff3b42c8ef9b0b4d4d1383942d1"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch7.pdf",
+        "sha256": "14e70e41c8881f866003246b806bd116ca79f59af3d3bf0b24a6d7fc8ebe24c2",
+        "page_count": 19,
+        "referenced_pdf_pages": [18]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 9,
+      "wave": "collision_router_diagnostics",
+      "task_id": "H22-5",
+      "stratum": "collision_router_diagnostic",
+      "condition_order": ["R0", "R1"],
+      "readiness_decision": "EXCLUDE_UNTIL_ROUTER_FIX",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H22-5.json",
+        "sha256": "6220b890dc88014468ce5aaeebdd17c5110415479f240ebf8f9bd047c7a86579"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch22.pdf",
+        "sha256": "8769dde6594809436213c55939fe9dd4100c0ab025a45cac91bec465dca0cc5e",
+        "page_count": 18,
+        "referenced_pdf_pages": [16]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 10,
+      "wave": "collision_router_diagnostics",
+      "task_id": "H20-9",
+      "stratum": "collision_router_diagnostic",
+      "condition_order": ["R1", "R0"],
+      "readiness_decision": "EXCLUDE_RESULT_COLLISION",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H20-9.json",
+        "sha256": "673e45806fbaf40c031a9ed36ee608eb04a4df94d5fadc1d0f8e1029a10c7115"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch20.pdf",
+        "sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814",
+        "page_count": 26,
+        "referenced_pdf_pages": [26]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 11,
+      "wave": "collision_router_diagnostics",
+      "task_id": "H20-8",
+      "stratum": "collision_router_diagnostic",
+      "condition_order": ["R0", "R1"],
+      "readiness_decision": "EXCLUDE_RESULT_COLLISION_AND_ROUTER_FALSE_NEGATIVE",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H20-8.json",
+        "sha256": "c827a9857a26c787c5139f50fef599dea2b042111b59f22fecfdf08ec5c6d355"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch20.pdf",
+        "sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814",
+        "page_count": 26,
+        "referenced_pdf_pages": [26]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 12,
+      "wave": "collision_router_diagnostics",
+      "task_id": "H23-6",
+      "stratum": "collision_router_diagnostic",
+      "condition_order": ["R1", "R0"],
+      "readiness_decision": "EXCLUDE_RESULT_COLLISION_AND_ROUTER_FALSE_NEGATIVE",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H23-6.json",
+        "sha256": "60627c400d4b8631a1efb070a1fc35610ba59183067492e05cfd6d2d951a5a0a"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch23.pdf",
+        "sha256": "e3ec5da214944fefb5e8f276de16d7fe139e5ea8750136298ce4e0a43a79fbc0",
+        "page_count": 17,
+        "referenced_pdf_pages": [17]
+      },
+      "contract_overlay": null
+    },
+    {
+      "sequence": 13,
+      "wave": "collision_router_diagnostics",
+      "task_id": "H15-3",
+      "stratum": "collision_router_diagnostic",
+      "condition_order": ["R1", "R0"],
+      "readiness_decision": "EXCLUDE_PENDING_CONTENT_COLLISION_REVIEW",
+      "consumed_status": "CONSUMED_CORPUS_AND_READINESS_SCREEN",
+      "source_packet": {
+        "path": "packets/H15-3.json",
+        "sha256": "72c4730270af5772b9595616837224c47b94805d17072ae0dbf1d094479c92d6"
+      },
+      "source_pdf": {
+        "path_basename": "1.9780898718027.ch15.pdf",
+        "sha256": "94b5c7a57510ca3f694f3d2b4f30b131eb3377192cea9591fdd71af62218ff87",
+        "page_count": 18,
+        "referenced_pdf_pages": [17]
+      },
+      "contract_overlay": null
+    }
+  ]
+}
