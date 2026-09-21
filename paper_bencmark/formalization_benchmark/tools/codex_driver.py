@@ -743,6 +743,7 @@ class CodexDriver:
         packages_root: Path | None = None,
         library_source: Path | None = None,
         library_olean: Path | None = None,
+        library_atlas: Path | None = None,
         workspace_writable: bool = True,
         protected_workspace_paths: list[Path] | None = None,
         fork_source_thread_id: str | None = None,
@@ -823,6 +824,7 @@ class CodexDriver:
         self.packages_root = packages_root
         self.library_source = library_source
         self.library_olean = library_olean
+        self.library_atlas = library_atlas
         self.workspace_writable = workspace_writable
         self.protected_workspace_paths = protected_workspace_paths or []
         self.fork_source_thread_id = fork_source_thread_id
@@ -1323,9 +1325,17 @@ class CodexDriver:
                 ]
             )
         lean_paths: list[str] = []
-        if self.library_source is not None or self.library_olean is not None:
-            if self.library_source is None or self.library_olean is None:
-                raise BenchmarkError("library source and olean roots must be paired")
+        if (
+            self.library_source is not None
+            or self.library_olean is not None
+            or self.library_atlas is not None
+        ):
+            if (
+                self.library_source is None
+                or self.library_olean is None
+                or self.library_atlas is None
+            ):
+                raise BenchmarkError("library source, olean, and atlas roots must be paired")
             command.extend(
                 [
                     "--dir",
@@ -1336,6 +1346,9 @@ class CodexDriver:
                     "--ro-bind",
                     str(self.library_olean.resolve()),
                     "/library-olean",
+                    "--ro-bind",
+                    str(self.library_atlas.resolve()),
+                    "/library-index",
                 ]
             )
             root_file = self.library_source.parent / "NumStability.lean"

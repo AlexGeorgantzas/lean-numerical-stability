@@ -26,7 +26,8 @@ namespace HighamBenchCandidate
 def reflected (n : Nat) : Nat := n
 
 theorem target : ∀ n : Nat, reflected n = n := by
-  sorry
+  intro n
+  rfl
 
 end HighamBenchCandidate
 """
@@ -83,7 +84,7 @@ namespace HighamBenchCandidate
 -- axiom hidden : False := sorry
 /- unsafe opaque constant admit -/
 def words : String := "axiom unsafe opaque constant admit sorry"
-theorem target : words.length > 0 := by sorry
+theorem target : words.length > 0 := by decide
 end HighamBenchCandidate
 """
         inspection = inspect_candidate_source(source)
@@ -91,6 +92,7 @@ end HighamBenchCandidate
 
     def test_rejects_every_integrity_escape(self) -> None:
         declarations = {
+            "sorry": "def helper : True := by sorry",
             "admit": "def helper : True := by admit",
             "axiom": "axiom helper : True",
             "constant": "constant helper : Nat",
@@ -110,7 +112,7 @@ end HighamBenchCandidate
                 source = (
                     "namespace HighamBenchCandidate\n"
                     + declaration
-                    + "\ntheorem target : True := by sorry\n"
+                    + "\ntheorem target : True := by trivial\n"
                     "end HighamBenchCandidate\n"
                 )
                 result = inspect_candidate_source(source)
@@ -119,16 +121,16 @@ end HighamBenchCandidate
                     "forbidden-construct", {item["code"] for item in result["issues"]}
                 )
 
-    def test_rejects_additional_hole_without_running_compiler(self) -> None:
+    def test_rejects_any_hole_without_running_compiler(self) -> None:
         self.write_candidate(GOOD_SOURCE.replace("def reflected (n : Nat) : Nat := n", "def reflected (n : Nat) : Nat := by sorry"))
         result = validate_candidate(self.candidate, compiler_command=self.command)
         self.assertEqual(result["failure_code"], "RULE_VIOLATION")
         self.assertIsNone(result["compile"])
-        self.assertEqual(result["source_check"]["sorry_count"], 2)
+        self.assertEqual(result["source_check"]["sorry_count"], 1)
 
-    def test_requires_exact_root_hole_and_final_root(self) -> None:
+    def test_requires_final_root_and_complete_proof(self) -> None:
         variants = [
-            GOOD_SOURCE.replace(":= by\n  sorry", ":= by\n  exact sorry"),
+            GOOD_SOURCE.replace("intro n\n  rfl", "intro n\n  sorry"),
             GOOD_SOURCE.replace(
                 "\nend HighamBenchCandidate",
                 "\ndef afterTarget : Nat := 0\nend HighamBenchCandidate",

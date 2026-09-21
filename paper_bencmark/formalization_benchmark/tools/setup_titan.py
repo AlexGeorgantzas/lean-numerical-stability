@@ -31,6 +31,7 @@ from common import (
 )
 from deployment import GLOBAL_REGISTRY_ROOT, Deployment
 from formalization_validator import run_bounded_command
+from library_atlas import build_library_atlas
 from hardware import (
     frozen_hardware_identity,
     host_cpu_selection,
@@ -46,6 +47,20 @@ ROOT = Path(__file__).resolve().parents[1]
 REPOSITORY_ROOT = ROOT.parents[1]
 FROZEN_LIBRARY_COMMIT = "45813a95dacf577461bae13f033af0dbc985a225"
 FROZEN_TOOLCHAIN = "leanprover/lean4:v4.29.0-rc3"
+PILOT13_PILOT_ID = "formalization-benchmark-pilot-13"
+PILOT13_RELEASE_COMMIT = "9296649b69bdac2b0d6722c1099a2f13a9ebedf6"
+PILOT13_MANIFEST_PAYLOAD_SHA256 = (
+    "1f2e2753e78c6a7d612a1958eb1293d0e4a82ab9bd1d87d21fc28253d2823b1b"
+)
+PILOT13_MANIFEST_FILE_SHA256 = (
+    "3d927b34d5abd85fec7335ab149b3f6e1331311dbc5fb7a5d38109c88286a505"
+)
+PILOT13_DEPLOYMENT_SHA256 = (
+    "7e0fac28705562b1603b7f26dbf6bce2640de8116fbc5502b98cfde470372c84"
+)
+PILOT13_WARM_ROOT_SHA256 = (
+    "8a1df612f64b31ff4e8507fd5eda051cc51e4e9a8148a058fde491a5e0aa5c29"
+)
 PILOT12_PILOT_ID = "formalization-benchmark-pilot-12"
 PILOT12_RELEASE_COMMIT = "e886cfbff3f58498f41bea3f36759588f26c5597"
 PILOT12_MANIFEST_PAYLOAD_SHA256 = (
@@ -2431,10 +2446,124 @@ def pilot12_lineage(root_argument: str, *, verify_status: bool = True) -> dict[s
     }
 
 
+def pilot13_lineage(root_argument: str, *, verify_status: bool = True) -> dict[str, str]:
+    """Authenticate Pilot-13 and shift its sealed predecessor lock chain."""
+
+    del verify_status
+    root = Path(root_argument).expanduser()
+    if not root.is_absolute() or root.is_symlink() or not root.is_dir():
+        raise BenchmarkError("pilot-13 predecessor deployment root is missing or unsafe")
+    root = root.resolve()
+    record_path = root / "deployment.json"
+    manifest_path = (
+        root / "release" / "paper_bencmark" / "formalization_benchmark" / "manifest.json"
+    )
+    if (
+        not record_path.is_file()
+        or record_path.is_symlink()
+        or sha256_file(record_path) != PILOT13_DEPLOYMENT_SHA256
+        or not manifest_path.is_file()
+        or manifest_path.is_symlink()
+        or sha256_file(manifest_path) != PILOT13_MANIFEST_FILE_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-13 release evidence is missing or changed")
+    previous = load_json(record_path)
+    previous_manifest = load_json(manifest_path)
+    run_root = root / "runs"
+    warm_root = run_root / "warm-roots" / PILOT13_MANIFEST_PAYLOAD_SHA256
+    warm_record_path = warm_root / "warm-root.json"
+    build_raw = previous.get("library_build_record")
+    if not isinstance(build_raw, str) or not Path(build_raw).is_absolute():
+        raise BenchmarkError("sealed pilot-13 build record path is malformed")
+    build_path = Path(build_raw)
+    if (
+        previous.get("schema_version") != "formalization-deployment-1"
+        or previous.get("pilot_id") != PILOT13_PILOT_ID
+        or previous.get("release_commit") != PILOT13_RELEASE_COMMIT
+        or previous.get("release_manifest_sha256") != PILOT13_MANIFEST_FILE_SHA256
+        or previous.get("manifest_payload_sha256") != PILOT13_MANIFEST_PAYLOAD_SHA256
+        or previous.get("run_root") != str(run_root)
+        or previous_manifest.get("pilot_id") != PILOT13_PILOT_ID
+        or previous_manifest.get("manifest_payload_sha256")
+        != PILOT13_MANIFEST_PAYLOAD_SHA256
+        or previous.get("library_build_record_sha256")
+        != PILOT12_BUILD_RECORD_SHA256
+        or not build_path.is_file()
+        or build_path.is_symlink()
+        or sha256_file(build_path) != PILOT12_BUILD_RECORD_SHA256
+        or not warm_record_path.is_file()
+        or warm_record_path.is_symlink()
+        or sha256_file(warm_record_path) != PILOT13_WARM_ROOT_SHA256
+    ):
+        raise BenchmarkError("sealed pilot-13 release identity changed")
+    warm_record = load_json(warm_record_path)
+    checkpoint = warm_root / "checkpoint"
+    scout_artifacts = warm_root / "scout-artifacts"
+    if (
+        warm_record.get("status") != "READY"
+        or warm_record.get("pilot_id") != PILOT13_PILOT_ID
+        or warm_record.get("manifest_payload_sha256")
+        != PILOT13_MANIFEST_PAYLOAD_SHA256
+        or warm_record.get("checkpoint_manifest") != tree_manifest(checkpoint)
+        or not scout_artifacts.is_dir()
+    ):
+        raise BenchmarkError("sealed pilot-13 warm root changed")
+    old_lineage = pilot12_lineage(
+        str(Path(str(previous["predecessor_run_root"])).parent),
+        verify_status=False,
+    )
+    if any(previous.get(key) != value for key, value in old_lineage.items()):
+        raise BenchmarkError("pilot-13 record does not bind the sealed prior lineage")
+
+    def shift(key: str) -> str | None:
+        for source, destination in (
+            ("tenth_ancestral_predecessor_", "eleventh_ancestral_predecessor_"),
+            ("ninth_ancestral_predecessor_", "tenth_ancestral_predecessor_"),
+            ("eighth_ancestral_predecessor_", "ninth_ancestral_predecessor_"),
+            ("seventh_ancestral_predecessor_", "eighth_ancestral_predecessor_"),
+            ("sixth_ancestral_predecessor_", "seventh_ancestral_predecessor_"),
+            ("fifth_ancestral_predecessor_", "sixth_ancestral_predecessor_"),
+            ("great_ancestral_predecessor_", "fifth_ancestral_predecessor_"),
+            ("ancestral_predecessor_", "great_ancestral_predecessor_"),
+            ("legacy_predecessor_", "ancestral_predecessor_"),
+            ("predecessor_", "legacy_predecessor_"),
+        ):
+            if key.startswith(source):
+                return destination + key.removeprefix(source)
+        if key.startswith("eleventh_ancestral_predecessor_"):
+            return None
+        raise BenchmarkError(f"unknown pilot-13 predecessor field: {key}")
+
+    shifted_lineage = {
+        shifted: value
+        for key, value in old_lineage.items()
+        if (shifted := shift(key)) is not None
+    }
+    return {
+        "predecessor_pilot_id": PILOT13_PILOT_ID,
+        "predecessor_deployment_record": str(record_path),
+        "predecessor_deployment_record_sha256": PILOT13_DEPLOYMENT_SHA256,
+        "predecessor_release_manifest": str(manifest_path),
+        "predecessor_release_manifest_sha256": PILOT13_MANIFEST_FILE_SHA256,
+        "predecessor_library_build_record": str(build_path),
+        "predecessor_library_build_record_sha256": PILOT12_BUILD_RECORD_SHA256,
+        "predecessor_run_root": str(run_root),
+        "predecessor_warm_root_record": str(warm_record_path),
+        "predecessor_warm_root_record_sha256": PILOT13_WARM_ROOT_SHA256,
+        "predecessor_warm_root_checkpoint_tree_sha256": tree_manifest(checkpoint)[
+            "tree_sha256"
+        ],
+        "predecessor_warm_root_scout_artifacts_tree_sha256": tree_manifest(
+            scout_artifacts
+        )["tree_sha256"],
+        **shifted_lineage,
+    }
+
+
 def verify_predecessor_lineage(root_argument: str, deployment_record: Mapping[str, Any]) -> None:
-    observed = pilot12_lineage(root_argument)
+    observed = pilot13_lineage(root_argument)
     if any(deployment_record.get(field) != value for field, value in observed.items()):
-        raise BenchmarkError("predecessor evidence changed during pilot-13 setup")
+        raise BenchmarkError("predecessor evidence changed during pilot-14 setup")
 
 
 def fsync_directory(path: Path) -> None:
@@ -3388,11 +3517,17 @@ def _copy_frozen_source_pdfs(
     task_ids: list[str],
     source_pdf_root: Path,
     pdf_root: Path,
+    embedded_pdf_root: Path | None = None,
 ) -> None:
     """Copy each distinct frozen PDF once and reject basename/hash conflicts."""
     for task_id in task_ids:
         paper = task_record(manifest, task_id)["source_pdf"]
         source = source_pdf_root / paper["path_basename"]
+        if (
+            embedded_pdf_root is not None
+            and paper["path_basename"] == "H00-00.pdf"
+        ):
+            source = embedded_pdf_root / paper["path_basename"]
         if (
             not source.is_file()
             or source.is_symlink()
@@ -3745,6 +3880,8 @@ def _install_once_rebuild_legacy(
         "packages_root": str(published(packages_root)),
         "library_source": str(published(library_root / "source" / "NumStability")),
         "library_olean": str(published(library_root / "olean")),
+        "library_atlas": str(published(library_root / "source" / "NumStability")),
+        "library_atlas_manifest": tree_manifest(library_root / "source" / "NumStability"),
         "library_snapshot_record": str(published(library_record_path)),
         "library_snapshot_record_sha256": sha256_file(library_record_path),
         "library_build_record": str(published(library_root / "build" / "build-record.json")),
@@ -3777,6 +3914,7 @@ def _install_once_rebuild_legacy(
         packages_root=packages_root,
         library_source=library_root / "source" / "NumStability",
         library_olean=library_root / "olean",
+        library_atlas=library_root / "source" / "NumStability",
         library_snapshot_record=library_record_path,
         runtime_snapshot_record=runtime_record_path,
         strict_hardware=True,
@@ -3900,7 +4038,7 @@ def _install_once(
     owned_root_identity: tuple[int, int],
     published_root: Path,
 ) -> Path:
-    """Install Pilot-13 by reusing the authenticated runtime and scout lineage.
+    """Install Pilot-14 by reusing the authenticated runtime and scout lineage.
 
     The library commit, toolchain, Mathlib packages, compiled OLean tree, and
     task-neutral scout checkpoint are byte-identical to Pilot-11. This path
@@ -3943,9 +4081,10 @@ def _install_once(
 
     release_commit = run(["git", "rev-parse", "HEAD"], cwd=REPOSITORY_ROOT)
     release_branch = run(["git", "branch", "--show-current"], cwd=REPOSITORY_ROOT)
-    if release_branch != "formalization_benchmark":
+    if release_branch not in {"formalization_benchmark", "codex/pilot-14-retrieval-proof"}:
         raise BenchmarkError(
-            f"setup must run from formalization_benchmark, not {release_branch or 'detached HEAD'}"
+            "setup must run from formalization_benchmark or the frozen Pilot-14 "
+            f"release branch, not {release_branch or 'detached HEAD'}"
         )
     if run(["git", "status", "--porcelain"], cwd=REPOSITORY_ROOT):
         raise BenchmarkError("setup refuses a dirty release checkout")
@@ -3958,10 +4097,10 @@ def _install_once(
     )
     if ancestry.returncode != 0:
         raise BenchmarkError("release branch is not descended from the frozen benchmark base")
-    if config.get("pilot_id") != "formalization-benchmark-pilot-13":
-        raise BenchmarkError("this installer requires the frozen pilot-13 identity")
+    if config.get("pilot_id") != "formalization-benchmark-pilot-14":
+        raise BenchmarkError("this installer requires the frozen pilot-14 identity")
 
-    predecessor = pilot12_lineage(args.predecessor_deployment_root)
+    predecessor = pilot13_lineage(args.predecessor_deployment_root)
     predecessor_root = Path(args.predecessor_deployment_root).expanduser().resolve()
     predecessor_record_path = predecessor_root / "deployment.json"
     predecessor_record = load_json(predecessor_record_path)
@@ -3972,7 +4111,7 @@ def _install_once(
     }
     protected_roots.add(predecessor_root)
     if published_root in protected_roots:
-        raise BenchmarkError("pilot-13 must not overwrite any predecessor deployment")
+        raise BenchmarkError("pilot-14 must not overwrite any predecessor deployment")
     if GLOBAL_REGISTRY_ROOT.is_symlink() or (
         GLOBAL_REGISTRY_ROOT.exists() and not GLOBAL_REGISTRY_ROOT.is_dir()
     ):
@@ -4016,15 +4155,16 @@ def _install_once(
         task_ids=config["task_ids"],
         source_pdf_root=Path(args.pdf_source_dir).expanduser().resolve(),
         pdf_root=pdf_root,
+        embedded_pdf_root=frozen_benchmark_root / "canary",
     )
 
     def reused_path(field: str, *, directory: bool = False) -> Path:
         raw = predecessor_record.get(field)
         if not isinstance(raw, str) or not raw:
-            raise BenchmarkError(f"pilot-12 reusable field is missing: {field}")
+            raise BenchmarkError(f"pilot-13 reusable field is missing: {field}")
         path = Path(raw).resolve()
         if path.is_symlink() or not (path.is_dir() if directory else path.is_file()):
-            raise BenchmarkError(f"pilot-12 reusable path is missing or unsafe: {field}")
+            raise BenchmarkError(f"pilot-13 reusable path is missing or unsafe: {field}")
         return path
 
     toolchain_root = reused_path("toolchain_root", directory=True)
@@ -4040,7 +4180,20 @@ def _install_once(
         ("runtime_snapshot_record_sha256", runtime_record_path),
     ):
         if predecessor_record.get(field) != sha256_file(path):
-            raise BenchmarkError(f"pilot-12 reusable artifact changed: {field}")
+            raise BenchmarkError(f"pilot-13 reusable artifact changed: {field}")
+
+    library_atlas = deployment_root / "runtime" / "library-index"
+    atlas_metadata = build_library_atlas(
+        source_root=library_source,
+        root_module=library_source.parent / "NumStability.lean",
+        output_root=library_atlas,
+        library_commit=FROZEN_LIBRARY_COMMIT,
+    )
+    if (
+        atlas_metadata.get("schema_version")
+        != config["library_retrieval"]["atlas_schema_version"]
+    ):
+        raise BenchmarkError("generated library atlas schema does not match the release")
 
     offline_shell = deployment_root / "bin" / "offline-shell"
     offline_shell.parent.mkdir(parents=True, exist_ok=True)
@@ -4091,15 +4244,15 @@ def _install_once(
             "scout_runs_per_campaign": 1,
             "checkpoint_manifest": tree_manifest(checkpoint),
             "inherited_from": {
-                "pilot_id": PILOT12_PILOT_ID,
-                "deployment_sha256": PILOT12_DEPLOYMENT_SHA256,
-                "warm_root_record_sha256": PILOT12_WARM_ROOT_SHA256,
-                "checkpoint_tree_sha256": PILOT12_CHECKPOINT_TREE_SHA256,
+                "pilot_id": PILOT13_PILOT_ID,
+                "deployment_sha256": PILOT13_DEPLOYMENT_SHA256,
+                "warm_root_record_sha256": PILOT13_WARM_ROOT_SHA256,
+                "checkpoint_tree_sha256": tree_manifest(checkpoint)["tree_sha256"],
                 "scout_turn_sha256": PILOT11_SCOUT_TURN_SHA256,
             },
             "inheritance_reason": (
-                "controller-only successor; task-neutral library knowledge and "
-                "frozen library are unchanged"
+                "proof-required retrieval successor; task-neutral library knowledge "
+                "and frozen library bytes are unchanged"
             ),
         }
     )
@@ -4131,6 +4284,8 @@ def _install_once(
         "packages_root": str(packages_root),
         "library_source": str(library_source),
         "library_olean": str(library_olean),
+        "library_atlas": str(published(library_atlas)),
+        "library_atlas_manifest": tree_manifest(library_atlas),
         "library_snapshot_record": str(library_record_path),
         "library_snapshot_record_sha256": sha256_file(library_record_path),
         "library_build_record": str(library_build_record_path),
@@ -4169,6 +4324,7 @@ def _install_once(
         packages_root=packages_root,
         library_source=library_source,
         library_olean=library_olean,
+        library_atlas=library_atlas,
         library_snapshot_record=library_record_path,
         runtime_snapshot_record=runtime_record_path,
         strict_hardware=True,
@@ -4266,6 +4422,7 @@ def _install_once(
             packages_root=packages_root,
             library_source=library_source,
             library_olean=library_olean,
+            library_atlas=library_atlas,
             workspace_writable=False,
             fork_source_thread_id=str(inherited_warm_record["source_thread_id"]),
             fork_source_last_turn_id=str(inherited_warm_record["source_last_turn_id"]),
@@ -4575,17 +4732,17 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--pdf-source-dir", required=True)
     parser.add_argument(
         "--deployment-root",
-        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-13-r1"),
+        default=str(Path.home() / ".local" / "share" / "highambench-formalization-pilot-14-r1"),
     )
     parser.add_argument(
         "--predecessor-deployment-root",
         required=True,
-        help="read-only path to sealed pilot-12 deployment and its eleven-release lineage",
+        help="read-only path to sealed pilot-13 deployment and its predecessor lineage",
     )
     parser.add_argument("--auth-file", default=str(Path.home() / ".codex" / "auth.json"))
     parser.add_argument("--codex-binary")
     parser.add_argument(
-        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-13-r1")
+        "--launcher", default=str(Path.home() / ".local" / "bin" / "run-highambench-formalization-pilot-14-r1")
     )
     return parser
 

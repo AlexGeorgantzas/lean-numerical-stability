@@ -340,6 +340,7 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
             packages_root=self.root / "packages",
             library_source=self.root / "library",
             library_olean=self.root / "olean",
+            library_atlas=self.root / "library-atlas",
             library_snapshot_record=self.root / "library-snapshot.json",
             runtime_snapshot_record=self.root / "runtime-snapshot.json",
             strict_hardware=True,
@@ -364,6 +365,7 @@ class ProviderCapabilityCanaryTests(unittest.TestCase):
         for path in (
             self.deployment.library_source,
             self.deployment.library_olean,
+            self.deployment.library_atlas,
             self.deployment.toolchain_root,
             self.deployment.packages_root,
         ):

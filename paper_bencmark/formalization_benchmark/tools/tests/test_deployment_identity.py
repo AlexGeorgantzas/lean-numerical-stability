@@ -10,12 +10,12 @@ import unittest
 TOOLS = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(TOOLS))
 
-from common import BenchmarkError, sha256_file  # noqa: E402
+from common import BenchmarkError, sha256_file, tree_manifest  # noqa: E402
 from deployment import GLOBAL_REGISTRY_ROOT, load_deployment  # noqa: E402
 
 
 class DeploymentIdentityTests(unittest.TestCase):
-    def test_loader_requires_pilot13_release_host_and_eleven_predecessors(self) -> None:
+    def test_loader_requires_pilot14_release_host_atlas_and_eleven_predecessors(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             artifact = root / "artifact"
@@ -52,7 +52,7 @@ class DeploymentIdentityTests(unittest.TestCase):
             eleventh_ancestral_predecessor.mkdir()
             record = {
                 "schema_version": "formalization-deployment-1",
-                "pilot_id": "formalization-benchmark-pilot-13",
+                "pilot_id": "formalization-benchmark-pilot-14",
                 "release_commit": "a" * 40,
                 "release_manifest_sha256": "b" * 64,
                 "manifest_payload_sha256": "c" * 64,
@@ -82,8 +82,10 @@ class DeploymentIdentityTests(unittest.TestCase):
             for name in (
                 "pdf_root", "toolchain_root", "packages_root", "library_source",
                 "library_olean",
+                "library_atlas",
             ):
                 record[name] = str(directory)
+            record["library_atlas_manifest"] = tree_manifest(directory)
             path = root / "deployment.json"
 
             def read(value: dict[str, object]):
@@ -91,7 +93,7 @@ class DeploymentIdentityTests(unittest.TestCase):
                 return load_deployment(path)
 
             loaded = read(record)
-            self.assertEqual(loaded.pilot_id, "formalization-benchmark-pilot-13")
+            self.assertEqual(loaded.pilot_id, "formalization-benchmark-pilot-14")
             self.assertEqual(loaded.global_registry_root, GLOBAL_REGISTRY_ROOT)
             self.assertEqual(loaded.predecessor_run_root, predecessor.resolve())
             self.assertEqual(

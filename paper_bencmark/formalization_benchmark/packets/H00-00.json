@@ -1,0 +1,32 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "H00-00",
+  "selected_result": "Additive identity over the real numbers",
+  "bibliographic_source": {
+    "authors": ["HighamBench maintainers"],
+    "title": "HighamBench Infrastructure Canary H00-00",
+    "venue": "Synthetic benchmark setup source",
+    "year": 2026,
+    "pages": "1",
+    "doi": "not-applicable"
+  },
+  "paper_pdf": {
+    "path_basename": "H00-00.pdf",
+    "sha256": "e2d9cde562fe7c5f0f52fd176c42474f395ac583b94beec71b7c305797c76f74"
+  },
+  "paper_locations": [
+    {
+      "section": "Statement",
+      "printed_pages": "1",
+      "pdf_pages": "1",
+      "anchor": "For every real number x, prove that x + 0 = x."
+    }
+  ],
+  "task_clarification": [
+    "Formalize the universally quantified equality: for every real number x, x + 0 = x."
+  ],
+  "scope_constraints": [
+    "The domain is the real numbers.",
+    "This synthetic task is an infrastructure canary and is excluded from scientific benchmark results."
+  ]
+}

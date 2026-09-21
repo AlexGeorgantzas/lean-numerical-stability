@@ -27,6 +27,8 @@
     "numstability_commit",
     "hardware",
     "candidate",
+    "library_retrieval",
+    "evaluation_gate",
     "hardware_envelope",
     "command_resource_envelope",
     "workspace_limits",
@@ -52,8 +54,9 @@
     "condition_order": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["P01-T2", "P02-T2", "P03-T2", "P13-T2", "P14-T2", "H22-11", "H22-5", "H20-6", "H7-12", "H20-9", "H20-8", "H23-6", "H5-5", "H10-7", "H12-4", "H19-5", "H7-14", "H15-3"],
+      "required": ["H00-00", "P01-T2", "P02-T2", "P03-T2", "P13-T2", "P14-T2", "H22-11", "H22-5", "H20-6", "H7-12", "H20-9", "H20-8", "H23-6", "H5-5", "H10-7", "H12-4", "H19-5", "H7-14", "H15-3"],
       "properties": {
+        "H00-00": {"$ref": "#/$defs/conditionOrder"},
         "P01-T2": {"$ref": "#/$defs/conditionOrder"},
         "P02-T2": {"$ref": "#/$defs/conditionOrder"},
         "P03-T2": {"$ref": "#/$defs/conditionOrder"},
@@ -97,7 +100,7 @@
         "scout_token_cap": {"type": ["integer", "null"], "minimum": 1},
         "scout_runs_per_release": {"const": 0},
         "scout_runs_per_campaign": {"const": 1},
-        "inherited_from_pilot": {"const": "formalization-benchmark-pilot-12"},
+        "inherited_from_pilot": {"const": "formalization-benchmark-pilot-13"},
         "task_prompts_byte_identical": {"const": true},
         "task_clock_excludes_scout": {"const": true},
         "task_usage_headline": {"const": "net_new_tokens"},
@@ -125,7 +128,41 @@
       "properties": {
         "file": {"const": "Candidate.lean"},
         "root_declaration": {"const": "HighamBenchCandidate.target"},
-        "root_proof": {"const": "by sorry"}
+        "root_proof": {"const": "complete-kernel-checked-no-holes"}
+      }
+    },
+    "library_retrieval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition", "atlas_schema_version", "guide_workspace_file", "atlas_mount", "source_mount", "reuse_first", "whole_source_scan_fallback_only", "record_uptake_telemetry"],
+      "properties": {
+        "condition": {"const": "L"},
+        "atlas_schema_version": {"const": "numstability-library-atlas-1"},
+        "guide_workspace_file": {"const": "LIBRARY_GUIDE.md"},
+        "atlas_mount": {"const": "/library-index"},
+        "source_mount": {"const": "/library/NumStability"},
+        "reuse_first": {"const": true},
+        "whole_source_scan_fallback_only": {"const": true},
+        "record_uptake_telemetry": {"const": true}
+      }
+    },
+    "evaluation_gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["primary_task_ids", "minimum_time_positive_pairs", "minimum_median_time_reduction_fraction", "minimum_median_net_new_token_reduction_fraction", "require_both_conditions_faithful", "forbid_incident_pairs", "canary_task_id", "canary_excluded_from_scientific_results"],
+      "properties": {
+        "primary_task_ids": {
+          "type": "array",
+          "prefixItems": [{"const": "H5-5"}, {"const": "H7-12"}, {"const": "H10-7"}, {"const": "H23-6"}],
+          "items": false
+        },
+        "minimum_time_positive_pairs": {"const": 3},
+        "minimum_median_time_reduction_fraction": {"const": 0.2},
+        "minimum_median_net_new_token_reduction_fraction": {"const": 0.2},
+        "require_both_conditions_faithful": {"const": true},
+        "forbid_incident_pairs": {"const": true},
+        "canary_task_id": {"const": "H00-00"},
+        "canary_excluded_from_scientific_results": {"const": true}
       }
     },
     "hardware_envelope": {

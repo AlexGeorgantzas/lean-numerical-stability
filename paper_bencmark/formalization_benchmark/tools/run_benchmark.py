@@ -10,11 +10,13 @@ from pathlib import Path
 
 from common import BenchmarkError, sha256_file
 from deployment import load_deployment
+from evaluation_gate import evaluate_gate
 from manifest_control import verify_manifest
 from pair_controller import PairController
 
 
 TASK_IDS = (
+    "H00-00",
     "P01-T2", "P02-T2", "P03-T2", "P13-T2", "P14-T2",
     "H22-11", "H22-5", "H20-6", "H7-12", "H20-9", "H20-8",
     "H23-6", "H5-5", "H10-7", "H12-4", "H19-5", "H7-14", "H15-3",
@@ -25,7 +27,7 @@ def normalized_task_id(value: str) -> str:
     rendered = value.strip().upper().replace("_", "-")
     if rendered not in TASK_IDS:
         raise argparse.ArgumentTypeError(
-            "task must be one of the 18 task IDs frozen in pilot-13"
+            "task must be one of the 19 task IDs frozen in pilot-14"
         )
     return rendered
 
@@ -53,6 +55,7 @@ def make_parser() -> argparse.ArgumentParser:
     )
     subparsers.add_parser("verify-release")
     subparsers.add_parser("prepare-warm-root")
+    subparsers.add_parser("evaluate-gate")
     return parser
 
 
@@ -87,7 +90,9 @@ def main() -> int:
         deployment,
         allow_unenforced_hardware=args.development_no_hardware_enforcement,
     )
-    if args.command == "prepare-warm-root":
+    if args.command == "evaluate-gate":
+        result = evaluate_gate(controller, controller.config)
+    elif args.command == "prepare-warm-root":
         if (
             args.development_no_hardware_enforcement
             or not deployment.strict_hardware

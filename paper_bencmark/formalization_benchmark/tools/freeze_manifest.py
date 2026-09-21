@@ -23,6 +23,7 @@ from manifest_control import (
 
 
 TASK_IDS = [
+    "H00-00",
     "P01-T2",
     "P02-T2",
     "P03-T2",

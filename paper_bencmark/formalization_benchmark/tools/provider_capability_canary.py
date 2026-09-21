@@ -946,6 +946,7 @@ def run_provider_capability_canary(
             packages_root=deployment.packages_root,
             library_source=deployment.library_source,
             library_olean=deployment.library_olean,
+            library_atlas=deployment.library_atlas,
             workspace_writable=True,
             code_mode_host_sha256=deployment.code_mode_host_sha256,
             fork_source_thread_id=str(warm_record["source_thread_id"]),

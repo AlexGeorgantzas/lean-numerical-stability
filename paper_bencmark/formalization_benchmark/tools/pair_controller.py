@@ -131,10 +131,10 @@ def _candidate_template() -> str:
 
 namespace HighamBenchCandidate
 
-/- Replace this placeholder proposition and add faithful supporting definitions
-above it. Keep the root name and literal proof hole unchanged. -/
+/- Replace this placeholder proposition, add faithful supporting definitions
+above it, and prove the resulting target without proof holes. -/
 theorem target : True := by
-  sorry
+  trivial
 
 end HighamBenchCandidate
 """
@@ -149,9 +149,9 @@ Run this exact command from the workspace:
 lean --root . -o Candidate.olean Candidate.lean
 ```
 
-The controller supplies the frozen Lean/Mathlib search path. Condition L also
-inherits prior library orientation from its frozen scout root and receives the
-same task prompt as condition N.
+The controller supplies the frozen Lean/Mathlib search path. If a read-only
+`LIBRARY_GUIDE.md` is present, it describes the treatment library's compact
+declaration atlas and reuse workflow. Read it before searching source files.
 Do not add package files, download dependencies, or access the network.
 Positive-PID/process-group signaling and file metadata mutation syscalls are
 disabled by the common command sandbox. Use ordinary file writes and renames;
@@ -179,7 +179,7 @@ def _validation_feedback(
         )
     elif failure_code == "RULE_VIOLATION":
         mismatch = (
-            "The submission does not satisfy the required single-file, single-root-hole "
+            "The submission does not satisfy the required single-file, complete-proof "
             "integrity contract."
         )
     else:
@@ -189,7 +189,8 @@ def _validation_feedback(
             {
                 "paper_requirement": (
                     "The formalized proposition and all supporting definitions must elaborate "
-                    "under the frozen Lean environment and obey the single-root-hole contract."
+                    "under the frozen Lean environment, and the target must have a complete "
+                    "kernel-checked proof without holes or trust escapes."
                 ),
                 "candidate_mismatch": mismatch,
             }
@@ -409,6 +410,84 @@ def _formalizer_artifact_manifest(root: Path) -> dict[str, dict[str, str]]:
             raise BenchmarkError(f"formalizer artifact is missing or unsafe: {path}")
         result[name] = {"path": str(path), "sha256": sha256_file(path)}
     return result
+
+
+def _library_uptake_telemetry(
+    *,
+    condition: str,
+    validation: Mapping[str, Any],
+    private_dossier: Mapping[str, Any],
+    events_path: Path,
+) -> dict[str, Any]:
+    """Summarize treatment uptake without exposing it to faithfulness judges."""
+
+    source_check = validation.get("source_check")
+    if not isinstance(source_check, Mapping):
+        raise BenchmarkError("validated candidate has no source metrics")
+    raw_report = private_dossier.get("raw_semantic_report")
+    if not isinstance(raw_report, Mapping):
+        raise BenchmarkError("private semantic dossier has no raw report")
+    dependencies = raw_report.get("dependencies")
+    if not isinstance(dependencies, list):
+        raise BenchmarkError("private semantic dependencies are malformed")
+    treatment = [
+        item
+        for item in dependencies
+        if isinstance(item, Mapping)
+        and str(item.get("owner_module", "")).startswith("NumStability")
+    ]
+    generated = [
+        item
+        for item in dependencies
+        if isinstance(item, Mapping) and item.get("owner_module") == "Candidate"
+    ]
+    if not events_path.is_file() or events_path.is_symlink():
+        raise BenchmarkError("formalizer event trace is missing for uptake telemetry")
+    events = events_path.read_bytes()
+    imports = source_check.get("imports", [])
+    if not isinstance(imports, list):
+        raise BenchmarkError("candidate import telemetry is malformed")
+    record = {
+        "schema_version": "formalization-library-uptake-1",
+        "condition": condition,
+        "candidate": {
+            "raw_lines": validation.get("candidate", {}).get("lines"),
+            "nonblank_code_lines": source_check.get("nonblank_code_lines"),
+            "declaration_count": len(source_check.get("declarations", [])),
+            "imports": imports,
+        },
+        "semantic_closure": {
+            "treatment_declaration_count": len(treatment),
+            "treatment_declarations": sorted(
+                str(item["name"]) for item in treatment if isinstance(item.get("name"), str)
+            ),
+            "treatment_modules": sorted(
+                {
+                    str(item["owner_module"])
+                    for item in treatment
+                    if isinstance(item.get("owner_module"), str)
+                }
+            ),
+            "candidate_local_declaration_count": len(generated),
+        },
+        "discovery_trace": {
+            "atlas_path_mentions": events.count(b"/library-index"),
+            "library_source_path_mentions": events.count(b"/library/NumStability"),
+            "whole_library_recursive_search_mentions": events.count(
+                b"rg -n --hidden"
+            )
+            + events.count(b"rg --files /library/NumStability"),
+        },
+    }
+    record["library_uptake"] = bool(treatment)
+    if condition == "N" and (
+        record["library_uptake"]
+        or any(str(module).startswith("NumStability") for module in imports)
+        or record["discovery_trace"]["atlas_path_mentions"]
+        or record["discovery_trace"]["library_source_path_mentions"]
+    ):
+        raise BenchmarkError("condition N uptake telemetry detected treatment leakage")
+    return record
 
 
 @contextmanager
@@ -947,6 +1026,29 @@ class PairController:
         for path in (common_prompt, l_prompt, repair_prompt):
             if not path.is_file() or path.is_symlink():
                 raise BenchmarkError(f"controlled prompt is missing or unsafe: {path}")
+        atlas_metadata_path = self.deployment.library_atlas / "atlas.json"
+        atlas_guide_path = self.deployment.library_atlas / "GUIDE.md"
+        atlas_declarations_path = self.deployment.library_atlas / "declarations.jsonl"
+        atlas_query_path = self.deployment.library_atlas / "query.py"
+        for path in (
+            atlas_metadata_path,
+            atlas_guide_path,
+            atlas_declarations_path,
+            atlas_query_path,
+        ):
+            if not path.is_file() or path.is_symlink():
+                raise BenchmarkError(f"library atlas artifact is missing or unsafe: {path}")
+        atlas_metadata = load_json(atlas_metadata_path)
+        if (
+            atlas_metadata.get("schema_version")
+            != self.config["library_retrieval"]["atlas_schema_version"]
+            or atlas_metadata.get("library_commit") != self.config["numstability_commit"]
+            or atlas_metadata.get("declarations_sha256")
+            != sha256_file(atlas_declarations_path)
+            or not isinstance(atlas_metadata.get("declaration_count"), int)
+            or atlas_metadata.get("declaration_count", 0) <= 0
+        ):
+            raise BenchmarkError("library atlas identity or inventory changed")
         hardware = snapshot_hardware(strict=self.strict_hardware)
         self._verify_hardware_identity(hardware)
         command_resources = command_cgroup_snapshot(required=self.strict_hardware)
@@ -1006,14 +1108,14 @@ class PairController:
                 or self.deployment.tenth_ancestral_predecessor_run_root is None
                 or self.deployment.eleventh_ancestral_predecessor_run_root is None
             ):
-                raise BenchmarkError("pilot-13 registry or predecessor locks are missing")
-            from setup_titan import pilot12_lineage
+                raise BenchmarkError("pilot-14 registry or predecessor locks are missing")
+            from setup_titan import pilot13_lineage
 
-            # Doctor is called under the pilot-13 campaign lock, including the
+            # Doctor is called under the pilot-14 campaign lock, including the
             # predecessor and account-global locks. Setup performs the full
             # predecessor check before publication; here compare pinned bytes
             # without invoking a verifier that would reacquire those locks.
-            lineage = pilot12_lineage(
+            lineage = pilot13_lineage(
                 str(self.deployment.predecessor_run_root.parent),
                 verify_status=False,
             )
@@ -1134,7 +1236,7 @@ class PairController:
                 or runtime_reuse.get("new_library_build_invocations") != 0
                 or runtime_reuse.get("new_scout_turns") != 0
             ):
-                raise BenchmarkError("Pilot-13 inherited-runtime admission evidence is missing")
+                raise BenchmarkError("Pilot-14 inherited-runtime admission evidence is missing")
             self._load_warm_root()
         order = _condition_order(self.config, task_id)
         if order not in (["N", "L"], ["L", "N"]):
@@ -1194,6 +1296,11 @@ class PairController:
                 "dependency_olean_file_count": build_record.get("cache_state", {})
                 .get("dependency_closure_before", {})
                 .get("dependency_olean_file_count"),
+                "benchmark_charged": False,
+            },
+            "numstability_library_atlas": {
+                "manifest": tree_manifest(self.deployment.library_atlas),
+                "metadata": atlas_metadata,
                 "benchmark_charged": False,
             },
             "runtime_snapshot_record_sha256": sha256_file(
@@ -1295,7 +1402,7 @@ class PairController:
                 raise BenchmarkError("warm-root directory exists without a trusted record")
             if int(self.config["warm_start"]["scout_runs_per_release"]) == 0:
                 raise BenchmarkError(
-                    "the inherited Condition L warm root is missing; Pilot-13 forbids "
+                    "the inherited Condition L warm root is missing; Pilot-14 forbids "
                     "a replacement scouting turn"
                 )
             root.mkdir(parents=True, mode=0o700)
@@ -1339,6 +1446,7 @@ class PairController:
                 packages_root=self.deployment.packages_root,
                 library_source=self.deployment.library_source,
                 library_olean=self.deployment.library_olean,
+                library_atlas=self.deployment.library_atlas,
                 workspace_writable=False,
                 protected_workspace_paths=[workspace / "ENVIRONMENT.md"],
             )
@@ -1451,6 +1559,26 @@ class PairController:
                 raise BenchmarkError(f"condition {condition} packet changed after staging")
             if environment_note.read_bytes() != expected_environment:
                 raise BenchmarkError(f"condition {condition} environment note changed after staging")
+            guide = workspace / "LIBRARY_GUIDE.md"
+            atlas_guide = self.deployment.library_atlas / "GUIDE.md"
+            if condition == "L":
+                if (
+                    not guide.is_file()
+                    or guide.is_symlink()
+                    or not atlas_guide.is_file()
+                    or atlas_guide.is_symlink()
+                    or guide.read_bytes() != atlas_guide.read_bytes()
+                ):
+                    raise BenchmarkError("condition L library guide changed after staging")
+                guide_sha256: str | None = sha256_file(guide)
+                atlas_tree_sha256: str | None = tree_manifest(
+                    self.deployment.library_atlas
+                )["tree_sha256"]
+            else:
+                if os.path.lexists(guide):
+                    raise BenchmarkError("condition N received the treatment library guide")
+                guide_sha256 = None
+                atlas_tree_sha256 = None
             staging = load_json(staging_path)
             expected_staging_fields = {
                 "task_id": task_id,
@@ -1461,6 +1589,8 @@ class PairController:
                 "common_prompt_sha256": sha256_file(ROOT / "prompts" / "formalizer.md"),
                 "effective_prompt_sha256": sha256_file(prompt_path),
                 "condition_L_warm_start": condition == "L",
+                "library_guide_sha256": guide_sha256,
+                "library_atlas_tree_sha256": atlas_tree_sha256,
             }
             changed_staging_fields = sorted(
                 key
@@ -1501,6 +1631,19 @@ class PairController:
         write_bytes_atomic(
             workspace / "ENVIRONMENT.md", _environment_note().encode("utf-8"), mode=0o400
         )
+        guide_sha256: str | None = None
+        atlas_tree_sha256: str | None = None
+        if condition == "L":
+            atlas_guide = self.deployment.library_atlas / "GUIDE.md"
+            if not atlas_guide.is_file() or atlas_guide.is_symlink():
+                raise BenchmarkError("deployed library atlas guide is missing or unsafe")
+            write_bytes_atomic(
+                workspace / "LIBRARY_GUIDE.md", atlas_guide.read_bytes(), mode=0o400
+            )
+            guide_sha256 = sha256_file(workspace / "LIBRARY_GUIDE.md")
+            atlas_tree_sha256 = tree_manifest(self.deployment.library_atlas)[
+                "tree_sha256"
+            ]
         (source_root / "paper.pdf").chmod(0o400)
         prompt = prompt_bytes.decode("utf-8")
         write_bytes_atomic(condition_root / "prompt.txt", prompt_bytes, mode=0o400)
@@ -1514,6 +1657,8 @@ class PairController:
             "common_prompt_sha256": sha256_file(ROOT / "prompts" / "formalizer.md"),
             "effective_prompt_sha256": sha256_file(condition_root / "prompt.txt"),
             "condition_L_warm_start": condition == "L",
+            "library_guide_sha256": guide_sha256,
+            "library_atlas_tree_sha256": atlas_tree_sha256,
             "staged_at_utc": utc_now(),
         }
         write_json_atomic(condition_root / "staging.json", staged, mode=0o400)
@@ -1573,6 +1718,7 @@ class PairController:
     def _driver(self, condition: str, condition_root: Path) -> CodexDriver:
         library_source = self.deployment.library_source if condition == "L" else None
         library_olean = self.deployment.library_olean if condition == "L" else None
+        library_atlas = self.deployment.library_atlas if condition == "L" else None
         workspace = condition_root / "workspace"
         state_root = None
         fork: dict[str, Any] = {}
@@ -1599,6 +1745,9 @@ class PairController:
                 "fork_source_last_turn_id": warm["source_last_turn_id"],
                 "fork_source_cumulative_usage": warm["source_cumulative_usage"],
             }
+        protected_workspace_paths = [workspace / "source", workspace / "ENVIRONMENT.md"]
+        if condition == "L":
+            protected_workspace_paths.append(workspace / "LIBRARY_GUIDE.md")
         return CodexDriver(
             codex_binary=self.deployment.codex_binary,
             code_mode_host_sha256=self.deployment.code_mode_host_sha256,
@@ -1615,8 +1764,9 @@ class PairController:
             packages_root=self.deployment.packages_root,
             library_source=library_source,
             library_olean=library_olean,
+            library_atlas=library_atlas,
             workspace_writable=True,
-            protected_workspace_paths=[workspace / "source", workspace / "ENVIRONMENT.md"],
+            protected_workspace_paths=protected_workspace_paths,
             **fork,
         )
 
@@ -2269,6 +2419,19 @@ class PairController:
                 time.perf_counter_ns() - dossier_started
             ) / 1_000_000_000
             attempt["semantic_sha256"] = semantic_sha256
+            uptake = _library_uptake_telemetry(
+                condition=condition,
+                validation=validation,
+                private_dossier=private,
+                events_path=attempt_root / "formalizer" / "events.jsonl",
+            )
+            write_json_atomic(
+                attempt_root / "library_uptake.json", uptake, mode=0o400
+            )
+            attempt["library_uptake"] = uptake
+            attempt["library_uptake_sha256"] = sha256_file(
+                attempt_root / "library_uptake.json"
+            )
             audit_root = pair_root / "audits" / semantic_sha256
             audit = AuditController(
                 codex_binary=self.deployment.codex_binary,
@@ -2454,6 +2617,12 @@ class PairController:
     ) -> dict[str, Any]:
         condition_root = pair_root / "conditions" / condition
         condition_state_path = condition_root / "condition_state.json"
+        attempts = result.get("attempts", [])
+        final_uptake = (
+            attempts[-1].get("library_uptake")
+            if isinstance(attempts, list) and attempts and isinstance(attempts[-1], Mapping)
+            else None
+        )
         return {
             "status": result["status"],
             "active_seconds": result["active_seconds"],
@@ -2476,6 +2645,7 @@ class PairController:
                 "contestant_usage_interpretation"
             ],
             "submission_count": len(result["attempts"]),
+            "library_uptake": final_uptake,
             "state_path": str(condition_state_path),
             "state_sha256": sha256_file(condition_state_path),
             "conversation_shutdown": PairController._condition_shutdown_binding(

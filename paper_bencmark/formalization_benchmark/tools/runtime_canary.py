@@ -16,7 +16,7 @@ def _candidate(import_name: str) -> str:
 
 namespace HighamBenchCandidate
 
-theorem target : True := by sorry
+theorem target : True := by trivial
 
 end HighamBenchCandidate
 """

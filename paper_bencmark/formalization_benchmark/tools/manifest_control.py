@@ -82,6 +82,34 @@ def verify_manifest() -> tuple[dict[str, Any], dict[str, Any]]:
         raise BenchmarkError("pilot requires a five-hour contestant-active limit")
     if config.get("token_cap") is not None:
         raise BenchmarkError("pilot must not have a benchmark token cap")
+    if config.get("candidate") != {
+        "file": "Candidate.lean",
+        "root_declaration": "HighamBenchCandidate.target",
+        "root_proof": "complete-kernel-checked-no-holes",
+    }:
+        raise BenchmarkError("pilot requires a complete kernel-checked target proof")
+    if config.get("library_retrieval") != {
+        "condition": "L",
+        "atlas_schema_version": "numstability-library-atlas-1",
+        "guide_workspace_file": "LIBRARY_GUIDE.md",
+        "atlas_mount": "/library-index",
+        "source_mount": "/library/NumStability",
+        "reuse_first": True,
+        "whole_source_scan_fallback_only": True,
+        "record_uptake_telemetry": True,
+    }:
+        raise BenchmarkError("pilot library retrieval contract changed")
+    if config.get("evaluation_gate") != {
+        "primary_task_ids": ["H5-5", "H7-12", "H10-7", "H23-6"],
+        "minimum_time_positive_pairs": 3,
+        "minimum_median_time_reduction_fraction": 0.2,
+        "minimum_median_net_new_token_reduction_fraction": 0.2,
+        "require_both_conditions_faithful": True,
+        "forbid_incident_pairs": True,
+        "canary_task_id": "H00-00",
+        "canary_excluded_from_scientific_results": True,
+    }:
+        raise BenchmarkError("pilot evaluation gate changed")
     hardware = config.get("hardware")
     if not isinstance(hardware, dict) or hardware.get("tasks_max") != 512:
         raise BenchmarkError("pilot requires the frozen 512-task cgroup ceiling")
@@ -110,8 +138,8 @@ def verify_manifest() -> tuple[dict[str, Any], dict[str, Any]]:
     for index, schema in enumerate(manifest.get("schemas", [])):
         verify_file_ref(schema, label=f"schema[{index}]")
     tasks = manifest.get("tasks")
-    if not isinstance(tasks, list) or len(tasks) != 18:
-        raise BenchmarkError("manifest must contain exactly eighteen task records")
+    if not isinstance(tasks, list) or len(tasks) != 19:
+        raise BenchmarkError("manifest must contain exactly nineteen task records")
     observed: list[str] = []
     for index, task in enumerate(tasks):
         if not isinstance(task, dict) or not isinstance(task.get("task_id"), str):

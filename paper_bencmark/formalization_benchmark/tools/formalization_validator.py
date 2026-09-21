@@ -52,6 +52,7 @@ CGROUP_JOIN_FAILURE_MARKER = "HIGHAMBENCH_COMMAND_CGROUP_JOIN_FAILED"
 # outside the ordinary kernel-checked definition/theorem path.  ``partial`` and
 # the code-generation attributes are included as integrity-equivalent escapes.
 FORBIDDEN_TOKENS: Mapping[str, str] = {
+    "sorry": "proof hole",
     "admit": "additional proof hole",
     "axiom": "new axiom declaration",
     "constant": "new constant declaration",
@@ -461,13 +462,13 @@ def inspect_candidate_source(source: str) -> dict[str, Any]:
             )
 
     sorry_indices = [index for index, token in enumerate(tokens) if token.value == "sorry"]
-    if len(sorry_indices) != 1:
+    if sorry_indices:
         issues.append(
             _issue(
                 source,
-                tokens[sorry_indices[0]] if sorry_indices else None,
-                "root-hole-count",
-                f"expected exactly one `sorry`, found {len(sorry_indices)}",
+                tokens[sorry_indices[0]],
+                "proof-hole-count",
+                f"expected a complete proof with no `sorry`, found {len(sorry_indices)}",
             )
         )
 
@@ -508,53 +509,6 @@ def inspect_candidate_source(source: str) -> dict[str, Any]:
                 )
             )
 
-        if len(sorry_indices) == 1:
-            sorry_index = sorry_indices[0]
-            exact_hole = (
-                sorry_index >= 2
-                and tokens[sorry_index - 2].value == ":="
-                and tokens[sorry_index - 1].value == "by"
-                and sorry_index > root.token_index
-            )
-            intervening = [
-                item
-                for item in declarations
-                if root.token_index < item.token_index < sorry_index
-            ]
-            if not exact_hole or intervening:
-                issues.append(
-                    _issue(
-                        source,
-                        tokens[sorry_index],
-                        "root-hole-shape",
-                        "the sole hole must be the audited root's literal `:= by sorry` proof",
-                    )
-                )
-
-            # The protocol puts helpers above the target and requires the root
-            # proof to be exactly `by sorry`.  After it, only namespace/section
-            # closing commands are permitted.
-            cursor = sorry_index + 1
-            suffix_ok = True
-            while cursor < len(tokens):
-                if tokens[cursor].value != "end":
-                    suffix_ok = False
-                    break
-                cursor += 1
-                if cursor < len(tokens) and tokens[cursor].value != "end":
-                    name, after = _read_name(tokens, cursor)
-                    if name is not None:
-                        cursor = after
-            if not suffix_ok:
-                issues.append(
-                    _issue(
-                        source,
-                        tokens[cursor],
-                        "root-proof-not-exact",
-                        "only closing `end` commands may follow the root's `sorry`",
-                    )
-                )
-
     issue_key = lambda item: (
         int(item.get("line", 0)),
         int(item.get("column", 0)),
@@ -566,6 +520,17 @@ def inspect_candidate_source(source: str) -> dict[str, Any]:
         "pass": not issues,
         "target_declaration": TARGET_DECLARATION,
         "sorry_count": len(sorry_indices),
+        "nonblank_code_lines": sum(
+            1 for line in masked.splitlines() if line.strip()
+        ),
+        "imports": sorted(
+            {
+                module
+                for match in re.finditer(r"^\s*import\s+([^\n]+)$", masked, re.MULTILINE)
+                for module in match.group(1).split()
+                if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_'.]*", module)
+            }
+        ),
         "declarations": [
             {"kind": item.kind, "name": item.full_name} for item in declarations
         ],

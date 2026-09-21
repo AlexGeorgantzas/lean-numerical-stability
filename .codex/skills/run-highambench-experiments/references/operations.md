@@ -1,452 +1,142 @@
-# Source-first formalization operations
+# Pilot-14 operations
 
-Paths in this reference are relative to the repository root. The spelling
-`paper_bencmark` is intentional.
+## Identity and paths
 
-Pilot-13 is the separate warm-start successor. Pilots 1–12 are predecessor
-evidence, not Pilot-13 observations or runs to resume. Pilot-9's cold-start
-H22-11 pair remains sealed and must be labelled L-cold. The
-Pilot-10 one-shot scout also remains sealed: it failed closed because Codex's
-automatic context-compaction response was included in exact raw usage but
-omitted from thread-cumulative usage. No official Pilot-10 task started. Never
-retry its scout. Pilot-11 created the valid warm root, then sealed H22-11 as a
-pre-turn controller incident when an exact copied-parent usage notification was
-rejected after `thread/fork`. Pilot-12 fixed that boundary, then sealed H22-11
-because its L fork emitted 18 exact cumulative/`last` usage notifications but
-no raw-response usage events. Pilot-13 inherits the same root and exact
-Pilot-11 library/runtime build, admits that telemetry only under strict
-per-response checks, and charges neither scout time nor tokens. Never rebuild
-or rescout. The
-installed pilot-5 release retains its three-way audit and sealed P01-T2 and
-P02-T2 records; its `unclear` decisions must not be relabeled or supplied with
-manufactured feedback. Do not pool data across pilots or use pilot-5 task slots
-to satisfy a pilot-13 request. Pilot-13 must have its own pilot ID, deployment,
-launcher, task indices, and account-global reservations; it is not ready
-for measurement until its clean release and installation are authenticated and
-provider qualification passes. If any of these are missing, stop before an
-official pair; never substitute the pilot-5 runner.
+- Pilot: `formalization-benchmark-pilot-14`
+- Launcher: `~/.local/bin/run-highambench-formalization-pilot-14-r1`
+- Deployment: `/hdd/alexgeorgantzas/highambench/deployment-pilot-14-r1`
+- Predecessor: `/hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1`
+- Formalizer: `gpt-5.6-sol`, `xhigh`
+- Auditors: `gpt-6-astra`, `high`
+- Candidate: one final `HighamBenchCandidate.target`, complete proof, no holes
 
-## Canonical surfaces
+The release files under `paper_bencmark/formalization_benchmark/` are
+authoritative. Pilot-13 and earlier run roots are read-only.
 
-| Purpose | Path |
-| --- | --- |
-| Protocol | `paper_bencmark/formalization_benchmark/PROTOCOL.md` |
-| Runner | `paper_bencmark/formalization_benchmark/tools/run_benchmark.py` |
-| Frozen config | `paper_bencmark/formalization_benchmark/config.json` |
-| Frozen release manifest | `paper_bencmark/formalization_benchmark/manifest.json` |
-| Task packet | `paper_bencmark/formalization_benchmark/packets/<TASK-ID>.json` |
-| Common prompt | `paper_bencmark/formalization_benchmark/prompts/formalizer.md` |
-| One-time L scout | `paper_bencmark/formalization_benchmark/prompts/library_scout.md` |
-| Repair prompt | `paper_bencmark/formalization_benchmark/prompts/repair.md` |
-| Repair-feedback schema | `paper_bencmark/formalization_benchmark/schemas/repair_feedback.schema.json` |
+## Install once
 
-These are source-first surfaces. File presence alone is not admission evidence;
-the runner must hash-authenticate their complete transitive release closure.
-
-## Compatibility boundary
-
-The existing `paper_bencmark/highambench/tools/runner.py`,
-`paper_bencmark/highambench/tools/run_matrix.py`, and their campaign managers
-implement the legacy fixed-target proof experiment. They are
-incompatible with this pilot because they expose a prewritten target/common
-scaffold, score proof completion, use the old one-shot submission boundary, use
-legacy time/token stopping rules, and do not implement candidate-specific
-faithfulness repair.
-
-Never call `runner.py`, `run_matrix.py`, a P01/P11 campaign manager, a pair-shard
-launcher, or a legacy canary launcher for a source-first request. Never translate a
-source-first task into an old pair ID. If the canonical source-first runner,
-metadata, task packet, validator adapter, or audit adapter is missing or its
-`doctor` gate is unavailable, report `source_first_runner_not_ready` and stop
-before a provider call. Do not invent flags or manually reproduce the loop.
-
-The repository's existing `paper_bencmark/faithfulness_audit/` workflow was
-written for fixed task targets. It may supply audited methodology and reusable
-components only through the source-first adapter authenticated by the runner.
-Do not point it at a generated candidate by overwriting an old `Target.lean` or
-task-local audit directory.
-
-## Natural-language dispatch
-
-Normalize harmless separators and case, but require the canonical result to be
-one of:
-
-```text
-P01-T2
-P02-T2
-P03-T2
-P13-T2
-P14-T2
-H22-11
-H22-5
-H20-6
-H7-12
-H20-9
-H20-8
-H23-6
-H5-5
-H10-7
-H12-4
-H19-5
-H7-14
-H15-3
-```
-
-`Run benchmark for H22-11` means:
-
-1. select only `H22-11`;
-2. authenticate one immutable pair manifest;
-3. run exactly one N condition and one L condition in the frozen order; and
-4. stop after both have a terminal, authenticated result or the pair reaches a
-   hard-stop incident.
-
-It does not authorize additional repetitions, the other pilot tasks, metadata
-refresh, controlled-file edits, publication, commit, push, or deletion of an
-existing result.
-
-The frozen source packets establish the selected source results and their scope.
-They never pre-approve a generated candidate;
-every distinct semantic candidate still needs its own audit.
-
-## Admission
-
-On Titan, first require the dedicated pilot-13 launcher and deployment. If
-either is absent, stop with `source_first_runner_not_ready`; do not run pilot-5.
-Once installed, authenticate pilot-13 through its location-independent launcher:
+From a clean release checkout:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-13-r1 verify-release
+python3 paper_bencmark/formalization_benchmark/tools/setup_titan.py \
+  --pdf-source-dir /ABSOLUTE/PATH/TO/FROZEN/PDFS \
+  --predecessor-deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-13-r1 \
+  --deployment-root /hdd/alexgeorgantzas/highambench/deployment-pilot-14-r1 \
+  --launcher ~/.local/bin/run-highambench-formalization-pilot-14-r1
 ```
 
-Then run the canonical non-provider gate through the same installed hardware
-envelope:
+Setup must authenticate Pilot 13 and reuse its toolchain, packages, library
+source/OLean, build record, and warm checkpoint. It generates only the
+deterministic task-neutral atlas, records its full tree hash, runs provider-free
+runtime/sandbox/app-server/fork canaries, and publishes atomically. No `lake
+build`, package update, cache download, or model scout is permitted.
+
+## Readiness
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-13-r1 doctor \
-  --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-14-r1 verify-release
+~/.local/bin/run-highambench-formalization-pilot-14-r1 doctor --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-14-r1 qualify-provider --task-id H00-00
 ```
 
-Do not proceed unless `verify-release` and `doctor` both exit successfully and
-their authenticated outputs jointly confirm all of the following:
+Qualification is one-shot and off-benchmark. A previous PASSED record is reused
+only after full hash verification. Doctor must prove:
 
-- the task is pilot-allowlisted and the requested manifest resolves uniquely;
-- the exact PDF, cited source locations, neutral source contract packet, and
-  result ID match their recorded SHA-256 values;
-- the task prompt is byte-identical between conditions and L is bound to the
-  separately hashed, task-neutral warm root;
-- N has no tool-visible NumStability bytes or metadata, while L has exactly the
-  frozen authenticated source and compiled snapshot;
-- the NumStability snapshot includes an authenticated clean-build record,
-  complete build output, raw GNU `time` output, and admitted start/end hardware
-  observations, all classified as uncharged deployment evidence;
-- the prior target, shared task scaffold, gold Lean, proof, and prior audit
-  artifacts are absent from both contestant and candidate-auditor views;
-- the frozen Lean, Mathlib, model, reasoning effort, tool allowlist, runner,
-  validator, audit policy, and feedback schema agree;
-- the candidate contract requires one designated root theorem with `by sorry`
-  and prohibits every other `sorry`, `admit`, new axiom, or unsound substitute;
-- the run contract is four total submissions, an 18,000-second cumulative
-  active-time termination threshold, no benchmark token cap, and separate
-  off-clock validator/audit ledgers;
-- the outer allocation enforces 32 GiB RAM, 512 tasks, no swap, and exactly
-  eight assigned logical CPUs; the generated-command child enforces 24 GiB,
-  384 tasks, no swap, and its frozen CPU weight, while the trusted-control child
-  retains its configured reservation; all of these match the setup-frozen host,
-  CPU model, exact CPU set, and isolation scope;
-- the task index is either fresh or names an authenticated resumable/terminal
-  pair; official staging performs the final byte-for-byte N/L check before any
-  provider call; and
-- the private authentication file is present and the frozen Codex app-server
-  interface starts through the exact sandbox, attests effective
-  `agents.enabled=false`, `multi_agent=false`, and `multi_agent_v2=false`,
-  and stops without model inference or writing secrets to logs; the matching
-  Code Mode host is hash-pinned and mounted read-only beside `/codex`;
-- the sealed pilot-1 through pilot-12 predecessor lineage and the
-  account-global campaign lock/registry match the pilot-13 deployment record.
+- exact release, deployment, Codex/host, Lean, Mathlib, PDFs, packets, prompts;
+- frozen NumStability source/OLean/build and generated atlas identity;
+- N treatment absence and L-only source/OLean/atlas/guide exposure;
+- inherited warm-root/checkpoint identity and real-fork compatibility;
+- eight-CPU/32-GiB/no-swap outer envelope and generated-command cgroup;
+- account registry and predecessor locks; and
+- no existing official slot for a new task.
 
-CLI arguments may assert frozen values but may not override them. A mismatch is
-a hard stop. Do not auto-refresh hashes, amend prompts, weaken isolation, change
-the task order, or use a force flag during admission.
+## Canary
 
-## Pair invocation
-
-After successful admission, invoke exactly one pair:
+Run the synthetic end-to-end pair exactly once:
 
 ```bash
-~/.local/bin/run-highambench-formalization-pilot-13-r1 run \
-  --task-id H22-11
+~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H00-00
+~/.local/bin/run-highambench-formalization-pilot-14-r1 status --task-id H00-00
 ```
 
-Replace `H22-11` only with the single allowlisted task requested by the user.
-Do not add a repetition count. The runner, not the operator, selects the frozen
-N/L order and creates the pair/run identities.
+Require `COMPLETE`, both N and L `ACCEPTED_FAITHFUL`, complete exact active-time
+and usage telemetry, a compiled proof with zero holes, private semantic dossiers,
+uptake records, and graceful conversation shutdown. H00-00 is excluded from all
+scientific summaries regardless of performance.
 
-Before creating a fresh official pair ID or task index, the runner must pass
-the exact-model/effort provider-backed single-agent capability probes and live
-output-schema probes for every frozen audit role: blind translation, direct
-judgment, round-trip judgment, and adjudication. The latter use the exact
-schemas that production auditing will submit, with synthetic checkable
-outputs. It must also perform trace-backed synthetic workspace reads and a
-checked formalizer write under the same sandbox, plus a real task-neutral fork
-from the inherited root whose usage passes the exact warm-fork telemetry gate,
-and reject actual Code Mode
-startup failures in diagnostic events or stderr. Truncated tool-catalog text
-is not a startup diagnostic; pilot-4 falsely treated it as one. Static
-JSON-schema checks or a generic auditor probe do not establish provider
-acceptance of those schemas or tool availability. Qualification is outside the
-contestant clock and task slot; its separate time and tokens are retained as overhead. A
-failed or missing qualification stops without consuming a slot. The deprecated
-`multiAgentMode` response is not an attestation. Collaboration or
-foreign-thread events are provider infrastructure incompatibilities, never
-contestant rule violations.
+## One official task
 
-The explicit `qualify-provider --task-id H22-11` command may establish this
-readiness without starting a benchmark. Require the inherited READY root and
-provider-free real-fork canary; do not invoke a new scouting turn. After setup or repair, inspect all
-18 task statuses with provider-free `status`. Do not invoke official `run`
-until the user explicitly asks to start that task.
+Normalize case and hyphens, check the allowlist, then:
 
-Use the provider-free `status --task-id H22-11` command to inspect a task. Do
-not reissue `run` merely to inspect it. Reissue the same authenticated `run`
-command only when intentionally continuing an advertised resumable transition
-or retrieving the already terminal result. Recovery is supported before a
-condition's first turn and between terminal, hash-sealed condition records. A
-frozen-feedback transition continues automatically only while that condition's
-original app-server process remains alive. A controller or process interruption
-after any submission cannot be cold-resumed without losing exact usage and
-therefore becomes a fail-closed pair incident. Never edit the event stream or
-state files to advance a run.
-
-## Condition construction
-
-The runner must construct both conditions from the same authenticated neutral
-base:
-
-| Surface | N | L |
-| --- | --- | --- |
-| Frozen paper packet and source contract | identical | identical |
-| Common base prompt | identical | identical |
-| Lean and Mathlib | frozen | same frozen versions |
-| NumStability source/object/index | absent | frozen authenticated snapshot |
-| Task prompt | frozen common prompt | byte-identical common prompt |
-| Prior library orientation | absent | independent fork of the frozen scout root |
-
-The one-time scout prompt must encourage active library discovery and reuse,
-import, adaptation, or inspiration. It must also say that library material is
-not automatically source-faithful. It identifies
-`/library/NumStability`, `/library/NumStability.lean`, and compiled
-declarations on `LEAN_PATH`. No task material is present during scouting.
-Each L run copies the authenticated checkpoint privately and calls
-`thread/fork` from the scout thread and final scout turn. Do not start a new
-conversation with a dossier and do not reuse a task child as the next parent.
-
-The common prompt must require the exact selected result, say that faithful
-formalization is known to be achievable and has been achieved before, explain
-the independent audit, and direct the formalizer to inspect the target and all
-supporting definitions before submitting.
-
-Use fresh workspaces, caches, process namespaces, and task child conversations
-for N and L. The sole permitted shared model history is L's task-neutral frozen
-scout root; nothing learned from one benchmark task may enter another. Keep
-both conditions of the pair on the same authenticated
-hardware allocation. The account-global and predecessor locks must admit only one pilot pair
-at a time; do not bypass it to run separate tasks concurrently.
-
-## Candidate state machine
-
-Each condition follows this trusted state machine:
-
-```text
-READY
-  -> MODEL_ACTIVE through contestant-process quiescence
-  -> OFF_CLOCK_TELEMETRY_AND_BOOKKEEPING
-  -> CANDIDATE_FROZEN (separately timed and charged)
-  -> VALIDATING
-  -> AUDITING
-  -> ACCEPTED
-     or FEEDBACK_FROZEN -> MODEL_ACTIVE
-     or TERMINAL_LIMIT
+```bash
+~/.local/bin/run-highambench-formalization-pilot-14-r1 doctor --task-id H5-5
+~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H5-5
+~/.local/bin/run-highambench-formalization-pilot-14-r1 status --task-id H5-5
 ```
 
-The runner publishes the initial prompt or a repair-feedback packet only after
-recording its hash. It starts or resumes the model-active monotonic interval
-immediately before the `turn/start` RPC. The formalizer can inspect only its
-assigned environment, create the formalization, run Lean, and submit through
-the authenticated nonterminal candidate boundary.
+The controller owns ordering, prompt delivery, warm fork, metering, command
+quiescence, freeze/hash, validation, dossier extraction, audit, repair feedback,
+state transitions, and sealing. Do not manually create or edit run evidence.
 
-At submission, require the contestant process tree to become quiescent. This
-ends the model-active interval. After off-clock ordered telemetry settling and
-trusted bookkeeping, separately time and charge the stable copy/hash of the
-single submitted `Candidate.lean`. Scratch files and object files in the
-mutable workspace are not part of the submission. The contestant-active total
-is the sum of the model-active and candidate-freeze components. App-server
-teardown, artifact-log writing, validation, and auditing are off-clock. Every
-candidate snapshot consumes one of four slots, even when compilation or
-integrity fails.
+Reissuing `run` is permitted only when the task index points to the same
+nonterminal pair and the controller authenticates a safe boundary (before the
+first turn or between sealed conditions). A submitted condition is never
+cold-resumed without its live usage stream.
 
-The root theorem must formalize the exact source result and have proof body
-`by sorry`. Supporting definitions, structures, instances, notation and lemmas
-are permitted and charged. No other `sorry`, `admit`, new axiom, hidden target,
-unsafe escape, prohibited import, binary substitution, or undeclared external
-dependency is allowed.
+## Primary campaign
 
-The run terminates at the first faithful candidate, the fourth submitted
-candidate, or the 18,000-second cumulative contestant-active termination
-threshold. The active-time threshold never resets after feedback. Any timer or
-final-candidate-freeze overshoot is measured rather than clamped and produces
-the unscored `ACTIVE_TIME_LIMIT` outcome; an accepted or otherwise scored
-condition can never exceed the threshold. There is no contestant-token
-termination rule.
+After the canary succeeds, and only under explicit campaign authorization, run
+these frozen slots once each:
 
-## Validation, audit, and repair
+```bash
+~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H5-5
+~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H7-12
+~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H10-7
+~/.local/bin/run-highambench-formalization-pilot-14-r1 run --task-id H23-6
+~/.local/bin/run-highambench-formalization-pilot-14-r1 evaluate-gate
+```
 
-Trusted compilation and integrity validation begin after the candidate is
-frozen and remain off-clock. A compile- or integrity-invalid candidate does not
-receive a semantic audit. If another slot remains, the runner produces only
-frozen, categorical, fixed-schema validator feedback and returns it to the same
-formalizer conversation; raw compiler output is never included in repair
-feedback.
+Never substitute a task, rerun a slot, or weaken the gate after observing data.
 
-For each compiling candidate, record:
+## Candidate and retrieval checks
 
-1. the submitted `Candidate.lean` SHA-256; and
-2. a semantic-statement SHA-256 over the elaborated root theorem type and the
-   recursive closure of reached generated/NumStability declarations plus the
-   recorded one-level type/body frontier of reached Lean/Mathlib declarations.
+For every frozen attempt, require:
 
-Lean and Mathlib are a frozen, trusted semantic foundation. Their frontier is
-not recursively unfolded to foundational primitives: doing so would make the
-dossier unbounded and obscure standard-library meaning. Audit claims are
-therefore relative to the ordinary semantics of that hash-frozen foundation;
-the dossier records its exact frontier rather than claiming a complete
-transitive expansion of it.
+- exactly one final theorem named `HighamBenchCandidate.target`;
+- zero `sorry`, `admit`, new axiom/constant, `opaque`, `unsafe`, `partial`,
+  metaprogramming, extern, or compiler command;
+- successful compilation of a fresh immutable copy and a trusted `#check`;
+- raw/nonblank code lines, declarations, and imports recorded;
+- in L, atlas queries and reached NumStability declarations/modules recorded;
+- in N, zero treatment import/path/closure/trace evidence.
 
-Every distinct semantic hash requires a fresh audit. Auditors must be fresh,
-stateless, blind to condition and attempt number, and unable to see the
-formalizer transcript, other candidates, timing, tokens, the legacy target, or
-library provenance wherever de-identification is reliable. The dossier
-contains candidate semantics under the explicit closure/frontier policy; paper
-and packet are supplied separately only to paper-facing roles.
+The atlas is a discovery surface, not a gold mapping. L should run the ranked,
+bounded `/usr/bin/python3 /library-index/query.py <terms>` command, inspect only
+plausible source locations, and confirm exact types with Lean. Whole-library
+recursive scans are fallback.
 
-Acceptance requires the Pilot-13 audit's final `faithful` verdict. The blind and direct roles must each return one ordered record for every Dxxx dependency. The Dxxx ID, not the descriptive `name`, is dependency identity. Both judges must complete S01--S16 plus both implication directions. Every material
-binder, premise, restriction, quantifier dependency, and conclusion must match
-the selected paper result without vacuity, unsupported assumptions, or narrower
-applicability. Auditor disagreement is resolved by adjudication against the
-paper and candidate semantics. Provider failure, malformed auditor output,
-unavailable tools, or dossier failure is an unscored operational incident;
-it is not a semantic verdict.
+## Audit checks
 
-The only final semantic verdicts for a valid Pilot-13 candidate are `faithful` and
-`unfaithful`. Equivalent and genuinely stronger candidates are faithful; weaker,
-different, restricted, vacuous, and partial-case candidates are unfaithful. An
-intermediate `undetermined` judge classification is an adjudication trigger,
-not a candidate outcome. A candidate must encode enough semantics to
-cover the paper's full domain. If coverage depends on an equivalence it does
-not establish—such as successful partial arithmetic operations versus the
-paper's no-overflow assumption—the verdict is `unfaithful` with a concrete
-paper-requirement/candidate-mismatch pair, followed by ordinary repair if a
-slot remains. An auditor must not turn that candidate-caused gap into a third
-verdict or accept it on an unsupported assumption. Provider failures,
-malformed outputs, unavailable tools, and dossier failures stay unscored
-operational incidents, not candidate verdicts. A genuinely underdetermined
-source contract requires source-admissibility resolution or exclusion before
-scoring and must not be attributed to a candidate. This policy becomes
-operative only after the pilot-13 release and provider qualification pass;
-the installed pilot-5 release remains historically unchanged.
+Every distinct semantic hash gets a fresh candidate audit. Require independent
+blind, direct, and round-trip roles; one ordered record for every Dxxx
+dependency in blind/direct outputs; S01-S16; both implication directions; and
+fresh adjudication of every trigger. Auditors see the PDF, packet, and
+pseudonymized dossier, never candidate provenance, proof, condition, attempt,
+or uptake telemetry.
 
-For an unfaithful candidate with a slot remaining, render feedback only through
-the frozen condition-neutral schema. It identifies each missing paper
-requirement, the candidate mismatch, and the required direction of repair. It
-must not contain a gold theorem, Lean code, tactics, proof steps, adapters,
-NumStability names, condition/attempt labels, or raw auditor reasoning. Freeze
-and hash the feedback before returning it to the same conversation. Resume the
-active clock immediately before it is delivered.
+Final valid verdicts are only `faithful` and `unfaithful`. Full-domain genuine
+strengthening may pass. Proper-subdomain or partial case-split coverage fails.
+Feedback must be condition-neutral and must not reveal Lean/library names.
 
-Never reuse an audit verdict for a candidate whose semantic closure changed.
-Never send raw role outputs or deliberations to the formalizer.
+## Measurement and reporting
 
-## Metering and logging
+Charge each formalizer task/repair turn through process quiescence and candidate
+freeze/hash. Exclude installation/scout, validation, dossier, audit, and
+controller overhead while recording each separately. Preserve raw provider
+usage plus task-local net-new tokens. Do not infer hidden reasoning.
 
-The contestant ledger sums each model-active interval and the separately timed
-candidate-freeze component. Model-active time includes provider latency,
-visible generation, tool calls, library search, shell work, contestant-initiated
-Lean builds, background-terminal cleanup/quiescence, and all descendants.
-Ordered telemetry settling and trusted bookkeeping between quiescence and
-freeze are excluded. Multi-agent execution is disabled for this pilot.
-
-The contestant token ledger imposes no cap. One app-server process stays alive
-across all repairs. Fresh threads require raw-response usage, deduplicated by
-response ID and cross-checked against cumulative thread deltas. Warm forks use
-the same surface when present; otherwise the controller accepts only ordered
-`thread/tokenUsage/updated` notifications received before `turn/completed`.
-Each notification's exact `last` usage must equal its fieldwise delta from the
-previous cumulative total, beginning at the authenticated fork baseline, and
-the turn total is the sum of those exact records. A duplicate, mismatch, late
-notification, missing notification, or context-compaction item without raw
-usage is `telemetry_invalid`, never zero. Usage observed
-before an active-time interruption is retained as a clearly labeled lower
-bound; it does not replace the valid `ACTIVE_TIME_LIMIT` endpoint.
-If the controller or host dies before a complete turn or final-freeze duration
-is durably journaled, seal an unscored pair incident and label the affected
-token and/or active-time totals as incomplete observed lower bounds. Never
-present those partial totals as exact.
-
-Validation, audit, adjudication and feedback-rendering durations and tokens are
-recorded separately and excluded from contestant time/tokens. End-to-end
-elapsed time is still reported.
-
-Record observable evidence: frozen prompts and feedback, visible messages and
-reasoning summaries when exposed, provider-reported input, cached-input,
-cache-write-input, output, reasoning-output, and total token counts, tool calls,
-commands, executable/script hashes, outputs, candidate snapshots, imports,
-dependency evidence for reached L-library declarations, line counts, validator
-results, audit classifications, hardware observations, and all ledger
-transitions.
-
-Record the effective CPU set, memory and swap limits, CPU/host identity, and
-isolation identity at the start and end of every condition attempt. The outer
-service enforces affinity to eight CPUs plus cgroup limits of 32 GiB, 512 tasks,
-and no swap. Generated command trees are additionally limited to 24 GiB, 384
-tasks, and no swap, while the trusted controller has an 8-GiB `memory.low`
-reservation. A service-wide syscall filter denies affinity changes for the
-controller, Codex, build tools, auditors, and descendants; the command seccomp
-policy independently repeats that denial. Every strict hardware snapshot runs
-a no-op affinity syscall canary and fails unless the kernel rejects it.
-Command-child limit events are terminal evidence. Other operating-system
-resource counters that are reported are observations, not frozen admission
-criteria.
-
-Never request or log hidden chain-of-thought. Never describe visible reasoning
-summaries or ordinary token counts as chain-of-thought. Keep system
-and developer prompts, credentials, authentication material, and restricted
-provider records out of publishable artifacts.
-
-## Results, resume, and reporting
-
-Preserve immutable run directories and their event streams. Do not delete,
-overwrite, merge, rename, or reuse an existing run ID. A hard-stop or
-interrupted run remains evidence. Continue only when the source-first CLI
-verifies its hash chain and advertises a pre-first-turn or between-condition
-transition; never cold-resume a submitted condition. Inspect with `status`;
-reissue `run` only to intentionally continue such a transition or retrieve the
-terminal result.
-
-For each condition report:
-
-- terminal classification and accepted semantic hash, if any;
-- number of submissions and failure class for each;
-- first-submission and cumulative contestant-active time;
-- first-submission and cumulative contestant tokens;
-- completeness/interpretation labels for both time and token totals, especially
-  for an unscored interrupted pair;
-- formalization size and dependency profile;
-- separate validation/audit time and token overhead;
-- end-to-end elapsed time and hardware/resource observations; and
-- immutable artifact and ledger paths.
-
-For the pair, report the frozen order and manifest identifiers and make only a
-descriptive N/L comparison. With one pair per task, this pilot evaluates
-pipeline behavior and does not support a precise stochastic-effect estimate.
-
-Do not publish, commit, push, upload, or expose raw result material unless the
-user separately authorizes that action.
+For terminal reports include pair/run IDs, release/manifest/deployment hashes,
+condition order and statuses, submission counts, active seconds, exact token
+components, net-new tokens, raw/nonblank lines, declaration count, treatment
+uptake/modules, atlas/source-search counts, audit usage/time, and authenticated
+artifact paths.

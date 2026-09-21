@@ -1,4 +1,4 @@
 interface:
-  display_name: "Run HighamBench Formalization"
-  short_description: "Run one source-first N/L formalization pair"
-  default_prompt: "Use $run-highambench-experiments to run the source-first benchmark for H22-11."
+  display_name: "Run HighamBench Pilot 14"
+  short_description: "Run one proof-required N/L formalization pair"
+  default_prompt: "Use $run-highambench-experiments to run Pilot-14 for H5-5."

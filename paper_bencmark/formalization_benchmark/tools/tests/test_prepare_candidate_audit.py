@@ -42,7 +42,7 @@ summary\t3\t3
 GOOD_SOURCE = """\
 namespace HighamBenchCandidate
 def LocalThing := Nat
-theorem target : ∀ x : LocalThing, x = x := by sorry
+theorem target : ∀ x : LocalThing, x = x := by intro x; rfl
 end HighamBenchCandidate
 """
 
@@ -131,7 +131,7 @@ class CandidateDossierTests(unittest.TestCase):
             candidate.write_text(
                 "namespace HighamBenchCandidate\n"
                 "def reflected (n : Nat) : Nat := n\n"
-                "theorem target : ∀ n : Nat, reflected n = n := by sorry\n"
+                "theorem target : ∀ n : Nat, reflected n = n := by intro n; rfl\n"
                 "end HighamBenchCandidate\n",
                 encoding="utf-8",
             )
@@ -157,7 +157,7 @@ class CandidateDossierTests(unittest.TestCase):
                 "private def tailIndex (n : Nat) : Nat := firstIndex n + 1\n"
                 "def pairwiseSum (n : Nat) : Nat := firstIndex n\n"
                 "def recursiveSum (n : Nat) : Nat := tailIndex n\n"
-                "theorem target : ∀ n : Nat, pairwiseSum n = recursiveSum n := by sorry\n"
+                "theorem target : ∀ n : Nat, pairwiseSum n + 1 = recursiveSum n := by intro n; rfl\n"
                 "end HighamBenchCandidate\n",
                 encoding="utf-8",
             )

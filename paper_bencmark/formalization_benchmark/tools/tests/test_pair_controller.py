@@ -271,6 +271,28 @@ class PairControllerDryRunTests(unittest.TestCase):
         self.paper.write_bytes(b"%PDF-1.4\nprovider-free fixture\n")
         deployment_record = self.root / "deployment.json"
         deployment_record.write_text("{}\n", encoding="utf-8")
+        library_atlas = self.root / "library-atlas"
+        library_atlas.mkdir()
+        (library_atlas / "GUIDE.md").write_text(
+            "# Fixture library guide\n", encoding="utf-8"
+        )
+        declarations = library_atlas / "declarations.jsonl"
+        declarations.write_text('{"name":"fixture"}\n', encoding="utf-8")
+        (library_atlas / "query.py").write_text("print('fixture')\n", encoding="utf-8")
+        (library_atlas / "atlas.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": "numstability-library-atlas-1",
+                    "library_commit": source_commit,
+                    "declaration_count": 1,
+                    "module_count": 1,
+                    "source_file_count": 1,
+                    "source_closure_sha256": "a" * 64,
+                    "declarations_sha256": sha256_file(declarations),
+                }
+            ),
+            encoding="utf-8",
+        )
         self.deployment = Deployment(
             path=deployment_record,
             run_root=self.root / "runs",
@@ -283,6 +305,7 @@ class PairControllerDryRunTests(unittest.TestCase):
             packages_root=packages,
             library_source=library_source,
             library_olean=library_olean,
+            library_atlas=library_atlas,
             library_snapshot_record=snapshot,
             runtime_snapshot_record=runtime_snapshot,
             strict_hardware=False,

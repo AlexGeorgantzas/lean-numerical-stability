@@ -9,14 +9,14 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from common import BenchmarkError, load_json, sha256_file
+from common import BenchmarkError, load_json, sha256_file, tree_manifest
 
 
 DEFAULT_DEPLOYMENT = (
     Path.home()
     / ".local"
     / "share"
-    / "highambench-formalization-pilot-13-r1"
+    / "highambench-formalization-pilot-14-r1"
     / "deployment.json"
 )
 GLOBAL_REGISTRY_ROOT = (
@@ -40,6 +40,7 @@ class Deployment:
     packages_root: Path
     library_source: Path
     library_olean: Path
+    library_atlas: Path
     library_snapshot_record: Path
     runtime_snapshot_record: Path
     strict_hardware: bool
@@ -102,8 +103,8 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     value = load_json(path)
     if value.get("schema_version") != "formalization-deployment-1":
         raise BenchmarkError("unsupported deployment record")
-    if value.get("pilot_id") != "formalization-benchmark-pilot-13":
-        raise BenchmarkError("deployment does not identify the pilot-13 release")
+    if value.get("pilot_id") != "formalization-benchmark-pilot-14":
+        raise BenchmarkError("deployment does not identify the pilot-14 release")
     for field, length in (
         ("release_commit", 40),
         ("release_manifest_sha256", 64),
@@ -231,6 +232,9 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
     run_root.mkdir(parents=True, exist_ok=True, mode=0o700)
     if run_root.is_symlink():
         raise BenchmarkError("deployment run_root may not be a symlink")
+    library_atlas = _required_path(value, "library_atlas", directory=True)
+    if value.get("library_atlas_manifest") != tree_manifest(library_atlas):
+        raise BenchmarkError("deployment library atlas changed after installation")
     return Deployment(
         path=path,
         run_root=run_root,
@@ -243,6 +247,7 @@ def load_deployment(explicit: Path | None = None) -> Deployment:
         packages_root=_required_path(value, "packages_root", directory=True),
         library_source=_required_path(value, "library_source", directory=True),
         library_olean=_required_path(value, "library_olean", directory=True),
+        library_atlas=library_atlas,
         library_snapshot_record=_required_path(value, "library_snapshot_record"),
         runtime_snapshot_record=_required_path(value, "runtime_snapshot_record"),
         strict_hardware=value.get("strict_hardware") is not False,
