@@ -574,3 +574,23 @@ H00-00, then run the four predeclared primary pairs and evaluate the frozen gate
 **Needs:** Commit and push Pilot-15, install it beside all predecessors using
 the same frozen Pilot-13 runtime/build/scout lineage, qualify once, run H00-00,
 then run the four predeclared primary tasks and evaluate the unchanged gate.
+
+---
+
+## 2026-09-22 — Codex — codex/pilot-16-composition-packets — matched exploratory runner
+
+**Did:** Added `tools/design16_matched.py` and focused tests for sequential R0
+(Mathlib-only) versus R1 (Mathlib plus NumStability) engineering pairs. Both
+conditions use the same bounded retriever and prompt, fresh stateless
+formalizers, compile-only preflight, separate retrieval/formalizer timing, and
+condition-specific OLean visibility. Added the exact CLI/setup note at
+`design16/MATCHED_RUNNER.md`.
+
+**Careful:** Every output is labelled `UNSCORED_ENGINEERING_EXPLORATORY` and
+`NOT_AUDITED`. A successful run is only `COMPILED_UNAUDITED`; it is not a
+scientific observation until an independent faithfulness audit is bound to it.
+The Pilot-15 manifest was deliberately not refreshed or edited.
+
+**Needs:** Build one frozen Mathlib atlas on Titan, then invoke the runner with
+an explicit counterbalanced `--condition-order`. Do not run timed conditions
+concurrently on the eight-core host.
