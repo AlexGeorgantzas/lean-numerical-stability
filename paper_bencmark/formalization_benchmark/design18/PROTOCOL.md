@@ -53,6 +53,11 @@ time ratio. Timed formalizer conditions run sequentially under the same Titan
 8-CPU/32-GiB envelope. Provider-free checks for independent tasks and the
 permitted independent audit lanes may run concurrently.
 
+The separate compile preflight may test controller-generated one-sorry
+templates for the first three tasks before source admission. It sees no model
+candidate, does not run a judge, and supplies no result to either condition.
+Its cost and artifacts are excluded from the measured task pairs.
+
 ## Measurement and audit
 
 Every task receives one R0/R1 pair in a predeclared counterbalanced order.

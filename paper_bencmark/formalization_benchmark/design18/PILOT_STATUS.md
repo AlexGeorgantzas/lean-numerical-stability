@@ -21,7 +21,8 @@ release is deliberately fail-closed while the gates below remain unresolved.
   9,411 bytes, safely below the frozen 64-KiB cap. Its R0 route produced 2,518
   bytes. Both use ten-root/two-dependency limits and identical routing code.
 - The provider-free preflight ran successfully on Titan from an isolated,
-  detached worktree at commit `30c57b7cfa3f9bb8f27f4afac9de2879461affc1`.
+  detached worktree, updated through commit
+  `420ce225125a8e8b4a0e0088bc65eaef065e81a8`.
   It reported `NOT_ADMITTED_SOURCE_FLAGS`, twelve packets, and an exact prompt
   prefix match. It did not run a formalizer or auditor.
 - One independent, fresh `gpt-6-astra`/`high` paper-side review of
@@ -50,8 +51,14 @@ PYTHONPATH=paper_bencmark/formalization_benchmark/tools \
 
 1. A real off-benchmark Titan probe of `gpt-6-sol`/`xhigh` returned HTTP 400:
    the model is not supported for Codex with the currently signed-in ChatGPT
-   account. No API credential is configured on Titan. Do not silently use
-   another model, pricing route, or account.
+   account. The exact Pilot-18 qualification repeated this under the fixed
+   8-CPU/32-GiB envelope at 2026-09-22 22:44 UTC and failed after 3.36 seconds
+   with **zero** model tokens; its immutable record is at
+   `/hdd/alexgeorgantzas/highambench/pilot18-model-gate-v1/qualification.json`
+   on Titan (SHA-256
+   `a684c5ff00aaa413d8ededb4af67e3b1eb7ebe28ad1a4100fc53e7465c88ee7e`).
+   No API credential is configured on Titan. Do not silently use another
+   model, pricing route, or account.
 2. `HM19-3-4` prints `j=1:n` for a matrix with `p` columns. A documented
    correction to `j=1:p` is mathematically indicated by the proof but must be
    decided before freezing the packet.
@@ -66,6 +73,13 @@ PYTHONPATH=paper_bencmark/formalization_benchmark/tools \
    slowdown/uptake stops; it has not run a measured pair. It still needs a
    successful provider capability check and end-to-end canary on Titan before
    measurement. The mere presence of wrapper code is not a runnable release.
+
+The Titan campaign entry point was also dry-gated under the enforced envelope:
+it stopped on source flags before creating an output directory. A separate
+provider-free `design18_compile_preflight.py` can check the first three
+controller-generated packets, signature interfaces, OLean closure, and one-sorry
+templates without invoking a formalizer or judge. This is an infrastructure
+check only; any output is excluded from benchmark metrics.
 
 The source alternatives under investigation, **not admitted replacements**, are
 to select equation (3.12) alone from Higham–Mary Theorem 3.4 (thus avoiding its
