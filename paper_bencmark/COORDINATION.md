@@ -648,3 +648,23 @@ statement condition classification (`FAITHFUL`, `UNFAITHFUL_OR_FAILED`, and
 the attempt sum and exposed as the primary timer. Its R1/R0 effect ratio is
 published only for `AUDITED_FAITHFUL_PAIR`; ineligible and infrastructure
 outcomes retain authenticated raw diagnostics but no effect ratio.
+
+---
+
+## 2026-09-22 — Codex — codex/pilot-16-composition-packets — Design17 13-task campaign complete
+
+**Did:** Completed all 13 Design17 statement-only pairs on Titan at controller
+commit `c5c279d3dff674f9b91c5a774f8db76eac487431`: 12 audited-faithful
+pairs, one audited-ineligible pair (H12-4), and zero incidents. The authenticated
+offline report is summarized in `paper_bencmark/DESIGN17_CAMPAIGN_2026-09-22.md`;
+Titan report SHA-256 values are recorded there.
+
+**Careful:** The campaign is `UNSCORED_ENGINEERING_EXPLORATORY`. Only H5-5 and
+H10-7 are primary-engineering tasks; negative controls and excluded collision/
+router diagnostics must not be pooled with them. H23-6 exposed a component-
+router false negative, while H12-4 exposed an incomplete semantic source
+contract.
+
+**Needs:** Implement component-level composition packets and a semantic
+source-contract gate, then validate H23-6 and H10-7 as canaries before launching
+another large campaign. Do not rewrite or resume the completed Titan campaign.
