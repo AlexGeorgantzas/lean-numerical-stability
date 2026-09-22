@@ -13,7 +13,7 @@ TOOLS = Path(__file__).resolve().parents[1]
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from common import BenchmarkError, sha256_file  # noqa: E402
+from common import BenchmarkError, sha256_file, tree_manifest  # noqa: E402
 from design16_matched import (  # noqa: E402
     SCIENTIFIC_STATUS,
     _atlas_declarations,
@@ -24,6 +24,7 @@ from design16_matched import (  # noqa: E402
     _build_packet_olean_runtime,
     _library_exploration_policy,
     _packet_treatment_allowlist,
+    _prepare_warm_fork,
     _parse_signature_interface_report,
     _parse_signature_render_report,
     _signature_render_source,
@@ -67,6 +68,58 @@ def _write_atlas(root: Path, modules: list[str]) -> Path:
 
 
 class Design16MatchedTests(unittest.TestCase):
+    def test_pilot18_warm_fork_copies_verified_checkpoint_only_for_r1(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            warm_root = root / "warm"
+            checkpoint = warm_root / "checkpoint"
+            state = checkpoint / "state"
+            state.mkdir(parents=True)
+            (state / "conversation.json").write_text("{}", encoding="utf-8")
+            prompt = root / "scout.md"
+            prompt.write_text("task-neutral", encoding="utf-8")
+            atlas = root / "atlas"
+            atlas.mkdir()
+            (atlas / "declarations.jsonl").write_text("{}\n", encoding="utf-8")
+            binary = root / "codex"
+            binary.write_bytes(b"synthetic-codex")
+            (warm_root / "warm-root.json").write_text(json.dumps({
+                "schema_version": "pilot-18-warm-root-1", "status": "READY",
+                "model": "gpt-6-sol", "reasoning_effort": "xhigh",
+                "scout_prompt_sha256": sha256_file(prompt),
+                "library_atlas_sha256": sha256_file(atlas / "declarations.jsonl"),
+                "codex_binary_sha256": sha256_file(binary),
+                "code_mode_host_sha256": "a" * 64,
+                "source_thread_id": "source-thread", "source_last_turn_id": "source-turn",
+                "source_cumulative_usage": {"input_tokens": 100},
+                "checkpoint_manifest": tree_manifest(checkpoint),
+            }), encoding="utf-8")
+            auth = root / "auth.json"
+            auth.write_text('{"token":"test-only"}', encoding="utf-8")
+            args = types.SimpleNamespace(warm_root=warm_root, model="gpt-6-sol",
+                                         reasoning_effort="xhigh",
+                                         warm_scout_prompt_path=prompt)
+            deployment = types.SimpleNamespace(
+                auth_file=auth, library_atlas=atlas, codex_binary=binary,
+                code_mode_host_sha256="a" * 64,
+            )
+            control = types.SimpleNamespace(name="R0")
+            self.assertEqual(_prepare_warm_fork(
+                args=args, deployment=deployment, spec=control,
+                condition_root=root / "control",
+            ), (None, {}))
+            treatment_root = root / "treatment"
+            treatment_root.mkdir()
+            treatment = types.SimpleNamespace(name="R1")
+            private_state, fork = _prepare_warm_fork(
+                args=args, deployment=deployment, spec=treatment,
+                condition_root=treatment_root,
+            )
+            self.assertEqual(private_state, treatment_root / "warm-seed" / "state")
+            self.assertEqual(fork["fork_source_thread_id"], "source-thread")
+            self.assertEqual(tree_manifest(treatment_root / "warm-seed"),
+                             tree_manifest(checkpoint))
+
     def test_statement_submission_clock_includes_return_to_freeze_gap(self) -> None:
         clock = _submission_clock(
             active_started_perf_ns=1_000_000_000,

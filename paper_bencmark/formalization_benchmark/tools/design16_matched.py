@@ -31,11 +31,13 @@ from audit_controller import AuditController
 from codex_driver import CodexDriver
 from common import (
     BenchmarkError,
+    assert_no_credentials_in_tree,
     freeze_candidate,
     load_json,
     make_repair_feedback,
     sha256_file,
     utc_now,
+    verify_tree_manifest,
     write_bytes_atomic,
     write_json_atomic,
 )
@@ -1054,6 +1056,59 @@ def _library_exploration_policy(events_path: Path) -> dict[str, Any]:
     }
 
 
+def _prepare_warm_fork(
+    *, args: argparse.Namespace, deployment: Deployment,
+    spec: ConditionSpec, condition_root: Path,
+) -> tuple[Path | None, dict[str, Any]]:
+    """Copy and verify a task-private scout checkpoint before the task clock."""
+    warm_fork: dict[str, Any] = {}
+    state_root: Path | None = None
+    warm_root_arg = getattr(args, "warm_root", None)
+    if spec.name == "R1" and warm_root_arg is not None:
+        scout_prompt_arg = getattr(args, "warm_scout_prompt_path", None)
+        if scout_prompt_arg is None:
+            raise BenchmarkError("Pilot 18 warm-root scout prompt identity is missing")
+        warm_root = Path(warm_root_arg).expanduser().resolve()
+        warm = load_json(warm_root / "warm-root.json")
+        checkpoint = warm_root / "checkpoint"
+        if (
+            warm.get("schema_version") != "pilot-18-warm-root-1"
+            or warm.get("status") != "READY"
+            or warm.get("model") != args.model
+            or warm.get("reasoning_effort") != args.reasoning_effort
+            or warm.get("scout_prompt_sha256") != sha256_file(
+                Path(scout_prompt_arg)
+            )
+            or warm.get("library_atlas_sha256") != sha256_file(
+                deployment.library_atlas / "declarations.jsonl"
+            )
+            or warm.get("codex_binary_sha256") != sha256_file(deployment.codex_binary)
+            or warm.get("code_mode_host_sha256") != deployment.code_mode_host_sha256
+            or not isinstance(warm.get("source_thread_id"), str)
+            or not isinstance(warm.get("source_last_turn_id"), str)
+            or not isinstance(warm.get("source_cumulative_usage"), dict)
+        ):
+            raise BenchmarkError("Pilot 18 warm-root fork record is incompatible")
+        verify_tree_manifest(
+            checkpoint, warm.get("checkpoint_manifest"), label="Pilot 18 warm root"
+        )
+        assert_no_credentials_in_tree(checkpoint, deployment.auth_file)
+        seed = condition_root / "warm-seed"
+        if seed.exists() or seed.is_symlink():
+            raise BenchmarkError("Pilot 18 private warm seed already exists")
+        shutil.copytree(checkpoint, seed, symlinks=True)
+        verify_tree_manifest(
+            seed, warm["checkpoint_manifest"], label="Pilot 18 private warm seed"
+        )
+        state_root = seed / "state"
+        warm_fork = {
+            "fork_source_thread_id": warm["source_thread_id"],
+            "fork_source_last_turn_id": warm["source_last_turn_id"],
+            "fork_source_cumulative_usage": warm["source_cumulative_usage"],
+        }
+    return state_root, warm_fork
+
+
 def _run_statement_condition_attempts(
     *,
     args: argparse.Namespace,
@@ -1074,12 +1129,17 @@ def _run_statement_condition_attempts(
 ) -> dict[str, Any]:
     """Run the statement-only audit/repair loop in one persisted conversation."""
 
+    state_root, warm_fork = _prepare_warm_fork(
+        args=args, deployment=deployment, spec=spec,
+        condition_root=condition_root,
+    )
+
     driver = StatementCodexDriver(
         codex_binary=deployment.codex_binary,
         code_mode_host_sha256=deployment.code_mode_host_sha256,
         model=args.model,
         reasoning_effort=args.reasoning_effort,
-        state_root=None,
+        state_root=state_root,
         auth_file=deployment.auth_file,
         bwrap_binary=deployment.bwrap_binary,
         offline_shell=deployment.offline_shell,
@@ -1092,6 +1152,7 @@ def _run_statement_condition_attempts(
             workspace / "ENVIRONMENT.md",
             workspace / "LIBRARY_API.md",
         ],
+        **warm_fork,
     )
     attempts: list[dict[str, Any]] = []
     cumulative_usage = {
@@ -1509,7 +1570,11 @@ def _run_statement_condition_attempts(
         "condition": spec.name,
         "corpus_id": spec.corpus_id,
         "created_at_utc": utc_now(),
-        "fresh_stateless_formalizer": True,
+        "fresh_stateless_formalizer": not bool(warm_fork),
+        "warm_or_forked_conversation": bool(warm_fork),
+        "warm_source_thread_id": (
+            warm_fork.get("fork_source_thread_id") if warm_fork else None
+        ),
         "same_conversation_repairs": True,
         "submission_limit": int(args.submission_limit),
         "submission_count": len(attempts),
@@ -1584,6 +1649,7 @@ def _run_condition(
         root_limit=int(args.root_limit),
         dependency_limit=int(args.dependency_limit),
         maximum_markdown_bytes=int(args.maximum_packet_bytes),
+        selection_policy=getattr(args, "selection_policy", "legacy-coupled-title"),
     )
     signature_interface = _derive_signature_interface(
         deployment=deployment,
@@ -1606,6 +1672,7 @@ def _run_condition(
         dependency_limit=int(args.dependency_limit),
         maximum_markdown_bytes=int(args.maximum_packet_bytes),
         exposed_signature_overrides=canonical_signatures,
+        selection_policy=getattr(args, "selection_policy", "legacy-coupled-title"),
     )
     if (
         composition["route_status"] != retrieval_composition["route_status"]

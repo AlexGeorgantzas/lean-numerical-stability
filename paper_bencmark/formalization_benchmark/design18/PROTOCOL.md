@@ -33,13 +33,17 @@ target conclusion or a disguised source-specific equivalent is forbidden.
 
 ## Admission before model calls
 
-For every task, an independent paper-side source contract must state all
-quantifiers, data domains, model assumptions, probability event, exact
-coefficient, algorithm/order, conclusion, and referenced definitions. A
-provider-free leakage review must distinguish reusable lower-level components
-from the target result under any name. Both checks and their failures are
-published for all twelve before any timed run. Source defects are not silently
-repaired by adding assumptions or weakening the selected conclusion.
+For every task, a frozen paper-side source contract must state all quantifiers,
+data domains, model assumptions, probability event, exact coefficient,
+algorithm/order, conclusion, and referenced definitions. Its PDF/packet check
+is performed before any timed run; a separate model source-contract call is
+reserved for genuinely ambiguous source passages, because the packet is
+static and such calls are expensive. A provider-free leakage review must
+distinguish reusable lower-level components from the target result under any
+name. Checks and failures are published for all twelve before measurement.
+Source defects are not silently repaired by adding assumptions or weakening
+the selected conclusion. The candidate-specific blind/direct/round-trip
+faithfulness audit is unchanged and remains mandatory for every submission.
 
 Development canaries come from other source papers and are excluded from this
 corpus. They test model availability, condition isolation, task-neutral
@@ -85,3 +89,13 @@ observations. If there is no design change, finish the frozen twelve-task
 schedule. Report Higham–Mary as a correlated source-paper cluster, not eight
 independent confirmations. The corpus is selected for component coverage, so
 generalization is only to that stated eligibility class.
+
+The `design18_campaign.py` sequencer runs the declared order once, alternates
+condition order, records each immutable pair hash, and applies the early gate
+without choosing tasks based on outcomes. It stops on any first-three pair not
+audited faithful on both sides, any first-three R1/R0 contestant-system time
+ratio at least 1.5, or an accepted R1 target type with no reachable
+NumStability declaration through the candidate dependency graph. A paused
+campaign cannot silently resume or overwrite an existing output directory.
+This automatic gate is diagnostic, not permission to discard an unfavorable
+result; it is retained in the campaign journal.

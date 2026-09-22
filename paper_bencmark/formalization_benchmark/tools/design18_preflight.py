@@ -30,6 +30,11 @@ def check_corpus(
         raise BenchmarkError("Pilot 18 requires twelve distinct task IDs")
     if set(corpus.get("early_review_order", [])) - set(task_ids):
         raise BenchmarkError("early-review order contains an unknown task")
+    scheduled = corpus.get("scheduled_order")
+    if (not isinstance(scheduled, list) or len(scheduled) != 12
+            or set(scheduled) != set(task_ids)
+            or scheduled[:3] != corpus["early_review_order"]):
+        raise BenchmarkError("frozen task schedule is not a permutation with early canaries first")
     source_pdfs = corpus.get("source_pdfs")
     if not isinstance(source_pdfs, dict):
         raise BenchmarkError("source PDF manifest is malformed")

@@ -24,6 +24,13 @@
     }
   },
   "early_review_order": ["HM19-3-2", "HALL21-3-3", "CASTRO24-4-2"],
+  "scheduled_order": [
+    "HM19-3-2", "HALL21-3-3", "CASTRO24-4-2",
+    "HM19-2-4", "HM19-3-1", "HM19-3-3", "HM19-3-4",
+    "HM19-3-5", "HM19-3-6", "HM19-3-7", "HM19-3-8",
+    "CASTRO24-4-1"
+  ],
+  "condition_order_policy": "alternate R0,R1 then R1,R0 by zero-based scheduled index",
   "task_ids": [
     "HM19-2-4",
     "HM19-3-1",
