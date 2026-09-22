@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 from pathlib import Path
 import sys
 import tempfile
@@ -16,6 +17,7 @@ if str(TOOLS) not in sys.path:
 from common import BenchmarkError, sha256_file  # noqa: E402
 import design18_matched  # noqa: E402
 from design18_matched import _qualified, run  # noqa: E402
+from design18_model_qualify import PROMPT as QUALIFICATION_PROMPT  # noqa: E402
 
 
 class Pilot18MatchedTests(unittest.TestCase):
@@ -31,6 +33,9 @@ class Pilot18MatchedTests(unittest.TestCase):
                 "reasoning_effort": "xhigh",
                 "codex_binary_sha256": sha256_file(binary),
                 "code_mode_host_sha256": "a" * 64,
+                "qualification_prompt_sha256": hashlib.sha256(
+                    QUALIFICATION_PROMPT.encode("utf-8")
+                ).hexdigest(),
                 "usage_complete": True,
             }
             record.write_text(json.dumps(value), encoding="utf-8")
@@ -72,6 +77,8 @@ class Pilot18MatchedTests(unittest.TestCase):
             (atlas / "declarations.jsonl").write_bytes(b"{}\n")
             binary = root / "codex"
             binary.write_bytes(b"synthetic-codex")
+            qualification = root / "qualification.json"
+            qualification.write_text("{}", encoding="utf-8")
             warm = root / "warm"
             warm.mkdir()
             (warm / "warm-root.json").write_text(json.dumps({
@@ -81,9 +88,8 @@ class Pilot18MatchedTests(unittest.TestCase):
                 "library_atlas_sha256": sha256_file(atlas / "declarations.jsonl"),
                 "codex_binary_sha256": sha256_file(binary),
                 "code_mode_host_sha256": "a" * 64,
+                "model_qualification_sha256": sha256_file(qualification),
             }), encoding="utf-8")
-            qualification = root / "qualification.json"
-            qualification.write_text("{}", encoding="utf-8")
             args = types.SimpleNamespace(
                 task_id="TEST-1", output_root=root / "pair",
                 deployment=root / "deployment.json", mathlib_atlas=root / "mathlib",

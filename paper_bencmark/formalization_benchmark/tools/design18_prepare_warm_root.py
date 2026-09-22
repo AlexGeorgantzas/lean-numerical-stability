@@ -19,6 +19,8 @@ from common import (
     tree_manifest, utc_now, write_bytes_atomic, write_json_atomic,
 )
 from deployment import load_deployment
+from design18_envelope import launch_or_activate
+from design18_matched import _qualified
 from design18_preflight import DESIGN_ROOT, check_corpus
 from hardware import snapshot_hardware
 
@@ -28,7 +30,8 @@ EFFORT = "xhigh"
 SCHEMA = "pilot-18-warm-root-1"
 
 
-def prepare(*, deployment_path: Path, output_root: Path) -> dict:
+def prepare(*, deployment_path: Path, model_qualification: Path,
+            output_root: Path) -> dict:
     corpus, _packets, flags = check_corpus()
     if flags:
         raise BenchmarkError(f"source flags must be resolved before scouting: {flags}")
@@ -37,6 +40,10 @@ def prepare(*, deployment_path: Path, output_root: Path) -> dict:
     if output_root.exists() or output_root.is_symlink():
         raise BenchmarkError("warm-root output already exists; scouting is one-shot")
     deployment = load_deployment(deployment_path)
+    _qualified(
+        model_qualification, binary=deployment.codex_binary,
+        code_mode_host_sha256=deployment.code_mode_host_sha256,
+    )
     prompt = DESIGN_ROOT / "prompts" / "scout.md"
     if not prompt.is_file() or prompt.is_symlink():
         raise BenchmarkError("scout prompt is missing or unsafe")
@@ -58,30 +65,38 @@ def prepare(*, deployment_path: Path, output_root: Path) -> dict:
         "library_atlas_sha256": sha256_file(deployment.library_atlas / "declarations.jsonl"),
         "codex_binary_sha256": sha256_file(deployment.codex_binary),
         "code_mode_host_sha256": deployment.code_mode_host_sha256,
+        "model_qualification_sha256": sha256_file(model_qualification),
         "hardware_before": snapshot_hardware(strict=True),
         "created_at_utc": utc_now(),
     }
     write_json_atomic(output_root / "warm-root.json", planned, mode=0o400)
-    driver = CodexDriver(
-        codex_binary=deployment.codex_binary,
-        code_mode_host_sha256=deployment.code_mode_host_sha256,
-        model=MODEL, reasoning_effort=EFFORT,
-        state_root=checkpoint / "state", auth_file=deployment.auth_file,
-        bwrap_binary=deployment.bwrap_binary, offline_shell=deployment.offline_shell,
-        toolchain_root=deployment.toolchain_root, packages_root=deployment.packages_root,
-        library_source=deployment.library_source,
-        library_olean=deployment.library_olean,
-        library_atlas=deployment.library_atlas,
-        workspace_writable=False,
-        protected_workspace_paths=[workspace / "ENVIRONMENT.md"],
-    )
     try:
-        turn = driver.run_turn(
-            prompt=prompt.read_text(encoding="utf-8"), workspace=workspace,
-            artifact_dir=output_root / "scout-artifacts", timeout_seconds=18000,
+        driver = CodexDriver(
+            codex_binary=deployment.codex_binary,
+            code_mode_host_sha256=deployment.code_mode_host_sha256,
+            model=MODEL, reasoning_effort=EFFORT,
+            state_root=checkpoint / "state", auth_file=deployment.auth_file,
+            bwrap_binary=deployment.bwrap_binary, offline_shell=deployment.offline_shell,
+            toolchain_root=deployment.toolchain_root, packages_root=deployment.packages_root,
+            library_source=deployment.library_source,
+            library_olean=deployment.library_olean,
+            library_atlas=deployment.library_atlas,
+            workspace_writable=False,
+            protected_workspace_paths=[workspace / "ENVIRONMENT.md"],
         )
-    finally:
-        driver.close(artifact_dir=output_root / "scout-session-close")
+        try:
+            turn = driver.run_turn(
+                prompt=prompt.read_text(encoding="utf-8"), workspace=workspace,
+                artifact_dir=output_root / "scout-artifacts", timeout_seconds=18000,
+            )
+        finally:
+            driver.close(artifact_dir=output_root / "scout-session-close")
+    except Exception as error:
+        write_json_atomic(output_root / "warm-root.json", {
+            **planned, "status": "FAILED", "failure_kind": type(error).__name__,
+            "failure_message": str(error), "completed_at_utc": utc_now(),
+        }, mode=0o400)
+        raise
     turn_record = load_json(output_root / "scout-artifacts" / "turn.json")
     if (turn.exit_code != 0 or turn.timed_out or not turn.usage_complete
             or turn.thread_cumulative_usage is None
@@ -121,11 +136,17 @@ def prepare(*, deployment_path: Path, output_root: Path) -> dict:
 
 
 def main() -> int:
+    launched = launch_or_activate(Path(__file__))
+    if launched is not None:
+        return launched
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deployment", type=Path, required=True)
+    parser.add_argument("--model-qualification", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args()
-    result = prepare(deployment_path=args.deployment, output_root=args.output_root)
+    result = prepare(deployment_path=args.deployment,
+                     model_qualification=args.model_qualification,
+                     output_root=args.output_root)
     print(json.dumps({key: result[key] for key in
                       ("status", "model", "scout_usage", "scout_wall_seconds")}, sort_keys=True))
     return 0

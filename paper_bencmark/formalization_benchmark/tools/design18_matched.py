@@ -21,6 +21,7 @@ from design16_matched import (
     _condition_order, _run_condition, _statement_pair_status, condition_spec,
 )
 from design18_preflight import DESIGN_ROOT, check_corpus
+from design18_model_qualify import PROMPT as QUALIFICATION_PROMPT
 from hardware import snapshot_hardware
 
 
@@ -40,6 +41,9 @@ def _qualified(path: Path, *, binary: Path, code_mode_host_sha256: str) -> dict:
             or record.get("reasoning_effort") != EFFORT
             or record.get("codex_binary_sha256") != sha256_file(binary)
             or record.get("code_mode_host_sha256") != code_mode_host_sha256
+            or record.get("qualification_prompt_sha256") != hashlib.sha256(
+                QUALIFICATION_PROMPT.encode("utf-8")
+            ).hexdigest()
             or record.get("usage_complete") is not True):
         raise BenchmarkError("GPT-6 Sol provider is not qualified for this Titan runtime")
     return record
@@ -73,7 +77,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             or warm.get("scout_prompt_sha256") != sha256_file(DESIGN_ROOT / "prompts" / "scout.md")
             or warm.get("library_atlas_sha256") != sha256_file(deployment.library_atlas / "declarations.jsonl")
             or warm.get("codex_binary_sha256") != sha256_file(deployment.codex_binary)
-            or warm.get("code_mode_host_sha256") != deployment.code_mode_host_sha256):
+            or warm.get("code_mode_host_sha256") != deployment.code_mode_host_sha256
+            or warm.get("model_qualification_sha256") != sha256_file(args.model_qualification)):
         raise BenchmarkError("Pilot 18 warm scout is not ready")
     packet_path = DESIGN_ROOT / "packets" / f"{task_id}.json"
     packet = next(item for item in packets if item["task_id"] == task_id)

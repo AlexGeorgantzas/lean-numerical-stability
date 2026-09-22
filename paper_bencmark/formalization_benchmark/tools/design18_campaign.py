@@ -9,18 +9,42 @@ change. The user can inspect the journal before any further work.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
+import fcntl
 import json
+import os
 from pathlib import Path
 import sys
 from typing import Any, Callable
 
 from common import BenchmarkError, load_json, sha256_file, utc_now, write_json_atomic
+from design18_envelope import launch_or_activate
 from design18_matched import run as run_pair
 from design18_preflight import DESIGN_ROOT, check_corpus
 
 
 SCHEMA = "pilot-18-campaign-1"
 SLOWDOWN_GATE = 1.5
+HOST_LOCK = Path("/tmp/highambench-design16-timed-contestant.lock")
+
+
+@contextmanager
+def _host_lock():
+    if HOST_LOCK.is_symlink():
+        raise BenchmarkError("timed-contestant host lock may not be a symlink")
+    flags = os.O_RDWR | os.O_CREAT
+    if hasattr(os, "O_NOFOLLOW"):
+        flags |= os.O_NOFOLLOW
+    descriptor = os.open(HOST_LOCK, flags, 0o600)
+    try:
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError as error:
+            raise BenchmarkError("another timed campaign holds the host lock") from error
+        yield
+    finally:
+        fcntl.flock(descriptor, fcntl.LOCK_UN)
+        os.close(descriptor)
 
 
 def _treatment_uptake(pair_root: Path, report: dict[str, Any]) -> dict[str, Any]:
@@ -99,7 +123,20 @@ def _early_review(pair_root: Path, pair: dict[str, Any], *, uptake: dict) -> lis
 
 
 def run_campaign(args: argparse.Namespace, *, pair_runner: Callable = run_pair,
-                 uptake_reader: Callable = _treatment_uptake) -> dict[str, Any]:
+                 uptake_reader: Callable = _treatment_uptake,
+                 require_envelope: bool = True) -> dict[str, Any]:
+    if require_envelope:
+        from hardware import snapshot_hardware
+        snapshot_hardware(strict=True)
+        with _host_lock():
+            return _run_campaign_unlocked(args, pair_runner=pair_runner,
+                                          uptake_reader=uptake_reader)
+    return _run_campaign_unlocked(args, pair_runner=pair_runner,
+                                  uptake_reader=uptake_reader)
+
+
+def _run_campaign_unlocked(args: argparse.Namespace, *, pair_runner: Callable,
+                           uptake_reader: Callable) -> dict[str, Any]:
     corpus, _packets, flags = check_corpus()
     if flags:
         raise BenchmarkError(f"source flags bar measured Pilot 18 runs: {flags}")
@@ -173,6 +210,9 @@ def run_campaign(args: argparse.Namespace, *, pair_runner: Callable = run_pair,
 
 
 def main() -> int:
+    launched = launch_or_activate(Path(__file__))
+    if launched is not None:
+        return launched
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deployment", required=True, type=Path)
     parser.add_argument("--mathlib-atlas", required=True, type=Path)
