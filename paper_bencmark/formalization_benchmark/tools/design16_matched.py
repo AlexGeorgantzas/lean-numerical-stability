@@ -18,6 +18,7 @@ from __future__ import annotations
 import argparse
 from dataclasses import dataclass
 import json
+import os
 from pathlib import Path
 import re
 import shutil
@@ -41,8 +42,17 @@ from common import (
 from composition_packets import build_composition_packet
 from deployment import Deployment, load_deployment
 from design16_smoke import _net_new, _routed_candidate_template
-from formalization_validator import compiled_candidate_workspace, validate_candidate
-from lean_sandbox import compiler_command, extractor_command
+from formalization_validator import (
+    _mask_noncode,
+    compiled_candidate_workspace,
+    run_bounded_command,
+    validate_candidate,
+)
+from lean_sandbox import (
+    compiler_command,
+    extractor_command,
+    signature_interface_command,
+)
 from manifest_control import ROOT
 from pair_controller import (
     _environment_note,
@@ -56,6 +66,9 @@ from hardware import snapshot_hardware
 
 
 SCIENTIFIC_STATUS = "UNSCORED_ENGINEERING_EXPLORATORY"
+SIGNATURE_INTERFACE_HELPER = Path(__file__).with_name("signature_interface.lean")
+SIGNATURE_INTERFACE_SCHEMA = "formalization-design17-signature-interface-1"
+SIGNATURE_INTERFACE_MAX_OUTPUT_BYTES = 8 * 1024 * 1024
 CONDITIONS = ("R0", "R1")
 INFRASTRUCTURE_CONDITION_STATUSES = frozenset(
     {
@@ -294,27 +307,290 @@ def _submission_clock(
     }
 
 
+def _packet_exposed_records(composition: Mapping[str, Any]) -> list[dict[str, str]]:
+    records: dict[str, str] = {}
+    for card in composition.get("retrieved_roots", []):
+        if not isinstance(card, Mapping):
+            raise BenchmarkError("composition packet card is malformed")
+        for record in [card.get("declaration"), *card.get("dependencies", [])]:
+            if not isinstance(record, Mapping):
+                raise BenchmarkError("composition packet declaration is malformed")
+            name = record.get("name")
+            module = record.get("module")
+            if not isinstance(name, str) or not name or not isinstance(module, str) or not module:
+                raise BenchmarkError("composition packet declaration identity is malformed")
+            prior = records.get(name)
+            if prior is not None and prior != module:
+                raise BenchmarkError(f"inconsistent packet declaration owner: {name}")
+            records[name] = module
+    return [{"name": name, "module": records[name]} for name in sorted(records)]
+
+
+def _unescape_signature_field(value: str) -> str:
+    output: list[str] = []
+    index = 0
+    while index < len(value):
+        if value[index] != "\\" or index + 1 >= len(value):
+            output.append(value[index])
+            index += 1
+            continue
+        marker = value[index + 1]
+        output.append({"n": "\n", "r": "\r", "t": "\t", "\\": "\\"}.get(marker, marker))
+        index += 2
+    return "".join(output)
+
+
+def _parse_signature_interface_report(
+    output: str, exposed_records: list[dict[str, str]]
+) -> dict[str, Any]:
+    expected_seeds = {record["name"]: record["module"] for record in exposed_records}
+    format_version: str | None = None
+    observed_seeds: dict[str, dict[str, str]] = {}
+    edges: set[tuple[str, str, str, str]] = set()
+    summary: tuple[int, int] | None = None
+    for line_number, raw_line in enumerate(output.splitlines(), 1):
+        if not raw_line:
+            continue
+        fields = [_unescape_signature_field(value) for value in raw_line.split("\t")]
+        tag = fields[0]
+        if tag == "format" and len(fields) == 2:
+            if format_version is not None:
+                raise BenchmarkError("duplicate signature-interface format row")
+            format_version = fields[1]
+        elif tag == "seed" and len(fields) == 5:
+            name, module, kind, readable_type = fields[1:]
+            if name in observed_seeds or not kind or not readable_type.strip():
+                raise BenchmarkError("malformed signature-interface seed row")
+            observed_seeds[name] = {
+                "name": name,
+                "module": module,
+                "kind": kind,
+                "readable_type": readable_type,
+            }
+        elif tag == "direct" and len(fields) == 5:
+            seed, name, module, kind = fields[1:]
+            if seed not in expected_seeds or not name.startswith("NumStability."):
+                raise BenchmarkError("malformed signature-interface direct row")
+            if not (
+                module == "NumStability" or module.startswith("NumStability.")
+            ) or not kind:
+                raise BenchmarkError("malformed signature-interface owner row")
+            edges.add((seed, name, module, kind))
+        elif tag == "summary" and len(fields) == 3:
+            if summary is not None or not fields[1].isdigit() or not fields[2].isdigit():
+                raise BenchmarkError("malformed signature-interface summary")
+            summary = (int(fields[1]), int(fields[2]))
+        else:
+            raise BenchmarkError(
+                f"unknown signature-interface report row at line {line_number}"
+            )
+    if format_version != "1" or summary is None:
+        raise BenchmarkError("incomplete signature-interface report")
+    if {
+        name: record["module"] for name, record in observed_seeds.items()
+    } != expected_seeds:
+        raise BenchmarkError("signature-interface seed echo does not match the packet")
+    if summary != (len(expected_seeds), len(edges)):
+        raise BenchmarkError("signature-interface summary counts do not match")
+
+    direct_by_name: dict[str, dict[str, Any]] = {}
+    reference_edges: list[dict[str, str]] = []
+    for seed, name, module, kind in sorted(edges):
+        prior = direct_by_name.get(name)
+        if prior is not None and (prior["module"], prior["kind"]) != (module, kind):
+            raise BenchmarkError(f"inconsistent signature dependency identity: {name}")
+        if prior is None:
+            prior = {"name": name, "module": module, "kind": kind, "referenced_by": []}
+            direct_by_name[name] = prior
+        prior["referenced_by"].append(seed)
+        reference_edges.append({"from": seed, "to": name})
+
+    seed_rows = [observed_seeds[name] for name in sorted(observed_seeds)]
+    direct_rows = [direct_by_name[name] for name in sorted(direct_by_name)]
+    return {
+        "schema_version": SIGNATURE_INTERFACE_SCHEMA,
+        "closure_rule": (
+            "packet records plus one-hop NumStability constants in each record's "
+            "elaborated ConstantInfo.type; declaration bodies are never inspected"
+        ),
+        "seed_declarations": seed_rows,
+        "direct_type_declarations": direct_rows,
+        "reference_edges": reference_edges,
+        "allowed_declarations": sorted(
+            set(expected_seeds) | set(direct_by_name)
+        ),
+    }
+
+
+def _derive_signature_interface(
+    *,
+    deployment: Deployment,
+    composition: Mapping[str, Any],
+    output_root: Path,
+    timeout_seconds: float,
+) -> dict[str, Any]:
+    exposed_records = _packet_exposed_records(composition)
+    artifact_root = output_root / "signature-interface"
+    artifact_root.mkdir(mode=0o700)
+    seed_path = artifact_root / "signature-interface-seeds.tsv"
+    seed_payload = "".join(
+        f"{record['module']}\t{record['name']}\n" for record in exposed_records
+    ).encode("utf-8")
+    write_bytes_atomic(seed_path, seed_payload, mode=0o400)
+    if not exposed_records:
+        write_bytes_atomic(
+            artifact_root / "extractor-output.tsv", b"", mode=0o400
+        )
+        interface = {
+            "schema_version": SIGNATURE_INTERFACE_SCHEMA,
+            "closure_rule": (
+                "packet records plus one-hop NumStability constants in each record's "
+                "elaborated ConstantInfo.type; declaration bodies are never inspected"
+            ),
+            "seed_declarations": [],
+            "direct_type_declarations": [],
+            "reference_edges": [],
+            "allowed_declarations": [],
+            "helper_sha256": sha256_file(SIGNATURE_INTERFACE_HELPER),
+            "seed_input_sha256": sha256_file(seed_path),
+            "extractor_output_sha256": __import__("hashlib").sha256(b"").hexdigest(),
+            "extractor_execution": None,
+        }
+        write_json_atomic(artifact_root / "interface.json", interface, mode=0o400)
+        return interface
+
+    command = tuple(
+        value.format(workspace=str(artifact_root.resolve()))
+        for value in signature_interface_command(
+            deployment, SIGNATURE_INTERFACE_HELPER
+        )
+    )
+    execution = run_bounded_command(
+        command,
+        cwd=artifact_root,
+        environment=os.environ,
+        timeout_seconds=timeout_seconds,
+        maximum_output_bytes=SIGNATURE_INTERFACE_MAX_OUTPUT_BYTES,
+    )
+    output = str(execution.get("output", ""))
+    output_path = artifact_root / "extractor-output.tsv"
+    write_bytes_atomic(output_path, output.encode("utf-8"), mode=0o400)
+    execution_record = {
+        key: execution[key]
+        for key in (
+            "returncode",
+            "output_sha256",
+            "output_bytes_observed",
+            "output_limit_bytes",
+            "output_limit_exceeded",
+            "timed_out",
+            "resource_limit_event_delta",
+            "resource_limit_exceeded",
+            "resource_cgroup_join_failed",
+        )
+    }
+    write_json_atomic(
+        artifact_root / "extractor-execution.json", execution_record, mode=0o400
+    )
+    if (
+        execution.get("returncode") != 0
+        or execution.get("timed_out") is True
+        or execution.get("output_limit_exceeded") is True
+        or execution.get("resource_limit_exceeded") is True
+        or execution.get("resource_cgroup_join_failed") is True
+    ):
+        raise BenchmarkError("trusted signature-interface extraction failed")
+    if sha256_file(output_path) != execution["output_sha256"]:
+        raise BenchmarkError("signature-interface output encoding changed its identity")
+    interface = _parse_signature_interface_report(output, exposed_records)
+    interface.update(
+        {
+            "helper_sha256": sha256_file(SIGNATURE_INTERFACE_HELPER),
+            "seed_input_sha256": sha256_file(seed_path),
+            "extractor_output_sha256": execution["output_sha256"],
+            "extractor_execution": execution_record,
+        }
+    )
+    write_json_atomic(artifact_root / "interface.json", interface, mode=0o400)
+    return interface
+
+
+def _packet_treatment_surfaces(
+    composition: Mapping[str, Any],
+) -> tuple[set[str], set[str], set[str]]:
+    """Return allowed declarations, explicit imports, and type-owner modules."""
+
+    exposed_records = _packet_exposed_records(composition)
+    names = {
+        record["name"]
+        for record in exposed_records
+        if record["name"].startswith("NumStability.")
+    }
+    exposed_modules = {
+        record["module"]
+        for record in exposed_records
+        if record["module"] == "NumStability"
+        or record["module"].startswith("NumStability.")
+    }
+    signature_modules: set[str] = set()
+    signature_interface = composition.get("signature_interface")
+    if signature_interface is not None:
+        if not isinstance(signature_interface, Mapping):
+            raise BenchmarkError("packet signature interface is malformed")
+        if signature_interface.get("schema_version") != SIGNATURE_INTERFACE_SCHEMA:
+            raise BenchmarkError("packet signature interface schema is unsupported")
+        seed_rows = signature_interface.get("seed_declarations")
+        declarations = signature_interface.get("direct_type_declarations")
+        allowed = signature_interface.get("allowed_declarations")
+        if (
+            not isinstance(seed_rows, list)
+            or not isinstance(declarations, list)
+            or not isinstance(allowed, list)
+        ):
+            raise BenchmarkError("packet signature interface lacks declarations")
+        observed_seed_identity: list[dict[str, str]] = []
+        for record in seed_rows:
+            if not isinstance(record, Mapping):
+                raise BenchmarkError("packet signature seed record is malformed")
+            name = record.get("name")
+            module = record.get("module")
+            if not isinstance(name, str) or not isinstance(module, str):
+                raise BenchmarkError("packet signature seed identity is malformed")
+            observed_seed_identity.append({"name": name, "module": module})
+        if observed_seed_identity != exposed_records:
+            raise BenchmarkError("packet signature seeds do not match exposed records")
+        for record in declarations:
+            if not isinstance(record, Mapping):
+                raise BenchmarkError("packet signature interface record is malformed")
+            name = record.get("name")
+            module = record.get("module")
+            if not isinstance(name, str) or not name.startswith("NumStability."):
+                raise BenchmarkError("packet signature declaration name is malformed")
+            if not isinstance(module, str) or not (
+                module == "NumStability" or module.startswith("NumStability.")
+            ):
+                raise BenchmarkError("packet signature declaration owner is malformed")
+            names.add(name)
+            signature_modules.add(module)
+        expected_interface_names = {
+            record["name"] for record in exposed_records
+        } | {
+            str(record["name"])
+            for record in declarations
+            if isinstance(record, Mapping)
+        }
+        if allowed != sorted(expected_interface_names):
+            raise BenchmarkError("packet signature allowlist does not match its records")
+    return names, exposed_modules, signature_modules
+
+
 def _packet_treatment_allowlist(
     composition: Mapping[str, Any],
 ) -> tuple[set[str], set[str]]:
-    names: set[str] = set()
-    modules: set[str] = set()
-    for card in composition.get("retrieved_roots", []):
-        if not isinstance(card, Mapping):
-            continue
-        records = [card.get("declaration"), *card.get("dependencies", [])]
-        for record in records:
-            if not isinstance(record, Mapping):
-                continue
-            name = record.get("name")
-            module = record.get("module")
-            if isinstance(name, str) and name.startswith("NumStability."):
-                names.add(name)
-            if isinstance(module, str) and (
-                module == "NumStability" or module.startswith("NumStability.")
-            ):
-                modules.add(module)
-    return names, modules
+    names, exposed_modules, _signature_modules = _packet_treatment_surfaces(composition)
+    # Signature-prerequisite modules must already be in the trusted import
+    # closure of the visible card modules. They are never new import roots.
+    return names, exposed_modules
 
 
 def _numstability_source_path(source_root: Path, module: str) -> Path:
@@ -355,7 +631,10 @@ def _build_packet_olean_runtime(
 ) -> dict[str, Any]:
     """Materialize only the packet modules and their trusted import closure."""
 
-    _names, selected_modules = _packet_treatment_allowlist(composition)
+    _names, exposed_modules, signature_modules = _packet_treatment_surfaces(
+        composition
+    )
+    selected_modules = exposed_modules
     if destination.exists() or destination.is_symlink():
         raise BenchmarkError("packet OLean runtime destination already exists")
     destination.mkdir(parents=True, mode=0o700)
@@ -373,6 +652,12 @@ def _build_packet_olean_runtime(
             if dependency not in closure and dependency not in pending:
                 pending.append(dependency)
         pending.sort()
+    missing_signature_modules = sorted(signature_modules - closure)
+    if missing_signature_modules:
+        raise BenchmarkError(
+            "signature prerequisite owner modules are outside the exposed import "
+            f"closure: {', '.join(missing_signature_modules)}"
+        )
     files: list[dict[str, Any]] = []
     for module in sorted(closure):
         source_olean = _numstability_olean_path(olean_root, module)
@@ -390,11 +675,15 @@ def _build_packet_olean_runtime(
                 "relative_path": relative.as_posix(),
                 "olean_sha256": sha256_file(target),
                 "source_sha256": source_hashes[module],
+                "packet_exposed": module in exposed_modules,
+                "signature_interface": module in signature_modules,
                 "packet_selected": module in selected_modules,
             }
         )
     manifest = {
-        "schema_version": "formalization-design17-packet-olean-runtime-1",
+        "schema_version": "formalization-design17-packet-olean-runtime-3",
+        "exposed_modules": sorted(exposed_modules),
+        "signature_interface_modules": sorted(signature_modules),
         "selected_modules": sorted(selected_modules),
         "closure_modules": sorted(closure),
         "files": files,
@@ -416,13 +705,33 @@ def _treatment_interface_check(
     code directly reaches an unlisted NumStability declaration.
     """
 
-    allowed_names, allowed_modules = _packet_treatment_allowlist(composition)
+    allowed_names, exposed_modules, signature_modules = _packet_treatment_surfaces(
+        composition
+    )
+    allowed_modules = exposed_modules
     imported_modules: set[str] = set()
-    for line in candidate_text.splitlines():
+    noncanonical_import_lines: list[int] = []
+    masked_text = _mask_noncode(candidate_text)
+    original_lines = candidate_text.splitlines()
+    masked_lines = masked_text.splitlines()
+    if len(original_lines) != len(masked_lines):
+        raise BenchmarkError("candidate import scan lost line structure")
+    for line_number, (line, masked_line) in enumerate(
+        zip(original_lines, masked_lines, strict=True), 1
+    ):
+        command = re.match(
+            r"^\s*(?:public\s+)?import\b", masked_line
+        )
+        if command is None:
+            continue
         match = re.match(r"^\s*(?:public\s+)?import\s+(.+?)\s*(?:--.*)?$", line)
-        if match is None:
+        if match is None or "/-" in line or "-/" in line:
+            noncanonical_import_lines.append(line_number)
             continue
         for module in match.group(1).split():
+            if re.fullmatch(r"[A-Za-z0-9_'.]+", module) is None:
+                noncanonical_import_lines.append(line_number)
+                continue
             if module == "NumStability" or module.startswith("NumStability."):
                 imported_modules.add(module)
     forbidden_imports = sorted(imported_modules - allowed_modules)
@@ -464,14 +773,21 @@ def _treatment_interface_check(
         ):
             forbidden_declarations.add(child)
     result = {
-        "schema_version": "formalization-design17-treatment-interface-1",
+        "schema_version": "formalization-design17-treatment-interface-3",
         "allowed_declarations": sorted(allowed_names),
+        "packet_exposed_modules": sorted(exposed_modules),
+        "signature_interface_modules": sorted(signature_modules),
         "allowed_modules": sorted(allowed_modules),
         "observed_numstability_imports": sorted(imported_modules),
+        "noncanonical_import_lines": noncanonical_import_lines,
         "forbidden_imports": forbidden_imports,
         "forbidden_direct_declarations": sorted(forbidden_declarations),
     }
-    result["pass"] = not forbidden_imports and not forbidden_declarations
+    result["pass"] = (
+        not noncanonical_import_lines
+        and not forbidden_imports
+        and not forbidden_declarations
+    )
     return result
 
 
@@ -1127,7 +1443,7 @@ def _run_condition(
     )
 
     retrieval_started = time.monotonic()
-    composition, api_markdown = build_composition_packet(
+    retrieval_composition, _source_signature_markdown = build_composition_packet(
         source_packet_path=packet_path,
         atlas_paths=list(spec.atlas_paths),
         corpus_id=spec.corpus_id,
@@ -1136,6 +1452,39 @@ def _run_condition(
         dependency_limit=int(args.dependency_limit),
         maximum_markdown_bytes=int(args.maximum_packet_bytes),
     )
+    signature_interface = _derive_signature_interface(
+        deployment=deployment,
+        composition=retrieval_composition,
+        output_root=condition_root,
+        timeout_seconds=float(args.validation_timeout_seconds),
+    )
+    if spec.name == "R0" and signature_interface["direct_type_declarations"]:
+        raise BenchmarkError("Mathlib-only packet has NumStability type dependencies")
+    canonical_signatures = {
+        record["name"]: f"{record['name']} : {record['readable_type']}"
+        for record in signature_interface["seed_declarations"]
+    }
+    composition, api_markdown = build_composition_packet(
+        source_packet_path=packet_path,
+        atlas_paths=list(spec.atlas_paths),
+        corpus_id=spec.corpus_id,
+        contract_additions=contract_additions,
+        root_limit=int(args.root_limit),
+        dependency_limit=int(args.dependency_limit),
+        maximum_markdown_bytes=int(args.maximum_packet_bytes),
+        exposed_signature_overrides=canonical_signatures,
+    )
+    if (
+        composition["route_status"] != retrieval_composition["route_status"]
+        or _packet_exposed_records(composition)
+        != _packet_exposed_records(retrieval_composition)
+    ):
+        raise BenchmarkError("canonical signature rendering changed packet retrieval")
+    composition["retrieval_schema_version"] = composition["schema_version"]
+    composition["schema_version"] = "formalization-composition-packet-2"
+    composition["signature_interface"] = signature_interface
+    composition["policy"]["type_interface_rule"] = "one-hop-elaborated-types-only"
+    composition["policy"]["declaration_bodies_inspected"] = False
     write_json_atomic(
         condition_root / "composition-packet.json", composition, mode=0o400
     )

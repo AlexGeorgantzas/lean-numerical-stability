@@ -437,6 +437,7 @@ def build_composition_packet(
     root_limit: int = 6,
     dependency_limit: int = 5,
     maximum_markdown_bytes: int = 48 * 1024,
+    exposed_signature_overrides: Mapping[str, str] | None = None,
 ) -> tuple[dict[str, Any], bytes]:
     if not (1 <= root_limit <= 12):
         raise BenchmarkError("composition root limit must be between 1 and 12")
@@ -488,6 +489,22 @@ def build_composition_packet(
         else "NO_ROUTE"
     )
     exposed_cards = cards if route_status != "NO_ROUTE" else []
+    if exposed_signature_overrides is not None:
+        exposed_names = {
+            str(record["name"])
+            for card in exposed_cards
+            for record in [card["declaration"], *card["dependencies"]]
+        }
+        if set(exposed_signature_overrides) != exposed_names:
+            raise BenchmarkError(
+                "canonical signature overrides do not match the exposed packet records"
+            )
+        for card in exposed_cards:
+            for record in [card["declaration"], *card["dependencies"]]:
+                replacement = exposed_signature_overrides[str(record["name"])]
+                if not isinstance(replacement, str) or not replacement.strip():
+                    raise BenchmarkError("canonical signature override is empty")
+                record["signature"] = replacement
     atlas_identity = [
         {"path_basename": path.name, "sha256": sha256_file(path)}
         for path in atlas_paths
@@ -511,6 +528,11 @@ def build_composition_packet(
             "human_edits": False,
             "task_time_search_permitted": False,
             "packet_is_exhaustive_interface": True,
+            "exposed_signature_source": (
+                "elaborated-constant-type"
+                if exposed_signature_overrides is not None
+                else "source-atlas"
+            ),
         },
     }
     lines = [

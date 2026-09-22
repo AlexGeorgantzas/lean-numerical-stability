@@ -132,3 +132,30 @@ def extractor_command(
             "/workspace/recursive-prefixes.txt",
         ]
     )
+
+
+def signature_interface_command(
+    deployment: Deployment, helper: Path
+) -> tuple[str, ...]:
+    """Run the trusted one-hop type-dependency extractor in the L environment."""
+
+    if not helper.is_file() or helper.is_symlink():
+        raise BenchmarkError(
+            f"signature-interface helper is missing or unsafe: {helper}"
+        )
+    base = _base(deployment, "L")
+    command_index = base.index("--setenv")
+    base[command_index:command_index] = [
+        "--ro-bind",
+        str(helper.resolve()),
+        "/signature-interface-helper.lean",
+    ]
+    return tuple(
+        base
+        + [
+            "/lean/bin/lean",
+            "--run",
+            "/signature-interface-helper.lean",
+            "/workspace/signature-interface-seeds.tsv",
+        ]
+    )

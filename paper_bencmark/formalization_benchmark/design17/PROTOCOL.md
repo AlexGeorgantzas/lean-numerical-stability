@@ -29,9 +29,22 @@ coverage, and nonvacuity are decided by the independent semantic audit.
   the packet-selected NumStability modules and their compiled import closure,
   not the full library tree. The closure is necessarily compiler-visible, so
   the prompt forbids treating it as a search interface; command telemetry is
-  screened for probing, and the controller rejects every direct target
-  dependency or explicit NumStability import not exposed in the packet. This is
-  a logged compliance boundary, not a claim of cryptographic noninterference.
+  screened for probing. Before the clock, a frozen Lean helper reads only the
+  elaborated `ConstantInfo.type` of each visible card declaration. The packet
+  interface is exactly the visible declarations plus the one-hop NumStability
+  constants occurring in those types; it never reads declaration values/bodies
+  and never recurses through the newly found prerequisites. This makes necessary
+  signature constants such as `FPModel`, `gamma`, and `gammaValid` legal even
+  when they are not separate dependency cards, without admitting proof-body or
+  same-module neighbors. The helper also replaces every model-visible atlas
+  snippet with its canonical pretty-printed elaborated type, so malformed source
+  snippets cannot disclose names that the interface rejects. Prerequisite owner
+  modules must already belong to the trusted import closure of visible card
+  modules: they are not added as runtime roots or permitted explicit imports.
+  The controller rejects every direct target dependency or explicit
+  NumStability import outside this frozen surface. Helper, seed, and output
+  hashes are retained. This is a logged compliance boundary, not a claim of
+  cryptographic noninterference.
 - Each condition uses a fresh stateless `gpt-5.6-sol` xhigh conversation.
 - Conditions run sequentially in the predeclared counterbalanced order.
 

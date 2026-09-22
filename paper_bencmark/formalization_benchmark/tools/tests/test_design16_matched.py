@@ -23,6 +23,8 @@ from design16_matched import (  # noqa: E402
     _candidate_template,
     _build_packet_olean_runtime,
     _library_exploration_policy,
+    _packet_treatment_allowlist,
+    _parse_signature_interface_report,
     _condition_faithfulness_status,
     _run_statement_condition_attempts,
     _statement_pair_status,
@@ -202,6 +204,18 @@ class Design16MatchedTests(unittest.TestCase):
                         private_dossier=private,
                     )["pass"]
                 )
+        for source in (
+            "import\n  NumStability.Hidden\n",
+            "import /- hidden syntax -/ NumStability.Hidden\n",
+        ):
+            with self.subTest(source=source):
+                result = _treatment_interface_check(
+                    candidate_text=source,
+                    composition=composition,
+                    private_dossier=private,
+                )
+                self.assertFalse(result["pass"])
+                self.assertEqual(result["noncanonical_import_lines"], [1])
 
     def test_treatment_interface_allows_transitive_dependency_of_listed_root(self) -> None:
         composition = {
@@ -245,6 +259,258 @@ class Design16MatchedTests(unittest.TestCase):
             private_dossier=private,
         )
         self.assertTrue(result["pass"])
+
+    def test_treatment_interface_allows_frozen_signature_closure_only(self) -> None:
+        composition = {
+            "retrieved_roots": [
+                {
+                    "declaration": {
+                        "name": "NumStability.fl_rootProductEval_forward_error_bound",
+                        "module": "NumStability.RootProduct",
+                    },
+                    "dependencies": [],
+                }
+            ],
+            "signature_interface": {
+                "schema_version": "formalization-design17-signature-interface-1",
+                "seed_declarations": [
+                    {
+                        "name": "NumStability.fl_rootProductEval_forward_error_bound",
+                        "module": "NumStability.RootProduct",
+                        "kind": "theorem",
+                        "readable_type": "True",
+                    }
+                ],
+                "direct_type_declarations": [
+                    {
+                        "name": "NumStability.FPModel",
+                        "module": "NumStability.FloatingPoint",
+                    },
+                    {
+                        "name": "NumStability.FPModel.u",
+                        "module": "NumStability.FloatingPoint",
+                    },
+                    {
+                        "name": "NumStability.gamma",
+                        "module": "NumStability.Gamma",
+                    },
+                    {
+                        "name": "NumStability.gammaValid",
+                        "module": "NumStability.Gamma",
+                    },
+                ],
+                "allowed_declarations": [
+                    "NumStability.FPModel",
+                    "NumStability.FPModel.u",
+                    "NumStability.fl_rootProductEval_forward_error_bound",
+                    "NumStability.gamma",
+                    "NumStability.gammaValid",
+                ],
+            },
+        }
+        names = [
+            "NumStability.FPModel",
+            "NumStability.FPModel.u",
+            "NumStability.gamma",
+            "NumStability.gammaValid",
+            "NumStability.hidden_same_module_result",
+        ]
+        private = {
+            "raw_semantic_report": {
+                "dependencies": [
+                    {
+                        "name": name,
+                        "owner_module": (
+                            "NumStability.RootProduct"
+                            if name.endswith("hidden_same_module_result")
+                            else "NumStability.Signature"
+                        ),
+                    }
+                    for name in names
+                ],
+                "edges": [
+                    {"parent": "HighamBenchCandidate.target", "child": name}
+                    for name in names
+                ],
+            }
+        }
+        result = _treatment_interface_check(
+            candidate_text="import NumStability.RootProduct\n",
+            composition=composition,
+            private_dossier=private,
+        )
+        self.assertEqual(
+            result["forbidden_direct_declarations"],
+            ["NumStability.hidden_same_module_result"],
+        )
+        self.assertIn("NumStability.FPModel", result["allowed_declarations"])
+        self.assertFalse(result["pass"])
+
+    def test_h5_one_hop_elaborated_interface_is_exact_and_nonrecursive(self) -> None:
+        seed_names = [
+            "NumStability.fl_rootProductEvalFrom_forward_error_bound",
+            "NumStability.fl_rootProductEval_forward_error_bound",
+            "NumStability.Ch14RectProductTree.roundedEval_RectMatProdError_gamma_operationBudget",
+            "NumStability.fl_rootProductEvalFrom",
+            "NumStability.rootProductEvalFrom",
+            "NumStability.fl_rootProductEval",
+            "NumStability.rootProductEval",
+            "NumStability.gammaValid_mono",
+            "NumStability.gamma_mono",
+            "NumStability.gamma_nonneg",
+            "NumStability.Ch14RectProductTree.RectMatProdError",
+            "NumStability.Ch14RectProductTree.operationBudget",
+        ]
+        exposed = [
+            {"name": name, "module": "NumStability.H5.Packet"}
+            for name in seed_names
+        ]
+        direct = [
+            ("NumStability.FPModel", "NumStability.Core.FP", "inductive"),
+            ("NumStability.gamma", "NumStability.Core.Gamma", "def"),
+            ("NumStability.gammaValid", "NumStability.Core.Gamma", "def"),
+            (
+                "NumStability.Ch14RectProductTree",
+                "NumStability.Chapter14",
+                "inductive",
+            ),
+            (
+                "NumStability.Ch14RectProductTree.exactAbsProduct",
+                "NumStability.Chapter14",
+                "def",
+            ),
+            (
+                "NumStability.Ch14RectProductTree.exactEval",
+                "NumStability.Chapter14",
+                "def",
+            ),
+            (
+                "NumStability.Ch14RectProductTree.roundedEval",
+                "NumStability.Chapter14",
+                "def",
+            ),
+        ]
+        rows = ["format\t1"]
+        rows.extend(
+            f"seed\t{name}\tNumStability.H5.Packet\ttheorem\tTrue"
+            for name in seed_names
+        )
+        rows.extend(
+            f"direct\t{seed_names[index]}\t{name}\t{module}\t{kind}"
+            for index, (name, module, kind) in enumerate(direct)
+        )
+        rows.append(f"summary\t{len(seed_names)}\t{len(direct)}")
+        interface = _parse_signature_interface_report("\n".join(rows) + "\n", exposed)
+        self.assertEqual(
+            {item["name"] for item in interface["direct_type_declarations"]},
+            {name for name, _module, _kind in direct},
+        )
+
+        composition = {
+            "retrieved_roots": [
+                {
+                    "declaration": exposed[0],
+                    "dependencies": exposed[1:],
+                }
+            ],
+            "signature_interface": interface,
+        }
+        allowed, allowed_imports = _packet_treatment_allowlist(composition)
+        self.assertEqual(
+            allowed,
+            set(seed_names) | {name for name, _module, _kind in direct},
+        )
+        self.assertEqual(allowed_imports, {"NumStability.H5.Packet"})
+        excluded = {
+            "NumStability.FPModel.fl_mul",
+            "NumStability.FPModel.fl_sub",
+            "NumStability.Ch14RectProductTree.orderCoefficient",
+            "NumStability.rectMatMul",
+            "NumStability.unrelated_same_closure_result",
+        }
+        private = {
+            "raw_semantic_report": {
+                "dependencies": [
+                    {"name": name, "owner_module": "NumStability.SomeOwner"}
+                    for name in sorted(allowed | excluded)
+                ],
+                "edges": [
+                    {"parent": "HighamBenchCandidate.target", "child": name}
+                    for name in sorted(allowed | excluded)
+                ],
+            }
+        }
+        checked = _treatment_interface_check(
+            candidate_text="import NumStability.H5.Packet\n",
+            composition=composition,
+            private_dossier=private,
+        )
+        self.assertEqual(
+            set(checked["forbidden_direct_declarations"]), excluded
+        )
+        self.assertFalse(checked["pass"])
+
+    def test_signature_interface_identity_fails_closed(self) -> None:
+        base = {
+            "retrieved_roots": [
+                {
+                    "declaration": {
+                        "name": "NumStability.allowed",
+                        "module": "NumStability.Allowed",
+                    },
+                    "dependencies": [],
+                }
+            ],
+            "signature_interface": {
+                "schema_version": "formalization-design17-signature-interface-1",
+                "seed_declarations": [
+                    {
+                        "name": "NumStability.allowed",
+                        "module": "NumStability.Allowed",
+                        "kind": "theorem",
+                        "readable_type": "True",
+                    }
+                ],
+                "direct_type_declarations": [],
+                "allowed_declarations": ["NumStability.allowed"],
+            },
+        }
+        for mutation in ("schema", "allowlist"):
+            composition = json.loads(json.dumps(base))
+            if mutation == "schema":
+                composition["signature_interface"]["schema_version"] = "bogus"
+            else:
+                composition["signature_interface"]["allowed_declarations"] = [
+                    "NumStability.allowed",
+                    "NumStability.hidden",
+                ]
+            with self.subTest(mutation=mutation), self.assertRaises(BenchmarkError):
+                _packet_treatment_allowlist(composition)
+
+    def test_r0_mathlib_seed_has_empty_treatment_allowlist(self) -> None:
+        exposed = [
+            {
+                "name": "Mathlib.Analysis.someBound",
+                "module": "Mathlib.Analysis.Bounds",
+            }
+        ]
+        interface = _parse_signature_interface_report(
+            "format\t1\n"
+            "seed\tMathlib.Analysis.someBound\tMathlib.Analysis.Bounds\t"
+            "theorem\tTrue\n"
+            "summary\t1\t0\n",
+            exposed,
+        )
+        self.assertEqual(
+            interface["allowed_declarations"], ["Mathlib.Analysis.someBound"]
+        )
+        composition = {
+            "retrieved_roots": [
+                {"declaration": exposed[0], "dependencies": []}
+            ],
+            "signature_interface": interface,
+        }
+        self.assertEqual(_packet_treatment_allowlist(composition), (set(), set()))
 
     def test_library_exploration_policy_rejects_mounted_library_search(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -317,16 +583,23 @@ class Design16MatchedTests(unittest.TestCase):
             olean = root / "olean"
             (source / "A").mkdir(parents=True)
             (source / "Core").mkdir(parents=True)
+            (source / "Types").mkdir(parents=True)
             (source / "A" / "Selected.lean").write_text(
-                "import NumStability.Core.Base\nimport Mathlib\n",
+                "import NumStability.Core.Base\n"
+                "import NumStability.Types.FP\n"
+                "import Mathlib\n",
                 encoding="utf-8",
             )
             (source / "Core" / "Base.lean").write_text(
                 "import Mathlib\n", encoding="utf-8"
             )
+            (source / "Types" / "FP.lean").write_text(
+                "import Mathlib\n", encoding="utf-8"
+            )
             for module, payload in (
                 ("NumStability.A.Selected", b"selected"),
                 ("NumStability.Core.Base", b"base"),
+                ("NumStability.Types.FP", b"fp"),
                 ("NumStability.Hidden", b"hidden"),
             ):
                 path = olean / Path(*module.split(".")).with_suffix(".olean")
@@ -341,7 +614,28 @@ class Design16MatchedTests(unittest.TestCase):
                         },
                         "dependencies": [],
                     }
-                ]
+                ],
+                "signature_interface": {
+                    "schema_version": "formalization-design17-signature-interface-1",
+                    "seed_declarations": [
+                        {
+                            "name": "NumStability.selected",
+                            "module": "NumStability.A.Selected",
+                            "kind": "theorem",
+                            "readable_type": "True",
+                        }
+                    ],
+                    "direct_type_declarations": [
+                        {
+                            "name": "NumStability.FPModel",
+                            "module": "NumStability.Types.FP",
+                        },
+                    ],
+                    "allowed_declarations": [
+                        "NumStability.FPModel",
+                        "NumStability.selected",
+                    ],
+                },
             }
             destination = root / "runtime"
             manifest = _build_packet_olean_runtime(
@@ -352,7 +646,18 @@ class Design16MatchedTests(unittest.TestCase):
             )
             self.assertEqual(
                 manifest["closure_modules"],
-                ["NumStability.A.Selected", "NumStability.Core.Base"],
+                [
+                    "NumStability.A.Selected",
+                    "NumStability.Core.Base",
+                    "NumStability.Types.FP",
+                ],
+            )
+            self.assertEqual(
+                manifest["signature_interface_modules"],
+                ["NumStability.Types.FP"],
+            )
+            self.assertEqual(
+                manifest["selected_modules"], ["NumStability.A.Selected"]
             )
             self.assertTrue(
                 (destination / "NumStability" / "A" / "Selected.olean").is_file()

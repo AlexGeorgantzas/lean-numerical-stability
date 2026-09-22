@@ -75,6 +75,26 @@ class CompositionPacketTests(unittest.TestCase):
             self.assertIn(b"complete task-time retrieval interface", markdown)
             self.assertLessEqual(len(markdown), 8192)
             self.assertFalse(result["policy"]["task_time_search_permitted"])
+            canonical = (
+                "NumStability.fl_rootProductEval_forward_error_bound : "
+                "NumStability.FPModel → Prop"
+            )
+            canonical_result, canonical_markdown = build_composition_packet(
+                source_packet_path=packet,
+                atlas_paths=[atlas],
+                corpus_id="mathlib-plus-numstability",
+                root_limit=1,
+                maximum_markdown_bytes=8192,
+                exposed_signature_overrides={
+                    "NumStability.fl_rootProductEval_forward_error_bound": canonical
+                },
+            )
+            self.assertIn(canonical.encode("utf-8"), canonical_markdown)
+            self.assertNotIn(b"(fp : FPModel) : Prop", canonical_markdown)
+            self.assertEqual(
+                canonical_result["policy"]["exposed_signature_source"],
+                "elaborated-constant-type",
+            )
 
     def test_conservative_no_route_hides_weak_lexical_hits(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:

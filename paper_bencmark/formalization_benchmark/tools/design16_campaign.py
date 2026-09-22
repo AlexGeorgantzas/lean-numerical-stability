@@ -508,6 +508,12 @@ def _frozen_input_closure(args: argparse.Namespace) -> dict[str, Any]:
                 "semantic dossier extractor",
             )
         )
+        audit_protocol_files.append(
+            _file_identity(
+                Path(__file__).with_name("signature_interface.lean"),
+                "packet signature-interface extractor",
+            )
+        )
 
     packets: list[dict[str, Any]] = []
     papers_by_name: dict[str, dict[str, Any]] = {}
