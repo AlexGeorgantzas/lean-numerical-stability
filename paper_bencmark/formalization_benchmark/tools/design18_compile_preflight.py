@@ -106,7 +106,7 @@ def run(*, deployment_path: Path, mathlib_atlas: Path,
                         destination=condition_root / "packet-library-olean",
                     )
                 template = _candidate_template(composition, statement_only=True)
-                if template.count("sorry") != 1:
+                if template.count("\n  sorry\n") != 1:
                     raise BenchmarkError("controller template has the wrong proof-hole count")
                 scratch = condition_root / "compile-scratch"
                 scratch.mkdir(mode=0o700)
