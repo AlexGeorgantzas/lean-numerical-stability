@@ -79,8 +79,11 @@ PYTHONPATH=paper_bencmark/formalization_benchmark/tools \
    `/hdd/alexgeorgantzas/highambench/pilot18-model-gate-v2/qualification.json`
    (SHA-256 `7f3a3aafcd6370bc0bdd35026cc162922e422215de8c2f4668ed9f1e0c6f0f4a`);
    this is not a timed task. An initial invocation with an incompatible
-   deployment manifest stopped before making an output root or a model call;
-   the recorded v2 uses the required Pilot-15 deployment.
+   deployment manifest stopped before making an output root or a model call.
+   The recorded v2 uses the Pilot-15 authentication deployment. Its Codex
+   binary and authentication-file hashes equal those in the frozen Design-17
+   deployment used for library compilation, so this probes the same model
+   access without changing the library snapshot.
 2. `HM19-3-4` prints `j=1:n` for a matrix with `p` columns. A documented
    correction to `j=1:p` is mathematically indicated by the proof but must be
    decided before freezing the packet.
@@ -152,15 +155,36 @@ families only from the positive selected-result title; the full packet remains
 in lexical ranking and all contestant/auditor input. It also recognizes
 general summation trees and can expose a task-neutral SumTree statistical RMS
 bridge. Unit tests cover negated-scope exclusion. This routing revision is
-**not** frozen for measurement until a fresh all-task Titan preflight and
-compile check pass. Any measured release would use a new pilot identity; no
-Pilot-18 contestant outcome exists to pool or overwrite.
+still **not** admitted for measurement despite the later static checks: source
+and model gates remain. Any measured release would use a new pilot identity;
+no Pilot-18 contestant outcome exists to pool or overwrite.
 The first twelve-task reroute caught an additional orthographic gap before
 measurement: `Gaussian-elimination` in the selected title did not match the
 generic `gaussian elimination` family alias, leaving `HM19-3-7` without its
 algorithm component. Hyphen/dash normalization has been added to both title
 and alias matching, with a regression test; the first reroute remains an
 off-benchmark diagnostic, not a passed release check.
+
+After hyphen normalization, the full twelve-task Titan routing check passed
+with an exact common prompt prefix, no control exposure to NumStability, and
+the correct Doolittle family for `HM19-3-7`. It still reports
+`NOT_ADMITTED_SOURCE_FLAGS`. All ten source-clean tasks then passed the
+revised-router signature, OLean, and one-`sorry` compile preflight in both
+conditions under the fixed Titan envelope. The three immutable reports and
+SHA-256 hashes are:
+
+- `/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-router-v2-early/compile-preflight.json`
+  — `e00a0544787a32e90555167ed6734068350cc3aac4b201d930a68db87108ca8c`
+  (`HM19-3-2`, `HALL21-3-3`, `CASTRO24-4-2`);
+- `/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-router-v2-a/compile-preflight.json`
+  — `39e3ee95eb16931ed08099c1df32517c7215216fd16db6be6708898671e037be`
+  (`HM19-2-4`, `HM19-3-1`, `HM19-3-3`, `HM19-3-5`);
+- `/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-router-v2-b/compile-preflight.json`
+  — `aaa47160a3af92fcd1ad1dca647f8250a147750c5140a5e10421d0004eccd42a`
+  (`HM19-3-6`, `HM19-3-7`, `HM19-3-8`).
+
+These are still infrastructure checks, not formalizer attempts, audits, or
+benchmark outcomes. The two source-flagged tasks and the GPT-6 Sol gate remain.
 
 The present branch is preparation only. A successful routing preflight is
 not evidence of faster or more faithful formalization. Preserve all
