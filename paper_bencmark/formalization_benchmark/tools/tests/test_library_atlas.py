@@ -132,6 +132,32 @@ class LibraryAtlasTests(unittest.TestCase):
             string_literal = 'def sample := "-- /- not comments -/"\n'
             self.assertEqual(_mask_lean_comments(string_literal), string_literal)
 
+    def test_mutual_end_does_not_close_enclosing_namespace(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "NumStability"
+            source.mkdir()
+            module = source / "Horner.lean"
+            module.write_text(
+                "namespace NumStability\n"
+                "mutual\n"
+                "  def even : Nat := 0\n"
+                "  def odd : Nat := 1\n"
+                "end\n"
+                "def fl_hornerDesc : Nat := 2\n"
+                "end NumStability\n",
+                encoding="utf-8",
+            )
+            output = root / "atlas"
+            build_library_atlas(source_root=source, root_module=None,
+                                output_root=output, library_commit="c" * 40)
+            records = [json.loads(line) for line in
+                       (output / "declarations.jsonl").read_text().splitlines()]
+            self.assertEqual({record["name"] for record in records}, {
+                "NumStability.even", "NumStability.odd",
+                "NumStability.fl_hornerDesc",
+            })
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -26,6 +26,7 @@ DECLARATION_RE = re.compile(
     r"([A-Za-z_][A-Za-z0-9_'.]*)"
 )
 SCOPE_RE = re.compile(r"^\s*(namespace|section)\s*([A-Za-z_][A-Za-z0-9_']*)?\s*$")
+MUTUAL_RE = re.compile(r"^\s*mutual\s*$")
 END_RE = re.compile(r"^\s*end(?:\s+([A-Za-z_][A-Za-z0-9_']*))?\s*$")
 MAX_SIGNATURE_LINES = 80
 MAX_SIGNATURE_BYTES = 8 * 1024
@@ -288,6 +289,9 @@ def _declarations(source_root: Path, root_module: Path | None) -> Iterable[dict[
             scope = SCOPE_RE.match(line)
             if scope:
                 scopes.append((scope.group(1), scope.group(2)))
+                continue
+            if MUTUAL_RE.match(line):
+                scopes.append(("mutual", None))
                 continue
             if END_RE.match(line):
                 if scopes:
