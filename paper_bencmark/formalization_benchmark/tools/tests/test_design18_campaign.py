@@ -22,6 +22,7 @@ class Pilot18CampaignTests(unittest.TestCase):
         return types.SimpleNamespace(
             deployment=Path("/synthetic/deployment.json"),
             mathlib_atlas=Path("/synthetic/mathlib/declarations.jsonl"),
+            numstability_atlas=Path("/synthetic/numstability"),
             model_qualification=Path("/synthetic/qualification.json"),
             warm_root=Path("/synthetic/warm"),
             output_root=output,

@@ -16,6 +16,7 @@ import sys
 from common import BenchmarkError, sha256_file, utc_now, write_json_atomic
 from composition_packets import build_composition_packet
 from deployment import load_deployment
+from design18_atlas import bind_release_atlases
 from design16_matched import (
     _build_packet_olean_runtime, _candidate_template, _derive_signature_interface,
     _packet_exposed_records, _packet_treatment_allowlist, condition_spec,
@@ -30,7 +31,7 @@ from lean_sandbox import compiler_command
 SCHEMA = "pilot-18-compile-preflight-1"
 
 
-def run(*, deployment_path: Path, mathlib_atlas: Path,
+def run(*, deployment_path: Path, mathlib_atlas: Path, numstability_atlas: Path,
         output_root: Path, task_ids: list[str]) -> dict:
     corpus, packets, flags = check_corpus()
     if not task_ids or len(set(task_ids)) != len(task_ids):
@@ -42,6 +43,9 @@ def run(*, deployment_path: Path, mathlib_atlas: Path,
     if not output_root.is_absolute() or output_root.exists() or output_root.is_symlink():
         raise BenchmarkError("compile preflight output must be a new absolute path")
     deployment = load_deployment(deployment_path)
+    deployment, mathlib_atlas = bind_release_atlases(
+        deployment, mathlib=mathlib_atlas, numstability=numstability_atlas,
+    )
     snapshot = snapshot_hardware(strict=True)
     specs = {key: condition_spec(key, deployment=deployment,
                                  mathlib_atlas=mathlib_atlas)
@@ -149,6 +153,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deployment", required=True, type=Path)
     parser.add_argument("--mathlib-atlas", required=True, type=Path)
+    parser.add_argument("--numstability-atlas", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
     parser.add_argument("--task-id", action="append")
     args = parser.parse_args()
@@ -156,6 +161,7 @@ def main() -> int:
     task_ids = args.task_id or corpus["early_review_order"]
     result = run(deployment_path=args.deployment,
                  mathlib_atlas=args.mathlib_atlas,
+                 numstability_atlas=args.numstability_atlas,
                  output_root=args.output_root, task_ids=task_ids)
     print(json.dumps({"status": result["status"], "task_ids": task_ids}, sort_keys=True))
     return 0

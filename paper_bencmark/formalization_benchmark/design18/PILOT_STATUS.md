@@ -15,6 +15,14 @@ release is deliberately fail-closed while the gates below remain unresolved.
   those same foundations plus matching NumStability FP and algorithm components.
   The initial selector's unrelated theorem matches were removed before any
   timed formalization. The exact catalog has 32 verified declaration anchors.
+- A later compile preflight uncovered an indexer defect: `mutual … end`, dotted
+  namespace names, and relative dotted declaration names had produced bad
+  qualified names in the old discovery atlas. This is an infrastructure
+  incident, not a benchmark outcome. The corrected task-neutral Mathlib and
+  NumStability atlases were rebuilt from the **same** frozen source closures;
+  their file hashes are pinned in `ATLAS_RELEASE.json`. The old deployment and
+  its compiled OLean trees were not modified. The corrected catalogs still
+  require a fresh full preflight before admission.
 - The condition prompts have an exact common-byte prefix; only R1 appends
   encouragement to use NumStability.
 - A full packet build on the nine-root `CASTRO24-4-1` treatment route produced
@@ -80,6 +88,12 @@ provider-free `design18_compile_preflight.py` can check the first three
 controller-generated packets, signature interfaces, OLean closure, and one-sorry
 templates without invoking a formalizer or judge. This is an infrastructure
 check only; any output is excluded from benchmark metrics.
+The `HM19-3-2` compile preflight passed for both conditions using the old
+atlas. `HALL21-3-3` passed both conditions, but `CASTRO24-4-2` failed while
+rendering Horner signatures because old catalog names lacked the namespace.
+These are retained as off-benchmark diagnostics and are **not** timed task
+results. The corrected catalog is the proposed fix; its preflight outcome is
+not yet recorded here.
 
 The source alternatives under investigation, **not admitted replacements**, are
 to select equation (3.12) alone from Higham–Mary Theorem 3.4 (thus avoiding its

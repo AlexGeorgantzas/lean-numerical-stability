@@ -17,6 +17,7 @@ from typing import Any
 
 from common import BenchmarkError, load_json, sha256_file, utc_now, write_json_atomic
 from deployment import load_deployment
+from design18_atlas import bind_release_atlases
 from design16_matched import (
     _condition_order, _run_condition, _statement_pair_status, condition_spec,
 )
@@ -64,6 +65,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if args.output_root.exists() or args.output_root.is_symlink():
         raise BenchmarkError("Pilot 18 pair output already exists")
     deployment = load_deployment(args.deployment)
+    deployment, mathlib_atlas = bind_release_atlases(
+        deployment, mathlib=args.mathlib_atlas,
+        numstability=args.numstability_atlas,
+    )
     qualification = _qualified(
         args.model_qualification, binary=deployment.codex_binary,
         code_mode_host_sha256=deployment.code_mode_host_sha256,
@@ -89,7 +94,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     appendix = (DESIGN_ROOT / "prompts" / "library_appendix.md").read_bytes()
     prompts = {"R0": common, "R1": common + appendix}
     specs = {condition: condition_spec(condition, deployment=deployment,
-                                       mathlib_atlas=args.mathlib_atlas)
+                                       mathlib_atlas=mathlib_atlas)
              for condition in ("R0", "R1")}
     hardware = snapshot_hardware(strict=True)
     args.output_root.mkdir(parents=True, mode=0o700)
@@ -175,6 +180,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deployment", required=True, type=Path)
     parser.add_argument("--mathlib-atlas", required=True, type=Path)
+    parser.add_argument("--numstability-atlas", required=True, type=Path)
     parser.add_argument("--model-qualification", required=True, type=Path)
     parser.add_argument("--warm-root", required=True, type=Path)
     parser.add_argument("--task-id", required=True)

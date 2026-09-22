@@ -21,6 +21,7 @@ class Pilot18CompilePreflightTests(unittest.TestCase):
             with self.assertRaisesRegex(BenchmarkError, "flagged source tasks"):
                 run(deployment_path=Path("/synthetic/deployment.json"),
                     mathlib_atlas=Path("/synthetic/mathlib.jsonl"),
+                    numstability_atlas=Path("/synthetic/numstability"),
                     output_root=root, task_ids=["HM19-3-4"])
             self.assertFalse(root.exists())
 

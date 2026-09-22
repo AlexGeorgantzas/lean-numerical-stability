@@ -111,6 +111,12 @@ def main() -> int:
     parser.add_argument("--mathlib-atlas", type=Path, required=True)
     parser.add_argument("--numstability-atlas", type=Path, required=True)
     args = parser.parse_args()
+    from design18_atlas import verify_release_atlas
+    for kind, declarations in (("mathlib", args.mathlib_atlas),
+                               ("numstability", args.numstability_atlas)):
+        root = verify_release_atlas(kind, declarations.parent)
+        if declarations.resolve() != root / "declarations.jsonl":
+            raise BenchmarkError(f"Pilot 18 {kind} declarations path is not the release file")
     corpus, packets, flags = check_corpus()
     common_prompt = (DESIGN_ROOT / "prompts" / "common.md").read_bytes()
     library_appendix = (DESIGN_ROOT / "prompts" / "library_appendix.md").read_bytes()

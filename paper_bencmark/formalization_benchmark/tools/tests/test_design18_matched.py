@@ -93,6 +93,7 @@ class Pilot18MatchedTests(unittest.TestCase):
             args = types.SimpleNamespace(
                 task_id="TEST-1", output_root=root / "pair",
                 deployment=root / "deployment.json", mathlib_atlas=root / "mathlib",
+                numstability_atlas=atlas,
                 model_qualification=qualification, warm_root=warm,
                 condition_order="R1,R0",
             )
@@ -119,6 +120,8 @@ class Pilot18MatchedTests(unittest.TestCase):
                     codex_binary=binary, library_atlas=atlas,
                     code_mode_host_sha256="a" * 64,
                 )),
+                mock.patch.object(design18_matched, "bind_release_atlases",
+                                  side_effect=lambda deployment, **_: (deployment, root / "mathlib")),
                 mock.patch.object(design18_matched, "_qualified", return_value={}),
                 mock.patch.object(design18_matched, "condition_spec", side_effect=lambda condition, **_: types.SimpleNamespace(name=condition)),
                 mock.patch.object(design18_matched, "snapshot_hardware", return_value={"test": True}),

@@ -1,0 +1,35 @@
+{
+  "schema_version": "pilot-18-atlas-release-1",
+  "parser_commit": "8514eb896",
+  "purpose": "Task-neutral source-index correction only; compiled Lean and library source snapshots are unchanged",
+  "mathlib": {
+    "atlas_json_sha256": "ca802090ba492dd8de956f8859f5d813db09ce7ff3aa1c509aa9fef6f77ac048",
+    "declarations_sha256": "fae2d4bdf6254b55989298586f9c721a2782b06c8ce8e907420d9b1754b71cf7",
+    "library_commit": "e8ea1afc32790ce1d4e1a4e45cc412ba9388716b",
+    "source_closure_sha256": "db0b9ff8f65cd37614b634efb52cc9b18d29be31a2aa6eed948bc974e58923c2",
+    "declaration_count": 210942,
+    "files": {
+      "GUIDE.md": "c81524664a468f59eae91674a2bfceaa1b59363a1bebcc3a237ec58a85c708cf",
+      "atlas.json": "ca802090ba492dd8de956f8859f5d813db09ce7ff3aa1c509aa9fef6f77ac048",
+      "declarations.jsonl": "fae2d4bdf6254b55989298586f9c721a2782b06c8ce8e907420d9b1754b71cf7",
+      "modules.tsv": "71e8aa60fceb7176514fd1e891c993a564863318233715d3c4a4742231486e23",
+      "query.py": "ca44c146c73f8c921aeba83b2fd79e2ee1b615e9c192c68c15352911c3186a66",
+      "show.py": "8d777b5aaf1b6ea96ed5bfe2374f65a129aa78667f16954871e5da74a81b337e"
+    }
+  },
+  "numstability": {
+    "atlas_json_sha256": "2bd6e5b27ddb9f82b8081e812620feca6b699ad84d35f020009e722b6f47dc4c",
+    "declarations_sha256": "3731abb791ba4598176a4527c19927ed3dcce5f837333746c8ac6dc7b950f9ea",
+    "library_commit": "45813a95dacf577461bae13f033af0dbc985a225",
+    "source_closure_sha256": "39c21cd4e5fcda862ac95fecfea398e98788bd5ba222b5d7761d1860c8694628",
+    "declaration_count": 47567,
+    "files": {
+      "GUIDE.md": "efbecdd6303a4bfec2d1248932b4391e15be9ea287f7f465e31f366d3935f89b",
+      "atlas.json": "2bd6e5b27ddb9f82b8081e812620feca6b699ad84d35f020009e722b6f47dc4c",
+      "declarations.jsonl": "3731abb791ba4598176a4527c19927ed3dcce5f837333746c8ac6dc7b950f9ea",
+      "modules.tsv": "94b435264634aaf159414481bab23c3e7d0682165c0e8f052f9564d4475e9cf0",
+      "query.py": "ca44c146c73f8c921aeba83b2fd79e2ee1b615e9c192c68c15352911c3186a66",
+      "show.py": "8d777b5aaf1b6ea96ed5bfe2374f65a129aa78667f16954871e5da74a81b337e"
+    }
+  }
+}

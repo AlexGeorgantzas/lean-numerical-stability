@@ -19,6 +19,7 @@ from common import (
     tree_manifest, utc_now, write_bytes_atomic, write_json_atomic,
 )
 from deployment import load_deployment
+from design18_atlas import bind_release_atlases
 from design18_envelope import launch_or_activate
 from design18_matched import _qualified
 from design18_preflight import DESIGN_ROOT, check_corpus
@@ -30,7 +31,8 @@ EFFORT = "xhigh"
 SCHEMA = "pilot-18-warm-root-1"
 
 
-def prepare(*, deployment_path: Path, model_qualification: Path,
+def prepare(*, deployment_path: Path, mathlib_atlas: Path,
+            numstability_atlas: Path, model_qualification: Path,
             output_root: Path) -> dict:
     corpus, _packets, flags = check_corpus()
     if flags:
@@ -40,6 +42,9 @@ def prepare(*, deployment_path: Path, model_qualification: Path,
     if output_root.exists() or output_root.is_symlink():
         raise BenchmarkError("warm-root output already exists; scouting is one-shot")
     deployment = load_deployment(deployment_path)
+    deployment, _ = bind_release_atlases(
+        deployment, mathlib=mathlib_atlas, numstability=numstability_atlas,
+    )
     _qualified(
         model_qualification, binary=deployment.codex_binary,
         code_mode_host_sha256=deployment.code_mode_host_sha256,
@@ -141,10 +146,14 @@ def main() -> int:
         return launched
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deployment", type=Path, required=True)
+    parser.add_argument("--mathlib-atlas", type=Path, required=True)
+    parser.add_argument("--numstability-atlas", type=Path, required=True)
     parser.add_argument("--model-qualification", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     args = parser.parse_args()
     result = prepare(deployment_path=args.deployment,
+                     mathlib_atlas=args.mathlib_atlas,
+                     numstability_atlas=args.numstability_atlas,
                      model_qualification=args.model_qualification,
                      output_root=args.output_root)
     print(json.dumps({key: result[key] for key in

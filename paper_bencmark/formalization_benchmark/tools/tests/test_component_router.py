@@ -60,20 +60,20 @@ class ComponentRouterTests(unittest.TestCase):
         ranked = [
             item("NumStability.unrelated_probabilistic_horner_forward_error", "theorem",
                  "NumStability.Algorithms.Horner", 900),
-            item("fl_hornerDesc", "def", "NumStability.Algorithms.Horner", 30),
-            item("fl_hornerDesc_forward_error_bound", "theorem", "NumStability.Algorithms.Horner", 20),
+            item("NumStability.fl_hornerDesc", "def", "NumStability.Algorithms.Horner", 30),
+            item("NumStability.fl_hornerDesc_forward_error_bound", "theorem", "NumStability.Algorithms.Horner", 20),
             item("NumStability.FPModel", "structure", "NumStability.FloatingPoint.Model", 10),
         ]
         selected = select_component_roots(
             ranked, records=[entry["record"] for entry in ranked],
             source_text="Horner evaluation with stochastic rounding", limit=4
         )
-        self.assertEqual(selected[0]["record"]["name"], "fl_hornerDesc")
+        self.assertEqual(selected[0]["record"]["name"], "NumStability.fl_hornerDesc")
         self.assertNotIn("NumStability.unrelated_probabilistic_horner_forward_error",
                          [entry["record"]["name"] for entry in selected])
 
     def test_foundational_anchor_need_not_rank_lexically(self) -> None:
-        ranked = [item("fl_hornerDesc", "def", "NumStability.Algorithms.Horner", 30)]
+        ranked = [item("NumStability.fl_hornerDesc", "def", "NumStability.Algorithms.Horner", 30)]
         atlas = [entry["record"] for entry in ranked] + [
             item("NumStability.FPModel", "structure", "NumStability.FloatingPoint.Model", 0)["record"]
         ]
@@ -81,7 +81,7 @@ class ComponentRouterTests(unittest.TestCase):
             ranked, records=atlas, source_text="Horner under stochastic rounding", limit=4
         )
         self.assertEqual([entry["record"]["name"] for entry in selected],
-                         ["fl_hornerDesc", "NumStability.FPModel"])
+                         ["NumStability.fl_hornerDesc", "NumStability.FPModel"])
 
 
 if __name__ == "__main__":

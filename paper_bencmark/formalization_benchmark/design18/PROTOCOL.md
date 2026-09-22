@@ -31,6 +31,13 @@ using a task-neutral catalog and one frozen ranking rule. Every exposed Lean
 signature is checked against the compiled declaration owner and type. The
 target conclusion or a disguised source-specific equivalent is forbidden.
 
+The indexed declaration names are generated from the unchanged source trees,
+then pinned in `ATLAS_RELEASE.json`. The Mathlib and NumStability catalogs use
+the same corrected parser; their source-closure hashes must equal the deployed
+snapshots. A `#check`/type extractor must resolve every declaration selected
+for a task before a contestant starts. Changing the catalog identity after a
+timed run requires a new pilot identity.
+
 ## Admission before model calls
 
 For every task, a frozen paper-side source contract must state all quantifiers,

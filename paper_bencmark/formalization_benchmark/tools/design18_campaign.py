@@ -165,6 +165,7 @@ def _run_campaign_unlocked(args: argparse.Namespace, *, pair_runner: Callable,
         pair_args = argparse.Namespace(
             deployment=args.deployment,
             mathlib_atlas=args.mathlib_atlas,
+            numstability_atlas=args.numstability_atlas,
             model_qualification=args.model_qualification,
             warm_root=args.warm_root,
             task_id=task_id,
@@ -216,6 +217,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--deployment", required=True, type=Path)
     parser.add_argument("--mathlib-atlas", required=True, type=Path)
+    parser.add_argument("--numstability-atlas", required=True, type=Path)
     parser.add_argument("--model-qualification", required=True, type=Path)
     parser.add_argument("--warm-root", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
