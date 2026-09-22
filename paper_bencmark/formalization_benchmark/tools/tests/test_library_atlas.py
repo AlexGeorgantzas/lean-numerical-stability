@@ -12,7 +12,7 @@ TOOLS = Path(__file__).resolve().parents[1]
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from library_atlas import build_library_atlas  # noqa: E402
+from library_atlas import _mask_lean_comments, build_library_atlas  # noqa: E402
 
 
 class LibraryAtlasTests(unittest.TestCase):
@@ -77,6 +77,60 @@ class LibraryAtlasTests(unittest.TestCase):
                 (output / "declarations.jsonl").read_bytes(),
                 (output_b / "declarations.jsonl").read_bytes(),
             )
+
+    def test_ignores_declarations_and_scopes_inside_lean_comments(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "Mathlib"
+            source.mkdir()
+            module = source / "CommentFence.lean"
+            module.write_text(
+                "namespace Genuine\n"
+                "/-!\n"
+                "A documentation example must not become atlas input.\n"
+                "```lean\n"
+                "namespace Phantom\n"
+                "def Multiset (α : Type) := List α\n"
+                "/- theorem nestedGhost : True := by trivial -/\n"
+                "end Phantom\n"
+                "```\n"
+                "-/\n"
+                "-- theorem lineGhost : False := by contradiction\n"
+                "/-- A genuine declaration. -/\n"
+                "def actual (text : String := \"-- /- not comments -/\") : Nat := 1\n"
+                "theorem kept\n"
+                "    (x : Nat) /- an inline comment containing\n"
+                "      def inlineGhost : Nat := 0\n"
+                "      /- def nestedInlineGhost : Nat := 0 -/\n"
+                "    -/ : x = x := by rfl\n"
+                "end Genuine\n",
+                encoding="utf-8",
+            )
+            output = root / "atlas"
+            metadata = build_library_atlas(
+                source_root=source,
+                root_module=None,
+                output_root=output,
+                library_commit="b" * 40,
+            )
+            records = [
+                json.loads(line)
+                for line in (output / "declarations.jsonl").read_text().splitlines()
+            ]
+            self.assertEqual(metadata["schema_version"], "numstability-library-atlas-3")
+            self.assertEqual(
+                [record["name"] for record in records],
+                ["Genuine.actual", "Genuine.kept"],
+            )
+            self.assertEqual(
+                {record["name"]: record["source_line"] for record in records},
+                {"Genuine.actual": 13, "Genuine.kept": 14},
+            )
+            signatures = "\n".join(record["signature"] for record in records)
+            self.assertNotIn("Multiset", signatures)
+            self.assertNotIn("Ghost", signatures)
+            string_literal = 'def sample := "-- /- not comments -/"\n'
+            self.assertEqual(_mask_lean_comments(string_literal), string_literal)
 
 
 if __name__ == "__main__":

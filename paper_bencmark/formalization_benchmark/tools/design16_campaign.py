@@ -662,7 +662,7 @@ def _atlas_identity(root: Path) -> dict[str, Any]:
         raise BenchmarkError("Mathlib declarations atlas is missing or unsafe")
     declarations_sha256 = sha256_file(declarations_path)
     if (
-        metadata.get("schema_version") != "numstability-library-atlas-2"
+        metadata.get("schema_version") != "numstability-library-atlas-3"
         or not isinstance(metadata.get("declaration_count"), int)
         or metadata["declaration_count"] < 1
         or metadata.get("declarations_sha256") != declarations_sha256

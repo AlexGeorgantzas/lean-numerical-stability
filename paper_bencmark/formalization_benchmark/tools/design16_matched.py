@@ -144,7 +144,7 @@ def _atlas_declarations(atlas_root: Path, *, label: str) -> Path:
         raise BenchmarkError(f"{label} atlas is missing or unsafe: {root}")
     metadata = load_json(metadata_path)
     if (
-        metadata.get("schema_version") != "numstability-library-atlas-2"
+        metadata.get("schema_version") != "numstability-library-atlas-3"
         or metadata.get("declarations_sha256") != sha256_file(declarations)
         or not isinstance(metadata.get("declaration_count"), int)
         or metadata["declaration_count"] < 1

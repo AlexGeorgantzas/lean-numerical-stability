@@ -56,7 +56,7 @@ def _write_atlas(root: Path, modules: list[str]) -> Path:
     (root / "atlas.json").write_text(
         json.dumps(
             {
-                "schema_version": "numstability-library-atlas-2",
+                "schema_version": "numstability-library-atlas-3",
                 "declaration_count": len(modules),
                 "declarations_sha256": sha256_file(declarations),
             }
@@ -147,6 +147,16 @@ class Design16MatchedTests(unittest.TestCase):
             atlas = _write_atlas(root / "atlas", ["Mathlib.Data.Real.Basic"])
             (atlas / "declarations.jsonl").write_text("{}\n", encoding="utf-8")
             with self.assertRaises(BenchmarkError):
+                _atlas_declarations(atlas, label="Mathlib")
+
+    def test_design17_rejects_legacy_comment_unsafe_atlas_schema(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            atlas = _write_atlas(root / "atlas", ["Mathlib.Data.Real.Basic"])
+            metadata = json.loads((atlas / "atlas.json").read_text(encoding="utf-8"))
+            metadata["schema_version"] = "numstability-library-atlas-2"
+            (atlas / "atlas.json").write_text(json.dumps(metadata), encoding="utf-8")
+            with self.assertRaisesRegex(BenchmarkError, "identity is malformed or stale"):
                 _atlas_declarations(atlas, label="Mathlib")
 
     def test_statement_template_has_exactly_one_target_sorry(self) -> None:

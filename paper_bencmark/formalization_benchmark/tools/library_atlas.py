@@ -19,7 +19,7 @@ from typing import Any, Iterable
 from common import BenchmarkError, canonical_json_bytes, sha256_file, write_bytes_atomic, write_json_atomic
 
 
-SCHEMA_VERSION = "numstability-library-atlas-2"
+SCHEMA_VERSION = "numstability-library-atlas-3"
 DECLARATION_RE = re.compile(
     r"^\s*(?:(?:private|protected|noncomputable)\s+)*"
     r"(theorem|lemma|def|abbrev|structure|class|inductive|instance)\s+"
@@ -166,12 +166,77 @@ def _module_name(source_root: Path, path: Path) -> str:
     return ".".join(relative.parts)
 
 
+def _mask_lean_comments(text: str) -> str:
+    """Replace Lean comments with spaces while preserving source positions.
+
+    Lean block comments nest.  String contents are retained and comment-like
+    text inside strings is not treated as a comment.  Newlines are retained so
+    declaration locations continue to refer to the authoritative source.
+    """
+
+    output: list[str] = []
+    index = 0
+    block_depth = 0
+    line_comment = False
+    in_string = False
+    while index < len(text):
+        character = text[index]
+        following = text[index + 1] if index + 1 < len(text) else ""
+        if line_comment:
+            if character == "\n":
+                output.append("\n")
+                line_comment = False
+            else:
+                output.append(" ")
+            index += 1
+            continue
+        if block_depth:
+            if character == "/" and following == "-":
+                output.extend((" ", " "))
+                block_depth += 1
+                index += 2
+            elif character == "-" and following == "/":
+                output.extend((" ", " "))
+                block_depth -= 1
+                index += 2
+            else:
+                output.append("\n" if character == "\n" else " ")
+                index += 1
+            continue
+        if in_string:
+            output.append(character)
+            if character == "\\" and following:
+                output.append(following)
+                index += 2
+            else:
+                if character == '"':
+                    in_string = False
+                index += 1
+            continue
+        if character == '"':
+            output.append(character)
+            in_string = True
+            index += 1
+        elif character == "-" and following == "-":
+            output.extend((" ", " "))
+            line_comment = True
+            index += 2
+        elif character == "/" and following == "-":
+            output.extend((" ", " "))
+            block_depth = 1
+            index += 2
+        else:
+            output.append(character)
+            index += 1
+    return "".join(output)
+
+
 def _signature(lines: list[str], start: int) -> str:
     collected: list[str] = []
     depth = 0
     for line in lines[start : start + MAX_SIGNATURE_LINES]:
         collected.append(line.rstrip())
-        code = line.split("--", 1)[0]
+        code = line
         depth += sum(code.count(char) for char in "([{⟨")
         depth -= sum(code.count(char) for char in ")] }⟩".replace(" ", ""))
         if ":=" in code or re.search(r"\bwhere\s*$", code):
@@ -213,10 +278,13 @@ def _declarations(source_root: Path, root_module: Path | None) -> Iterable[dict[
             raise BenchmarkError(f"unsafe library source in atlas input: {path}")
         text = path.read_text(encoding="utf-8")
         lines = text.splitlines()
+        code_lines = _mask_lean_comments(text).splitlines()
+        if len(code_lines) != len(lines):
+            raise BenchmarkError(f"comment masking changed source locations: {path}")
         scopes: list[tuple[str, str | None]] = []
         module = _module_name(source_root, path)
         relative = path.relative_to(source_root.parent).as_posix()
-        for index, line in enumerate(lines):
+        for index, line in enumerate(code_lines):
             scope = SCOPE_RE.match(line)
             if scope:
                 scopes.append((scope.group(1), scope.group(2)))
@@ -235,7 +303,7 @@ def _declarations(source_root: Path, root_module: Path | None) -> Iterable[dict[
                 if "." in display_name or not namespaces
                 else ".".join([*namespaces, display_name])
             )
-            signature = _signature(lines, index)
+            signature = _signature(code_lines, index)
             doc = _doc_context(lines, index)
             yield {
                 "kind": kind,

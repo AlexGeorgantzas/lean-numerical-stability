@@ -152,7 +152,7 @@ def _atlas(root: Path) -> Path:
     (atlas / "atlas.json").write_text(
         json.dumps(
             {
-                "schema_version": "numstability-library-atlas-2",
+                "schema_version": "numstability-library-atlas-3",
                 "declaration_count": 1,
                 "declarations_sha256": sha256_file(declarations),
             }

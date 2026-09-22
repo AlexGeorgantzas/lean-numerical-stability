@@ -29,7 +29,15 @@ coverage, and nonvacuity are decided by the independent semantic audit.
   the packet-selected NumStability modules and their compiled import closure,
   not the full library tree. The closure is necessarily compiler-visible, so
   the prompt forbids treating it as a search interface; command telemetry is
-  screened for probing. Before the clock, a frozen Lean helper reads only the
+  screened for probing. Both declaration atlases are schema-v3 artifacts built
+  after position-preserving removal of Lean line comments and nested block/doc
+  comments; documentation examples therefore cannot become declaration cards.
+  The frozen Lean helper also requires each card's claimed module to equal
+  Lean's compiled declaration owner, failing closed on any atlas/source
+  disagreement. Design-17 derives fresh schema-v3 Mathlib and NumStability
+  atlases and a fresh deployment identity layered over the immutable Pilot-15
+  runtime; it never mutates or relabels the historical schema-v2 artifacts.
+  Before the clock, that helper reads only the
   elaborated `ConstantInfo.type` of each visible card declaration. The packet
   interface is exactly the visible declarations plus the one-hop NumStability
   constants occurring in those types; it never reads declaration values/bodies
