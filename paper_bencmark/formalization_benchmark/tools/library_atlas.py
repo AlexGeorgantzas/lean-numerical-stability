@@ -25,9 +25,9 @@ DECLARATION_RE = re.compile(
     r"(theorem|lemma|def|abbrev|structure|class|inductive|instance)\s+"
     r"([A-Za-z_][A-Za-z0-9_'.]*)"
 )
-SCOPE_RE = re.compile(r"^\s*(namespace|section)\s*([A-Za-z_][A-Za-z0-9_']*)?\s*$")
+SCOPE_RE = re.compile(r"^\s*(namespace|section)\s*([A-Za-z_][A-Za-z0-9_'.]*)?\s*$")
 MUTUAL_RE = re.compile(r"^\s*mutual\s*$")
-END_RE = re.compile(r"^\s*end(?:\s+([A-Za-z_][A-Za-z0-9_']*))?\s*$")
+END_RE = re.compile(r"^\s*end(?:\s+([A-Za-z_][A-Za-z0-9_'.]*))?\s*$")
 MAX_SIGNATURE_LINES = 80
 MAX_SIGNATURE_BYTES = 8 * 1024
 
