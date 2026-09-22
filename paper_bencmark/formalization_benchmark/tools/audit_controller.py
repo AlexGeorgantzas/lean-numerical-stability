@@ -5,6 +5,7 @@ import os
 import shutil
 import stat
 import time
+from concurrent.futures import Future, ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, Callable, Iterable
 
@@ -29,6 +30,22 @@ FAITHFUL_CLASSIFICATIONS = {"faithful-equivalent", "faithful-stronger"}
 UNFAITHFUL_CLASSIFICATIONS = {
     "unfaithful-weaker",
     "unfaithful-different",
+}
+AUDIT_EXECUTION_PLAN = {
+    "schema_version": "formalization-audit-execution-plan-1",
+    "maximum_concurrent_roles": 2,
+    "initial_parallel_roles": ["blind-translation", "direct-judge"],
+    "role_prerequisites": {
+        "blind-translation": [],
+        "direct-judge": [],
+        "roundtrip-judge": ["blind-translation"],
+        "adjudicator": [
+            "blind-translation",
+            "direct-judge",
+            "roundtrip-judge",
+        ],
+    },
+    "formalizers_tasks_and_conditions_sequential": True,
 }
 
 
@@ -586,6 +603,76 @@ class AuditController:
                 )
         raise BenchmarkError(f"fresh {role} failed after retries: {' | '.join(errors)}")
 
+    def _scheduled_role(
+        self,
+        *,
+        audit_started_perf_ns: int,
+        prerequisites: tuple[str, ...],
+        role: str,
+        prompt: str,
+        workspace: Path,
+        role_root: Path,
+        schema: Path,
+        validate: Callable[[dict[str, Any]], None],
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """Run one fresh role and durably record its critical-path interval."""
+
+        role_started = time.perf_counter_ns()
+        try:
+            value, telemetry = self._fresh_role(
+                role=role,
+                prompt=prompt,
+                workspace=workspace,
+                role_root=role_root,
+                schema=schema,
+                validate=validate,
+            )
+        except BaseException:
+            role_completed = time.perf_counter_ns()
+            schedule = {
+                "schema_version": "formalization-auditor-role-schedule-1",
+                "role": role,
+                "prerequisites": list(prerequisites),
+                "started_offset_seconds": (
+                    role_started - audit_started_perf_ns
+                )
+                / 1_000_000_000,
+                "completed_offset_seconds": (
+                    role_completed - audit_started_perf_ns
+                )
+                / 1_000_000_000,
+                "wall_seconds": (role_completed - role_started) / 1_000_000_000,
+                "completed": False,
+            }
+            role_root.mkdir(parents=True, exist_ok=True)
+            write_json_atomic(role_root / "schedule.json", schedule, mode=0o400)
+            telemetry_path = role_root / "telemetry.json"
+            if telemetry_path.is_file() and not telemetry_path.is_symlink():
+                partial = load_json(telemetry_path)
+                if isinstance(partial, dict):
+                    partial["schedule"] = schedule
+                    write_json_atomic(telemetry_path, partial, mode=0o400)
+            raise
+
+        role_completed = time.perf_counter_ns()
+        schedule = {
+            "schema_version": "formalization-auditor-role-schedule-1",
+            "role": role,
+            "prerequisites": list(prerequisites),
+            "started_offset_seconds": (role_started - audit_started_perf_ns)
+            / 1_000_000_000,
+            "completed_offset_seconds": (role_completed - audit_started_perf_ns)
+            / 1_000_000_000,
+            "wall_seconds": (role_completed - role_started) / 1_000_000_000,
+            "completed": True,
+        }
+        role_root.mkdir(parents=True, exist_ok=True)
+        write_json_atomic(role_root / "schedule.json", schedule, mode=0o400)
+        enriched = dict(telemetry)
+        enriched["schedule"] = schedule
+        write_json_atomic(role_root / "telemetry.json", enriched, mode=0o400)
+        return value, enriched
+
     def seal_incident(
         self,
         *,
@@ -654,6 +741,7 @@ class AuditController:
             "usage": usage,
             "usage_complete": usage_complete,
             "auditor_tokens_excluded_from_benchmark": True,
+            "execution_plan": AUDIT_EXECUTION_PLAN,
             "evidence_manifest": audit_evidence_manifest(audit_root),
         }
         path = audit_root / "incident.json"
@@ -710,20 +798,6 @@ class AuditController:
             + "`\n\n"
             + dossier_text
         )
-        translation, role_telemetry = self._fresh_role(
-            role="blind-translation",
-            prompt=blind_prompt,
-            workspace=blind_workspace,
-            role_root=audit_root / "roles" / "blind-translation",
-            schema=SCHEMAS / "blind_translation.schema.json",
-            validate=lambda value: _validate_translation(
-                value, semantic_sha256, dependencies
-            ),
-        )
-        telemetry.append(role_telemetry)
-        translation_path = audit_root / "blind_translation.json"
-        write_json_atomic(translation_path, translation, mode=0o400)
-
         direct_workspace = audit_root / "workspaces" / "direct"
         direct_workspace.mkdir(parents=True)
         _copy_private(paper_path, direct_workspace / "paper.pdf")
@@ -736,51 +810,105 @@ class AuditController:
             + "Authoritative files: `paper.pdf`, `source_packet.md`, and "
             + "`semantic_dossier.md`.\n"
         )
-        direct, role_telemetry = self._fresh_role(
-            role="direct-judge",
-            prompt=direct_prompt,
-            workspace=direct_workspace,
-            role_root=audit_root / "roles" / "direct-judge",
-            schema=SCHEMAS / "direct_judgment.schema.json",
-            validate=lambda value: _validate_judgment(
-                value,
-                role="direct-judge",
-                paper_sha256=paper_sha256,
-                semantic_sha256=semantic_sha256,
-                dependencies=dependencies,
-            ),
-        )
-        telemetry.append(role_telemetry)
-        write_json_atomic(audit_root / "direct_judgment.json", direct, mode=0o400)
+        translation_path = audit_root / "blind_translation.json"
+        direct_path = audit_root / "direct_judgment.json"
+        roundtrip_path = audit_root / "roundtrip_judgment.json"
+        direct_result: tuple[dict[str, Any], dict[str, Any]] | None = None
+        # Only the two evidence-independent branches overlap.  The executor
+        # context drains every started role before an exception can escape, so
+        # incident sealing never races a background writer.
+        with ThreadPoolExecutor(
+            max_workers=2, thread_name_prefix="faithfulness-audit"
+        ) as executor:
+            blind_future: Future[tuple[dict[str, Any], dict[str, Any]]] = (
+                executor.submit(
+                    self._scheduled_role,
+                    audit_started_perf_ns=started,
+                    prerequisites=(),
+                    role="blind-translation",
+                    prompt=blind_prompt,
+                    workspace=blind_workspace,
+                    role_root=audit_root / "roles" / "blind-translation",
+                    schema=SCHEMAS / "blind_translation.schema.json",
+                    validate=lambda value: _validate_translation(
+                        value, semantic_sha256, dependencies
+                    ),
+                )
+            )
+            direct_future: Future[tuple[dict[str, Any], dict[str, Any]]] = (
+                executor.submit(
+                    self._scheduled_role,
+                    audit_started_perf_ns=started,
+                    prerequisites=(),
+                    role="direct-judge",
+                    prompt=direct_prompt,
+                    workspace=direct_workspace,
+                    role_root=audit_root / "roles" / "direct-judge",
+                    schema=SCHEMAS / "direct_judgment.schema.json",
+                    validate=lambda value: _validate_judgment(
+                        value,
+                        role="direct-judge",
+                        paper_sha256=paper_sha256,
+                        semantic_sha256=semantic_sha256,
+                        dependencies=dependencies,
+                    ),
+                )
+            )
 
-        roundtrip_workspace = audit_root / "workspaces" / "roundtrip"
-        roundtrip_workspace.mkdir(parents=True)
-        _copy_private(paper_path, roundtrip_workspace / "paper.pdf")
-        _copy_private(source_packet, roundtrip_workspace / "source_packet.md")
-        _copy_private(translation_path, roundtrip_workspace / "blind_translation.json")
-        roundtrip_prompt = (
-            (PROMPTS / "roundtrip_judge.md").read_text(encoding="utf-8")
-            + f"\n\nTask: {task_id}\nPaper SHA-256: {paper_sha256}\n"
-            + f"Candidate semantic SHA-256: {semantic_sha256}\n"
-            + "Authoritative files: `paper.pdf`, `source_packet.md`, and "
-            + "`blind_translation.json`.\n"
+            translation, blind_telemetry = blind_future.result()
+            write_json_atomic(translation_path, translation, mode=0o400)
+            # Avoid spending a round-trip call after a direct branch that has
+            # already failed, while still allowing the normal critical paths
+            # to overlap.
+            if direct_future.done():
+                direct_result = direct_future.result()
+                write_json_atomic(direct_path, direct_result[0], mode=0o400)
+
+            roundtrip_workspace = audit_root / "workspaces" / "roundtrip"
+            roundtrip_workspace.mkdir(parents=True)
+            _copy_private(paper_path, roundtrip_workspace / "paper.pdf")
+            _copy_private(source_packet, roundtrip_workspace / "source_packet.md")
+            _copy_private(
+                translation_path,
+                roundtrip_workspace / "blind_translation.json",
+            )
+            roundtrip_prompt = (
+                (PROMPTS / "roundtrip_judge.md").read_text(encoding="utf-8")
+                + f"\n\nTask: {task_id}\nPaper SHA-256: {paper_sha256}\n"
+                + f"Candidate semantic SHA-256: {semantic_sha256}\n"
+                + "Authoritative files: `paper.pdf`, `source_packet.md`, and "
+                + "`blind_translation.json`.\n"
+            )
+            roundtrip_future: Future[tuple[dict[str, Any], dict[str, Any]]] = (
+                executor.submit(
+                    self._scheduled_role,
+                    audit_started_perf_ns=started,
+                    prerequisites=("blind-translation",),
+                    role="roundtrip-judge",
+                    prompt=roundtrip_prompt,
+                    workspace=roundtrip_workspace,
+                    role_root=audit_root / "roles" / "roundtrip-judge",
+                    schema=SCHEMAS / "roundtrip_judgment.schema.json",
+                    validate=lambda value: _validate_judgment(
+                        value,
+                        role="roundtrip-judge",
+                        paper_sha256=paper_sha256,
+                        semantic_sha256=semantic_sha256,
+                        dependencies=dependencies,
+                    ),
+                )
+            )
+            if direct_result is None:
+                direct_result = direct_future.result()
+                write_json_atomic(direct_path, direct_result[0], mode=0o400)
+            roundtrip, roundtrip_telemetry = roundtrip_future.result()
+            write_json_atomic(roundtrip_path, roundtrip, mode=0o400)
+
+        direct, direct_telemetry = direct_result
+        # Preserve a deterministic logical order independent of completion.
+        telemetry.extend(
+            [blind_telemetry, direct_telemetry, roundtrip_telemetry]
         )
-        roundtrip, role_telemetry = self._fresh_role(
-            role="roundtrip-judge",
-            prompt=roundtrip_prompt,
-            workspace=roundtrip_workspace,
-            role_root=audit_root / "roles" / "roundtrip-judge",
-            schema=SCHEMAS / "roundtrip_judgment.schema.json",
-            validate=lambda value: _validate_judgment(
-                value,
-                role="roundtrip-judge",
-                paper_sha256=paper_sha256,
-                semantic_sha256=semantic_sha256,
-                dependencies=dependencies,
-            ),
-        )
-        telemetry.append(role_telemetry)
-        write_json_atomic(audit_root / "roundtrip_judgment.json", roundtrip, mode=0o400)
 
         adjudicated = False
         adjudication: dict[str, Any] | None = None
@@ -834,7 +962,13 @@ class AuditController:
                 + json.dumps(trigger, ensure_ascii=False)
                 + "\n"
             )
-            adjudication, role_telemetry = self._fresh_role(
+            adjudication, role_telemetry = self._scheduled_role(
+                audit_started_perf_ns=started,
+                prerequisites=(
+                    "blind-translation",
+                    "direct-judge",
+                    "roundtrip-judge",
+                ),
                 role="adjudicator",
                 prompt=adjudicator_prompt,
                 workspace=adjudicator_workspace,
@@ -924,6 +1058,7 @@ class AuditController:
             "auditor_tokens_excluded_from_benchmark": True,
             "condition_blind": True,
             "attempt_blind": True,
+            "execution_plan": AUDIT_EXECUTION_PLAN,
             "evidence_manifest": audit_evidence_manifest(audit_root),
         }
         write_json_atomic(audit_root / "decision.json", decision, mode=0o400)

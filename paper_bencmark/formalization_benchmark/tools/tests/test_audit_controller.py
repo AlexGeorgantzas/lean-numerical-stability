@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 import sys
 import tempfile
+import threading
+import time
 import unittest
 from types import SimpleNamespace
 from unittest import mock
@@ -29,14 +31,18 @@ SEMANTIC_HASH = "b" * 64
 
 class FakeAuditController(AuditController):
     def __init__(self, outputs: list[dict]):
-        self.outputs = list(outputs)
+        self.outputs: dict[str, list[dict]] = {}
+        for output in outputs:
+            self.outputs.setdefault(str(output["role"]), []).append(output)
         self.roles: list[str] = []
+        self._fake_lock = threading.Lock()
         self.forbidden_feedback_identifiers: set[str] = set()
 
     def _fresh_role(self, *, role, validate, **kwargs):
         del kwargs
-        self.roles.append(role)
-        value = self.outputs.pop(0)
+        with self._fake_lock:
+            self.roles.append(role)
+            value = self.outputs[role].pop(0)
         validate(value)
         return value, {
             "role": role,
@@ -45,9 +51,12 @@ class FakeAuditController(AuditController):
             "usage": {
                 "input_tokens": 1,
                 "cached_input_tokens": 0,
+                "cache_write_input_tokens": 0,
                 "output_tokens": 1,
+                "reasoning_output_tokens": 0,
                 "total_tokens": 2,
             },
+            "tries": [{"usage_complete": True}],
             "thread_id": "fresh",
         }
 
@@ -219,7 +228,10 @@ class AuditControllerPolicyTests(unittest.TestCase):
         decision = self.run_audit(controller, "clean")
         self.assertTrue(decision["accepted"])
         self.assertFalse(decision["adjudicated"])
-        self.assertEqual(controller.roles, ["blind-translation", "direct-judge", "roundtrip-judge"])
+        self.assertEqual(
+            set(controller.roles),
+            {"blind-translation", "direct-judge", "roundtrip-judge"},
+        )
 
     def test_unclear_dependency_forces_adjudication_and_domain_gap_gets_feedback(self) -> None:
         trigger = ["blind dependency interpretation remains unclear"]
@@ -408,6 +420,198 @@ class AuditControllerPolicyTests(unittest.TestCase):
         judgment_path.write_text("{}\n", encoding="utf-8")
         with self.assertRaisesRegex(BenchmarkError, "nonempty or incomplete"):
             self.run_audit(FakeAuditController([]), "mutable")
+
+    def test_blind_and_direct_roles_begin_concurrently(self) -> None:
+        barrier = threading.Barrier(2)
+        started: set[str] = set()
+        lock = threading.Lock()
+
+        class ConcurrentStartController(FakeAuditController):
+            def _fresh_role(inner_self, *, role, **kwargs):
+                if role in {"blind-translation", "direct-judge"}:
+                    with lock:
+                        started.add(role)
+                    barrier.wait(timeout=2)
+                return super()._fresh_role(role=role, **kwargs)
+
+        controller = ConcurrentStartController(
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
+        )
+        decision = self.run_audit(controller, "concurrent-start")
+        self.assertTrue(decision["accepted"])
+        self.assertEqual(started, {"blind-translation", "direct-judge"})
+
+    def test_roundtrip_waits_for_frozen_translation_and_overlaps_direct(self) -> None:
+        direct_started = threading.Event()
+        roundtrip_started = threading.Event()
+        direct_completed = threading.Event()
+        saw_frozen_translation = threading.Event()
+
+        class CriticalPathController(FakeAuditController):
+            def _fresh_role(inner_self, *, role, workspace, **kwargs):
+                if role == "blind-translation":
+                    self.assertTrue(direct_started.wait(timeout=2))
+                elif role == "direct-judge":
+                    direct_started.set()
+                    self.assertTrue(roundtrip_started.wait(timeout=2))
+                elif role == "roundtrip-judge":
+                    frozen = workspace / "blind_translation.json"
+                    self.assertTrue(frozen.is_file())
+                    self.assertEqual(
+                        json.loads(frozen.read_text(encoding="utf-8")),
+                        translation(),
+                    )
+                    saw_frozen_translation.set()
+                    roundtrip_started.set()
+                result = super()._fresh_role(
+                    role=role, workspace=workspace, **kwargs
+                )
+                if role == "direct-judge":
+                    direct_completed.set()
+                return result
+
+        controller = CriticalPathController(
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
+        )
+        decision = self.run_audit(controller, "roundtrip-gate")
+        self.assertTrue(decision["accepted"])
+        self.assertTrue(saw_frozen_translation.is_set())
+        self.assertTrue(direct_completed.is_set())
+
+    def test_adjudicator_starts_only_after_both_judgments_are_frozen(self) -> None:
+        trigger = ["direct and round-trip classifications differ"]
+        adjudicator_checked = threading.Event()
+
+        class AdjudicationGateController(FakeAuditController):
+            def _fresh_role(inner_self, *, role, workspace, **kwargs):
+                if role == "adjudicator":
+                    self.assertTrue((workspace / "direct_judgment.json").is_file())
+                    self.assertTrue((workspace / "roundtrip_judgment.json").is_file())
+                    self.assertTrue((workspace / "blind_translation.json").is_file())
+                    adjudicator_checked.set()
+                return super()._fresh_role(
+                    role=role, workspace=workspace, **kwargs
+                )
+
+        controller = AdjudicationGateController(
+            [
+                translation(),
+                judgment("direct-judge"),
+                judgment("roundtrip-judge", faithful=False),
+                unfaithful_adjudication(trigger),
+            ]
+        )
+        decision = self.run_audit(controller, "adjudication-gate")
+        self.assertTrue(decision["adjudicated"])
+        self.assertTrue(adjudicator_checked.is_set())
+
+    def test_role_failure_drains_inflight_branch_before_return(self) -> None:
+        direct_started = threading.Event()
+        direct_completed = threading.Event()
+
+        class DrainingController(FakeAuditController):
+            def _fresh_role(inner_self, *, role, **kwargs):
+                if role == "blind-translation":
+                    self.assertTrue(direct_started.wait(timeout=2))
+                    raise BenchmarkError("synthetic blind failure")
+                if role == "direct-judge":
+                    direct_started.set()
+                    time.sleep(0.05)
+                    result = super()._fresh_role(role=role, **kwargs)
+                    direct_completed.set()
+                    return result
+                return super()._fresh_role(role=role, **kwargs)
+
+        controller = DrainingController(
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
+        )
+        with self.assertRaisesRegex(BenchmarkError, "synthetic blind failure"):
+            self.run_audit(controller, "drained-failure")
+        self.assertTrue(direct_completed.is_set())
+        schedule = json.loads(
+            (
+                self.root
+                / "drained-failure"
+                / "roles"
+                / "direct-judge"
+                / "schedule.json"
+            ).read_text(encoding="utf-8")
+        )
+        self.assertTrue(schedule["completed"])
+
+    def test_completion_order_does_not_change_telemetry_order_or_usage(self) -> None:
+        release_direct = threading.Event()
+
+        class ReverseCompletionController(FakeAuditController):
+            def _fresh_role(inner_self, *, role, **kwargs):
+                if role == "direct-judge":
+                    self.assertTrue(release_direct.wait(timeout=2))
+                elif role == "roundtrip-judge":
+                    release_direct.set()
+                value, telemetry = super()._fresh_role(role=role, **kwargs)
+                telemetry["thread_id"] = f"thread-{role}"
+                return value, telemetry
+
+        controller = ReverseCompletionController(
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
+        )
+        decision = self.run_audit(controller, "logical-telemetry")
+        role_telemetry = decision["auditor_telemetry"]
+        self.assertEqual(
+            [item["role"] for item in role_telemetry],
+            ["blind-translation", "direct-judge", "roundtrip-judge"],
+        )
+        self.assertEqual(
+            sum(item["usage"]["total_tokens"] for item in role_telemetry),
+            6,
+        )
+
+    def test_parallel_roles_keep_distinct_workspaces_and_threads(self) -> None:
+        workspaces: dict[str, Path] = {}
+        lock = threading.Lock()
+
+        class IsolatedController(FakeAuditController):
+            def _fresh_role(inner_self, *, role, workspace, **kwargs):
+                with lock:
+                    workspaces[role] = workspace
+                value, telemetry = super()._fresh_role(
+                    role=role, workspace=workspace, **kwargs
+                )
+                telemetry["thread_id"] = f"isolated-{role}"
+                return value, telemetry
+
+        controller = IsolatedController(
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
+        )
+        decision = self.run_audit(controller, "role-isolation")
+        self.assertEqual(len(set(workspaces.values())), 3)
+        self.assertEqual(
+            len(
+                {
+                    item["thread_id"]
+                    for item in decision["auditor_telemetry"]
+                }
+            ),
+            3,
+        )
+
+    def test_audit_wall_records_parallel_critical_path_and_stays_excluded(self) -> None:
+        class TimedController(FakeAuditController):
+            def _fresh_role(inner_self, *, role, **kwargs):
+                time.sleep(0.08)
+                return super()._fresh_role(role=role, **kwargs)
+
+        controller = TimedController(
+            [translation(), judgment("direct-judge"), judgment("roundtrip-judge")]
+        )
+        decision = self.run_audit(controller, "critical-path-timing")
+        role_wall_sum = sum(
+            item["schedule"]["wall_seconds"]
+            for item in decision["auditor_telemetry"]
+        )
+        self.assertLess(decision["audit_wall_seconds"], role_wall_sum)
+        self.assertTrue(decision["auditor_tokens_excluded_from_benchmark"])
+        self.assertEqual(decision["execution_plan"]["maximum_concurrent_roles"], 2)
 
     def test_provider_capability_failure_never_retries_a_fresh_auditor(self) -> None:
         for raises_early in (True, False):

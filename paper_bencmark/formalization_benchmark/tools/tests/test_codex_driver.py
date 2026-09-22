@@ -7,6 +7,7 @@ from pathlib import Path
 import shutil
 import sys
 import tempfile
+import threading
 import unittest
 from unittest import mock
 
@@ -1051,6 +1052,64 @@ class CodexDriverProtocolTests(unittest.TestCase):
             hashlib.sha256(auditor_rotation).hexdigest(),
         )
         driver.close()
+
+    def test_unrotated_concurrent_driver_cannot_overwrite_newer_auth(self) -> None:
+        first = self.driver(state_root=self.root / "parallel-state-first")
+        second = self.driver(state_root=self.root / "parallel-state-second")
+        first_private = first._stage_auth()
+        second._stage_auth()
+        rotated = b'{"token":"first-concurrent-rotation"}\n'
+        first_private.write_bytes(rotated)
+        first._sync_private_auth_to_storage()
+        second._sync_private_auth_to_storage()
+        self.assertEqual(self.auth.read_bytes(), rotated)
+        self.assertEqual(
+            (second.state_root / "auth.json").read_bytes(), rotated
+        )
+        second._sync_private_auth_to_storage()
+        self.assertEqual(self.auth.read_bytes(), rotated)
+        first.close()
+        second.close()
+
+    def test_divergent_concurrent_rotations_fail_without_lost_update(self) -> None:
+        first = self.driver(state_root=self.root / "divergent-state-first")
+        second = self.driver(state_root=self.root / "divergent-state-second")
+        first_private = first._stage_auth()
+        second_private = second._stage_auth()
+        rotations = {
+            b'{"token":"concurrent-rotation-a"}\n',
+            b'{"token":"concurrent-rotation-b"}\n',
+        }
+        first_private.write_bytes(sorted(rotations)[0])
+        second_private.write_bytes(sorted(rotations)[1])
+        barrier = threading.Barrier(2)
+        errors: list[BaseException] = []
+        errors_lock = threading.Lock()
+
+        def sync(driver: CodexDriver) -> None:
+            barrier.wait(timeout=2)
+            try:
+                driver._sync_private_auth_to_storage()
+            except BaseException as error:
+                with errors_lock:
+                    errors.append(error)
+
+        threads = [
+            threading.Thread(target=sync, args=(first,)),
+            threading.Thread(target=sync, args=(second,)),
+        ]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join(timeout=2)
+            self.assertFalse(thread.is_alive())
+
+        self.assertEqual(len(errors), 1)
+        self.assertIsInstance(errors[0], BenchmarkError)
+        self.assertIn("rotation conflict", str(errors[0]))
+        self.assertIn(self.auth.read_bytes(), rotations)
+        first.close()
+        second.close()
 
     def test_nonzero_app_server_shutdown_is_archived_and_rejected(self) -> None:
         driver = self.driver()

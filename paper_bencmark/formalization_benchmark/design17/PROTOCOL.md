@@ -104,6 +104,15 @@ the canonical condition-blind audit:
 6. fresh adjudication whenever the frozen triggers fire; and
 7. final binary verdict `faithful` or `unfaithful`.
 
+The blind translator and direct judge start concurrently in separate fresh
+drivers and disjoint read-only workspaces. The round-trip judge starts only
+after the blind translation has validated and been frozen; it may overlap a
+still-running direct judge. Adjudication remains sequential and starts only
+after both judgments validate. Every started role is drained before an audit
+decision or incident is sealed, and per-role schedule, usage, and thread
+telemetry are retained in deterministic logical order. Formalizers, benchmark
+conditions, and tasks remain sequential.
+
 Proper-subdomain and partial case-split coverage fail. A genuinely stronger
 full-domain proposition may pass. Auditor time and tokens are reported but
 excluded from benchmark measurements.

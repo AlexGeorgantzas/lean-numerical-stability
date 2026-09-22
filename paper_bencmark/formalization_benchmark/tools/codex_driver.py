@@ -798,6 +798,11 @@ class CodexDriver:
             state_root = owned / "state"
         self.state_root = state_root
         self.auth_file = auth_file
+        # Digest of the shared credential bytes copied into this driver's
+        # private state.  Parallel stateless auditors may legitimately stage
+        # the same credential, but an unrotated/stale private copy must never
+        # overwrite a rotation persisted by another driver.
+        self._auth_storage_baseline_sha256: str | None = None
         self._credential_needles = credential_needles(auth_file)
         self.disable_features = disable_features or [
             "apps",
@@ -919,9 +924,40 @@ class CodexDriver:
         payload = stable_regular_bytes(private, maximum_bytes=4 * 1024 * 1024)
         if not payload or len(payload) > 4 * 1024 * 1024:
             raise BenchmarkError("private Codex authentication payload is unsafe")
+        private_sha256 = hashlib.sha256(payload).hexdigest()
         descriptor, _lock_path = self._auth_storage_lock()
         try:
-            write_bytes_atomic(self.auth_file, payload, mode=0o600)
+            if not self.auth_file.is_file() or self.auth_file.is_symlink():
+                raise BenchmarkError("benchmark-private Codex auth store is unsafe")
+            stored = stable_regular_bytes(
+                self.auth_file, maximum_bytes=4 * 1024 * 1024
+            )
+            stored_sha256 = hashlib.sha256(stored).hexdigest()
+            baseline_sha256 = self._auth_storage_baseline_sha256
+            if baseline_sha256 is None:
+                raise BenchmarkError("Codex authentication has no staged baseline")
+
+            if private_sha256 == baseline_sha256:
+                # This driver did not rotate its private credential.  Another
+                # concurrent driver may have advanced the shared store, so the
+                # private baseline is never written back in this case.  Bring
+                # the idle private store forward as well so a later close
+                # cannot mistake its stale bytes for a new rotation.
+                if stored_sha256 != baseline_sha256:
+                    write_bytes_atomic(private, stored, mode=0o600)
+            elif stored_sha256 == baseline_sha256:
+                write_bytes_atomic(self.auth_file, payload, mode=0o600)
+                stored = payload
+                stored_sha256 = private_sha256
+            elif stored_sha256 != private_sha256:
+                # Two sessions independently produced different rotations.
+                # There is no safe last-writer-wins rule for refresh tokens;
+                # preserve the first durable rotation and fail closed.
+                raise BenchmarkError(
+                    "concurrent Codex authentication rotation conflict"
+                )
+
+            self._auth_storage_baseline_sha256 = stored_sha256
             self._credential_needles.update(credential_needles(self.auth_file))
         finally:
             self._release_auth_storage_lock(descriptor)
@@ -940,6 +976,7 @@ class CodexDriver:
             if not payload or len(payload) > 4 * 1024 * 1024:
                 raise BenchmarkError("benchmark-private Codex auth payload is unsafe")
             write_bytes_atomic(self.state_root / "auth.json", payload, mode=0o600)
+            self._auth_storage_baseline_sha256 = hashlib.sha256(payload).hexdigest()
             self._credential_needles.update(credential_needles(self.auth_file))
         finally:
             self._release_auth_storage_lock(descriptor)
@@ -1080,6 +1117,9 @@ class CodexDriver:
                     payload = stable_regular_bytes(
                         self.auth_file, maximum_bytes=4 * 1024 * 1024
                     )
+                    self._auth_storage_baseline_sha256 = hashlib.sha256(
+                        payload
+                    ).hexdigest()
                     offset = 0
                     while offset < len(payload):
                         offset += os.write(descriptor, payload[offset:])
