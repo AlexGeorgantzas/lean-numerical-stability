@@ -668,3 +668,18 @@ contract.
 **Needs:** Implement component-level composition packets and a semantic
 source-contract gate, then validate H23-6 and H10-7 as canaries before launching
 another large campaign. Do not rewrite or resume the completed Titan campaign.
+
+---
+
+## 2026-09-22 — Codex — next-campaign formalizer model decision
+
+**Decision:** The next benchmark campaign must use `gpt-6-sol` at `xhigh` for
+both matched formalizer conditions. Keep the audit model/effort independent and
+unchanged unless separately approved. Freeze the exact model and effort in the
+new campaign protocol, config, manifest, and provider qualification; verify
+the model/effort combination on Titan before any paid task.
+
+**Boundary:** Completed Design-17 and earlier campaigns retain their original
+`gpt-5.6-sol` identity and evidence. Do not edit their frozen schedules,
+manifests, or results or pool their measurements with the successor campaign.
+No new run is authorized by this model decision alone.
