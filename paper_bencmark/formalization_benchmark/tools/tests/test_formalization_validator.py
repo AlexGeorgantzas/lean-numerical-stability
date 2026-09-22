@@ -169,6 +169,34 @@ end HighamBenchCandidate
                     )["pass"]
                 )
 
+    def test_statement_only_allows_multiple_trailing_scope_closures(self) -> None:
+        source = """\
+namespace HighamBenchCandidate
+noncomputable section
+
+def reflected (n : Nat) : Nat := n
+
+theorem target : ∀ n : Nat, reflected n = n := by
+  sorry
+
+end
+end HighamBenchCandidate
+"""
+        inspection = inspect_candidate_source(
+            source, allow_single_target_sorry=True
+        )
+        self.assertTrue(inspection["pass"], inspection)
+
+        trailing_code = source.replace(
+            "\nend\nend HighamBenchCandidate\n",
+            "\nend\ndef afterTarget : Nat := 0\nend HighamBenchCandidate\n",
+        )
+        self.assertFalse(
+            inspect_candidate_source(
+                trailing_code, allow_single_target_sorry=True
+            )["pass"]
+        )
+
     def test_rejects_lemma_as_the_audited_root(self) -> None:
         source = GOOD_SOURCE.replace("theorem target", "lemma target")
         inspection = inspect_candidate_source(source)

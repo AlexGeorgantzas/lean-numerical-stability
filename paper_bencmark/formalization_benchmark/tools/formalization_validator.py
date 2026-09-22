@@ -382,6 +382,23 @@ def _is_identifier(value: str) -> bool:
     return IDENTIFIER_PATTERN.fullmatch(value) is not None
 
 
+def _is_scope_closure_suffix(values: Sequence[str]) -> bool:
+    """Accept only zero or more trailing `end` commands after the target proof."""
+
+    cursor = 0
+    while cursor < len(values):
+        if values[cursor] != "end":
+            return False
+        cursor += 1
+        if (
+            cursor < len(values)
+            and values[cursor] != "end"
+            and _is_identifier(values[cursor])
+        ):
+            cursor += 1
+    return True
+
+
 def _read_name(tokens: Sequence[Token], start: int) -> tuple[str | None, int]:
     if start >= len(tokens) or not _is_identifier(tokens[start].value):
         return None, start
@@ -526,15 +543,10 @@ def inspect_candidate_source(
             sorry_index = sorry_indices[0]
             prefix = [token.value for token in tokens[max(0, sorry_index - 2) : sorry_index]]
             suffix = [token.value for token in tokens[sorry_index + 1 :]]
-            valid_suffix = suffix == [] or (
-                len(suffix) in {1, 2}
-                and suffix[0] == "end"
-                and (len(suffix) == 1 or _is_identifier(suffix[1]))
-            )
             if (
                 sorry_index <= root.token_index
                 or prefix != [":=", "by"]
-                or not valid_suffix
+                or not _is_scope_closure_suffix(suffix)
             ):
                 issues.append(
                     _issue(
