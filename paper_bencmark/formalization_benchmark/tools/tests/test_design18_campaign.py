@@ -18,6 +18,30 @@ import design18_campaign  # noqa: E402
 
 
 class Pilot18CampaignTests(unittest.TestCase):
+    def test_treatment_uptake_follows_candidate_helper_edges(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            attempt = root / "R1" / "submissions" / "01"
+            (attempt / "audit-preparation").mkdir(parents=True)
+            (attempt / "audit-preparation" / "private_semantic_manifest.json").write_text(
+                json.dumps({"raw_semantic_report": {
+                    "dependencies": [
+                        {"name": "Candidate.helper", "owner_module": "Candidate"},
+                        {"name": "NumStability.gamma", "owner_module": "NumStability.Analysis.Gamma"},
+                    ],
+                    "edges": [
+                        {"parent": "HighamBenchCandidate.target", "child": "Candidate.helper"},
+                        {"parent": "Candidate.helper", "child": "NumStability.gamma"},
+                    ],
+                }}), encoding="utf-8")
+            (attempt / "treatment-interface.json").write_text(
+                json.dumps({"observed_numstability_imports": ["NumStability.Analysis.Gamma"]}),
+                encoding="utf-8")
+            pair = {"conditions": {"R1": {"attempts": [{"status": "ACCEPTED_FAITHFUL"}]}}}
+            uptake = design18_campaign._treatment_uptake(root, pair)
+            self.assertEqual(uptake["status"], "DIRECT_TREATMENT_REACHED")
+            self.assertEqual(uptake["direct_reached"], ["NumStability.gamma"])
+
     def _args(self, output: Path) -> types.SimpleNamespace:
         return types.SimpleNamespace(
             deployment=Path("/synthetic/deployment.json"),

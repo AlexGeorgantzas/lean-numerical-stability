@@ -1,8 +1,15 @@
 # NumStability component screen — draft, before candidate results
 
-The frozen Design-17 schema-v3 NumStability atlas was independently copied
-from Titan and SHA-256 checked against its `atlas.json`. Its declaration file
-hash is `1f978f116073cb02dd1f22abadbe00099bd389b1c7b8866565df39e9422cc1f2`.
+The original screen used the frozen Design-17 schema-v3 NumStability atlas,
+independently copied from Titan and SHA-256 checked against its `atlas.json`.
+Its declaration file hash was
+`1f978f116073cb02dd1f22abadbe00099bd389b1c7b8866565df39e9422cc1f2`.
+Pilot 18 now uses a corrected task-neutral index of the **same** frozen library
+source, hash
+`3731abb791ba4598176a4527c19927ed3dcce5f837333746c8ac6dc7b950f9ea`;
+the Mathlib control index was corrected with the same parser. Both are pinned
+in `ATLAS_RELEASE.json`. The old library-content conclusions below must still
+be checked against the corrected catalog before corpus admission.
 This screen is **not** a proof that no disguised target theorem exists: a
 semantic declaration-by-declaration collision review is still required before
 the twelve tasks are admitted. It is deliberately completed before any
@@ -27,8 +34,9 @@ search is not sufficient for final admission. In particular, the library's
 `StatisticalRoundingErrorModel` and SumTree RMS theorems are **not** substitutes
 for the selected tail-probability theorems.
 
-A reproducible co-occurrence probe on the frozen `declarations.jsonl` also
-returned zero records whose name/signature contained both one of the selected
+A reproducible co-occurrence probe, repeated on the corrected Pilot-18
+`declarations.jsonl`, returned zero records whose name/signature contained
+both one of the selected
 algorithm names (`dotProduct`, `fl_recursiveSum`, `fl_hornerDesc`,
 `fl_pairwiseSum`, `fl_matVec`, `fl_matMul`, `fl_forwardSub`, `fl_backSub`,
 `DoolittleLU`, `fl_cholesky`) and one of `eventProb`, `FiniteProbability`,

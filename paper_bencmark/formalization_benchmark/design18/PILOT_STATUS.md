@@ -21,8 +21,9 @@ release is deliberately fail-closed while the gates below remain unresolved.
   incident, not a benchmark outcome. The corrected task-neutral Mathlib and
   NumStability atlases were rebuilt from the **same** frozen source closures;
   their file hashes are pinned in `ATLAS_RELEASE.json`. The old deployment and
-  its compiled OLean trees were not modified. The corrected catalogs still
-  require a fresh full preflight before admission.
+  its compiled OLean trees were not modified. The corrected catalogs passed
+  a fresh full twelve-task routing preflight on Titan. This does not clear the
+  source or model gates.
 - The condition prompts have an exact common-byte prefix; only R1 appends
   encouragement to use NumStability.
 - A full packet build on the nine-root `CASTRO24-4-1` treatment route produced
@@ -93,7 +94,19 @@ atlas. `HALL21-3-3` passed both conditions, but `CASTRO24-4-2` failed while
 rendering Horner signatures because old catalog names lacked the namespace.
 These are retained as off-benchmark diagnostics and are **not** timed task
 results. The corrected catalog is the proposed fix; its preflight outcome is
-not yet recorded here.
+recorded below.
+
+With the corrected catalogs, all three early tasks passed signature rendering,
+packet OLean closure, and controller-template compilation in both conditions
+under Titan's fixed envelope. The immutable off-benchmark artifact is
+`/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-corrected-v1/compile-preflight.json`
+on Titan (SHA-256
+`c2a142e251f2682ff38b7dd66949cd95a62f81e14b9a02cf04c9fac24387a0c5`).
+The observed per-condition preflight wall times were R0/R1 19.35/32.33 s for
+`HM19-3-2`, 18.63/29.07 s for `HALL21-3-3`, and 18.95/32.44 s for
+`CASTRO24-4-2`. These include packet/signature/template checks and are **not**
+contestant-active time or benchmark outcomes. The measured runner now records
+retrieval-phase and template-validation times separately.
 
 The source alternatives under investigation, **not admitted replacements**, are
 to select equation (3.12) alone from Higham–Mary Theorem 3.4 (thus avoiding its

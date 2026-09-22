@@ -1124,6 +1124,8 @@ def _run_statement_condition_attempts(
     condition_root: Path,
     hardware_snapshot: dict[str, Any] | None,
     retrieval_seconds: float,
+    retrieval_breakdown_seconds: Mapping[str, float],
+    template_validation_seconds_excluded: float,
     packet_library_olean: Path | None,
     packet_runtime_manifest: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
@@ -1603,6 +1605,10 @@ def _run_statement_condition_attempts(
         "candidate_lines": len(final_text.splitlines()),
         "numstability_name_mentions": final_text.count("NumStability"),
         "retrieval_wall_seconds": retrieval_seconds,
+        "retrieval_breakdown_seconds": dict(retrieval_breakdown_seconds),
+        "template_validation_seconds_excluded_from_contestant": (
+            template_validation_seconds_excluded
+        ),
         "formalizer_wall_seconds": cumulative_formalizer_wall_seconds,
         "contestant_active_seconds": cumulative_active_seconds,
         "contestant_system_wall_seconds": retrieval_seconds
@@ -1651,6 +1657,8 @@ def _run_condition(
         maximum_markdown_bytes=int(args.maximum_packet_bytes),
         selection_policy=getattr(args, "selection_policy", "legacy-coupled-title"),
     )
+    rank_seconds = time.monotonic() - retrieval_started
+    signature_started = time.monotonic()
     signature_interface = _derive_signature_interface(
         deployment=deployment,
         composition=retrieval_composition,
@@ -1659,10 +1667,12 @@ def _run_condition(
     )
     if spec.name == "R0" and signature_interface["direct_type_declarations"]:
         raise BenchmarkError("Mathlib-only packet has NumStability type dependencies")
+    signature_seconds = time.monotonic() - signature_started
     canonical_signatures = {
         record["name"]: record["readable_signature"]
         for record in signature_interface["seed_declarations"]
     }
+    packet_render_started = time.monotonic()
     composition, api_markdown = build_composition_packet(
         source_packet_path=packet_path,
         atlas_paths=list(spec.atlas_paths),
@@ -1674,6 +1684,7 @@ def _run_condition(
         exposed_signature_overrides=canonical_signatures,
         selection_policy=getattr(args, "selection_policy", "legacy-coupled-title"),
     )
+    packet_render_seconds = time.monotonic() - packet_render_started
     if (
         composition["route_status"] != retrieval_composition["route_status"]
         or _packet_exposed_records(composition)
@@ -1704,6 +1715,15 @@ def _run_condition(
             destination=packet_library_olean,
         )
     retrieval_seconds = time.monotonic() - retrieval_started
+    runtime_closure_seconds = max(
+        0.0, retrieval_seconds - rank_seconds - signature_seconds - packet_render_seconds
+    )
+    retrieval_breakdown_seconds = {
+        "initial_ranking_and_selection": rank_seconds,
+        "signature_render_and_type_interface": signature_seconds,
+        "canonical_packet_render": packet_render_seconds,
+        "packet_olean_runtime_closure": runtime_closure_seconds,
+    }
 
     workspace = condition_root / "workspace"
     source = workspace / "source"
@@ -1733,6 +1753,7 @@ def _run_condition(
 
     preflight_scratch = condition_root / "template-validation-scratch"
     preflight_scratch.mkdir(mode=0o700)
+    template_validation_started = time.monotonic()
     with compiled_candidate_workspace(
         candidate.read_bytes(),
         compiler_command=compiler_command(deployment, spec.compiler_condition),
@@ -1744,6 +1765,7 @@ def _run_condition(
             "pass": preflight_compile.get("pass") is True,
             "compile": preflight_compile,
         }
+    template_validation_seconds_excluded = time.monotonic() - template_validation_started
     write_json_atomic(condition_root / "template-validation.json", preflight, mode=0o400)
     if preflight["pass"] is not True:
         raise BenchmarkError(f"{spec.name} controller-generated template did not compile")
@@ -1763,6 +1785,8 @@ def _run_condition(
             condition_root=condition_root,
             hardware_snapshot=hardware_snapshot,
             retrieval_seconds=retrieval_seconds,
+            retrieval_breakdown_seconds=retrieval_breakdown_seconds,
+            template_validation_seconds_excluded=template_validation_seconds_excluded,
             packet_library_olean=packet_library_olean,
             packet_runtime_manifest=packet_runtime_manifest,
         )
@@ -1881,6 +1905,10 @@ def _run_condition(
         "candidate_lines": len(candidate_text.splitlines()),
         "numstability_name_mentions": candidate_text.count("NumStability"),
         "retrieval_wall_seconds": retrieval_seconds,
+        "retrieval_breakdown_seconds": retrieval_breakdown_seconds,
+        "template_validation_seconds_excluded_from_contestant": (
+            template_validation_seconds_excluded
+        ),
         "formalizer_wall_seconds": formalizer_seconds,
         "formalizer_active_seconds": (
             (turn.active_ended_perf_ns - turn.active_started_perf_ns) / 1_000_000_000
