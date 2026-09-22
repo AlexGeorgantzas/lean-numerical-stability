@@ -27,8 +27,24 @@ search is not sufficient for final admission. In particular, the library's
 `StatisticalRoundingErrorModel` and SumTree RMS theorems are **not** substitutes
 for the selected tail-probability theorems.
 
+A reproducible co-occurrence probe on the frozen `declarations.jsonl` also
+returned zero records whose name/signature contained both one of the selected
+algorithm names (`dotProduct`, `fl_recursiveSum`, `fl_hornerDesc`,
+`fl_pairwiseSum`, `fl_matVec`, `fl_matMul`, `fl_forwardSub`, `fl_backSub`,
+`DoolittleLU`, `fl_cholesky`) and one of `eventProb`, `FiniteProbability`,
+`probability`, `stochastic`, `independent`, `martingale`, or `hoeffding`
+(case-insensitive). This is a lexical check, **not** a semantic collision
+certificate; it cannot rule out a theorem whose name/signature hides the
+algorithm behind an abstraction.
+
 The largest predictable risk is representation: `FPModel` and most algorithms
 are deterministic, while the new papers quantify random execution traces.
+The exposed `StatisticalRoundingErrorModel` is defined over a finite sample
+space (`[Fintype Ω]`); the selected paper statements do not all impose that
+restriction. It may serve as inspiration or a partial bridge, but a candidate
+that restricts the source domain to finite probability spaces merely to use it
+is unfaithful. R0 and R1 therefore both receive Mathlib's general `Measure`
+and `iIndepFun` foundations from the same catalog.
 If constructing this bridge dominates both conditions, a weak R1 advantage
 would be an explainable limit of the present library, not evidence that the
 target result was leaked or that the benchmark may assume the bridge for free.

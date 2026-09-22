@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "HM19-3-3",
+  "selected_result": "Theorem 3.3: probabilistic componentwise backward error for matrix-vector multiplication",
+  "bibliographic_source": {
+    "authors": ["Nicholas J. Higham", "Theo Mary"],
+    "title": "A New Approach to Probabilistic Rounding Error Analysis",
+    "venue": "SIAM Journal on Scientific Computing",
+    "year": 2019,
+    "pages": "Theorem 3.3, equation (3.9)",
+    "doi": "10.1137/18M1226312"
+  },
+  "paper_pdf": {
+    "path_basename": "HM19.pdf",
+    "sha256": "640b7b0c171694ae5b874fb218b54cb44227b9de7d87d5b4014e698d7b96008a"
+  },
+  "paper_locations": [{
+    "section": "3.2, matrix-vector and matrix-matrix products",
+    "printed_pages": "8",
+    "pdf_pages": "9",
+    "anchor": "Theorem 3.3 and equation (3.9)"
+  }],
+  "task_clarification": [
+    "For A in R^(m x n) and x in R^n, compute y=A*x in floating-point arithmetic under Model 2.1, obtaining yHat.",
+    "For every lambda>0, with probability at least Q(lambda,m*n), there exists DeltaA with yHat=(A+DeltaA)*x and |DeltaA|<=gammaTilde_n(lambda)*|A| componentwise.",
+    "Q and gammaTilde are exactly the Higham-Mary equations (3.1) and (2.1)-(2.2), conditional on independent, mean-zero operation errors bounded by u."
+  ],
+  "scope_constraints": [
+    "Keep arbitrary rectangular m,n and the full vector output; one row alone is insufficient.",
+    "The source explains that inner-product and vector-operation loop orderings are covered; do not silently restrict to one ordering.",
+    "Do not assume the desired matrix perturbation or high-probability event in the execution model."
+  ]
+}

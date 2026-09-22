@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "HALL21-3-3",
+  "selected_result": "Theorem 3.3: all-orders probabilistic forward-error bound for recursive summation",
+  "bibliographic_source": {
+    "authors": ["Eric Hallman"],
+    "title": "A Refined Probabilistic Error Bound for Sums",
+    "venue": "arXiv preprint",
+    "year": 2021,
+    "pages": "Theorem 3.3, equation (3.2)",
+    "doi": "10.48550/arXiv.2104.06531"
+  },
+  "paper_pdf": {
+    "path_basename": "HALL21.pdf",
+    "sha256": "fe154eb68d177ffe9b608a84c0971dc76d9537e94e7ab661ba0b1085ce1b91ee"
+  },
+  "paper_locations": [{
+    "section": "3, First structural bound",
+    "printed_pages": "5",
+    "pdf_pages": "5",
+    "anchor": "Theorem 3.3 and equation (3.2); Model 2.1 and lambda on PDF page 2; Lemma 3.2 and gamma-tilde on PDF page 4"
+  }],
+  "task_clarification": [
+    "For n real inputs x_1,...,x_n, let s_k=sum_{i=1}^k x_i and sHat_1=s_1, sHat_k=(sHat_{k-1}+x_k)*(1+delta_k) for k>=2. Let E_n=sHat_n-s_n.",
+    "Model 2.1 requires independent, mean-zero random delta_k with |delta_k|<=u. The paper defines the vector bold-s_n=[s_2,...,s_n], lambda(epsilon)=sqrt(2*log(2/epsilon)), and gammaTilde_n(epsilon) in Lemma 3.2.",
+    "For every failure probability epsilon in (0,1), the event |E_n| <= u*||bold-s_n||_2*lambda(epsilon/2)*(1+gammaTilde_n(epsilon/2)) has probability at least 1-epsilon."
+  ],
+  "scope_constraints": [
+    "The norm is the Euclidean norm of the exact partial-sum vector, not the absolute value of the final scalar sum.",
+    "Preserve the recursive evaluation order, independence and mean-zero assumptions, and exact all-orders factor; do not replace the conclusion by a first-order or asymptotic estimate.",
+    "Do not assume the final error event, a maximal concentration inequality specialized to this event, or the stated bound as part of the input model."
+  ]
+}

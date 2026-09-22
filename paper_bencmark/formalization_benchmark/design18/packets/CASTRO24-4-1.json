@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "CASTRO24-4-1",
+  "selected_result": "Theorem 4.1: stochastic-rounding probabilistic forward-error bound for pairwise summation",
+  "bibliographic_source": {
+    "authors": ["Pablo de Oliveira Castro", "El-Mehdi El Arar", "Eric Petit", "Devan Sohier"],
+    "title": "Error Analysis of Sum-Product Algorithms under Stochastic Rounding",
+    "venue": "arXiv preprint",
+    "year": 2024,
+    "pages": "Theorem 4.1, equation (4.1)",
+    "doi": "10.48550/arXiv.2411.13601"
+  },
+  "paper_pdf": {
+    "path_basename": "CASTRO24.pdf",
+    "sha256": "cf626a8992853b705963d9e0ff9fdc4f3dce4def9c0f7bfa66c83ac9888e57d2"
+  },
+  "paper_locations": [{
+    "section": "4.1, pairwise summation",
+    "printed_pages": "8-9",
+    "pdf_pages": "8-9",
+    "anchor": "Theorem 4.1 and equation (4.1); printed tree-height mismatch requires resolution"
+  }],
+  "task_clarification": [
+    "For z=sum_{i=1}^n x_i, let zHat be the pairwise-summation result under the paper's stochastic-rounding model SR, and K=(sum_i |x_i|)/|z| where z is nonzero.",
+    "For every lambda in (0,1), the printed theorem gives |zHat-z|/|z|<=K*sqrt(u*gamma_(2*h)(u))*sqrt(log(2/lambda)) with probability at least 1-lambda, gamma_m(u)=(1+u)^m-1 and h=floor(log_2(n)).",
+    "The proof's ceiling split yields tree height ceil(log_2(n)) for some non-powers of two; this packet is not admitted until the printed h-domain conflict is resolved."
+  ],
+  "scope_constraints": [
+    "Retain the entire pairwise tree, exact finite coefficient, SR semantics, and all source n rather than silently restricting to powers of two.",
+    "Do not substitute an asymptotic O(sqrt(h)*u) result for the displayed inequality.",
+    "Do not assume the high-probability error event as a property of the run."
+  ]
+}

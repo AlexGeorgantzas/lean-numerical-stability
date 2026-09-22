@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "HM19-2-4",
+  "selected_result": "Theorem 2.4: high-probability bound for a signed product of independent rounding factors",
+  "bibliographic_source": {
+    "authors": ["Nicholas J. Higham", "Theo Mary"],
+    "title": "A New Approach to Probabilistic Rounding Error Analysis",
+    "venue": "SIAM Journal on Scientific Computing",
+    "year": 2019,
+    "pages": "Theorem 2.4, equations (2.1)-(2.2)",
+    "doi": "10.1137/18M1226312"
+  },
+  "paper_pdf": {
+    "path_basename": "HM19.pdf",
+    "sha256": "640b7b0c171694ae5b874fb218b54cb44227b9de7d87d5b4014e698d7b96008a"
+  },
+  "paper_locations": [{
+    "section": "2, probabilistic bound for product of rounding errors",
+    "printed_pages": "5",
+    "pdf_pages": "6",
+    "anchor": "Theorem 2.4 and equations (2.1)-(2.2), following Model 2.1"
+  }],
+  "task_clarification": [
+    "For n independent random variables delta_i of mean zero with |delta_i|<=u, and an arbitrary choice rho_i in {-1,+1}, define the signed product R=product_i (1+delta_i)^rho_i.",
+    "Assume a valid positive unit roundoff u<1 and lambda>0. The paper defines gammaTilde_n(lambda)=exp(lambda*u*sqrt(n)+n*u^2/(1-u))-1 and P(lambda)=1-2*exp(-lambda^2*(1-u)^2/2).",
+    "The event |R-1|<=gammaTilde_n(lambda) has probability at least P(lambda). The same event must cover the entire signed product, not merely each factor separately."
+  ],
+  "scope_constraints": [
+    "Retain independence, zero mean, boundedness, all choices of signs, lambda>0, and the exact source constants.",
+    "Do not replace the probabilistic conclusion with the deterministic gamma_n bound or a first-order approximation.",
+    "Do not assume the target product inequality or its probability as a field of the random-variable model."
+  ]
+}

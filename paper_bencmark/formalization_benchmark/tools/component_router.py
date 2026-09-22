@@ -1,0 +1,165 @@
+"""Task-neutral numerical component routing from a frozen declaration atlas.
+
+This API vocabulary contains standard algorithms and lower-level deterministic
+lemmas, never benchmark conclusions. It is applied identically to both atlases.
+"""
+from __future__ import annotations
+
+from collections import Counter
+import re
+from typing import Any, Mapping
+
+
+# Mathematical aliases, algorithm definitions, deterministic support.
+FAMILIES: dict[str, tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]] = {
+    "dot": (("dot product", "inner product", "scalar product"),
+            ("NumStability.fl_dotProduct",), ("NumStability.dotProduct_backward_error",)),
+    "recursive_sum": (("recursive summation", "recursive sum", "sequential summation", "running sum"),
+            ("NumStability.fl_recursiveSum",), ("NumStability.recursiveSum_forward_error_bound",)),
+    "pairwise_sum": (("pairwise summation", "pairwise sum", "summation tree", "balanced tree"),
+            ("NumStability.SumTree", "NumStability.fl_pairwiseSum"),
+            ("NumStability.pairwiseSum_forward_error_bound",)),
+    "horner": (("horner",), ("fl_hornerDesc",),
+            ("fl_hornerDesc_forward_error_bound", "fl_hornerDesc_backward_error_coefficients")),
+    "matvec": (("matrix-vector", "matrix vector", "matvec"),
+            ("NumStability.fl_matVec",), ("NumStability.matVec_backward_error",)),
+    "matmul": (("matrix-matrix", "matrix matrix", "matrix multiplication", "matmul"),
+            ("NumStability.fl_matMul",), ()),
+    "triangular_solve": (("triangular solve", "triangular system", "triangular substitution",
+                           "forward substitution", "back substitution"),
+            ("NumStability.fl_forwardSub", "NumStability.fl_backSub"),
+            ("NumStability.triangularSolve_backward_error",)),
+    "lu": (("lu factorization", "lu decomposition", "doolittle", "gaussian elimination"),
+            ("NumStability.DoolittleLU",), ("NumStability.doolittle_backward_error",)),
+    "cholesky": (("cholesky",), ("NumStability.fl_cholesky",),
+            ("NumStability.fl_cholesky_backward_error",)),
+    "householder_qr": (("householder qr", "householder reflector"),
+            ("NumStability.fl_householderApply",), ()),
+    "givens": (("givens rotation", "givens qr"),
+            ("NumStability.fl_givensApply",), ()),
+    "modified_gram_schmidt": (("modified gram schmidt", "modified gram-schmidt"),
+            ("NumStability.flMGSStep",), ()),
+    "fft": (("fast fourier transform", "fft"),
+            ("NumStability.higham24RoundedRadix2FFT",), ()),
+    "strassen": (("strassen",), ("NumStability.higham23Strassen2",), ()),
+    "newton_form": (("newton interpolation", "newton form"),
+            ("NumStability.newtonForm",), ()),
+}
+CORE = {
+    "floating_point": ("NumStability.FPModel", "NumStability.gamma"),
+    "probability": ("MeasureTheory.Measure", "ProbabilityTheory.iIndepFun",
+                    "NumStability.FiniteProbability.eventProb",
+                    "NumStability.StatisticalRoundingErrorModel"),
+}
+ROLE_ORDER = ("algorithm", "floating_point", "probability", "deterministic_error", "norm_or_bridge")
+ROLE_QUOTAS = {"algorithm": 2, "floating_point": 2, "probability": 4,
+               "deterministic_error": 1, "norm_or_bridge": 1}
+
+
+def _active_families(source_text: str) -> list[str]:
+    source = " ".join(source_text.casefold().replace("‐", "-").split())
+    return [family for family, (aliases, _, _) in FAMILIES.items()
+            if any(re.search(r"(?<![a-z])" + re.escape(alias) + r"(?![a-z])", source)
+                   for alias in aliases)]
+
+
+def _fallback_role(record: Mapping[str, Any]) -> str | None:
+    name = str(record.get("name", "")).casefold()
+    module = str(record.get("module", "")).casefold()
+    kind = str(record.get("kind", ""))
+    if any(word in name for word in ("finiteprobability", "statisticalrounding", "eventprob")):
+        return "probability"
+    if name.endswith(".fpmodel") or (
+        name.endswith(".gamma") and ("round" in module or "floating" in module)
+    ):
+        return "floating_point"
+    if kind in {"def", "abbrev", "inductive", "structure"} and (
+        ".algorithms." in module or name.startswith("fl_") or ".fl_" in name
+    ):
+        return "algorithm"
+    if kind in {"theorem", "lemma"} and any(word in name for word in (
+        "backward_error", "forward_error", "error_bound", "residual"
+    )):
+        return "deterministic_error"
+    # Broad norm/condition words occur in unrelated source-specific results.
+    # Until a generic, checked public interface exists, leave this slot empty.
+    return None
+
+
+def select_component_roots(
+    ranked: list[dict[str, Any]], *, records: list[dict[str, Any]],
+    source_text: str, limit: int
+) -> list[dict[str, Any]]:
+    """Prefer exact public API components, then bounded lexical fallback."""
+    if limit < 1 or limit > 12:
+        raise ValueError("component root limit must be between 1 and 12")
+    active = _active_families(source_text)
+    by_name = {str(item["record"]["name"]): item for item in ranked}
+    # Anchor lookup is against the complete frozen atlas. A foundational
+    # definition need not lexically resemble the source to be relevant.
+    for record in records:
+        name = str(record["name"])
+        if name not in by_name:
+            by_name[name] = {
+                "record": record, "score": 0.0,
+                "matched_terms": [], "field_matches": {},
+            }
+    wanted: dict[str, list[str]] = {role: [] for role in ROLE_ORDER}
+    for family in active:
+        _, algorithms, support = FAMILIES[family]
+        wanted["algorithm"].extend(algorithms)
+        wanted["deterministic_error"].extend(support)
+    wanted["floating_point"].extend(CORE["floating_point"])
+    if any(word in source_text.casefold() for word in
+           ("probability", "probabilistic", "random", "stochastic", "expectation")):
+        wanted["probability"].extend(CORE["probability"])
+
+    selected: list[dict[str, Any]] = []
+    selected_names: set[str] = set()
+    role_counts: Counter[str] = Counter()
+
+    def add(item: dict[str, Any], role: str, anchor: bool) -> None:
+        name = str(item["record"]["name"])
+        if (name in selected_names or role_counts[role] >= ROLE_QUOTAS[role]
+                or len(selected) >= limit):
+            return
+        selected.append({**item, "component_role": role, "api_anchor": anchor})
+        selected_names.add(name)
+        role_counts[role] += 1
+
+    for role in ROLE_ORDER:
+        for name in wanted[role]:
+            if name in by_name:
+                add(by_name[name], role, True)
+
+    # Absent declarations cannot be fabricated. The same condition-neutral
+    # fallback works for Mathlib-only and union-corpus retrieval.
+    for role in ROLE_ORDER:
+        if role_counts[role]:
+            continue
+        if not active and role in {"algorithm", "deterministic_error"}:
+            continue
+        for item in ranked:
+            record = item["record"]
+            if _fallback_role(record) != role:
+                continue
+            short = str(record["name"]).rsplit(".", 1)[-1]
+            if len(short) > 48:
+                continue
+            if role in {"algorithm", "deterministic_error"}:
+                normalized_name = re.sub(r"[^a-z]", "", short.casefold())
+                family_tokens = {
+                    re.sub(r"[^a-z]", "", alias.casefold())
+                    for family in active for alias in FAMILIES[family][0]
+                }
+                if not any(token in normalized_name for token in family_tokens):
+                    continue
+            # Signature-only matches often rank unrelated paper-specific
+            # theorems; fallback must match the public name itself.
+            name_matches = item.get("field_matches", {}).get("name", [])
+            if not name_matches:
+                continue
+            add(item, role, False)
+            if role_counts[role] >= ROLE_QUOTAS[role] or len(selected) >= limit:
+                break
+    return selected

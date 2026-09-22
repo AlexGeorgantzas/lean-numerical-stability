@@ -32,7 +32,7 @@ SCHEMA_VERSION = "formalization-composition-packet-1"
 TOKEN_RE = re.compile(r"[A-Za-z][A-Za-z0-9]*")
 CAMEL_BOUNDARY_RE = re.compile(r"(?<=[a-z0-9])(?=[A-Z])")
 IDENTIFIER_RE = re.compile(r"\b[A-Za-z_][A-Za-z0-9_'.]*\b")
-ALLOWED_KINDS = {"theorem", "lemma", "def", "abbrev", "structure", "class"}
+ALLOWED_KINDS = {"theorem", "lemma", "def", "abbrev", "structure", "class", "inductive"}
 
 # These words occur in almost every mathematical task and make lexical
 # retrieval noisier without expressing the numerical-analysis concept.
@@ -438,6 +438,7 @@ def build_composition_packet(
     dependency_limit: int = 5,
     maximum_markdown_bytes: int = 48 * 1024,
     exposed_signature_overrides: Mapping[str, str] | None = None,
+    selection_policy: str = "legacy-coupled-title",
 ) -> tuple[dict[str, Any], bytes]:
     if not (1 <= root_limit <= 12):
         raise BenchmarkError("composition root limit must be between 1 and 12")
@@ -452,8 +453,17 @@ def build_composition_packet(
         ]
     records = load_records(atlas_paths)
     ranked = rank_records(packet, records)
-    roots = _select_roots(ranked, limit=root_limit)
-    if not roots:
+    if selection_policy == "legacy-coupled-title":
+        roots = _select_roots(ranked, limit=root_limit)
+    elif selection_policy == "component-roles-1":
+        from component_router import select_component_roots
+
+        roots = select_component_roots(
+            ranked, records=records, source_text=task_text(packet), limit=root_limit
+        )
+    else:
+        raise BenchmarkError(f"unknown composition selection policy: {selection_policy}")
+    if not roots and selection_policy == "legacy-coupled-title":
         raise BenchmarkError("composition retrieval found no declaration candidates")
     cards: list[dict[str, Any]] = []
     for ranked_root in roots:
@@ -461,6 +471,8 @@ def build_composition_packet(
         cards.append(
             {
                 "rank": len(cards) + 1,
+                "component_role": ranked_root.get("component_role"),
+                "api_anchor": ranked_root.get("api_anchor", False),
                 "score": ranked_root["score"],
                 "matched_terms": ranked_root["matched_terms"],
                 "field_matches": ranked_root["field_matches"],
@@ -485,7 +497,10 @@ def build_composition_packet(
     ]
     route_status = (
         "DIRECT_OR_COMPOSITION"
-        if title_anchor_pairs and max(anchor_counts, default=0) >= 2
+        if (
+            (selection_policy == "component-roles-1" and bool(cards))
+            or (title_anchor_pairs and max(anchor_counts, default=0) >= 2)
+        )
         else "NO_ROUTE"
     )
     exposed_cards = cards if route_status != "NO_ROUTE" else []
@@ -518,6 +533,7 @@ def build_composition_packet(
         "query_terms": query_terms(packet),
         "title_anchor_pairs": [list(pair) for pair in title_anchor_pairs],
         "route_status": route_status,
+        "selection_policy": selection_policy,
         "root_limit": root_limit,
         "dependency_limit_per_root": dependency_limit,
         "retrieved_roots": exposed_cards,
@@ -554,6 +570,14 @@ def build_composition_packet(
         ", ".join(f"`{term}`" for term in result["query_terms"]),
         "",
     ]
+    if selection_policy == "component-roles-1":
+        lines.extend([
+            "A retrieved declaration may use a different probability space,",
+            "rounding model, or algorithm representation from the paper. Do not",
+            "narrow the paper's domain or assume the desired bound to use a card;",
+            "ignore incompatible cards and formalize the source faithfully.",
+            "",
+        ])
     if route_status == "NO_ROUTE":
         lines.extend(
             [
@@ -569,6 +593,10 @@ def build_composition_packet(
                 f"## {card['rank']}. `{declaration['name']}`",
                 "",
                 f"- Import: `{declaration['module']}`",
+                *(
+                    [f"- Component role: `{card['component_role']}`"]
+                    if card.get("component_role") else []
+                ),
                 f"- Retrieval score: `{card['score']}`",
                 "- Matched concepts: " + ", ".join(
                     f"`{term}`" for term in card["matched_terms"]

@@ -1,0 +1,34 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "HM19-3-1",
+  "selected_result": "Theorem 3.1: probabilistic componentwise backward error for a rounded inner product",
+  "bibliographic_source": {
+    "authors": ["Nicholas J. Higham", "Theo Mary"],
+    "title": "A New Approach to Probabilistic Rounding Error Analysis",
+    "venue": "SIAM Journal on Scientific Computing",
+    "year": 2019,
+    "pages": "Theorem 3.1, equations (3.1)-(3.3)",
+    "doi": "10.1137/18M1226312"
+  },
+  "paper_pdf": {
+    "path_basename": "HM19.pdf",
+    "sha256": "640b7b0c171694ae5b874fb218b54cb44227b9de7d87d5b4014e698d7b96008a"
+  },
+  "paper_locations": [{
+    "section": "3.1, inner products",
+    "printed_pages": "7-8",
+    "pdf_pages": "8-9",
+    "anchor": "Theorem 3.1 and equations (3.1)-(3.3)"
+  }],
+  "task_clarification": [
+    "For a,b in R^n, let y=a^T*b be evaluated in floating-point arithmetic in any permitted order, yielding yHat.",
+    "Assume the source relative-error operation rule and Model 2.1: the operation errors are independent, mean-zero, and bounded by the unit roundoff u.",
+    "For every lambda>0, on one event of probability at least Q(lambda,n)=1-n*(1-P(lambda)), yHat must admit both representations yHat=(a+DeltaA)^T*b=a^T*(b+DeltaB) with |DeltaA|<=gammaTilde_n(lambda)*|a| and |DeltaB|<=gammaTilde_n(lambda)*|b| componentwise.",
+    "Use exactly the source definitions of gammaTilde_n and P(lambda) in equations (2.1)-(2.2)."
+  ],
+  "scope_constraints": [
+    "The existential perturbations must be witnessed inside the same high-probability event; neither representation may be dropped.",
+    "Quantify over the source's allowed evaluation orders and keep the componentwise meaning of all vector inequalities.",
+    "Do not put the desired backward representation or event probability into the execution model as a hypothesis."
+  ]
+}

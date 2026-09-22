@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "HM19-3-6",
+  "selected_result": "Theorem 3.6: probabilistic componentwise backward error for Doolittle LU factorization",
+  "bibliographic_source": {
+    "authors": ["Nicholas J. Higham", "Theo Mary"],
+    "title": "A New Approach to Probabilistic Rounding Error Analysis",
+    "venue": "SIAM Journal on Scientific Computing",
+    "year": 2019,
+    "pages": "Theorem 3.6, equation (3.15)",
+    "doi": "10.1137/18M1226312"
+  },
+  "paper_pdf": {
+    "path_basename": "HM19.pdf",
+    "sha256": "640b7b0c171694ae5b874fb218b54cb44227b9de7d87d5b4014e698d7b96008a"
+  },
+  "paper_locations": [{
+    "section": "3.3, LU factorization and linear systems",
+    "printed_pages": "9-10",
+    "pdf_pages": "10-11",
+    "anchor": "Theorem 3.6 and equation (3.15)"
+  }],
+  "task_clarification": [
+    "For A in R^(n x n), suppose floating-point Gaussian elimination in Doolittle form runs to completion and outputs LHat and UHat under the source Model 2.1.",
+    "For every lambda>0, with probability at least Q(lambda,n^3/3+n^2/2+n/6), there exists DeltaA satisfying A+DeltaA=LHat*UHat and |DeltaA|<=gammaTilde_n(lambda)*|LHat|*|UHat| componentwise.",
+    "The computation and the output factors must be linked; the source does not merely assert that some factors exist."
+  ],
+  "scope_constraints": [
+    "Preserve run-to-completion, Doolittle operations, exact dimensions, Model 2.1, and the full probability coefficient.",
+    "Do not assume the target matrix perturbation or backward identity as a run field.",
+    "Keep the componentwise matrix product |LHat|*|UHat| rather than replacing it by a norm bound."
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "CASTRO24-4-2",
+  "selected_result": "Theorem 4.2: stochastic-rounding probabilistic forward-error bound for Horner evaluation",
+  "bibliographic_source": {
+    "authors": ["Pablo de Oliveira Castro", "El-Mehdi El Arar", "Eric Petit", "Devan Sohier"],
+    "title": "Error Analysis of Sum-Product Algorithms under Stochastic Rounding",
+    "venue": "arXiv preprint",
+    "year": 2024,
+    "pages": "Theorem 4.2, equation (4.2)",
+    "doi": "10.48550/arXiv.2411.13601"
+  },
+  "paper_pdf": {
+    "path_basename": "CASTRO24.pdf",
+    "sha256": "cf626a8992853b705963d9e0ff9fdc4f3dce4def9c0f7bfa66c83ac9888e57d2"
+  },
+  "paper_locations": [{
+    "section": "4.2, Horner algorithm",
+    "printed_pages": "10",
+    "pdf_pages": "10",
+    "anchor": "Theorem 4.2 and equation (4.2), with SR, gamma, and general martingale model in sections 2-3"
+  }],
+  "task_clarification": [
+    "Let P(x)=sum_{i=0}^n a_i*x^i and evaluate it by Horner's algorithm using n rounded additions and n rounded multiplications under the source stochastic-rounding model SR.",
+    "Let K=(sum_{i=0}^n |a_i*x^i|)/|P(x)|, defined where P(x) is nonzero. The source defines gamma_m(u)=(1+u)^m-1.",
+    "For every lambda in (0,1), with probability at least 1-lambda, the relative forward error |PHat(x)-P(x)|/|P(x)| is at most K*sqrt(u*gamma_{4*n}(u))*sqrt(log(2/lambda))."
+  ],
+  "scope_constraints": [
+    "Preserve the full Horner computation and its stochastic-rounding operation semantics; the final high-probability event may not be an input assumption.",
+    "Keep the exact coefficient, polynomial condition number, and n-addition/n-multiplication count; an O(sqrt(n)*u) description is not a substitute.",
+    "Do not claim a relative-error theorem at P(x)=0 without an independently justified source interpretation."
+  ]
+}

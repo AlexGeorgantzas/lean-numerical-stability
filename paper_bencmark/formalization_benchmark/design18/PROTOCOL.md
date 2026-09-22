@@ -15,6 +15,13 @@ its task-neutral declaration catalog. Both formalizers use `gpt-6-sol` at
 `xhigh`. Auditors remain fresh, stateless, condition-blind `gpt-6-astra` at
 `high`. No condition receives a human-selected task-specific result packet.
 
+The component router uses the same task-neutral vocabulary in both conditions
+and a maximum of ten root declarations with at most two displayed dependencies
+per root. It includes general Mathlib measure/independence foundations for R0
+as well as R1, while NumStability-specific algorithm/FP components are available
+only in R1. A valid control route may still be empty for a role that Mathlib
+does not implement; the controller must not replace it with an unrelated hit.
+
 R1's one-time library orientation must be independent of all twelve source
 tasks, frozen before the first measured task, and inherited by an identical
 fork for every R1 condition. Its build/scout/token cost is logged separately.

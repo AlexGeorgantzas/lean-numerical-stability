@@ -179,6 +179,27 @@ class CompositionPacketTests(unittest.TestCase):
             )
             self.assertEqual(first, second)
 
+    def test_component_policy_allows_honest_empty_control_route(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            packet = root / "task.json"
+            packet.write_text(json.dumps({
+                "task_id": "TEST", "selected_result": "probabilistic inner product bound",
+                "task_clarification": [], "scope_constraints": [],
+            }), encoding="utf-8")
+            atlas = root / "decls.jsonl"
+            atlas.write_text(json.dumps({
+                "kind": "theorem", "name": "Mathlib.unrelated",
+                "module": "Mathlib.Data.Nat.Basic",
+                "signature": "theorem unrelated : True",
+            }) + "\n", encoding="utf-8")
+            result, _ = build_composition_packet(
+                source_packet_path=packet, atlas_paths=[atlas], corpus_id="test",
+                selection_policy="component-roles-1",
+            )
+            self.assertEqual(result["route_status"], "NO_ROUTE")
+            self.assertEqual(result["retrieved_roots"], [])
+
 
 if __name__ == "__main__":
     unittest.main()

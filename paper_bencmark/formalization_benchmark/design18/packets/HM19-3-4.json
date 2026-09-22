@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "task_id": "HM19-3-4",
+  "selected_result": "Theorem 3.4: probabilistic componentwise backward and forward errors for matrix multiplication",
+  "bibliographic_source": {
+    "authors": ["Nicholas J. Higham", "Theo Mary"],
+    "title": "A New Approach to Probabilistic Rounding Error Analysis",
+    "venue": "SIAM Journal on Scientific Computing",
+    "year": 2019,
+    "pages": "Theorem 3.4, equations (3.11)-(3.12)",
+    "doi": "10.1137/18M1226312"
+  },
+  "paper_pdf": {
+    "path_basename": "HM19.pdf",
+    "sha256": "640b7b0c171694ae5b874fb218b54cb44227b9de7d87d5b4014e698d7b96008a"
+  },
+  "paper_locations": [{
+    "section": "3.2, matrix-vector and matrix-matrix products",
+    "printed_pages": "8-9",
+    "pdf_pages": "9-10",
+    "anchor": "Theorem 3.4 and equations (3.11)-(3.12); printed column-index mismatch requires resolution"
+  }],
+  "task_clarification": [
+    "For A in R^(m x n), B in R^(n x p), and C=A*B, compute CHat in floating-point arithmetic under the source Model 2.1.",
+    "The theorem states a per-column backward representation cHat_j=(A+DeltaA_j)*b_j with |DeltaA_j|<=gammaTilde_n(lambda)*|A| and probability at least Q(lambda,m*n), and a full matrix bound |CHat-C|<=gammaTilde_n(lambda)*|A|*|B| with probability at least Q(lambda,m*n*p).",
+    "The paper prints j=1:n in equation (3.11) although B has p columns and the proof combines p column instances. This packet is not admitted until that source conflict is resolved explicitly."
+  ],
+  "scope_constraints": [
+    "Keep the source's Model 2.1, all rectangular dimensions, componentwise inequalities, and exact Q and gammaTilde factors.",
+    "Do not quietly replace the printed j-domain, drop equation (3.11), or treat this draft as an authorized correction.",
+    "Do not assume the backward perturbations or forward-error event in the execution model."
+  ]
+}

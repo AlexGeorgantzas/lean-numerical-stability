@@ -43,6 +43,12 @@ the paper must be independently checked before a packet is frozen.
 | `CASTRO24-4-1` | Thm. 4.1, (4.1), PDF p. 8 | Pairwise-summation relative forward error is at most `K*sqrt(u*gamma_(2h)(u))*sqrt(log(2/lambda))` with probability at least `1-lambda`. | **Height concern:** theorem prints `h=floor(log₂ n)` while the illustrated ceiling split can have height `ceil(log₂ n)` when `n` is not a power of two. Do not silently restrict to powers of two or substitute another h. |
 | `CASTRO24-4-2` | Thm. 4.2, (4.2), PDF p. 10 | Horner relative forward error is at most `K*sqrt(u*gamma_(4n)(u))*sqrt(log(2/lambda))` with probability at least `1-lambda`. | Verify coefficient/order convention, polynomial condition number, and stochastic execution model. |
 
+The later [author-hosted HAL v3 PDF](https://hal.science/hal-04787542v3/file/main.pdf)
+still prints `h=floor(log₂ n)` for Theorem 4.1 while describing the recursively
+split tree. Thus the discrepancy is not resolved by swapping to that version.
+This is a source concern, not yet a proved counterexample or permission to
+weaken the selected statement.
+
 ## Admission rule
 
 An independent source-contract pass must resolve every flagged item and verify
