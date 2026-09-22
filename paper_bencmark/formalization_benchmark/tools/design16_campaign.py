@@ -833,6 +833,56 @@ def _manifest_core(
         raise BenchmarkError("audit/repair limits are malformed")
     plan = load_plan(args.config, args.readiness)
     input_closure = _frozen_input_closure(args)
+    preflight_path = getattr(args, "preflight_result", None)
+    if args.statement_only and preflight_path is None and args.controller_commit is not None:
+        raise BenchmarkError("measured Design-17 campaigns require --preflight-result")
+    if args.statement_only and preflight_path is not None:
+        preflight_path = preflight_path.expanduser().resolve()
+        preflight = _read_object(preflight_path, "Design-17 preflight result")
+        mathlib_identity = _atlas_identity(args.mathlib_atlas.expanduser())
+        deployment_identity = _file_identity(args.deployment, "deployment JSON")
+        treatment_identity = input_closure["deployment_artifacts"]["library_atlas"]
+        expected_pairs = {
+            (item["task_id"], condition)
+            for item in plan
+            for condition in ("R0", "R1")
+        }
+        condition_rows = preflight.get("conditions")
+        observed_pairs = {
+            (row.get("task_id"), row.get("condition"))
+            for row in condition_rows
+            if isinstance(row, dict) and row.get("status") == "PASS"
+        } if isinstance(condition_rows, list) else set()
+        preflight_tool = Path(__file__).with_name("design17_preflight.py")
+        if (
+            preflight.get("schema_version") != "formalization-design17-preflight-1"
+            or preflight.get("status") != "PASS"
+            or preflight.get("provider_calls") != 0
+            or preflight.get("failures") != []
+            or preflight.get("condition_count") != len(expected_pairs)
+            or set(preflight.get("task_ids", [])) != {item["task_id"] for item in plan}
+            or observed_pairs != expected_pairs
+            or preflight.get("deployment_sha256") != deployment_identity["sha256"]
+            or preflight.get("mathlib_atlas_metadata_sha256")
+            != mathlib_identity["metadata_sha256"]
+            or preflight.get("mathlib_atlas_declarations_sha256")
+            != mathlib_identity["declarations_sha256"]
+            or preflight.get("numstability_atlas_metadata_sha256")
+            != treatment_identity["metadata_sha256"]
+            or preflight.get("numstability_atlas_declarations_sha256")
+            != treatment_identity["declarations_sha256"]
+            or preflight.get("preflight_tool_sha256") != sha256_file(preflight_tool)
+        ):
+            raise BenchmarkError("Design-17 preflight result is incomplete or stale")
+        preflight_identity: dict[str, Any] = {
+            **_file_identity(preflight_path, "Design-17 preflight result"),
+            "status": "PASS",
+            "provider_calls": 0,
+            "condition_count": len(expected_pairs),
+            "tool": _file_identity(preflight_tool, "Design-17 preflight tool"),
+        }
+    else:
+        preflight_identity = {"test_mode_unqualified": True}
     verified_runtime = input_closure.get("verified_deployment_runtime")
     if verified_runtime is None:
         if args.controller_commit is not None:
@@ -881,6 +931,7 @@ def _manifest_core(
         "deployment_path": str(args.deployment.resolve()),
         "verified_deployment_runtime": verified_runtime,
         "frozen_input_closure": input_closure,
+        "design17_preflight": preflight_identity,
         "formalizer": {
             "model": args.model,
             "reasoning_effort": args.reasoning_effort,
@@ -1830,6 +1881,11 @@ def make_parser() -> argparse.ArgumentParser:
     parser.add_argument("--deployment", type=Path, required=True)
     parser.add_argument("--mathlib-atlas", type=Path, required=True)
     parser.add_argument("--campaign-root", type=Path, required=True)
+    parser.add_argument(
+        "--preflight-result",
+        type=Path,
+        help="frozen passing 26-condition Design-17 provider-free preflight result",
+    )
     parser.add_argument("--runner", type=Path, required=True)
     parser.add_argument("--runner-commit", required=True)
     parser.add_argument("--runner-sha256", required=True)
