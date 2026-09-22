@@ -177,6 +177,26 @@ class LibraryAtlasTests(unittest.TestCase):
             self.assertEqual([record["name"] for record in records],
                              ["NumStability.Ch14Ext.Ch14Eq143Family"])
 
+    def test_dotted_relative_declaration_keeps_enclosing_namespace(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            source = root / "NumStability"
+            source.mkdir()
+            (source / "Nested.lean").write_text(
+                "namespace NumStability\n"
+                "theorem Pair.left : True := by trivial\n"
+                "theorem _root_.GlobalFact : True := by trivial\n"
+                "end NumStability\n",
+                encoding="utf-8",
+            )
+            output = root / "atlas"
+            build_library_atlas(source_root=source, root_module=None,
+                                output_root=output, library_commit="e" * 40)
+            records = [json.loads(line) for line in
+                       (output / "declarations.jsonl").read_text().splitlines()]
+            self.assertEqual({record["name"] for record in records},
+                             {"NumStability.Pair.left", "GlobalFact"})
+
 
 if __name__ == "__main__":
     unittest.main()

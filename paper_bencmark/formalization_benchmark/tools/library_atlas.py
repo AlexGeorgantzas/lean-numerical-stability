@@ -303,9 +303,10 @@ def _declarations(source_root: Path, root_module: Path | None) -> Iterable[dict[
             kind, display_name = match.groups()
             namespaces = [name for scope_kind, name in scopes if scope_kind == "namespace" and name]
             qualified_name = (
-                display_name
-                if "." in display_name or not namespaces
+                display_name.removeprefix("_root_.")
+                if display_name.startswith("_root_.")
                 else ".".join([*namespaces, display_name])
+                if namespaces else display_name
             )
             signature = _signature(code_lines, index)
             doc = _doc_context(lines, index)
