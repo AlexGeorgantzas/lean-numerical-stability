@@ -68,6 +68,11 @@ PYTHONPATH=paper_bencmark/formalization_benchmark/tools \
    `a684c5ff00aaa413d8ededb4af67e3b1eb7ebe28ad1a4100fc53e7465c88ee7e`).
    No API credential is configured on Titan. Do not silently use another
    model, pricing route, or account.
+   The deployed tool is Codex CLI `0.154.0`. Official OpenAI documentation
+   [lists `gpt-6-sol` at `xhigh` as an API model](https://developers.openai.com/api/docs/models),
+   but that does not grant it to Titan's current ChatGPT-account login. An
+   API-key route would be a separate billing/authentication choice, not an
+   automatic retry or a reason to rewrite the requested model.
 2. `HM19-3-4` prints `j=1:n` for a matrix with `p` columns. A documented
    correction to `j=1:p` is mathematically indicated by the proof but must be
    decided before freezing the packet.
