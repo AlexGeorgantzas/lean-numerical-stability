@@ -52,6 +52,7 @@ from lean_sandbox import (
     compiler_command,
     extractor_command,
     signature_interface_command,
+    signature_render_command,
 )
 from manifest_control import ROOT
 from pair_controller import (
@@ -69,6 +70,8 @@ SCIENTIFIC_STATUS = "UNSCORED_ENGINEERING_EXPLORATORY"
 SIGNATURE_INTERFACE_HELPER = Path(__file__).with_name("signature_interface.lean")
 SIGNATURE_INTERFACE_SCHEMA = "formalization-design17-signature-interface-1"
 SIGNATURE_INTERFACE_MAX_OUTPUT_BYTES = 8 * 1024 * 1024
+SIGNATURE_RENDER_BEGIN = "HIGHAMBENCH_SIGNATURE_BEGIN"
+SIGNATURE_RENDER_END = "HIGHAMBENCH_SIGNATURE_END"
 CONDITIONS = ("R0", "R1")
 INFRASTRUCTURE_CONDITION_STATUSES = frozenset(
     {
@@ -357,15 +360,14 @@ def _parse_signature_interface_report(
             if format_version is not None:
                 raise BenchmarkError("duplicate signature-interface format row")
             format_version = fields[1]
-        elif tag == "seed" and len(fields) == 5:
-            name, module, kind, readable_signature = fields[1:]
-            if name in observed_seeds or not kind or not readable_signature.strip():
+        elif tag == "seed" and len(fields) == 4:
+            name, module, kind = fields[1:]
+            if name in observed_seeds or not kind:
                 raise BenchmarkError("malformed signature-interface seed row")
             observed_seeds[name] = {
                 "name": name,
                 "module": module,
                 "kind": kind,
-                "readable_signature": readable_signature,
             }
         elif tag == "direct" and len(fields) == 5:
             seed, name, module, kind = fields[1:]
@@ -384,7 +386,7 @@ def _parse_signature_interface_report(
             raise BenchmarkError(
                 f"unknown signature-interface report row at line {line_number}"
             )
-    if format_version != "1" or summary is None:
+    if format_version != "2" or summary is None:
         raise BenchmarkError("incomplete signature-interface report")
     if {
         name: record["module"] for name, record in observed_seeds.items()
@@ -422,6 +424,127 @@ def _parse_signature_interface_report(
     }
 
 
+def _signature_render_source(exposed_records: list[dict[str, str]]) -> bytes:
+    modules = sorted({record["module"] for record in exposed_records})
+    names = sorted(record["name"] for record in exposed_records)
+    for value in [*modules, *names]:
+        if re.fullmatch(r"[A-Za-z0-9_'.]+", value) is None:
+            raise BenchmarkError("signature render identity is not a Lean name")
+    lines = [*[f"import {module}" for module in modules], ""]
+    for name in names:
+        lines.extend(
+            [
+                f'#eval IO.println "{SIGNATURE_RENDER_BEGIN}\\t{name}"',
+                f"#check {name}",
+                f'#eval IO.println "{SIGNATURE_RENDER_END}\\t{name}"',
+                "",
+            ]
+        )
+    return ("\n".join(lines).rstrip() + "\n").encode("utf-8")
+
+
+def _parse_signature_render_report(
+    output: str, exposed_records: list[dict[str, str]]
+) -> dict[str, str]:
+    expected = {record["name"] for record in exposed_records}
+    rendered: dict[str, str] = {}
+    active_name: str | None = None
+    active_lines: list[str] = []
+    for line in output.splitlines():
+        if line.startswith(SIGNATURE_RENDER_BEGIN + "\t"):
+            if active_name is not None:
+                raise BenchmarkError("nested signature render marker")
+            active_name = line.split("\t", 1)[1]
+            if active_name not in expected or active_name in rendered:
+                raise BenchmarkError("unexpected signature render begin marker")
+            active_lines = []
+        elif line.startswith(SIGNATURE_RENDER_END + "\t"):
+            name = line.split("\t", 1)[1]
+            if active_name != name:
+                raise BenchmarkError("mismatched signature render end marker")
+            value = "\n".join(active_lines).strip()
+            if not value:
+                raise BenchmarkError("empty #check signature rendering")
+            rendered[name] = value
+            active_name = None
+            active_lines = []
+        elif active_name is not None:
+            active_lines.append(line)
+        elif line.strip():
+            raise BenchmarkError("unframed output from signature render command")
+    if active_name is not None or set(rendered) != expected:
+        raise BenchmarkError("signature render report is incomplete")
+    return rendered
+
+
+def _render_signature_interface(
+    *,
+    deployment: Deployment,
+    exposed_records: list[dict[str, str]],
+    artifact_root: Path,
+    timeout_seconds: float,
+) -> tuple[dict[str, str], dict[str, Any]]:
+    source_path = artifact_root / "signature-render.lean"
+    write_bytes_atomic(
+        source_path, _signature_render_source(exposed_records), mode=0o400
+    )
+    output_path = artifact_root / "signature-render-output.txt"
+    if not exposed_records:
+        write_bytes_atomic(output_path, b"", mode=0o400)
+        return {}, {
+            "source_sha256": sha256_file(source_path),
+            "output_sha256": sha256_file(output_path),
+            "execution": None,
+        }
+    command = tuple(
+        value.format(workspace=str(artifact_root.resolve()))
+        for value in signature_render_command(deployment)
+    )
+    execution = run_bounded_command(
+        command,
+        cwd=artifact_root,
+        environment=os.environ,
+        timeout_seconds=timeout_seconds,
+        maximum_output_bytes=SIGNATURE_INTERFACE_MAX_OUTPUT_BYTES,
+    )
+    output = str(execution.get("output", ""))
+    write_bytes_atomic(output_path, output.encode("utf-8"), mode=0o400)
+    execution_record = {
+        key: execution[key]
+        for key in (
+            "returncode",
+            "output_sha256",
+            "output_bytes_observed",
+            "output_limit_bytes",
+            "output_limit_exceeded",
+            "timed_out",
+            "resource_limit_event_delta",
+            "resource_limit_exceeded",
+            "resource_cgroup_join_failed",
+        )
+    }
+    write_json_atomic(
+        artifact_root / "signature-render-execution.json",
+        execution_record,
+        mode=0o400,
+    )
+    if (
+        execution.get("returncode") != 0
+        or execution.get("timed_out") is True
+        or execution.get("output_limit_exceeded") is True
+        or execution.get("resource_limit_exceeded") is True
+        or execution.get("resource_cgroup_join_failed") is True
+    ):
+        raise BenchmarkError("trusted signature #check rendering failed")
+    if sha256_file(output_path) != execution["output_sha256"]:
+        raise BenchmarkError("signature render output encoding changed its identity")
+    return _parse_signature_render_report(output, exposed_records), {
+        "source_sha256": sha256_file(source_path),
+        "output_sha256": execution["output_sha256"],
+        "execution": execution_record,
+    }
+
+
 def _derive_signature_interface(
     *,
     deployment: Deployment,
@@ -437,6 +560,12 @@ def _derive_signature_interface(
         f"{record['module']}\t{record['name']}\n" for record in exposed_records
     ).encode("utf-8")
     write_bytes_atomic(seed_path, seed_payload, mode=0o400)
+    readable_signatures, signature_render = _render_signature_interface(
+        deployment=deployment,
+        exposed_records=exposed_records,
+        artifact_root=artifact_root,
+        timeout_seconds=timeout_seconds,
+    )
     if not exposed_records:
         write_bytes_atomic(
             artifact_root / "extractor-output.tsv", b"", mode=0o400
@@ -455,6 +584,7 @@ def _derive_signature_interface(
             "seed_input_sha256": sha256_file(seed_path),
             "extractor_output_sha256": __import__("hashlib").sha256(b"").hexdigest(),
             "extractor_execution": None,
+            "signature_render": signature_render,
         }
         write_json_atomic(artifact_root / "interface.json", interface, mode=0o400)
         return interface
@@ -503,12 +633,15 @@ def _derive_signature_interface(
     if sha256_file(output_path) != execution["output_sha256"]:
         raise BenchmarkError("signature-interface output encoding changed its identity")
     interface = _parse_signature_interface_report(output, exposed_records)
+    for record in interface["seed_declarations"]:
+        record["readable_signature"] = readable_signatures[record["name"]]
     interface.update(
         {
             "helper_sha256": sha256_file(SIGNATURE_INTERFACE_HELPER),
             "seed_input_sha256": sha256_file(seed_path),
             "extractor_output_sha256": execution["output_sha256"],
             "extractor_execution": execution_record,
+            "signature_render": signature_render,
         }
     )
     write_json_atomic(artifact_root / "interface.json", interface, mode=0o400)

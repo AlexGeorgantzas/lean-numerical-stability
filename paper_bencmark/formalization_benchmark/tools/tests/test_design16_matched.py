@@ -25,6 +25,8 @@ from design16_matched import (  # noqa: E402
     _library_exploration_policy,
     _packet_treatment_allowlist,
     _parse_signature_interface_report,
+    _parse_signature_render_report,
+    _signature_render_source,
     _condition_faithfulness_status,
     _run_statement_condition_attempts,
     _statement_pair_status,
@@ -278,7 +280,9 @@ class Design16MatchedTests(unittest.TestCase):
                         "name": "NumStability.fl_rootProductEval_forward_error_bound",
                         "module": "NumStability.RootProduct",
                         "kind": "theorem",
-                        "readable_type": "True",
+                        "readable_signature": (
+                            "NumStability.fl_rootProductEval_forward_error_bound : True"
+                        ),
                     }
                 ],
                 "direct_type_declarations": [
@@ -390,9 +394,9 @@ class Design16MatchedTests(unittest.TestCase):
                 "def",
             ),
         ]
-        rows = ["format\t1"]
+        rows = ["format\t2"]
         rows.extend(
-            f"seed\t{name}\tNumStability.H5.Packet\ttheorem\tTrue"
+            f"seed\t{name}\tNumStability.H5.Packet\ttheorem"
             for name in seed_names
         )
         rows.extend(
@@ -468,7 +472,7 @@ class Design16MatchedTests(unittest.TestCase):
                         "name": "NumStability.allowed",
                         "module": "NumStability.Allowed",
                         "kind": "theorem",
-                        "readable_type": "True",
+                        "readable_signature": "NumStability.allowed : True",
                     }
                 ],
                 "direct_type_declarations": [],
@@ -495,9 +499,9 @@ class Design16MatchedTests(unittest.TestCase):
             }
         ]
         interface = _parse_signature_interface_report(
-            "format\t1\n"
+            "format\t2\n"
             "seed\tMathlib.Analysis.someBound\tMathlib.Analysis.Bounds\t"
-            "theorem\tTrue\n"
+            "theorem\n"
             "summary\t1\t0\n",
             exposed,
         )
@@ -511,6 +515,36 @@ class Design16MatchedTests(unittest.TestCase):
             "signature_interface": interface,
         }
         self.assertEqual(_packet_treatment_allowlist(composition), (set(), set()))
+
+    def test_signature_render_uses_framed_command_frontend_output(self) -> None:
+        exposed = [
+            {
+                "name": "NumStability.sample",
+                "module": "NumStability.Sample",
+            }
+        ]
+        source = _signature_render_source(exposed).decode("utf-8")
+        self.assertIn("#check NumStability.sample", source)
+        self.assertNotIn("ppExpr", source)
+        output = (
+            "HIGHAMBENCH_SIGNATURE_BEGIN\tNumStability.sample\n"
+            "NumStability.sample (roots : List ℝ) :\n"
+            "  2 * roots.length ≤ roots.length - 1\n"
+            "HIGHAMBENCH_SIGNATURE_END\tNumStability.sample\n"
+        )
+        self.assertEqual(
+            _parse_signature_render_report(output, exposed),
+            {
+                "NumStability.sample": (
+                    "NumStability.sample (roots : List ℝ) :\n"
+                    "  2 * roots.length ≤ roots.length - 1"
+                )
+            },
+        )
+        with self.assertRaises(BenchmarkError):
+            _parse_signature_render_report(
+                "unframed warning\n" + output, exposed
+            )
 
     def test_library_exploration_policy_rejects_mounted_library_search(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -622,7 +656,7 @@ class Design16MatchedTests(unittest.TestCase):
                             "name": "NumStability.selected",
                             "module": "NumStability.A.Selected",
                             "kind": "theorem",
-                            "readable_type": "True",
+                            "readable_signature": "NumStability.selected : True",
                         }
                     ],
                     "direct_type_declarations": [

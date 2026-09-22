@@ -159,3 +159,19 @@ def signature_interface_command(
             "/workspace/signature-interface-seeds.tsv",
         ]
     )
+
+
+def signature_render_command(deployment: Deployment) -> tuple[str, ...]:
+    """Render packet signatures through Lean's ordinary command frontend."""
+
+    return tuple(
+        _base(deployment, "L")
+        + [
+            "/lean/bin/lean",
+            "--root",
+            "/workspace",
+            "-o",
+            "/tmp/signature-render.olean",
+            "/workspace/signature-render.lean",
+        ]
+    )

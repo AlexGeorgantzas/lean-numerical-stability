@@ -38,24 +38,6 @@ private def constantKind : ConstantInfo → String
   | .ctorInfo _ => "constructor"
   | .recInfo _ => "recursor"
 
-private unsafe def ppSignatureIn (env : Environment) (name : Name) : IO String := do
-  let context : Core.Context := {
-    fileName := "<HighamBench signature interface>"
-    fileMap := default
-  }
-  let state : Core.State := { env := env }
-  Prod.fst <$> Core.CoreM.toIO (ctx := context) (s := state) do
-    withOptions (fun options =>
-      options.setBool `pp.all false
-        |>.setBool `pp.notation true
-        |>.setBool `pp.fieldNotation true
-        |>.setBool `pp.universes false
-        |>.setBool `pp.explicit false
-        |>.setBool `pp.coercions true
-        |>.setBool `pp.fullNames false
-        |>.setBool `pp.privateNames true) <| Meta.MetaM.run' do
-      return (← PrettyPrinter.ppSignature name).fmt.pretty
-
 private def loadSeeds (path : System.FilePath) : IO (Array (Name × Name)) := do
   let contents ← IO.FS.readFile path
   let mut seeds : Array (Name × Name) := #[]
@@ -85,7 +67,7 @@ private unsafe def emit (inputFile : System.FilePath) : IO UInt32 := do
     left.module.toString < right.module.toString
 
   withImportModules imports {} fun env => do
-    writeFields #["format", "1"]
+    writeFields #["format", "2"]
     let mut directCount := 0
     let sortedSeeds := seeds.qsort fun left right =>
       left.2.toString < right.2.toString
@@ -103,8 +85,7 @@ private unsafe def emit (inputFile : System.FilePath) : IO UInt32 := do
         "seed",
         seedName.toString,
         actualModule.toString,
-        constantKind seedInfo,
-        ← ppSignatureIn env seedName
+        constantKind seedInfo
       ]
       let used := seedInfo.type.getUsedConstantsAsSet.toArray.qsort fun left right =>
         left.toString < right.toString

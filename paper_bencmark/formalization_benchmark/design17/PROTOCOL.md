@@ -36,15 +36,19 @@ coverage, and nonvacuity are decided by the independent semantic audit.
   and never recurses through the newly found prerequisites. This makes necessary
   signature constants such as `FPModel`, `gamma`, and `gammaValid` legal even
   when they are not separate dependency cards, without admitting proof-body or
-  same-module neighbors. The helper also replaces every model-visible atlas
-  snippet with its canonical pretty-printed elaborated type, so malformed source
-  snippets cannot disclose names that the interface rejects. Prerequisite owner
-  modules must already belong to the trusted import closure of visible card
-  modules: they are not added as runtime roots or permitted explicit imports.
-  The controller rejects every direct target dependency or explicit
-  NumStability import outside this frozen surface. Helper, seed, and output
-  hashes are retained. This is a logged compliance boundary, not a claim of
-  cryptographic noninterference.
+  same-module neighbors. Separately, the controller generates a framed Lean
+  command file that imports the visible card modules and runs ordinary `#check`
+  commands for the exact seed names. Their command-frontend output replaces
+  every model-visible atlas snippet, so malformed source snippets cannot
+  disclose names that the semantic interface rejects and the contestant sees
+  normal Lean notation rather than internal elaborator names. No textual
+  rewriting of signatures is permitted. Prerequisite owner modules must already
+  belong to the trusted import closure of visible card modules: they are not
+  added as runtime roots or permitted explicit imports. The controller rejects
+  every direct target dependency or explicit NumStability import outside this
+  frozen surface. Helper, seed, render-source, output, and execution hashes are
+  retained. This is a logged compliance boundary, not a claim of cryptographic
+  noninterference.
 - Each condition uses a fresh stateless `gpt-5.6-sol` xhigh conversation.
 - Conditions run sequentially in the predeclared counterbalanced order.
 
