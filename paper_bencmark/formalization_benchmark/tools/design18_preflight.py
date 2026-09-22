@@ -13,8 +13,8 @@ import json
 from pathlib import Path
 
 from common import BenchmarkError, load_json, sha256_file
-from composition_packets import load_records, rank_records, task_text
-from component_router import CORE, FAMILIES, select_component_roots
+from composition_packets import load_records, rank_records
+from component_router import BRIDGES, CORE, FAMILIES, routing_anchor_text, select_component_roots
 
 
 DESIGN_ROOT = Path(__file__).resolve().parents[1] / "design18"
@@ -80,6 +80,7 @@ def check_retrieval(
     atlas_names = {record["name"] for record in [*mathlib, *numstability]}
     anchors = {name for _, algorithms, support in FAMILIES.values()
                for name in [*algorithms, *support]}
+    anchors.update(name for names in BRIDGES.values() for name in names)
     anchors.update(name for names in CORE.values() for name in names)
     if missing := sorted(anchors - atlas_names):
         raise BenchmarkError(f"API catalog anchors absent from frozen atlases: {missing}")
@@ -93,7 +94,8 @@ def check_retrieval(
         for condition, records in conditions.items():
             ranked = rank_records(packet, records)
             cards = select_component_roots(
-                ranked, records=records, source_text=task_text(packet), limit=root_limit
+                ranked, records=records,
+                source_text=routing_anchor_text(packet), limit=root_limit
             )
             result[task_id][condition] = [
                 {"role": card["component_role"], "name": card["record"]["name"],

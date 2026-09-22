@@ -145,6 +145,17 @@ packet nor task manifest. Any adoption must mint a new pilot identity, retain
 the superseded task and reason, and redo the admission checks. No outcome data
 exist for any proposed replacement.
 
+The unadopted Hallman–Ipsen proposal packet revealed another off-benchmark
+router defect: its negative scope sentence forbidding sequential specialization
+had activated the recursive-summation API. The selector now activates algorithm
+families only from the positive selected-result title; the full packet remains
+in lexical ranking and all contestant/auditor input. It also recognizes
+general summation trees and can expose a task-neutral SumTree statistical RMS
+bridge. Unit tests cover negated-scope exclusion. This routing revision is
+**not** frozen for measurement until a fresh all-task Titan preflight and
+compile check pass. Any measured release would use a new pilot identity; no
+Pilot-18 contestant outcome exists to pool or overwrite.
+
 The present branch is preparation only. A successful routing preflight is
 not evidence of faster or more faithful formalization. Preserve all
 preflight/model-gate incidents and do not pool later Pilot-18 outcomes with

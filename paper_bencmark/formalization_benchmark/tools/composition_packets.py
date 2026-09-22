@@ -456,10 +456,10 @@ def build_composition_packet(
     if selection_policy == "legacy-coupled-title":
         roots = _select_roots(ranked, limit=root_limit)
     elif selection_policy == "component-roles-1":
-        from component_router import select_component_roots
+        from component_router import routing_anchor_text, select_component_roots
 
         roots = select_component_roots(
-            ranked, records=records, source_text=task_text(packet), limit=root_limit
+            ranked, records=records, source_text=routing_anchor_text(packet), limit=root_limit
         )
     else:
         raise BenchmarkError(f"unknown composition selection policy: {selection_policy}")

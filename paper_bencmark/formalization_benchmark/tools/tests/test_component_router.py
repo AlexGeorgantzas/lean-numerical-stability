@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from component_router import select_component_roots
+from component_router import routing_anchor_text, select_component_roots
 
 
 def item(name: str, kind: str, module: str, score: float) -> dict:
@@ -82,6 +82,29 @@ class ComponentRouterTests(unittest.TestCase):
         )
         self.assertEqual([entry["record"]["name"] for entry in selected],
                          ["NumStability.fl_hornerDesc", "NumStability.FPModel"])
+
+    def test_negative_scope_does_not_activate_forbidden_algorithm(self) -> None:
+        packet = {
+            "selected_result": "probabilistic error bound for general summation trees",
+            "scope_constraints": [
+                "Do not specialize to recursive summation or pairwise summation."
+            ],
+        }
+        ranked = [
+            item("NumStability.SumTree", "inductive", "NumStability.Algorithms.Summation.Tree.Core", 20),
+            item("NumStability.fl_recursiveSum", "def", "NumStability.Algorithms.Summation.Recursive.Core", 19),
+            item("NumStability.SumTree.statisticalRunningErrorContribution_rms_le", "theorem",
+                 "NumStability.Algorithms.Summation.Tree.Core", 18),
+        ]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text=routing_anchor_text(packet), limit=10,
+        )
+        self.assertEqual(
+            [entry["record"]["name"] for entry in selected],
+            ["NumStability.SumTree",
+             "NumStability.SumTree.statisticalRunningErrorContribution_rms_le"],
+        )
 
 
 if __name__ == "__main__":

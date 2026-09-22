@@ -21,6 +21,11 @@ per root. It includes general Mathlib measure/independence foundations for R0
 as well as R1, while NumStability-specific algorithm/FP components are available
 only in R1. A valid control route may still be empty for a role that Mathlib
 does not implement; the controller must not replace it with an unrelated hit.
+Algorithm-family anchors are activated only from the selected-result title:
+negative scope instructions such as "do not specialize to sequential summation"
+must not be interpreted as requests for sequential-summation declarations.
+The full neutral task packet remains available for lexical ranking and to the
+formalizer/auditors; this rule affects only the task-neutral component selector.
 
 R1's one-time library orientation must be independent of all twelve source
 tasks, frozen before the first measured task, and inherited by an identical

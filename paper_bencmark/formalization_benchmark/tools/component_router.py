@@ -19,6 +19,8 @@ FAMILIES: dict[str, tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]] = 
     "pairwise_sum": (("pairwise summation", "pairwise sum", "summation tree", "balanced tree"),
             ("NumStability.SumTree", "NumStability.fl_pairwiseSum"),
             ("NumStability.pairwiseSum_forward_error_bound",)),
+    "general_sum_tree": (("general summation", "computational tree", "computation tree"),
+            ("NumStability.SumTree",), ()),
     "horner": (("horner",), ("NumStability.fl_hornerDesc",),
             ("NumStability.fl_hornerDesc_forward_error_bound",
              "NumStability.fl_hornerDesc_backward_error_coefficients")),
@@ -46,6 +48,10 @@ FAMILIES: dict[str, tuple[tuple[str, ...], tuple[str, ...], tuple[str, ...]]] = 
     "newton_form": (("newton interpolation", "newton form"),
             ("NumStability.newtonForm",), ()),
 }
+BRIDGES = {
+    "pairwise_sum": ("NumStability.SumTree.statisticalRunningErrorContribution_rms_le",),
+    "general_sum_tree": ("NumStability.SumTree.statisticalRunningErrorContribution_rms_le",),
+}
 CORE = {
     "floating_point": ("NumStability.FPModel", "NumStability.gamma"),
     "probability": ("MeasureTheory.Measure", "ProbabilityTheory.iIndepFun",
@@ -55,6 +61,16 @@ CORE = {
 ROLE_ORDER = ("algorithm", "floating_point", "probability", "deterministic_error", "norm_or_bridge")
 ROLE_QUOTAS = {"algorithm": 2, "floating_point": 2, "probability": 4,
                "deterministic_error": 1, "norm_or_bridge": 1}
+
+
+def routing_anchor_text(packet: Mapping[str, Any]) -> str:
+    """Use only the positive result title for anchor activation.
+
+    Scope constraints and explanatory lines routinely name *forbidden*
+    specializations. They remain visible to ranking and the formalizer, but
+    must not activate an algorithm family as if it were requested.
+    """
+    return str(packet.get("selected_result", ""))
 
 
 def _active_families(source_text: str) -> list[str]:
@@ -110,6 +126,7 @@ def select_component_roots(
         _, algorithms, support = FAMILIES[family]
         wanted["algorithm"].extend(algorithms)
         wanted["deterministic_error"].extend(support)
+        wanted["norm_or_bridge"].extend(BRIDGES.get(family, ()))
     wanted["floating_point"].extend(CORE["floating_point"])
     if any(word in source_text.casefold() for word in
            ("probability", "probabilistic", "random", "stochastic", "expectation")):
