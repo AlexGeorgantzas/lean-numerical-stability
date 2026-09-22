@@ -55,6 +55,7 @@ class Pilot18CampaignTests(unittest.TestCase):
                     self._args(root / "campaign"),
                     pair_runner=self._pair_runner([1.7], seen),
                     uptake_reader=lambda *_: {"status": "DIRECT_TREATMENT_REACHED"},
+                    require_envelope=False,
                 )
             self.assertEqual(journal["status"], "PAUSED_EARLY_REVIEW")
             self.assertEqual(seen, [("T0", "R0,R1")])
@@ -73,6 +74,7 @@ class Pilot18CampaignTests(unittest.TestCase):
                     self._args(root / "campaign"),
                     pair_runner=self._pair_runner([0.9] * 12, seen),
                     uptake_reader=lambda *_: {"status": "DIRECT_TREATMENT_REACHED"},
+                    require_envelope=False,
                 )
             self.assertEqual(journal["status"], "COMPLETE")
             self.assertEqual(len(seen), 12)
@@ -83,7 +85,7 @@ class Pilot18CampaignTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as raw:
             output = Path(raw) / "campaign"
             with self.assertRaisesRegex(BenchmarkError, "source flags bar"):
-                design18_campaign.run_campaign(self._args(output))
+                design18_campaign.run_campaign(self._args(output), require_envelope=False)
             self.assertFalse(output.exists())
 
 
