@@ -133,6 +133,8 @@ After the mechanism is frozen, run multiple counterbalanced repetitions on a lar
 - Campaign identity: `2c81e04a24ad9563b36a30e4ed4cdf013ccf354e30a4c80db00e2c891f0f0fb2`
 - Campaign outcome: `AUDITED_CAMPAIGN_WITH_INELIGIBLE_PAIRS`
 - Campaign manifest SHA-256: `788b365158613bd3c02924a28bfea4dff7adda7407288f7dcbf3428936c72947`
+- Manifest payload SHA-256: `e3f8846cd47ca91feab2cb4f1265bc5451cc51ac3ecab75b1ff6006b1a213afd`
+- Frozen-input closure SHA-256: `b7f952780c348dae209cd4c189c5628f3e9eac93479c418641d57624bec86c59`
 - State journal: 28 records; head `dcb620a802d0e54a26d05c82e82095ebcd48ef9a56ab2cb928ba43ec177082a1`; file SHA-256 `dd0b3e3d1175b7f721a86f73509dc75daf128f7f5c6fdfd25aadc028a0c85fe3`
 - Summary journal: 28 records; head `07863b3ba2d88366f8a6c340d563f3778fc8d413421da4de870fb548c75cd502`; file SHA-256 `9e32e4bff0dad5d6e185438f31c74f0d9bae126de4cf09c32d93bf1421922b3a`
 - Authenticated JSON report SHA-256: `9df42f55cd00254809a08351464cc05f28fc0c32617536456a8fd2c1accb49f2`
@@ -140,6 +142,10 @@ After the mechanism is frozen, run multiple counterbalanced repetitions on a lar
 - Hardware: Titan, 13th Gen Intel Core i9-13900K, CPUs 0–7, 32 GiB RAM, no swap, 512-task limit.
 - Formalizer: `gpt-5.6-sol`, `xhigh`.
 - Auditors: `gpt-6-astra`, `high`.
+
+An independent read-only closure sweep verified both 28-record journal chains, all 13 exact pair attestations, 3,411 attested files, 38 candidate/validation/audit triples, 76 admitted before/after hardware snapshots, and 70 explicit frozen-file references. All 13 runner return codes were zero and all runner stderr files were empty. No network-violation bytes were recorded.
+
+One operational warning is retained for transparency: 36 of the 38 formalizer stderr logs contain the same recoverable 168-byte `apply_patch` verification message about multiple operations targeting `Candidate.lean`. Every affected attempt subsequently produced a hash-frozen candidate with a passing Lean validation and completed audit. This does not invalidate the integrity gate, but it may have added a small amount of contestant overhead and should be removed before a future powered campaign.
 
 The full frozen NumStability build used commit `45813a95dacf577461bae13f033af0dbc985a225`, Mathlib `e8ea1afc32790ce1d4e1a4e45cc412ba9388716b`, and Lean `v4.29.0-rc3`. It completed in 21:55.16 elapsed time (6,499.55 user seconds, 440.06 system seconds, 527% CPU), peaked at 8,406,028,288 bytes RSS, and produced 879 OLean files totaling 1,015,839,912 bytes. The library was built once and reused; it was not rebuilt for every task.
 
