@@ -1,0 +1,34 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "status": "UNADOPTED_EDITORIAL_CORRECTION_NOT_IN_CORPUS",
+  "task_id": "HM19-3-4",
+  "selected_result": "Theorem 3.4: probabilistic componentwise backward and forward errors for matrix multiplication",
+  "bibliographic_source": {
+    "authors": ["Nicholas J. Higham", "Theo Mary"],
+    "title": "A New Approach to Probabilistic Rounding Error Analysis",
+    "venue": "SIAM Journal on Scientific Computing",
+    "year": 2019,
+    "pages": "Theorem 3.4, equations (3.11)-(3.12)",
+    "doi": "10.1137/18M1226312"
+  },
+  "paper_pdf": {
+    "path_basename": "HM19.pdf",
+    "sha256": "640b7b0c171694ae5b874fb218b54cb44227b9de7d87d5b4014e698d7b96008a"
+  },
+  "paper_locations": [{
+    "section": "3.2, matrix-vector and matrix-matrix products",
+    "printed_pages": "8-9",
+    "pdf_pages": "9-10",
+    "anchor": "Theorem 3.4 and equations (3.11)-(3.12); the printed j=1:n is disclosed below as an indexing error"
+  }],
+  "task_clarification": [
+    "For A in R^(m x n), B in R^(n x p), and C=A*B, compute CHat in floating-point arithmetic under the source Model 2.1.",
+    "For every lambda>0 and each actual column j=1:p, require a backward representation cHat_j=(A+DeltaA_j)*b_j with |DeltaA_j|<=gammaTilde_n(lambda)*|A| and probability at least Q(lambda,m*n). Also require the full matrix bound |CHat-C|<=gammaTilde_n(lambda)*|A|*|B| with probability at least Q(lambda,m*n*p). The analysis covers all six legal loop orderings of matrix multiplication.",
+    "Editorial correction, applied identically to both conditions: printed equation (3.11) says j=1:n although B has p columns. The proof explicitly combines p instances to obtain (3.12), so the intended per-column range is j=1:p. Do not change any other domain, coefficient, event, or conclusion."
+  ],
+  "scope_constraints": [
+    "Keep Model 2.1, all rectangular dimensions, both theorem conclusions, their separate probability guarantees, componentwise inequalities, and exact Q and gammaTilde factors.",
+    "A candidate giving only the matrix forward bound, or only a square-matrix specialization, is incomplete.",
+    "Do not assume the backward perturbations or forward-error event in the execution model."
+  ]
+}
