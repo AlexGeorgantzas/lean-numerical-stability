@@ -106,6 +106,17 @@ class ComponentRouterTests(unittest.TestCase):
              "NumStability.SumTree.statisticalRunningErrorContribution_rms_le"],
         )
 
+    def test_hyphenated_algorithm_title_matches_public_family(self) -> None:
+        ranked = [
+            item("NumStability.DoolittleLU", "structure", "NumStability.Algorithms.LU", 20),
+        ]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text="probabilistic Gaussian-elimination solution bound", limit=10,
+        )
+        self.assertEqual([entry["record"]["name"] for entry in selected],
+                         ["NumStability.DoolittleLU"])
+
 
 if __name__ == "__main__":
     unittest.main()

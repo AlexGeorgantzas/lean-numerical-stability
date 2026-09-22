@@ -155,6 +155,12 @@ bridge. Unit tests cover negated-scope exclusion. This routing revision is
 **not** frozen for measurement until a fresh all-task Titan preflight and
 compile check pass. Any measured release would use a new pilot identity; no
 Pilot-18 contestant outcome exists to pool or overwrite.
+The first twelve-task reroute caught an additional orthographic gap before
+measurement: `Gaussian-elimination` in the selected title did not match the
+generic `gaussian elimination` family alias, leaving `HM19-3-7` without its
+algorithm component. Hyphen/dash normalization has been added to both title
+and alias matching, with a regression test; the first reroute remains an
+off-benchmark diagnostic, not a passed release check.
 
 The present branch is preparation only. A successful routing preflight is
 not evidence of faster or more faithful formalization. Preserve all

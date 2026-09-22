@@ -74,10 +74,13 @@ def routing_anchor_text(packet: Mapping[str, Any]) -> str:
 
 
 def _active_families(source_text: str) -> list[str]:
-    source = " ".join(source_text.casefold().replace("‐", "-").split())
+    # Hyphenation is orthographic, not a different algorithm family:
+    # "Gaussian-elimination solution" must match "gaussian elimination".
+    source = " ".join(re.sub(r"[-‐‑‒–—]", " ", source_text.casefold()).split())
     return [family for family, (aliases, _, _) in FAMILIES.items()
-            if any(re.search(r"(?<![a-z])" + re.escape(alias) + r"(?![a-z])", source)
-                   for alias in aliases)]
+            if any(re.search(r"(?<![a-z])" + re.escape(
+                " ".join(re.sub(r"[-‐‑‒–—]", " ", alias.casefold()).split())
+            ) + r"(?![a-z])", source) for alias in aliases)]
 
 
 def _fallback_role(record: Mapping[str, Any]) -> str | None:
