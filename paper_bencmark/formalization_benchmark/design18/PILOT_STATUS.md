@@ -73,6 +73,14 @@ PYTHONPATH=paper_bencmark/formalization_benchmark/tools \
    but that does not grant it to Titan's current ChatGPT-account login. An
    API-key route would be a separate billing/authentication choice, not an
    automatic retry or a reason to rewrite the requested model.
+   A second one-shot qualification after the continuation request, at
+   2026-09-23 UTC, again returned the same ChatGPT-account HTTP 400 with zero
+   model tokens. The immutable report is
+   `/hdd/alexgeorgantzas/highambench/pilot18-model-gate-v2/qualification.json`
+   (SHA-256 `7f3a3aafcd6370bc0bdd35026cc162922e422215de8c2f4668ed9f1e0c6f0f4a`);
+   this is not a timed task. An initial invocation with an incompatible
+   deployment manifest stopped before making an output root or a model call;
+   the recorded v2 uses the required Pilot-15 deployment.
 2. `HM19-3-4` prints `j=1:n` for a matrix with `p` columns. A documented
    correction to `j=1:p` is mathematically indicated by the proof but must be
    decided before freezing the packet.
@@ -127,11 +135,15 @@ excluded until their source contracts are resolved. No formalizer, candidate,
 or faithfulness audit was run in these preflights.
 
 The source alternatives under investigation, **not admitted replacements**, are
-to select equation (3.12) alone from Higham–Mary Theorem 3.4 (thus avoiding its
-misindexed (3.11)) and replace Castro Theorem 4.1 with a separately screened
-result such as Hallman Theorem 5.2. Either decision must be made before the
-source manifest is frozen, with the superseded task and reason retained in the
-release record. No outcome data exist for any proposed replacement.
+documented correction of `j=1:n` to `j=1:p` while retaining both conclusions
+of Higham–Mary Theorem 3.4, and prospective replacement of Castro Theorem 4.1
+with a separately screened result. The preferred candidate is now Hallman and
+Ipsen Theorem 2.6, which explicitly defines computational-tree height. The
+source rationale, full-domain constraints, and rejected alternative are in
+`SOURCE_RESOLUTION_PROPOSAL.md`. This proposal changes neither frozen source
+packet nor task manifest. Any adoption must mint a new pilot identity, retain
+the superseded task and reason, and redo the admission checks. No outcome data
+exist for any proposed replacement.
 
 The present branch is preparation only. A successful routing preflight is
 not evidence of faster or more faithful formalization. Preserve all

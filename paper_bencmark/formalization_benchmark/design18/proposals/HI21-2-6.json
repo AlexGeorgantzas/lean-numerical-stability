@@ -1,0 +1,37 @@
+{
+  "schema_version": "formalization-source-packet-2-draft",
+  "status": "UNADOPTED_PROPOSAL_NOT_IN_CORPUS",
+  "task_id": "HI21-2-6",
+  "selected_result": "Hallman–Ipsen Theorem 2.6: all-orders probabilistic forward-error bound for general summation trees",
+  "bibliographic_source": {
+    "authors": ["Eric Hallman", "Ilse C. F. Ipsen"],
+    "title": "Deterministic and Probabilistic Error Bounds for Floating Point Summation Algorithms",
+    "venue": "arXiv preprint",
+    "year": 2021,
+    "pages": "Theorem 2.6, PDF and printed page 6",
+    "doi": "10.48550/arXiv.2107.01604"
+  },
+  "paper_pdf": {
+    "path_basename": "HALLIPS21.pdf",
+    "sha256": "cce25923a86d5d2051a079ad4ae7ea965f1dde97ffb6d3bf6462d069968fd1c6",
+    "url": "https://arxiv.org/pdf/2107.01604"
+  },
+  "paper_locations": [{
+    "section": "2.3, general probabilistic bound under Model 1.1",
+    "printed_pages": "6",
+    "pdf_pages": "6",
+    "anchor": "Theorem 2.6; Algorithm 2.1 and Definition 2.1 on PDF pages 3–4; floating-point and independence models on PDF page 2"
+  }],
+  "task_clarification": [
+    "For n at least two, Algorithm 2.1 sums n exactly represented floating-point inputs by an arbitrary binary computational tree. Let h be that tree's height, defined as the longest downward path from its root to a leaf. Let s_k be the exact partial sum at internal node k and sHat_n the computed root result; s_n is the exact total sum.",
+    "Assume no overflow or underflow, the standard relative-error rule |delta_k|<=u for each of the n-1 internal additions, and Model 1.1: the local roundoff variables are independent and have mean zero. This is a conditional model, not an unconditional claim about every deterministic rounding execution.",
+    "For every delta and eta in (0,1), define lambda=sqrt(2*log(2*n/eta)). The event |sHat_n-s_n| <= u*exp(lambda*sqrt(h)*u)*sqrt(sum_{k=2}^n s_k^2)*sqrt(2*log(2/delta)) has probability at least 1-(delta+eta).",
+    "The internal exact sums s_k and h belong to the selected general summation tree, not the sequential prefix-sum vector."
+  ],
+  "scope_constraints": [
+    "Preserve all general-tree evaluation orders; specializing to pairwise trees or sequential summation is partial coverage.",
+    "Preserve both failure parameters, the exact finite all-orders exponential coefficient, and the source's probability bound even when delta+eta exceeds one.",
+    "Do not assume the target event, concentration conclusion, or desired output-error bound as a field of the stochastic execution model.",
+    "No source-specific high-probability result or equivalent may be supplied through the common scaffold or the treatment packet."
+  ]
+}
