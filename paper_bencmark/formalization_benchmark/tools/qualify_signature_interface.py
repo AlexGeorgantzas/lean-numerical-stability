@@ -94,10 +94,32 @@ def main() -> int:
     )
     if observed_seeds != EXPECTED_SEEDS:
         raise BenchmarkError("H5-5 frozen-OLean seed surface does not match the golden set")
-    if observed_direct != EXPECTED_DIRECT:
+    if observed_direct - observed_seeds != EXPECTED_DIRECT:
         raise BenchmarkError("H5-5 frozen-OLean one-hop surface does not match the golden set")
-    if FORBIDDEN_NEIGHBORS & set(interface["allowed_declarations"]):
+    expected_allowed = EXPECTED_SEEDS | EXPECTED_DIRECT
+    if frozenset(interface["allowed_declarations"]) != expected_allowed:
+        raise BenchmarkError("H5-5 frozen-OLean allowlist is not the exact 19-name golden")
+    if FORBIDDEN_NEIGHBORS & expected_allowed:
         raise BenchmarkError("H5-5 signature interface admitted a forbidden neighbor")
+    rendered = "\n".join(
+        str(record["readable_signature"])
+        for record in interface["seed_declarations"]
+    )
+    for required in ("2 * roots.length", " - ", "≤"):
+        if required not in rendered:
+            raise BenchmarkError(
+                f"H5-5 canonical signature rendering lacks normal notation: {required!r}"
+            )
+    for forbidden in (
+        "instHMul.hMul",
+        "instHSub.hSub",
+        "Real.instLE.le",
+        "instOfNat",
+    ):
+        if forbidden in rendered:
+            raise BenchmarkError(
+                f"H5-5 canonical signature rendering exposes internal notation: {forbidden}"
+            )
 
     composition = dict(composition)
     composition["signature_interface"] = interface
@@ -116,6 +138,7 @@ def main() -> int:
         "packet_records": _packet_exposed_records(composition),
         "expected_seed_declarations": sorted(EXPECTED_SEEDS),
         "expected_direct_type_declarations": sorted(EXPECTED_DIRECT),
+        "observed_raw_direct_type_declarations": sorted(observed_direct),
         "forbidden_neighbors": sorted(FORBIDDEN_NEIGHBORS),
         "signature_interface": interface,
         "runtime_manifest": runtime,

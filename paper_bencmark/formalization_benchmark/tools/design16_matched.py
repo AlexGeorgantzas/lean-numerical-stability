@@ -358,14 +358,14 @@ def _parse_signature_interface_report(
                 raise BenchmarkError("duplicate signature-interface format row")
             format_version = fields[1]
         elif tag == "seed" and len(fields) == 5:
-            name, module, kind, readable_type = fields[1:]
-            if name in observed_seeds or not kind or not readable_type.strip():
+            name, module, kind, readable_signature = fields[1:]
+            if name in observed_seeds or not kind or not readable_signature.strip():
                 raise BenchmarkError("malformed signature-interface seed row")
             observed_seeds[name] = {
                 "name": name,
                 "module": module,
                 "kind": kind,
-                "readable_type": readable_type,
+                "readable_signature": readable_signature,
             }
         elif tag == "direct" and len(fields) == 5:
             seed, name, module, kind = fields[1:]
@@ -1461,7 +1461,7 @@ def _run_condition(
     if spec.name == "R0" and signature_interface["direct_type_declarations"]:
         raise BenchmarkError("Mathlib-only packet has NumStability type dependencies")
     canonical_signatures = {
-        record["name"]: f"{record['name']} : {record['readable_type']}"
+        record["name"]: record["readable_signature"]
         for record in signature_interface["seed_declarations"]
     }
     composition, api_markdown = build_composition_packet(

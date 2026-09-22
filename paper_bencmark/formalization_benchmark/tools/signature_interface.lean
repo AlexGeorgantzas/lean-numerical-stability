@@ -38,7 +38,7 @@ private def constantKind : ConstantInfo → String
   | .ctorInfo _ => "constructor"
   | .recInfo _ => "recursor"
 
-private unsafe def ppType (env : Environment) (expression : Expr) : IO String := do
+private unsafe def ppSignatureIn (env : Environment) (name : Name) : IO String := do
   let context : Core.Context := {
     fileName := "<HighamBench signature interface>"
     fileMap := default
@@ -54,7 +54,7 @@ private unsafe def ppType (env : Environment) (expression : Expr) : IO String :=
         |>.setBool `pp.coercions true
         |>.setBool `pp.fullNames false
         |>.setBool `pp.privateNames true) <| Meta.MetaM.run' do
-      return (← Meta.ppExpr expression).pretty
+      return (← PrettyPrinter.ppSignature name).fmt.pretty
 
 private def loadSeeds (path : System.FilePath) : IO (Array (Name × Name)) := do
   let contents ← IO.FS.readFile path
@@ -104,7 +104,7 @@ private unsafe def emit (inputFile : System.FilePath) : IO UInt32 := do
         seedName.toString,
         actualModule.toString,
         constantKind seedInfo,
-        ← ppType env seedInfo.type
+        ← ppSignatureIn env seedName
       ]
       let used := seedInfo.type.getUsedConstantsAsSet.toArray.qsort fun left right =>
         left.toString < right.toString
