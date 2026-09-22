@@ -57,6 +57,13 @@ coverage, and nonvacuity are decided by the independent semantic audit.
   frozen surface. Helper, seed, render-source, output, and execution hashes are
   retained. This is a logged compliance boundary, not a claim of cryptographic
   noninterference.
+- Before a paid campaign begins, `tools/design17_preflight.py` reproduces the
+  retrieval, canonical Lean signature rendering, strict compiled-owner check,
+  one-hop type-interface derivation, and packet-scoped R1 OLean runtime build
+  for both conditions of every scheduled task. Independent task-condition
+  checks may run concurrently because they use disjoint output roots and make
+  zero provider calls. Any failure blocks the campaign and remains preserved as
+  a preflight incident; it is never converted into a contestant result.
 - Each condition uses a fresh stateless `gpt-5.6-sol` xhigh conversation.
 - Conditions run sequentially in the predeclared counterbalanced order.
 
