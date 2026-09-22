@@ -49,6 +49,17 @@ split tree. Thus the discrepancy is not resolved by swapping to that version.
 This is a source concern, not yet a proved counterexample or permission to
 weaken the selected statement.
 
+An alternative paper-side candidate, **not a replacement or admitted task**,
+is El Arar et al., [*Bounds on Non-linear Errors for Variance Computation with
+Stochastic Rounding*](https://arxiv.org/pdf/2304.05177), Theorems 3.2 or 3.5.
+Its Section 3 explicitly pads a non-power-of-two pairwise tree with zero inputs
+and uses the resulting tree height in the probabilistic bound. Theorem 3.2 is
+a Bienaymé–Chebyshev bound, so it would add a different concentration mechanism
+from the current Castro/Hallman selection. Before adopting it, independently
+check the paper's `log(n)` convention, precise finite coefficient, full source
+domain, and whether the result is already present in the library. The current
+`CASTRO24-4-1` packet and its source flag remain unchanged.
+
 ## Admission rule
 
 An independent source-contract pass must resolve every flagged item and verify

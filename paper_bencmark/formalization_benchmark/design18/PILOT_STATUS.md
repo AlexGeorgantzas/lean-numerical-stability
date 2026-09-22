@@ -108,6 +108,19 @@ The observed per-condition preflight wall times were R0/R1 19.35/32.33 s for
 contestant-active time or benchmark outcomes. The measured runner now records
 retrieval-phase and template-validation times separately.
 
+The other seven source-clean tasks also passed the same two-condition static
+compile preflight under Titan's fixed envelope. The immutable reports are
+`/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-clean-a-v1/compile-preflight.json`
+(SHA-256 `36b3629eada005c532a4a3bae8e5154e72f840c03d6c97cabe2457b0a28de780`;
+`HM19-2-4`, `HM19-3-1`, `HM19-3-3`, `HM19-3-5`) and
+`/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-clean-b-v1/compile-preflight.json`
+(SHA-256 `2d9651cf0066434692e4e2389b9bc152197f3a837a0425471db2065a6b7742ab`;
+`HM19-3-6`, `HM19-3-7`, `HM19-3-8`). Thus **all ten unflagged tasks** have
+passed static controller packet, signature, OLean, and one-`sorry` template
+checks for both conditions. The two source-flagged tasks are intentionally
+excluded until their source contracts are resolved. No formalizer, candidate,
+or faithfulness audit was run in these preflights.
+
 The source alternatives under investigation, **not admitted replacements**, are
 to select equation (3.12) alone from Higham–Mary Theorem 3.4 (thus avoiding its
 misindexed (3.11)) and replace Castro Theorem 4.1 with a separately screened
