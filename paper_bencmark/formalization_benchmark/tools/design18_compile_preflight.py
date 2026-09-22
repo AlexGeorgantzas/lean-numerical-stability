@@ -12,6 +12,7 @@ import argparse
 import json
 from pathlib import Path
 import sys
+import time
 
 from common import BenchmarkError, sha256_file, utc_now, write_json_atomic
 from composition_packets import build_composition_packet
@@ -70,6 +71,7 @@ def run(*, deployment_path: Path, mathlib_atlas: Path, numstability_atlas: Path,
             if sha256_file(pdf_path) != packet["paper_pdf"]["sha256"]:
                 raise BenchmarkError(f"source PDF changed for {task_id}")
             for condition in ("R0", "R1"):
+                condition_started = time.monotonic()
                 spec = specs[condition]
                 condition_root = output_root / task_id / condition
                 condition_root.mkdir(parents=True, mode=0o700)
@@ -131,6 +133,7 @@ def run(*, deployment_path: Path, mathlib_atlas: Path, numstability_atlas: Path,
                     "signature_interface_sha256": sha256_file(
                         condition_root / "signature-interface" / "interface.json"),
                     "template_compile": compile_record,
+                    "preflight_wall_seconds": time.monotonic() - condition_started,
                 }
                 write_json_atomic(report_path, report, mode=0o400)
     except Exception as error:
