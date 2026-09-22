@@ -626,8 +626,9 @@ formalization results.
 the nonce-bound campaign manifest, frozen-input identity, state/summary journal
 chains, pair attestations and artifact closures, condition reports, internal
 statement audits, and an optional external proof-audit batch. JSON and Markdown
-keep the 2/6/5 strata separate and report five per-task R1/R0 ratios without a
-pooled estimate. Focused reporter tests cover proof and statement modes,
+keep the 2/6/5 strata separate and report the five diagnostic per-task R1/R0
+ratios without a pooled estimate. Focused reporter tests cover proof and
+statement modes,
 external audits, tampering, missing audits, and overwrite refusal.
 
 **Careful:** A proof pair with status `FORMALIZATION_FROZEN_PENDING_AUDIT` is
@@ -639,3 +640,11 @@ manifest was deliberately not refreshed.
 **Needs:** Run the reporter only after the campaign journal is quiescent. Pass
 `--audit-batch-root` for proof-mode audit results; statement-only audits are
 read from each condition's sealed internal audit tree.
+
+**2026-09-22 hardening update:** The reporter now authenticates the three-way
+statement condition classification (`FAITHFUL`, `UNFAITHFUL_OR_FAILED`, and
+`NOT_DECIDED_INFRASTRUCTURE`) and the attested campaign outcome
+`PAIR_INFRASTRUCTURE_INCIDENT`. Contestant-active seconds are checked against
+the attempt sum and exposed as the primary timer. Its R1/R0 effect ratio is
+published only for `AUDITED_FAITHFUL_PAIR`; ineligible and infrastructure
+outcomes retain authenticated raw diagnostics but no effect ratio.

@@ -252,6 +252,7 @@ class CampaignFixture:
                 "numstability_name_mentions": 1 if condition == "R1" else 0,
                 "retrieval_wall_seconds": values["retrieval"],
                 "formalizer_wall_seconds": values["formalizer"],
+                "contestant_active_seconds": values["formalizer"],
                 "contestant_system_wall_seconds": values["system"],
                 "usage_complete": True,
                 "usage": {
@@ -290,6 +291,7 @@ class CampaignFixture:
             "comparison": {
                 "effect_analysis_eligible": True,
                 "r1_over_r0_contestant_system_wall": 0.5,
+                "r1_over_r0_contestant_active": 0.5,
                 "r1_over_r0_formalizer_wall": 0.5,
                 "r1_over_r0_net_new_tokens": 0.5,
                 "r1_over_r0_candidate_lines": 0.8,
@@ -450,7 +452,11 @@ class CampaignFixture:
         return batch_root
 
     def add_statement_pair(
-        self, task_id: str = "H5-5", *, faithful: bool = True
+        self,
+        task_id: str = "H5-5",
+        *,
+        faithful: bool = True,
+        infrastructure: bool = False,
     ) -> Path:
         if self.benchmark_object != "FORMALIZED_STATEMENT_ONLY":
             raise AssertionError("statement fixture requires statement-only campaign")
@@ -461,7 +467,8 @@ class CampaignFixture:
         prompt.write_text("statement prompt\n", encoding="utf-8")
         reports = {}
         for condition, scale in (("R0", 2), ("R1", 1)):
-            condition_faithful = faithful or condition == "R0"
+            condition_infrastructure = infrastructure and condition == "R1"
+            condition_faithful = (faithful and not infrastructure) or condition == "R0"
             condition_root = pair_root / condition
             workspace = condition_root / "workspace"
             workspace.mkdir(parents=True)
@@ -525,18 +532,30 @@ class CampaignFixture:
                     "validation_pass": True,
                     "usage_complete": True,
                     "hardware_after": None,
-                        "status": (
-                            "ACCEPTED_FAITHFUL"
-                            if condition_faithful
-                            else "REJECTED_UNFAITHFUL"
-                        ),
+                    "contestant_active_seconds": 4.0 * scale,
+                    "status": (
+                        "ACCEPTED_FAITHFUL"
+                        if condition_faithful
+                        else "AUDIT_SYSTEM_INCIDENT"
+                        if condition_infrastructure
+                        else "AUDIT_REJECTED"
+                    ),
                     "semantic_sha256": semantic_sha256,
-                    "audit": {
-                        "verdict": verdict,
-                        "accepted": condition_faithful,
-                        "decision_sha256": sha256_file(decision_path),
-                        "wall_seconds_excluded": 5.0,
-                    },
+                    "audit": (
+                        {
+                            "verdict": "audit-system-incident",
+                            "accepted": None,
+                            "error": {"message": "synthetic audit infrastructure incident"},
+                            "wall_seconds_excluded": 5.0,
+                        }
+                        if condition_infrastructure
+                        else {
+                            "verdict": verdict,
+                            "accepted": condition_faithful,
+                            "decision_sha256": sha256_file(decision_path),
+                            "wall_seconds_excluded": 5.0,
+                        }
+                    ),
                 }
             ]
             report = {
@@ -545,12 +564,18 @@ class CampaignFixture:
                 "benchmark_object": self.benchmark_object,
                 "source_contract": self.source_contract,
                 "faithfulness_status": (
-                    "FAITHFUL" if condition_faithful else "UNFAITHFUL_OR_INCIDENT"
+                    "FAITHFUL"
+                    if condition_faithful
+                    else "NOT_DECIDED_INFRASTRUCTURE"
+                    if condition_infrastructure
+                    else "UNFAITHFUL_OR_FAILED"
                 ),
                 "result_status": (
                     "ACCEPTED_FAITHFUL"
                     if condition_faithful
-                    else "UNFAITHFUL_REPAIR_CAP_REACHED"
+                    else "AUDIT_SYSTEM_INCIDENT"
+                    if condition_infrastructure
+                    else "ATTEMPT_LIMIT_UNFAITHFUL"
                 ),
                 "task_id": task_id,
                 "condition": condition,
@@ -591,7 +616,11 @@ class CampaignFixture:
             )
             reports[condition] = report
         pair_status = (
-            "AUDITED_FAITHFUL_PAIR" if faithful else "AUDITED_PAIR_INELIGIBLE"
+            "PAIR_INCIDENT"
+            if infrastructure
+            else "AUDITED_FAITHFUL_PAIR"
+            if faithful
+            else "AUDITED_PAIR_INELIGIBLE"
         )
         pair = {
             "schema_version": "formalization-design17-matched-pair-2",
@@ -599,7 +628,11 @@ class CampaignFixture:
             "benchmark_object": self.benchmark_object,
             "source_contract": self.source_contract,
             "faithfulness_status": (
-                "BOTH_FAITHFUL" if faithful else "PAIR_NOT_BOTH_FAITHFUL"
+                "NOT_DECIDED_INFRASTRUCTURE"
+                if infrastructure
+                else "BOTH_FAITHFUL"
+                if faithful
+                else "PAIR_NOT_BOTH_FAITHFUL"
             ),
             "pair_status": pair_status,
             "task_id": task_id,
@@ -608,13 +641,25 @@ class CampaignFixture:
             "prompt_sha256": sha256_file(prompt),
             "condition_reports": reports,
             "comparison": {
-                "effect_analysis_eligible": faithful,
-                "r1_over_r0_contestant_system_wall": 0.5 if faithful else None,
-                "r1_over_r0_contestant_active": 0.5 if faithful else None,
-                "r1_over_r0_formalizer_wall": 0.5 if faithful else None,
-                "r1_over_r0_net_new_tokens": 0.5 if faithful else None,
-                "r1_over_r0_candidate_lines": 1.0 if faithful else None,
-                "r1_over_r0_submission_count": 1.0 if faithful else None,
+                "effect_analysis_eligible": faithful and not infrastructure,
+                "r1_over_r0_contestant_system_wall": (
+                    0.5 if faithful and not infrastructure else None
+                ),
+                "r1_over_r0_contestant_active": (
+                    0.5 if faithful and not infrastructure else None
+                ),
+                "r1_over_r0_formalizer_wall": (
+                    0.5 if faithful and not infrastructure else None
+                ),
+                "r1_over_r0_net_new_tokens": (
+                    0.5 if faithful and not infrastructure else None
+                ),
+                "r1_over_r0_candidate_lines": (
+                    1.0 if faithful and not infrastructure else None
+                ),
+                "r1_over_r0_submission_count": (
+                    1.0 if faithful and not infrastructure else None
+                ),
             },
         }
         pair_path = pair_root / "pair-report.json"
@@ -663,13 +708,17 @@ class CampaignFixture:
         self.append_event(
             {
                 "event_type": (
-                    "TASK_AUDITED_FAITHFUL"
+                    "TASK_INCIDENT"
+                    if infrastructure
+                    else "TASK_AUDITED_FAITHFUL"
                     if faithful
                     else "TASK_AUDITED_INELIGIBLE"
                 ),
                 "task_id": task_id,
                 "stratum": task["stratum"],
-                "outcome": pair_status,
+                "outcome": (
+                    "PAIR_INFRASTRUCTURE_INCIDENT" if infrastructure else pair_status
+                ),
                 "details": {
                     "pair_report_sha256": sha256_file(pair_path),
                     "pair_attestation_sha256": sha256_file(attestation_path),
@@ -744,6 +793,15 @@ class Design16CampaignReportTests(unittest.TestCase):
                 "PRIMARY_EXPLORATORY_FAITHFUL_PAIR",
             )
             self.assertEqual(task["ratios"]["r1_over_r0_system_time"], 0.5)
+            self.assertEqual(
+                task["ratios"]["r1_over_r0_contestant_active_time"], 0.5
+            )
+            self.assertEqual(task["primary_effect_metric"], "contestant_active_time")
+            self.assertEqual(task["primary_effect_ratio"], 0.5)
+            self.assertEqual(
+                task["conditions"]["R0"]["metrics"]["contestant_active_time"],
+                8.0,
+            )
 
     def test_statement_ineligible_pair_never_publishes_effect_ratios(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -762,6 +820,34 @@ class Design16CampaignReportTests(unittest.TestCase):
             self.assertFalse(task["runner_comparison_available"])
             self.assertFalse(task["admission"]["effect_analysis_eligible"])
             self.assertIsNone(task["ratios"])
+            self.assertIsNone(task["primary_effect_ratio"])
+
+    def test_authenticated_infrastructure_pair_is_distinct_and_excluded(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            fixture = CampaignFixture(Path(raw), statement_only=True)
+            fixture.add_statement_pair(infrastructure=True)
+            report = build_report(fixture.root)
+            primary = report["strata"]["primary_engineering"]
+            task = next(
+                item for item in primary["tasks"] if item["task_id"] == "H5-5"
+            )
+            self.assertEqual(
+                task["campaign_outcome"], "PAIR_INFRASTRUCTURE_INCIDENT"
+            )
+            self.assertEqual(task["pair_status"], "PAIR_INCIDENT")
+            self.assertTrue(task["admission"]["pair_report_authenticated"])
+            self.assertEqual(
+                task["conditions"]["R1"]["faithfulness_status"],
+                "NOT_DECIDED_INFRASTRUCTURE",
+            )
+            self.assertEqual(
+                task["admission"]["analysis_admission"],
+                "INFRASTRUCTURE_INCIDENT_EXCLUDED",
+            )
+            self.assertEqual(primary["incident_count"], 1)
+            self.assertEqual(primary["authenticated_infrastructure_incident_count"], 1)
+            self.assertIsNone(task["ratios"])
+            self.assertIsNone(task["primary_effect_ratio"])
 
     def test_rejects_pair_report_not_bound_to_terminal_state(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

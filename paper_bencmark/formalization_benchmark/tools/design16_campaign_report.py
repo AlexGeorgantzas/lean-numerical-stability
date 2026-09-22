@@ -4,9 +4,10 @@
 The reporter makes no provider calls and never edits the campaign.  It
 authenticates the campaign manifest, both hash-chained journals, terminal pair
 reports, condition reports, and their principal immutable artifacts before
-computing per-task R1/R0 ratios.  Primary-engineering tasks, negative controls,
-and excluded diagnostics remain separate in both JSON and Markdown; this tool
-never emits a pooled treatment estimate.
+computing per-task R1/R0 ratios.  Contestant-active time is the primary timer;
+its ratio is emitted only for audited-faithful pairs.  Primary-engineering
+tasks, negative controls, and excluded diagnostics remain separate in both
+JSON and Markdown; this tool never emits a pooled treatment estimate.
 """
 
 from __future__ import annotations
@@ -22,6 +23,7 @@ from typing import Any, Mapping
 from audit_controller import audit_evidence_manifest
 from common import BenchmarkError, sha256_file, utc_now
 from design16_campaign import (
+    ATTESTED_PAIR_INCIDENT,
     AUDITED_FAITHFUL,
     AUDITED_INELIGIBLE,
     AUDIT_PENDING,
@@ -48,6 +50,14 @@ FULL_AUDIT_SCHEMA = "formalization-design16-full-audit-run-1"
 FULL_AUDIT_STATUS = "CANONICAL_MULTI_ROLE_FAITHFULNESS_AUDIT"
 AUDIT_BATCH_SCHEMA = "formalization-design16-audit-batch-1"
 CONDITIONS = ("R0", "R1")
+INFRASTRUCTURE_CONDITION_STATUSES = frozenset(
+    {
+        "FORMALIZER_INCIDENT",
+        "VALIDATION_INFRASTRUCTURE_INCIDENT",
+        "AUDIT_PREPARATION_INCIDENT",
+        "AUDIT_SYSTEM_INCIDENT",
+    }
+)
 METRICS = {
     "contestant_system_wall_seconds": "system_time",
     "formalizer_wall_seconds": "formalizer_time",
@@ -636,14 +646,22 @@ def _validate_condition(
     )
     if statement_only:
         attempts = report.get("attempts")
-        accepted_condition = report.get("result_status") == "ACCEPTED_FAITHFUL"
+        result_status = report.get("result_status")
+        accepted_condition = result_status == "ACCEPTED_FAITHFUL"
+        infrastructure_condition = result_status in INFRASTRUCTURE_CONDITION_STATUSES
+        expected_faithfulness = (
+            "FAITHFUL"
+            if accepted_condition
+            else "NOT_DECIDED_INFRASTRUCTURE"
+            if infrastructure_condition
+            else "UNFAITHFUL_OR_FAILED"
+        )
         mode_invalid = (
             not isinstance(attempts, list)
             or not attempts
             or report.get("submission_count") != len(attempts)
             or report.get("same_conversation_repairs") is not True
-            or report.get("faithfulness_status")
-            != ("FAITHFUL" if accepted_condition else "UNFAITHFUL_OR_INCIDENT")
+            or report.get("faithfulness_status") != expected_faithfulness
         )
     else:
         attempts = []
@@ -660,6 +678,7 @@ def _validate_condition(
         raise BenchmarkError(f"{task_id} {condition} condition report is inadmissible")
 
     if statement_only:
+        attempt_active_seconds = 0.0
         for attempt_number, attempt in enumerate(attempts, 1):
             if not isinstance(attempt, dict) or attempt.get("attempt") != attempt_number:
                 raise BenchmarkError(f"{task_id} {condition} attempt sequence is malformed")
@@ -676,7 +695,17 @@ def _validate_condition(
                 attempt.get("validation_sha256"),
                 f"{task_id} {condition} attempt {attempt_number} validation",
             )
+            attempt_active_seconds += float(
+                _number(
+                    attempt.get("contestant_active_seconds"),
+                    f"{task_id} {condition} attempt {attempt_number} active seconds",
+                )
+            )
         final_attempt = attempts[-1]
+        if infrastructure_condition and final_attempt.get("status") != result_status:
+            raise BenchmarkError(
+                f"{task_id} {condition} final attempt status disagrees with condition"
+            )
         if report.get("candidate") != final_attempt.get("candidate"):
             raise BenchmarkError(f"{task_id} {condition} final candidate is not final attempt")
         candidate_path = (
@@ -726,6 +755,10 @@ def _validate_condition(
             f"{task_id} {condition} {source_name}",
             integer=source_name in {"net_new_tokens", "candidate_lines"},
         )
+    metrics["contestant_active_time"] = _number(
+        report.get("contestant_active_seconds"),
+        f"{task_id} {condition} contestant_active_seconds",
+    )
     if metrics["candidate_lines"] != observed_lines:
         raise BenchmarkError(f"{task_id} {condition} candidate line count is stale")
     usage = report.get("usage")
@@ -744,10 +777,11 @@ def _validate_condition(
     if _net_new(usage) != metrics["net_new_tokens"]:
         raise BenchmarkError(f"{task_id} {condition} net-new token count is stale")
     if statement_only:
-        active_seconds = _number(
-            report.get("contestant_active_seconds"),
-            f"{task_id} {condition} contestant_active_seconds",
-        )
+        active_seconds = metrics["contestant_active_time"]
+        if not _same_number(active_seconds, attempt_active_seconds):
+            raise BenchmarkError(
+                f"{task_id} {condition} contestant active time is stale"
+            )
         expected_system = metrics["retrieval_time"] + active_seconds
     else:
         expected_system = metrics["retrieval_time"] + metrics["formalizer_time"]
@@ -818,6 +852,8 @@ def _validate_condition(
         "condition_report_path": str(report_path),
         "condition_report_sha256": sha256_file(report_path),
         "condition": condition,
+        "result_status": report.get("result_status"),
+        "faithfulness_status": report.get("faithfulness_status"),
         "corpus_id": report.get("corpus_id"),
         "route_status": route_status,
         "primary_route": primary_route,
@@ -834,6 +870,16 @@ def _validate_condition(
 def _task_admission(
     stratum: str, conditions: Mapping[str, Any], *, pair_status: str
 ) -> dict[str, Any]:
+    if pair_status == "PAIR_INCIDENT":
+        return {
+            "pair_report_authenticated": True,
+            "compiled_and_integrity_validated": False,
+            "full_audit_status": "NOT_DECIDED_INFRASTRUCTURE",
+            "analysis_admission": "INFRASTRUCTURE_INCIDENT_EXCLUDED",
+            "audited_faithful_pair": False,
+            "effect_analysis_eligible": False,
+            "scientific_status": SCIENTIFIC_STATUS,
+        }
     audits = [conditions[name]["audit"] for name in CONDITIONS]
     if any(
         audit is not None and audit.get("status") == "AUDIT_INCIDENT"
@@ -936,6 +982,11 @@ def _validate_pair(
             AUDITED_INELIGIBLE,
             "PAIR_NOT_BOTH_FAITHFUL",
         ),
+        ATTESTED_PAIR_INCIDENT: (
+            {"TASK_INCIDENT", "TASK_RECOVERED_INCIDENT"},
+            "PAIR_INCIDENT",
+            "NOT_DECIDED_INFRASTRUCTURE",
+        ),
     }
     if terminal_outcome not in expected_event_and_status:
         raise BenchmarkError(f"{task_id} has an invalid nonincident terminal outcome")
@@ -980,16 +1031,24 @@ def _validate_pair(
         for condition in CONDITIONS
     }
     computed_ratios: dict[str, float | None] = {}
-    for output_name in METRICS.values():
+    for output_name in ("contestant_active_time", *METRICS.values()):
         computed_ratios[f"r1_over_r0_{output_name}"] = _ratio(
             conditions["R1"]["metrics"][output_name],
             conditions["R0"]["metrics"][output_name],
         )
     stored = report.get("comparison")
-    runner_comparison_available = expected_pair_status != AUDITED_INELIGIBLE
+    runner_comparison_available = expected_pair_status in {
+        "FORMALIZATION_FROZEN_PENDING_AUDIT",
+        AUDITED_FAITHFUL,
+    }
     expected_stored = {
         "r1_over_r0_contestant_system_wall": (
             computed_ratios["r1_over_r0_system_time"]
+            if runner_comparison_available
+            else None
+        ),
+        "r1_over_r0_contestant_active": (
+            computed_ratios["r1_over_r0_contestant_active_time"]
             if runner_comparison_available
             else None
         ),
@@ -1018,7 +1077,14 @@ def _validate_pair(
         )
     ):
         raise BenchmarkError(f"{task_id} stored pair comparison is stale")
-    ratios = computed_ratios if runner_comparison_available else None
+    ratios = None
+    if runner_comparison_available:
+        ratios = {
+            key: value
+            for key, value in computed_ratios.items()
+            if key != "r1_over_r0_contestant_active_time"
+            or expected_pair_status == AUDITED_FAITHFUL
+        }
     attestation = _validate_pair_attestation(
         task_root=pair_root.parent,
         pair_root=pair_root,
@@ -1041,6 +1107,13 @@ def _validate_pair(
         and admission["full_audit_status"] == "BOTH_FAITHFUL"
     ):
         raise BenchmarkError(f"{task_id} ineligible terminal contradicts condition audits")
+    if terminal_outcome == ATTESTED_PAIR_INCIDENT and not any(
+        condition["faithfulness_status"] == "NOT_DECIDED_INFRASTRUCTURE"
+        for condition in conditions.values()
+    ):
+        raise BenchmarkError(
+            f"{task_id} infrastructure terminal lacks an infrastructure condition"
+        )
     return {
         "task_id": task_id,
         "campaign_outcome": terminal_outcome,
@@ -1057,6 +1130,12 @@ def _validate_pair(
         "conditions": conditions,
         "ratios": ratios,
         "runner_comparison_available": runner_comparison_available,
+        "primary_effect_metric": "contestant_active_time",
+        "primary_effect_ratio": (
+            computed_ratios["r1_over_r0_contestant_active_time"]
+            if expected_pair_status == AUDITED_FAITHFUL
+            else None
+        ),
         "ratio_interpretation": "values below 1 favor R1; values above 1 favor R0",
         "admission": admission,
     }
@@ -1220,6 +1299,7 @@ def build_report(
                 AUDIT_PENDING,
                 AUDITED_FAITHFUL,
                 AUDITED_INELIGIBLE,
+                ATTESTED_PAIR_INCIDENT,
             }:
                 if task_id not in starts:
                     raise BenchmarkError(f"{task_id} terminal has no TASK_STARTED record")
@@ -1248,7 +1328,12 @@ def build_report(
                 for item in task_reports
             ),
             "incident_count": sum(
-                item["campaign_outcome"] == "INCIDENT" for item in task_reports
+                item["campaign_outcome"] in {"INCIDENT", ATTESTED_PAIR_INCIDENT}
+                for item in task_reports
+            ),
+            "authenticated_infrastructure_incident_count": sum(
+                item["campaign_outcome"] == ATTESTED_PAIR_INCIDENT
+                for item in task_reports
             ),
             "pending_count": sum(
                 item["campaign_outcome"] == "PENDING" for item in task_reports
@@ -1385,7 +1470,9 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         f"| External audit batch | {_md(audit_auth.get('status'))} |",
         "",
         "Every ratio is R1/R0; values below 1 favor R1. Raw metric cells show R0 / R1. "
-        "Auditor time and tokens are excluded from benchmark metrics.",
+        "Contestant-active time is the primary timer and its ratio is emitted only for "
+        "an audited-faithful pair. Auditor time and tokens are excluded from benchmark "
+        "metrics.",
     ]
     titles = {
         "primary_engineering": "Primary engineering",
@@ -1401,22 +1488,26 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                 "",
                 f"Formalizations frozen {stratum['formalization_frozen_count']}; "
                 f"audit-pending {stratum['audit_pending_count']}; incidents "
-                f"{stratum['incident_count']}; not run {stratum['pending_count']}; "
+                f"{stratum['incident_count']} (authenticated infrastructure "
+                f"{stratum['authenticated_infrastructure_incident_count']}); not run "
+                f"{stratum['pending_count']}; "
                 f"both-faithful {stratum['both_faithful_count']}; audited-unfaithful "
                 f"{stratum['audited_unfaithful_count']}; audit incidents "
                 f"{stratum['audit_incident_count']}. "
                 "No aggregate treatment effect is computed.",
                 "",
                 "| Task | Outcome | Admission | Hardware | Full audit | R0 route | R1 route | "
+                "Primary active s R0/R1 (faithful ratio) | "
                 "System s R0/R1 (ratio) | Formalizer s R0/R1 (ratio) | "
                 "Tokens R0/R1 (ratio) | Lines R0/R1 (ratio) | Retrieval s R0/R1 (ratio) |",
-                "|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|",
+                "|---|---|---|---|---|---|---|---:|---:|---:|---:|---:|---:|",
             ]
         )
         for task in stratum["tasks"]:
             ratios = task.get("ratios") or {}
             cells = []
             for metric in (
+                "contestant_active_time",
                 "system_time",
                 "formalizer_time",
                 "net_new_tokens",
