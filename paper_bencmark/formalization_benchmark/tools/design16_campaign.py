@@ -28,7 +28,16 @@ import subprocess
 import sys
 from typing import Any, Callable, Iterator, Mapping, Sequence
 
-from common import BenchmarkError, canonical_json_bytes, sha256_file, utc_now
+from common import (
+    BenchmarkError,
+    canonical_json_bytes,
+    file_tree_fingerprint,
+    sha256_file,
+    treatment_free_runtime_manifest,
+    tree_manifest,
+    utc_now,
+)
+from deployment import Deployment, load_deployment
 from hardware import (
     EXPECTED_LOGICAL_CPUS,
     EXPECTED_MEMORY_BYTES,
@@ -38,6 +47,7 @@ from hardware import (
     systemd_service_envelope_prefix,
 )
 from manifest_control import ROOT
+from measure_library_build import validate_build_record
 from titan_envelope import COMMAND_CGROUP_VARIABLE, prepare_command_cgroup
 
 
@@ -95,9 +105,16 @@ PAIR_ATTESTATION = "campaign-pair-attestation.json"
 AUDIT_PENDING = "FORMALIZATION_COMPLETE_AUDIT_PENDING"
 AUDITED_FAITHFUL = "AUDITED_FAITHFUL_PAIR"
 AUDITED_INELIGIBLE = "AUDITED_PAIR_INELIGIBLE"
-NONINCIDENT_PAIR_OUTCOMES = frozenset(
-    {AUDIT_PENDING, AUDITED_FAITHFUL, AUDITED_INELIGIBLE}
+ATTESTED_PAIR_INCIDENT = "PAIR_INFRASTRUCTURE_INCIDENT"
+ATTESTABLE_PAIR_OUTCOMES = frozenset(
+    {
+        AUDIT_PENDING,
+        AUDITED_FAITHFUL,
+        AUDITED_INELIGIBLE,
+        ATTESTED_PAIR_INCIDENT,
+    }
 )
+INCIDENT_OUTCOMES = frozenset({"INCIDENT", ATTESTED_PAIR_INCIDENT})
 
 
 def _read_object(path: Path, label: str) -> dict[str, Any]:
@@ -170,6 +187,278 @@ def _local_python_closure(entrypoints: Sequence[Path]) -> list[dict[str, Any]]:
             identity["repository_relative_path"] = None
         records.append(identity)
     return records
+
+
+def _tree_identity(root: Path, expected: Any, *, label: str) -> dict[str, Any]:
+    """Verify a frozen tree and return its compact, campaign-bound identity."""
+
+    actual = tree_manifest(root)
+    if not isinstance(expected, dict) or actual != expected:
+        raise BenchmarkError(f"{label} snapshot tree mismatch")
+    entries = actual.get("entries")
+    tree_sha256 = actual.get("tree_sha256")
+    if (
+        not isinstance(entries, list)
+        or not isinstance(tree_sha256, str)
+        or HEX64.fullmatch(tree_sha256) is None
+    ):
+        raise BenchmarkError(f"{label} snapshot manifest is malformed")
+    return {
+        "root": str(root.resolve()),
+        "tree_sha256": tree_sha256,
+        "entry_count": len(entries),
+        "manifest_sha256": _canonical_hash(actual),
+    }
+
+
+def _required_record_identity(
+    deployment_record: Mapping[str, Any],
+    *,
+    path_field: str,
+    sha256_field: str,
+    expected_path: Path | None = None,
+) -> dict[str, Any]:
+    raw_path = deployment_record.get(path_field)
+    expected_sha256 = deployment_record.get(sha256_field)
+    if (
+        not isinstance(raw_path, str)
+        or not raw_path
+        or not isinstance(expected_sha256, str)
+        or HEX64.fullmatch(expected_sha256) is None
+    ):
+        raise BenchmarkError(f"deployment {path_field} identity is missing or malformed")
+    path = Path(raw_path).expanduser()
+    if not path.is_absolute() or path.is_symlink() or not path.is_file():
+        raise BenchmarkError(f"deployment {path_field} is missing or unsafe")
+    path = path.resolve()
+    if expected_path is not None and path != expected_path.resolve():
+        raise BenchmarkError(f"deployment {path_field} path changed")
+    actual_sha256 = sha256_file(path)
+    if actual_sha256 != expected_sha256:
+        raise BenchmarkError(f"deployment {path_field} changed after installation")
+    return {
+        "path": str(path),
+        "sha256": actual_sha256,
+        "size_bytes": path.stat().st_size,
+    }
+
+
+def _required_binary_identity(
+    deployment_record: Mapping[str, Any],
+    *,
+    path: Path,
+    sha256_field: str,
+    label: str,
+) -> dict[str, Any]:
+    if path.is_symlink() or not path.is_file():
+        raise BenchmarkError(f"{label} is missing or unsafe")
+    expected = deployment_record.get(sha256_field)
+    actual = sha256_file(path)
+    if (
+        not isinstance(expected, str)
+        or HEX64.fullmatch(expected) is None
+        or actual != expected
+    ):
+        raise BenchmarkError(f"{label} changed after deployment")
+    return {"path": str(path.resolve()), "sha256": actual, "size_bytes": path.stat().st_size}
+
+
+def _verify_deployment_runtime(
+    args: argparse.Namespace, *, deployment: Deployment | None = None
+) -> dict[str, Any]:
+    """Authenticate the actual installed runtime before any paid model call.
+
+    Hashing the deployment JSON and its snapshot records is not sufficient: a
+    mutable source, OLean, toolchain, or package tree can drift while those
+    small records remain unchanged.  This is the tree-verification subset of
+    ``PairController.doctor`` lifted to campaign admission.  The returned
+    compact identities are embedded in ``campaign_core`` so every resume must
+    observe the same already-verified installation.
+    """
+
+    resolved_deployment = deployment or load_deployment(args.deployment)
+    deployment_path = args.deployment.expanduser().resolve()
+    if resolved_deployment.path.resolve() != deployment_path:
+        raise BenchmarkError("loaded deployment path does not match campaign request")
+    deployment_record = _read_object(deployment_path, "deployment JSON")
+    config = _read_object(args.config, "condition-order config")
+
+    library_record_identity = _required_record_identity(
+        deployment_record,
+        path_field="library_snapshot_record",
+        sha256_field="library_snapshot_record_sha256",
+        expected_path=resolved_deployment.library_snapshot_record,
+    )
+    runtime_record_identity = _required_record_identity(
+        deployment_record,
+        path_field="runtime_snapshot_record",
+        sha256_field="runtime_snapshot_record_sha256",
+        expected_path=resolved_deployment.runtime_snapshot_record,
+    )
+    build_record_path = resolved_deployment.library_snapshot_record.parent / "build" / "build-record.json"
+    build_record_identity = _required_record_identity(
+        deployment_record,
+        path_field="library_build_record",
+        sha256_field="library_build_record_sha256",
+        expected_path=build_record_path,
+    )
+    visible_runtime_identity = _required_record_identity(
+        deployment_record,
+        path_field="visible_system_runtime_record",
+        sha256_field="visible_system_runtime_record_sha256",
+    )
+
+    library = _read_object(
+        resolved_deployment.library_snapshot_record,
+        "NumStability snapshot record",
+    )
+    expected_library_commit = config.get("numstability_commit")
+    if (
+        library.get("schema_version") != "numstability-formalization-snapshot-1"
+        or not isinstance(expected_library_commit, str)
+        or HEX40.fullmatch(expected_library_commit) is None
+        or library.get("commit") != expected_library_commit
+    ):
+        raise BenchmarkError("deployed NumStability snapshot identity mismatch")
+    source_root = resolved_deployment.library_source.parent
+    build_root = resolved_deployment.library_snapshot_record.parent / "build"
+    library_trees = {
+        "source": _tree_identity(source_root, library.get("source"), label="NumStability source"),
+        "olean": _tree_identity(
+            resolved_deployment.library_olean,
+            library.get("olean"),
+            label="NumStability OLean",
+        ),
+        "build": _tree_identity(
+            build_root,
+            library.get("build"),
+            label="NumStability setup build evidence",
+        ),
+    }
+
+    runtime = _read_object(
+        resolved_deployment.runtime_snapshot_record,
+        "Lean/Mathlib snapshot record",
+    )
+    expected_toolchain = config.get("lean_toolchain")
+    expected_mathlib_commit = config.get("mathlib_commit")
+    if (
+        runtime.get("schema_version") != "formalization-runtime-snapshot-1"
+        or runtime.get("lean_toolchain") != expected_toolchain
+        or runtime.get("mathlib_commit") != expected_mathlib_commit
+    ):
+        raise BenchmarkError("deployed Lean/Mathlib snapshot identity mismatch")
+    runtime_trees = {
+        "toolchain": _tree_identity(
+            resolved_deployment.toolchain_root,
+            runtime.get("toolchain"),
+            label="Lean toolchain",
+        ),
+        "packages": _tree_identity(
+            resolved_deployment.packages_root,
+            runtime.get("packages"),
+            label="Lean package closure",
+        ),
+    }
+    treatment_absence = treatment_free_runtime_manifest(
+        {
+            "packages": resolved_deployment.packages_root,
+            "toolchain": resolved_deployment.toolchain_root,
+        }
+    )
+    if runtime.get("condition_n_treatment_absence") != treatment_absence:
+        raise BenchmarkError(
+            "condition N runtime treatment-absence record changed after deployment"
+        )
+
+    build_record = _read_object(build_record_path, "NumStability setup build record")
+    validate_build_record(
+        build_record,
+        expected_source_commit=expected_library_commit,
+        expected_mathlib_commit=expected_mathlib_commit,
+        expected_toolchain=expected_toolchain,
+        expected_tool_hashes={
+            "lake_sha256": sha256_file(resolved_deployment.toolchain_root / "bin" / "lake"),
+            "lean_sha256": sha256_file(resolved_deployment.toolchain_root / "bin" / "lean"),
+            "gnu_time_sha256": sha256_file(Path("/usr/bin/time")),
+        },
+    )
+    generated_output_tree = {
+        "present": True,
+        **file_tree_fingerprint(resolved_deployment.library_olean),
+    }
+    generated_olean = {
+        "present": True,
+        **file_tree_fingerprint(resolved_deployment.library_olean, suffix=".olean"),
+    }
+    if build_record.get("generated_output_tree") != generated_output_tree:
+        raise BenchmarkError("deployed NumStability build output digest changed")
+    if build_record.get("generated_olean") != generated_olean:
+        raise BenchmarkError("deployed NumStability OLean inventory changed")
+    for section_name, expected_name in (
+        ("build_output", "build-output.log"),
+        ("gnu_time", "gnu-time.txt"),
+    ):
+        section = build_record.get(section_name)
+        artifact = build_root / expected_name
+        if (
+            not isinstance(section, Mapping)
+            or section.get("relative_path") != expected_name
+            or artifact.is_symlink()
+            or not artifact.is_file()
+            or section.get("sha256") != sha256_file(artifact)
+            or section.get("bytes") != artifact.stat().st_size
+        ):
+            raise BenchmarkError(f"NumStability {section_name} artifact changed")
+
+    binary_identities = {
+        "codex": _required_binary_identity(
+            deployment_record,
+            path=resolved_deployment.codex_binary,
+            sha256_field="codex_binary_sha256",
+            label="Codex binary",
+        ),
+        "code_mode_host": _required_binary_identity(
+            deployment_record,
+            path=resolved_deployment.codex_binary.with_name("codex-code-mode-host"),
+            sha256_field="code_mode_host_sha256",
+            label="Codex Code Mode host",
+        ),
+        "bwrap": _required_binary_identity(
+            deployment_record,
+            path=resolved_deployment.bwrap_binary,
+            sha256_field="bwrap_binary_sha256",
+            label="Bubblewrap binary",
+        ),
+        "offline_shell": _required_binary_identity(
+            deployment_record,
+            path=resolved_deployment.offline_shell,
+            sha256_field="offline_shell_sha256",
+            label="offline shell",
+        ),
+    }
+
+    identity: dict[str, Any] = {
+        "schema_version": "formalization-design17-verified-deployment-runtime-1",
+        "deployment": _file_identity(deployment_path, "deployment JSON"),
+        "library_commit": expected_library_commit,
+        "lean_toolchain": expected_toolchain,
+        "mathlib_commit": expected_mathlib_commit,
+        "records": {
+            "library_snapshot": library_record_identity,
+            "library_build": build_record_identity,
+            "runtime_snapshot": runtime_record_identity,
+            "visible_system_runtime": visible_runtime_identity,
+        },
+        "library_trees": library_trees,
+        "runtime_trees": runtime_trees,
+        "condition_n_treatment_absence_sha256": _canonical_hash(treatment_absence),
+        "generated_output_tree": generated_output_tree,
+        "generated_olean": generated_olean,
+        "runtime_binaries": binary_identities,
+    }
+    identity["identity_sha256"] = _canonical_hash(identity)
+    return identity
 
 
 def _frozen_input_closure(args: argparse.Namespace) -> dict[str, Any]:
@@ -275,9 +564,11 @@ def _frozen_input_closure(args: argparse.Namespace) -> dict[str, Any]:
         Path(raw_treatment_atlas).expanduser()
     )
 
+    verified_deployment_runtime = _verify_deployment_runtime(args)
     closure: dict[str, Any] = {
         "deployment": deployment_identity,
         "deployment_artifacts": deployment_artifacts,
+        "verified_deployment_runtime": verified_deployment_runtime,
         "config": _file_identity(args.config, "condition-order config"),
         "readiness": _file_identity(args.readiness, "Design-16 readiness screen"),
         "prompts": prompts,
@@ -507,6 +798,14 @@ def _manifest_core(
 ) -> dict[str, Any]:
     if args.model != "gpt-5.6-sol" or args.reasoning_effort != "xhigh":
         raise BenchmarkError("Design-16 campaign formalizer is frozen to gpt-5.6-sol xhigh")
+    if args.statement_only and (
+        args.audit_model != "gpt-6-astra"
+        or args.audit_reasoning_effort != "high"
+        or args.submission_limit != 4
+    ):
+        raise BenchmarkError(
+            "Design-17 freezes gpt-6-astra high auditors and four submissions"
+        )
     positive_limits = {
         "time limit": args.time_limit_seconds,
         "validation timeout": args.validation_timeout_seconds,
@@ -528,6 +827,26 @@ def _manifest_core(
         raise BenchmarkError("audit/repair limits are malformed")
     plan = load_plan(args.config, args.readiness)
     input_closure = _frozen_input_closure(args)
+    verified_runtime = input_closure.get("verified_deployment_runtime")
+    if verified_runtime is None:
+        if args.controller_commit is not None:
+            raise BenchmarkError(
+                "measured campaign input closure lacks verified deployment runtime identity"
+            )
+    elif (
+        not isinstance(verified_runtime, dict)
+        or verified_runtime.get("schema_version")
+        != "formalization-design17-verified-deployment-runtime-1"
+        or verified_runtime.get("identity_sha256")
+        != _canonical_hash(
+            {
+                key: value
+                for key, value in verified_runtime.items()
+                if key != "identity_sha256"
+            }
+        )
+    ):
+        raise BenchmarkError("verified deployment runtime identity is malformed or stale")
     core = {
         "schema_version": SCHEMA,
         "scientific_status": SCIENTIFIC_STATUS,
@@ -554,6 +873,7 @@ def _manifest_core(
             "sha256": sha256_file(args.readiness),
         },
         "deployment_path": str(args.deployment.resolve()),
+        "verified_deployment_runtime": verified_runtime,
         "frozen_input_closure": input_closure,
         "formalizer": {
             "model": args.model,
@@ -665,7 +985,8 @@ def _summary_payload(
         incidents = [
             item["task_id"]
             for item in entries
-            if terminals.get(item["task_id"], {}).get("outcome") == "INCIDENT"
+            if terminals.get(item["task_id"], {}).get("outcome")
+            in INCIDENT_OUTCOMES
         ]
         strata[stratum] = {
             "planned_task_ids": [item["task_id"] for item in entries],
@@ -797,6 +1118,8 @@ def _inspect_pair(
         if status == AUDITED_FAITHFUL
         else "PAIR_NOT_BOTH_FAITHFUL"
         if status == AUDITED_INELIGIBLE
+        else "NOT_DECIDED_INFRASTRUCTURE"
+        if status == "PAIR_INCIDENT" and statement_only
         else "NOT_AUDITED"
     )
     if (
@@ -813,7 +1136,7 @@ def _inspect_pair(
         "pair_report_path": str(report_path),
     }
     accepted_status = (
-        status in {AUDITED_FAITHFUL, AUDITED_INELIGIBLE}
+        status in {AUDITED_FAITHFUL, AUDITED_INELIGIBLE, "PAIR_INCIDENT"}
         if statement_only
         else status in {"FORMALIZATION_FROZEN_PENDING_AUDIT", "COMPILED_UNAUDITED"}
     )
@@ -855,9 +1178,21 @@ def _inspect_pair(
         )
         if statement_only:
             accepted_condition = condition_report.get("result_status") == "ACCEPTED_FAITHFUL"
+            condition_incident = condition_report.get("result_status") in {
+                "FORMALIZER_INCIDENT",
+                "VALIDATION_INFRASTRUCTURE_INCIDENT",
+                "AUDIT_PREPARATION_INCIDENT",
+                "AUDIT_SYSTEM_INCIDENT",
+            }
             condition_contract_pass = (
                 condition_report.get("faithfulness_status")
-                == ("FAITHFUL" if accepted_condition else "UNFAITHFUL_OR_INCIDENT")
+                == (
+                    "FAITHFUL"
+                    if accepted_condition
+                    else "NOT_DECIDED_INFRASTRUCTURE"
+                    if condition_incident
+                    else "UNFAITHFUL_OR_FAILED"
+                )
                 and isinstance(condition_report.get("attempts"), list)
                 and bool(condition_report["attempts"])
                 and condition_report.get("submission_count")
@@ -1014,6 +1349,9 @@ def _inspect_pair(
         if status == AUDITED_INELIGIBLE and accepted_conditions == {"R0", "R1"}:
             details["reason"] = "ineligible pair status disagrees with condition audits"
             return "INCIDENT", details
+        if status == "PAIR_INCIDENT":
+            details["reason"] = "statement pair contains an infrastructure incident"
+            return ATTESTED_PAIR_INCIDENT, details
         return status, details
     return AUDIT_PENDING, details
 
@@ -1300,7 +1638,7 @@ def run_campaign(
                             statement_only=bool(args.statement_only),
                             require_titan_envelope=bool(args.enforce_titan_envelope),
                         )
-                        if outcome in NONINCIDENT_PAIR_OUTCOMES:
+                        if outcome in ATTESTABLE_PAIR_OUTCOMES:
                             attestation_details = _verify_pair_attestation(
                                 task_root=task_root,
                                 manifest=manifest,
@@ -1390,7 +1728,7 @@ def run_campaign(
             )
             if return_code != 0 or process_error is not None:
                 outcome = "INCIDENT"
-            elif outcome in NONINCIDENT_PAIR_OUTCOMES:
+            elif outcome in ATTESTABLE_PAIR_OUTCOMES:
                 try:
                     _attest_pair(
                         task_root=task_root,
@@ -1442,7 +1780,8 @@ def run_campaign(
             for event in events
         ):
             incident_count = sum(
-                event.get("outcome") == "INCIDENT" for event in terminals.values()
+                event.get("outcome") in INCIDENT_OUTCOMES
+                for event in terminals.values()
             )
             audit_pending_count = sum(
                 event.get("outcome") == AUDIT_PENDING for event in terminals.values()

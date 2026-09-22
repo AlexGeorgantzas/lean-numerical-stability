@@ -16,7 +16,14 @@ ROOT = TOOLS.parent
 if str(TOOLS) not in sys.path:
     sys.path.insert(0, str(TOOLS))
 
-from common import BenchmarkError, sha256_file  # noqa: E402
+from common import (  # noqa: E402
+    BenchmarkError,
+    file_tree_fingerprint,
+    sha256_file,
+    treatment_free_runtime_manifest,
+    tree_manifest,
+)
+from deployment import Deployment  # noqa: E402
 import design16_campaign as campaign_module  # noqa: E402
 from design16_campaign import (  # noqa: E402
     EXPECTED_STRATA,
@@ -189,6 +196,151 @@ def _args(root: Path, *, dry_run: bool) -> argparse.Namespace:
     )
 
 
+def _deployment_fixture(root: Path) -> tuple[argparse.Namespace, Deployment, dict[str, Path]]:
+    source_root = root / "library" / "source"
+    library_source = source_root / "NumStability"
+    library_source.mkdir(parents=True)
+    source_file = library_source / "Fixture.lean"
+    source_file.write_text("theorem fixture : True := by trivial\n", encoding="utf-8")
+    (source_root / "NumStability.lean").write_text(
+        "import NumStability.Fixture\n", encoding="utf-8"
+    )
+    library_olean = root / "library" / "olean"
+    library_olean.mkdir(parents=True)
+    olean_file = library_olean / "Fixture.olean"
+    olean_file.write_bytes(b"synthetic olean")
+    build_root = root / "library" / "build"
+    build_root.mkdir(parents=True)
+    build_output = build_root / "build-output.log"
+    build_output.write_text("fixture build\n", encoding="utf-8")
+    gnu_time = build_root / "gnu-time.txt"
+    gnu_time.write_text("elapsed 1\n", encoding="utf-8")
+    generated_output_tree = {
+        "present": True,
+        **file_tree_fingerprint(library_olean),
+    }
+    generated_olean = {
+        "present": True,
+        **file_tree_fingerprint(library_olean, suffix=".olean"),
+    }
+    build_record = build_root / "build-record.json"
+    build_record.write_text(
+        json.dumps(
+            {
+                "generated_output_tree": generated_output_tree,
+                "generated_olean": generated_olean,
+                "build_output": {
+                    "relative_path": build_output.name,
+                    "sha256": sha256_file(build_output),
+                    "bytes": build_output.stat().st_size,
+                },
+                "gnu_time": {
+                    "relative_path": gnu_time.name,
+                    "sha256": sha256_file(gnu_time),
+                    "bytes": gnu_time.stat().st_size,
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    config = json.loads(CONFIG.read_text(encoding="utf-8"))
+    library_snapshot = root / "library" / "snapshot.json"
+    library_snapshot.write_text(
+        json.dumps(
+            {
+                "schema_version": "numstability-formalization-snapshot-1",
+                "commit": config["numstability_commit"],
+                "source": tree_manifest(source_root),
+                "olean": tree_manifest(library_olean),
+                "build": tree_manifest(build_root),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    toolchain = root / "toolchain"
+    (toolchain / "bin").mkdir(parents=True)
+    toolchain_file = toolchain / "bin" / "lean"
+    toolchain_file.write_bytes(b"synthetic lean")
+    (toolchain / "bin" / "lake").write_bytes(b"synthetic lake")
+    packages = root / "packages"
+    packages.mkdir()
+    package_file = packages / "mathlib.olean"
+    package_file.write_bytes(b"synthetic mathlib")
+    runtime_snapshot = root / "runtime-snapshot.json"
+    runtime_snapshot.write_text(
+        json.dumps(
+            {
+                "schema_version": "formalization-runtime-snapshot-1",
+                "lean_toolchain": config["lean_toolchain"],
+                "mathlib_commit": config["mathlib_commit"],
+                "toolchain": tree_manifest(toolchain),
+                "packages": tree_manifest(packages),
+                "condition_n_treatment_absence": treatment_free_runtime_manifest(
+                    {"packages": packages, "toolchain": toolchain}
+                ),
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    bin_root = root / "bin"
+    bin_root.mkdir()
+    codex = bin_root / "codex"
+    code_mode_host = bin_root / "codex-code-mode-host"
+    bwrap = bin_root / "bwrap"
+    offline_shell = bin_root / "offline-shell"
+    for path in (codex, code_mode_host, bwrap, offline_shell):
+        path.write_bytes(path.name.encode("utf-8"))
+    visible_runtime = root / "visible-system.json"
+    visible_runtime.write_text("{}\n", encoding="utf-8")
+    for directory in (root / "runs", root / "pdfs", root / "atlas"):
+        directory.mkdir()
+    auth = root / "auth.json"
+    auth.write_text("{}\n", encoding="utf-8")
+    deployment_path = root / "deployment.json"
+    deployment_record = {
+        "library_snapshot_record": str(library_snapshot),
+        "library_snapshot_record_sha256": sha256_file(library_snapshot),
+        "library_build_record": str(build_record),
+        "library_build_record_sha256": sha256_file(build_record),
+        "runtime_snapshot_record": str(runtime_snapshot),
+        "runtime_snapshot_record_sha256": sha256_file(runtime_snapshot),
+        "visible_system_runtime_record": str(visible_runtime),
+        "visible_system_runtime_record_sha256": sha256_file(visible_runtime),
+        "codex_binary_sha256": sha256_file(codex),
+        "code_mode_host_sha256": sha256_file(code_mode_host),
+        "bwrap_binary_sha256": sha256_file(bwrap),
+        "offline_shell_sha256": sha256_file(offline_shell),
+    }
+    deployment_path.write_text(json.dumps(deployment_record), encoding="utf-8")
+    deployment = Deployment(
+        path=deployment_path,
+        run_root=root / "runs",
+        pdf_root=root / "pdfs",
+        codex_binary=codex,
+        auth_file=auth,
+        bwrap_binary=bwrap,
+        offline_shell=offline_shell,
+        toolchain_root=toolchain,
+        packages_root=packages,
+        library_source=library_source,
+        library_olean=library_olean,
+        library_atlas=root / "atlas",
+        library_snapshot_record=library_snapshot,
+        runtime_snapshot_record=runtime_snapshot,
+        strict_hardware=False,
+    )
+    args = argparse.Namespace(deployment=deployment_path, config=CONFIG)
+    return args, deployment, {
+        "source": source_file,
+        "olean": olean_file,
+        "toolchain": toolchain_file,
+        "packages": package_file,
+        "runtime_record": runtime_snapshot,
+    }
+
+
 def _rewind_last_terminal(campaign_root: Path) -> None:
     for name in ("campaign-state.jsonl", "campaign-summary.jsonl"):
         path = campaign_root / name
@@ -237,6 +389,82 @@ class Design16CampaignTests(unittest.TestCase):
             path.write_text("\n".join(lines) + "\n", encoding="utf-8")
             with self.assertRaises(BenchmarkError):
                 _read_journal(path)
+
+    def test_deployment_admission_verifies_every_frozen_runtime_tree(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            args, deployment, mutable_paths = _deployment_fixture(Path(raw))
+            with patch.object(campaign_module, "validate_build_record"):
+                identity = campaign_module._verify_deployment_runtime(
+                    args, deployment=deployment
+                )
+                self.assertEqual(
+                    identity["schema_version"],
+                    "formalization-design17-verified-deployment-runtime-1",
+                )
+                self.assertRegex(identity["identity_sha256"], r"^[0-9a-f]{64}$")
+                self.assertEqual(
+                    set(identity["library_trees"]), {"source", "olean", "build"}
+                )
+                self.assertEqual(
+                    set(identity["runtime_trees"]), {"toolchain", "packages"}
+                )
+                for label in ("source", "olean", "toolchain", "packages"):
+                    path = mutable_paths[label]
+                    original = path.read_bytes()
+                    path.write_bytes(original + b"drift")
+                    with self.subTest(label=label):
+                        with self.assertRaisesRegex(BenchmarkError, "snapshot tree mismatch"):
+                            campaign_module._verify_deployment_runtime(
+                                args, deployment=deployment
+                            )
+                    path.write_bytes(original)
+
+    def test_deployment_admission_rejects_mutated_runtime_record(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            args, deployment, mutable_paths = _deployment_fixture(Path(raw))
+            mutable_paths["runtime_record"].write_text("{}\n", encoding="utf-8")
+            with patch.object(campaign_module, "validate_build_record"):
+                with self.assertRaisesRegex(
+                    BenchmarkError, "runtime_snapshot_record changed"
+                ):
+                    campaign_module._verify_deployment_runtime(
+                        args, deployment=deployment
+                    )
+
+    def test_resume_rejects_changed_verified_deployment_identity(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            root = Path(raw)
+            args = _args(root, dry_run=False)
+            args.max_new_tasks = 1
+
+            def closure(tree_sha256: str) -> dict[str, object]:
+                runtime = {
+                    "schema_version":
+                    "formalization-design17-verified-deployment-runtime-1",
+                    "runtime_trees": {"packages": {"tree_sha256": tree_sha256}},
+                }
+                runtime["identity_sha256"] = campaign_module._canonical_hash(runtime)
+                value: dict[str, object] = {
+                    "verified_deployment_runtime": runtime,
+                }
+                value["closure_sha256"] = campaign_module._canonical_hash(value)
+                return value
+
+            with patch.object(
+                campaign_module,
+                "_frozen_input_closure",
+                return_value=closure("a" * 64),
+            ):
+                run_campaign(args)
+            with patch.object(
+                campaign_module,
+                "_frozen_input_closure",
+                return_value=closure("b" * 64),
+            ):
+                with self.assertRaisesRegex(
+                    BenchmarkError, "does not match the requested frozen inputs"
+                ):
+                    run_campaign(args)
 
     def test_dry_run_performs_no_campaign_writes(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
@@ -384,6 +612,18 @@ class Design16CampaignTests(unittest.TestCase):
             with self.assertRaisesRegex(BenchmarkError, "require --enforce-titan-envelope"):
                 run_campaign(args)
 
+    def test_statement_only_freezes_auditor_and_submission_limit(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            args = _args(Path(raw), dry_run=True)
+            args.statement_only = True
+            args.submission_limit = 3
+            with self.assertRaisesRegex(BenchmarkError, "four submissions"):
+                run_campaign(args)
+            args.submission_limit = 4
+            args.audit_model = "gpt-5.6-sol"
+            with self.assertRaisesRegex(BenchmarkError, "gpt-6-astra"):
+                run_campaign(args)
+
     def test_statement_pair_requires_audited_faithful_condition_closure(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             pair_root = Path(raw) / "pair"
@@ -470,6 +710,61 @@ class Design16CampaignTests(unittest.TestCase):
             )
             self.assertEqual(outcome, "AUDITED_FAITHFUL_PAIR")
             self.assertRegex(details["pair_artifact_closure_sha256"], r"^[0-9a-f]{64}$")
+
+            incident_report = dict(reports["R1"])
+            incident_attempt = dict(incident_report["attempts"][0])
+            incident_attempt["status"] = "AUDIT_SYSTEM_INCIDENT"
+            incident_report["attempts"] = [incident_attempt]
+            incident_report["result_status"] = "AUDIT_SYSTEM_INCIDENT"
+            incident_report["faithfulness_status"] = "NOT_DECIDED_INFRASTRUCTURE"
+            (pair_root / "R1" / "report.json").write_text(
+                json.dumps(incident_report), encoding="utf-8"
+            )
+            pair_report["condition_reports"]["R1"] = incident_report
+            pair_report["pair_status"] = "PAIR_INCIDENT"
+            pair_report["faithfulness_status"] = "NOT_DECIDED_INFRASTRUCTURE"
+            (pair_root / "pair-report.json").write_text(
+                json.dumps(pair_report), encoding="utf-8"
+            )
+            outcome, details = campaign_module._inspect_pair(
+                pair_root,
+                task_id="H5-5",
+                condition_order=["R0", "R1"],
+                statement_only=True,
+                require_titan_envelope=True,
+            )
+            self.assertEqual(outcome, "PAIR_INFRASTRUCTURE_INCIDENT")
+            self.assertIn("infrastructure incident", details["reason"])
+            task_root = pair_root.parent
+            (task_root / "runner.stdout.log").write_text("", encoding="utf-8")
+            (task_root / "runner.stderr.log").write_text("", encoding="utf-8")
+            manifest = {
+                "campaign_identity_sha256": "a" * 64,
+                "campaign_nonce": "b" * 64,
+                "campaign_core": {
+                    "formalizer": {
+                        "benchmark_object": "FORMALIZED_STATEMENT_ONLY",
+                        "source_contract": "statement-only-single-target-sorry",
+                    }
+                },
+            }
+            item = {"task_id": "H5-5", "condition_order": ["R0", "R1"]}
+            campaign_module._attest_pair(
+                task_root=task_root,
+                manifest=manifest,
+                pair_nonce="c" * 64,
+                item=item,
+                details=details,
+                runner_return_code=0,
+            )
+            verified = campaign_module._verify_pair_attestation(
+                task_root=task_root,
+                manifest=manifest,
+                pair_nonce="c" * 64,
+                item=item,
+                details=details,
+            )
+            self.assertRegex(verified["pair_attestation_sha256"], r"^[0-9a-f]{64}$")
 
 
 if __name__ == "__main__":
