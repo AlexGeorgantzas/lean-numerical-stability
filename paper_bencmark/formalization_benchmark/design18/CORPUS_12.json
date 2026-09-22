@@ -1,0 +1,46 @@
+{
+  "schema_version": "probabilistic-corpus-draft-1",
+  "status": "SOURCE_AND_LEAKAGE_REVIEW_PENDING_NOT_RUN",
+  "scientific_claim": "marginal formalization value of a frozen NumStability snapshot when relevant components, but not the selected probabilistic result, are present",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "xhigh",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "source_pdfs": {
+    "HM19": {
+      "file": "sources/HM19.pdf",
+      "sha256": "640b7b0c171694ae5b874fb218b54cb44227b9de7d87d5b4014e698d7b96008a",
+      "url": "https://eprints.maths.manchester.ac.uk/2731/1/paper.pdf"
+    },
+    "HALL21": {
+      "file": "sources/HALL21.pdf",
+      "sha256": "fe154eb68d177ffe9b608a84c0971dc76d9537e94e7ab661ba0b1085ce1b91ee",
+      "url": "https://arxiv.org/pdf/2104.06531"
+    },
+    "CASTRO24": {
+      "file": "sources/CASTRO24.pdf",
+      "sha256": "cf626a8992853b705963d9e0ff9fdc4f3dce4def9c0f7bfa66c83ac9888e57d2",
+      "url": "https://arxiv.org/pdf/2411.13601"
+    }
+  },
+  "early_review_order": ["HM19-3-2", "HALL21-3-3", "CASTRO24-4-2"],
+  "task_ids": [
+    "HM19-2-4",
+    "HM19-3-1",
+    "HM19-3-2",
+    "HM19-3-3",
+    "HM19-3-4",
+    "HM19-3-5",
+    "HM19-3-6",
+    "HM19-3-7",
+    "HM19-3-8",
+    "HALL21-3-3",
+    "CASTRO24-4-1",
+    "CASTRO24-4-2"
+  ],
+  "known_source_review_flags": {
+    "HM19-3-4": "Printed (3.11) says j=1:n for p columns; the proof combines p instances. Resolve the source contract without silently changing the selected result.",
+    "CASTRO24-4-1": "Printed h=floor(log2 n) for a ceiling-split pairwise tree; check non-power-of-two domain and source validity before admission."
+  },
+  "prior_campaign_policy": "All Design-17 evidence remains immutable and separate. No task in this draft is a consumed timed result."
+}

@@ -683,3 +683,26 @@ the model/effort combination on Titan before any paid task.
 `gpt-5.6-sol` identity and evidence. Do not edit their frozen schedules,
 manifests, or results or pool their measurements with the successor campaign.
 No new run is authorized by this model decision alone.
+
+---
+
+## 2026-09-23 — Codex — codex/pilot-18-probabilistic — model admission blocked
+
+**Did:** Created a draft twelve-task probabilistic successor corpus with
+hash-frozen HM19/HALL21/CASTRO24 PDFs, initial source and NumStability
+component screens, and a draft staged protocol under
+`formalization_benchmark/design18/`. The screen flags HM19 Theorem 3.4's
+printed column-index inconsistency and CASTRO24 Theorem 4.1's printed
+pairwise-tree-height concern; neither has been silently corrected.
+
+**Gate:** An off-benchmark Titan CLI probe of `gpt-6-sol` at `xhigh` returned
+HTTP 400: the model is not supported when using Codex with that ChatGPT
+account. No measured successor task, canary, or provider qualification has
+started. A user choice between waiting for Sol access and authorizing a
+separately identified Astra pilot was requested asynchronously. Do not fall
+back to GPT-5.6 or replace Sol inside a frozen pilot.
+
+**Needs:** Resolve model access; independently validate each full source
+contract and target-collision absence; implement and test the successor
+component router/controller/deployment before any measured call. The design18
+documents are explicit drafts, not an admitted or completed benchmark.
