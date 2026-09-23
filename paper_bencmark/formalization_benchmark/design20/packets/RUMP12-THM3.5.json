@@ -36,14 +36,15 @@
   ],
   "task_clarification": [
     "For each positive n and representable input vector p, compute s_hat by recursive summation and S_hat by recursive summation of |p_i| in the same order, as Algorithm 3.2 specifies.",
-    "Formalize both inequalities in (3.11): |s_hat−Σ_i p_i| ≤ (n−1)u·ufp(S_hat) ≤ (n−1)u·S_hat, with ufp the source's largest binary power of two not exceeding the relevant nonnegative value.",
-    "The labelled theorem also says the estimation is sharp for all n. Preserve the optimality assertion, including its intended quantifiers and available representable format values, rather than silently omitting it. The source proof uses p_1=1 and p_i=u for i≥2; an independent source review must resolve how the 'all n' wording interacts with finite overflow before admission."
+    "Formalize both inequalities in (3.11): |s_hat−Σ_i p_i| ≤ (n−1)u·ufp(S_hat) ≤ (n−1)u·S_hat. For nonzero r, ufp(r) is the source's largest binary power of two not exceeding |r|; the source explicitly defines ufp(0)=0, which covers all-zero inputs.",
+    "The labelled theorem also says the estimation is sharp for all n. Preserve that uniform-in-n attainability assertion. The source's witness p_1=1, p_i=u for i≥2 uses IEEE ties-to-even and yields s_hat=S_hat=1 with equality in the first bound; this does not assert sharpness separately for every possible tie rule or every observed pair."
   ],
   "scope_constraints": [
     "Do not replace the concurrently computed S_hat with the exact sum of |p_i|, or permit a different summation order for this theorem.",
     "Do not add an n*u smallness guard; the theorem expressly holds without it in the stated no-overflow setting and allows underflow.",
     "Use source-equivalent round-to-nearest binary floating-point semantics. Do not assume the target error bound as part of a format or operation interface.",
     "Do not omit either displayed inequality or the theorem's sharpness sentence.",
-    "If the full sharpness claim cannot be given a defensible domain from the source, exclude this task rather than narrowing it silently."
+    "The paper permits arbitrary nearest-rounding tie rules for the inequalities, while its displayed sharpness witness uses ties-to-even. Do not silently conflate those quantifiers or require equality for every fixed tie rule.",
+    "Independent source review must document the paper's use of an absolute-value monotonicity step that may fail under asymmetric tie rules; do not silently strengthen the rounding assumptions to repair the printed proof."
   ]
 }

@@ -1,0 +1,27 @@
+{
+  "schema_version": "pilot-24-candidate-corpus-2",
+  "pilot_identity": "24-candidate-v2-pending-admission",
+  "scientific_status": "EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "RUMP12-THM3.4",
+    "FAB19-EQ3.5",
+    "FAB19-EQ3.7",
+    "H20-8",
+    "RUMP12-THM3.5",
+    "FAB19-EQ3.6",
+    "CAST08-PROP3.2",
+    "CAST08-FIXED3",
+    "LL07-THM4",
+    "LL07-THM7",
+    "FAB19-THM4.1",
+    "FAB19-THM4.2"
+  ],
+  "early_review_order": ["RUMP12-THM3.4"],
+  "replacement_provenance": "The source-only reviewer found a binary64 n=1 underflow counterexample to the strict first inequality in Rump Theorem 4.3; it is excluded before any contestant run. The first pre-ordered reserve, Castaldo Section 3.1 fixed-three-level claim, takes its slot. Theorem 3.5 packet was corrected to define ufp(0) and separate the main arbitrary-nearest domain from its ties-to-even sharpness witness.",
+  "independence_warning": "The queue includes same-paper correlated results and is development work, not a held-out confirmatory sample.",
+  "admission_gate": "Still a candidate queue. Independent source review, non-colliding direct component, and compiling full-domain private statement skeleton are mandatory before any measured launch."
+}
