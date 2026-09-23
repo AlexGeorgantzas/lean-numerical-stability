@@ -706,3 +706,26 @@ back to GPT-5.6 or replace Sol inside a frozen pilot.
 contract and target-collision absence; implement and test the successor
 component router/controller/deployment before any measured call. The design18
 documents are explicit drafts, not an admitted or completed benchmark.
+
+---
+
+## 2026-09-23 — Codex — codex/pilot-20-integrity-interface — open-snapshot retrieval prepared
+
+**Did:** Commit `90f74086b` adds a prospective open-snapshot statement mode:
+the composition packet is a suggestion rather than a whitelist; L can read
+the full pinned NumStability source/index and import any compiled declaration;
+N can read Mathlib source/index. Direct library uses remain logged. A separate
+Pilot-20 task-neutral warm-root prompt asks for exact foundational FP/gamma
+interfaces once, off the per-task clock. Focused tests pass.
+
+**Careful:** Historical packet-only mode and Pilot-19 evidence are unchanged.
+This is not an admitted/frozen Pilot-20 release: no new warm root, task runner,
+or measured pair has been launched. Files added under
+`formalization_benchmark/` change manifest identity; do not attempt to use
+this checkout as an older frozen release. The new source-first corpus and
+target-collision gate are still required before measured tasks.
+
+**Needs:** Wire `library_access_policy="open-snapshot"`, the Pilot-20 prompts,
+and `warm_root_schema_version="pilot-20-warm-root-1"` into a new frozen runner;
+perform a non-contestant Titan mount/search/import smoke test and review the
+new one-time scout dossier before launching any measured task.
