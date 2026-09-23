@@ -1,0 +1,35 @@
+{
+  "schema_version": "pilot-29-proof-development-corpus-draft-1",
+  "pilot_identity": "29-proof-development-draft-not-admitted",
+  "scientific_status": "OUTCOME_AWARE_EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "CAST08-FIXED3",
+    "RUMP12-THM3.4",
+    "FAB19-EQ3.6",
+    "LL07-THM4",
+    "CAST08-PROP3.2",
+    "H20-8",
+    "RUMP12-THM3.5",
+    "CAST08-PROP3.1",
+    "LL07-THM7",
+    "FAB19-EQ3.5"
+  ],
+  "early_review_order": ["CAST08-FIXED3"],
+  "task_roles": {
+    "CAST08-FIXED3": "first canary; three-level dot-product algorithm",
+    "RUMP12-THM3.4": "finite-format recursive sum, unrestricted length",
+    "FAB19-EQ3.6": "hard compensated blocked sum; per-site model risk",
+    "LL07-THM4": "full compensated Horner forward bound",
+    "CAST08-PROP3.2": "hard general t-level superblock dot bound",
+    "H20-8": "least-squares error-interface variety, no FPModel",
+    "RUMP12-THM3.5": "hard sharp recursive-sum bound and attainability",
+    "CAST08-PROP3.1": "hard t-level summation bound and optimality; new task pending admission",
+    "LL07-THM7": "faithful-rounding criterion for compensated Horner",
+    "FAB19-EQ3.5": "hard mixed-precision blocked sum; per-site model risk"
+  },
+  "selection_disclosure": "Chosen after seeing Pilot 26, Pilot 27, and Pilot 28 early outcomes. This is a draft engineering corpus, not a held-out or admitted benchmark. It combines task-specific algorithm/error and foundational/finite-format declaration overlap, which must be reported as separate strata. The new CAST08-PROP3.1 task still needs exact-snapshot compilation and candidate audit. No result may be silently dropped after launch."
+}
