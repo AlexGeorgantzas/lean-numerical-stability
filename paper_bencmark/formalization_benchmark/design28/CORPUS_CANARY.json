@@ -1,0 +1,18 @@
+{
+  "schema_version": "pilot-28-proof-controller-fix-corpus-1",
+  "pilot_identity": "28-proof-controller-fix",
+  "scientific_status": "OUTCOME_AWARE_EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": ["FAB19-EQ3.5", "CAST08-FIXED3", "FAB19-EQ3.6"],
+  "early_review_order": ["FAB19-EQ3.5"],
+  "task_roles": {
+    "FAB19-EQ3.5": "first canary repeated in a newly identified pilot after Pilot 27 proof-check infrastructure incident",
+    "CAST08-FIXED3": "second canary: three-level dot product with direct algorithm overlap",
+    "FAB19-EQ3.6": "third canary: compensated blocked summation with direct algorithm overlap"
+  },
+  "selection_disclosure": "This is a prospective infrastructure-repair rerun under a new pilot identity. The Pilot 27 first-pair statement and unvalidated proof candidate are known; both conditions are rerun from fresh task conversations and all prior outcomes remain separate. These tasks were selected with knowledge of prior development outcomes and are not held-out efficacy data.",
+  "admission_gate": "Reuse the hash-verified Pilot 27 private source-faithfulness and direct-algorithm admission record without exposing private skeletons to contestants."
+}
