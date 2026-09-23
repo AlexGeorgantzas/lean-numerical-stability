@@ -95,7 +95,8 @@ def run(args: argparse.Namespace) -> dict:
                         raise BenchmarkError(f"template compile failed: {task_id}/{condition}")
                 report["tasks"][task_id][condition] = {
                     "status": "PASS", "route_status": composition["route_status"],
-                    "selected_roots": [item["name"] for item in composition["retrieved_roots"]],
+                    "selected_roots": [item["declaration"]["name"]
+                                       for item in composition["retrieved_roots"]],
                     "packet_bytes": len(api),
                     "signature_interface_sha256": sha256_file(
                         root / "signature-interface" / "interface.json"),
