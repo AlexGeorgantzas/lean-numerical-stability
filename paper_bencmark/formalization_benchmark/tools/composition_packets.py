@@ -441,6 +441,55 @@ def build_composition_packet(
     selection_policy: str = "legacy-coupled-title",
     open_library_access: bool = False,
 ) -> tuple[dict[str, Any], bytes]:
+    if selection_policy == "no-automatic-retrieval":
+        if not open_library_access or root_limit != 0 or dependency_limit != 0:
+            raise BenchmarkError(
+                "no-automatic-retrieval requires open access and zero packet limits"
+            )
+        if exposed_signature_overrides not in (None, {}):
+            raise BenchmarkError("unrouted interface cannot expose signatures")
+        packet = load_json(source_packet_path)
+        atlas_identity = [
+            {"path_basename": path.name, "sha256": sha256_file(path)}
+            for path in atlas_paths
+        ]
+        markdown = (
+            "# Library access\n\n"
+            "No task-specific declarations have been selected or supplied by the "
+            "controller. You may inspect the complete read-only library source "
+            "and compiled declarations mounted in your condition, using ordinary "
+            "file search and Lean type probes. All task-time exploration counts "
+            "in the contestant clock. The paper statement, not a library result, "
+            "determines the target.\n"
+        ).encode("utf-8")
+        if len(markdown) > maximum_markdown_bytes:
+            raise BenchmarkError("unrouted access note exceeds byte budget")
+        result = {
+            "schema_version": SCHEMA_VERSION,
+            "task_id": packet["task_id"],
+            "corpus_id": corpus_id,
+            "source_packet_sha256": sha256_file(source_packet_path),
+            "atlas_inputs": atlas_identity,
+            "query_terms": [],
+            "title_anchor_pairs": [],
+            "route_status": "NO_ROUTE",
+            "selection_policy": selection_policy,
+            "root_limit": 0,
+            "dependency_limit_per_root": 0,
+            "retrieved_roots": [],
+            "diagnostic_ranked_candidates": [],
+            "retrieval_candidate_count": 0,
+            "policy": {
+                "automatic": False,
+                "human_edits": False,
+                "task_time_search_permitted": True,
+                "packet_is_exhaustive_interface": False,
+                "exposed_signature_source": "none",
+            },
+            "markdown_bytes": len(markdown),
+            "markdown_sha256": __import__("hashlib").sha256(markdown).hexdigest(),
+        }
+        return result, markdown
     if not (1 <= root_limit <= 12):
         raise BenchmarkError("composition root limit must be between 1 and 12")
     if not (0 <= dependency_limit <= 8):

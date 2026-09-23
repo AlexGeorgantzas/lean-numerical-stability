@@ -1,0 +1,18 @@
+{
+  "schema_version": "pilot-27-proof-canary-corpus-1",
+  "pilot_identity": "27-proof-canary",
+  "scientific_status": "OUTCOME_AWARE_EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": ["FAB19-EQ3.5", "CAST08-FIXED3", "FAB19-EQ3.6"],
+  "early_review_order": ["FAB19-EQ3.5"],
+  "task_roles": {
+    "FAB19-EQ3.5": "first canary: mixed-precision recursive blocked summation; prior shorter L statement and direct algorithm use",
+    "CAST08-FIXED3": "second canary: three-level dot product; prior shorter L statement and direct algorithm use",
+    "FAB19-EQ3.6": "third correlated canary: compensated blocked summation; direct algorithm use but prior L time loss"
+  },
+  "selection_disclosure": "All three were selected with knowledge of earlier development outcomes. They are engineering canaries, not held-out efficacy data. The third is a known prior time loss.",
+  "admission_gate": "Previously independently source-reviewed, target-collision-screened, and privately compile-checked source-faithful skeletons must be reverified against the frozen PDF and library snapshot. No private skeleton is exposed to either contestant."
+}

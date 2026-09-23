@@ -1170,6 +1170,210 @@ def _prepare_warm_fork(
     return state_root, warm_fork
 
 
+def _run_frozen_proof_attempts(
+    *,
+    args: argparse.Namespace,
+    driver: CodexDriver,
+    deployment: Deployment,
+    spec: ConditionSpec,
+    workspace: Path,
+    candidate: Path,
+    condition_root: Path,
+    thread_id: str,
+    accepted_semantic_sha256: str,
+    formalization_active_seconds: float,
+) -> dict[str, Any]:
+    """Prove the already audited proposition without changing its semantics.
+
+    This is used only by prospective proof-required pilots. Earlier statement
+    pilots never call it, so their frozen controller and result semantics stay
+    unchanged. Each proof turn is metered and frozen before off-clock checking.
+    """
+    proof_limit = int(args.proof_submission_limit)
+    proof_cap = float(args.proof_time_limit_seconds)
+    if proof_limit < 1 or proof_cap <= 0:
+        raise BenchmarkError("proof limits must be positive")
+    prompt_path = Path(args.proof_prompt_path)
+    initial_prompt = prompt_path.read_text(encoding="utf-8")
+    attempts: list[dict[str, Any]] = []
+    proof_active_seconds = 0.0
+    validation_seconds = 0.0
+    dossier_seconds = 0.0
+    usage = {key: 0 for key in (
+        "input_tokens", "cached_input_tokens", "cache_write_input_tokens",
+        "output_tokens", "reasoning_output_tokens", "total_tokens",
+    )}
+    status = "PROOF_ATTEMPT_LIMIT"
+    feedback = ""
+    for number in range(1, proof_limit + 1):
+        remaining = min(
+            proof_cap - proof_active_seconds,
+            float(args.time_limit_seconds)
+            - formalization_active_seconds - proof_active_seconds,
+        )
+        if remaining <= 0:
+            status = "PROOF_TIME_LIMIT"
+            break
+        prompt = initial_prompt if number == 1 else (
+            "Continue proving the same frozen, audited theorem without changing "
+            "its statement or supporting definitions. The previous proof did "
+            f"not pass validation. Diagnostics:\n{feedback}"
+        )
+        root = condition_root / "proof-submissions" / f"{number:02d}"
+        root.mkdir(parents=True, mode=0o700)
+        hardware_before = snapshot_hardware(strict=True)
+        write_json_atomic(root / "hardware-before.json", hardware_before, mode=0o400)
+        cgroup = hardware_before.get("cgroup_v2_path")
+        command_procs = os.environ.get("HIGHAMBENCH_COMMAND_CGROUP_PROCS")
+        if getattr(args, "sample_hardware", False) and (
+            not isinstance(cgroup, str) or not command_procs
+        ):
+            raise BenchmarkError("proof sampling requires a lane cgroup")
+        sampler = (
+            CgroupSampler(lane_service_cgroup(Path(cgroup), Path(command_procs)))
+            if getattr(args, "sample_hardware", False) else None
+        )
+        with sampler if sampler is not None else nullcontext():
+            turn = driver.run_turn(
+                prompt=prompt, workspace=workspace,
+                artifact_dir=root / "formalizer",
+                timeout_seconds=remaining, thread_id=thread_id,
+            )
+            freeze_started = time.perf_counter_ns()
+            frozen = freeze_candidate(
+                candidate, root / "Candidate.lean", auth_file=deployment.auth_file,
+            )
+            freeze_completed = time.perf_counter_ns()
+        resources = (
+            sampler.write(root / "proof-resources.jsonl", root / "proof-resources.json")
+            if sampler is not None else None
+        )
+        if turn.active_started_perf_ns is None or turn.active_ended_perf_ns is None:
+            raise BenchmarkError("proof turn omitted active-time boundaries")
+        clock = _submission_clock(
+            active_started_perf_ns=turn.active_started_perf_ns,
+            active_ended_perf_ns=turn.active_ended_perf_ns,
+            freeze_started_perf_ns=freeze_started,
+            freeze_completed_perf_ns=freeze_completed,
+        )
+        proof_active_seconds += clock["contestant_active_seconds"]
+        usage = _usage_add(usage, turn.usage)
+        attempt: dict[str, Any] = {
+            "attempt": number,
+            "prompt_sha256": __import__("hashlib").sha256(prompt.encode()).hexdigest(),
+            "thread_id": turn.thread_id,
+            "candidate": frozen,
+            "contestant_active_seconds": clock["contestant_active_seconds"],
+            "contestant_active_seconds_cumulative": proof_active_seconds,
+            "usage": turn.usage,
+            "hardware_before": hardware_before,
+            "hardware_after": snapshot_hardware(strict=True),
+            "proof_resources": resources,
+        }
+        if turn.timed_out or proof_active_seconds > proof_cap or (
+            formalization_active_seconds + proof_active_seconds
+            > float(args.time_limit_seconds)
+        ):
+            attempt["status"] = "PROOF_TIME_LIMIT"
+            status = attempt["status"]
+            attempts.append(attempt)
+            break
+        if turn.thread_id != thread_id or turn.exit_code != 0 or not turn.usage_complete:
+            attempt["status"] = "PROOF_FORMALIZER_INCIDENT"
+            status = attempt["status"]
+            attempts.append(attempt)
+            break
+        policy = _library_exploration_policy(
+            root / "formalizer" / "events.jsonl", open_snapshot=True,
+        )
+        write_json_atomic(root / "library-exploration-policy.json", policy, mode=0o400)
+        driver.assert_safe_control_surfaces(workspace)
+        if policy["pass"] is not True:
+            attempt["status"] = "PROOF_INTERFACE_RULE_VIOLATION"
+            status = attempt["status"]
+            attempts.append(attempt)
+            break
+        started = time.perf_counter_ns()
+        validation = validate_candidate(
+            root / "Candidate.lean",
+            compiler_command=compiler_command(deployment, spec.compiler_condition),
+            scratch_root=root / "validation-scratch",
+            timeout_seconds=float(args.validation_timeout_seconds),
+            allow_single_target_sorry=False,
+        )
+        elapsed = (time.perf_counter_ns() - started) / 1_000_000_000
+        validation_seconds += elapsed
+        write_json_atomic(root / "validation.json", validation, mode=0o400)
+        attempt["validation_seconds_excluded"] = elapsed
+        attempt["validation_sha256"] = sha256_file(root / "validation.json")
+        if validation.get("failure_code") == "INFRASTRUCTURE_FAILURE":
+            attempt["status"] = "PROOF_VALIDATION_INCIDENT"
+            status = attempt["status"]
+            attempts.append(attempt)
+            break
+        if validation.get("pass") is not True:
+            diagnostics = validation.get("compile") or validation.get("source_check")
+            feedback = json.dumps(diagnostics, ensure_ascii=True, sort_keys=True)[:16000]
+            attempt["status"] = "PROOF_REJECTED"
+            attempts.append(attempt)
+            continue
+        started = time.perf_counter_ns()
+        try:
+            blind, private = prepare_candidate_audit(
+                root / "Candidate.lean",
+                compiler_command=compiler_command(deployment, spec.compiler_condition),
+                extractor_command=extractor_command(
+                    deployment, spec.compiler_condition,
+                    Path(__file__).with_name("declaration_dossier.lean"),
+                ),
+                compiler_environment={}, extractor_environment={},
+                scratch_root=root / "dossier-scratch",
+                timeout_seconds=float(args.validation_timeout_seconds),
+                allow_single_target_sorry=False,
+            )
+        except CandidateAuditError as error:
+            attempt["status"] = "PROOF_DOSSIER_INCIDENT"
+            attempt["error"] = str(error)
+            status = attempt["status"]
+            attempts.append(attempt)
+            break
+        elapsed = (time.perf_counter_ns() - started) / 1_000_000_000
+        dossier_seconds += elapsed
+        write_json_atomic(root / "blind_semantic_dossier.json", blind, mode=0o400)
+        write_json_atomic(root / "private_semantic_manifest.json", private, mode=0o400)
+        attempt["dossier_seconds_excluded"] = elapsed
+        attempt["semantic_sha256"] = blind.get("semantic_sha256")
+        if blind.get("semantic_sha256") != accepted_semantic_sha256:
+            feedback = (
+                "The target proposition or one of its defining dependencies "
+                "changed. Restore the exact audited statement and definitions; "
+                "change only proof code."
+            )
+            attempt["status"] = "PROOF_STATEMENT_CHANGED"
+            attempts.append(attempt)
+            continue
+        attempt["status"] = "PROVED_FROZEN_STATEMENT"
+        status = attempt["status"]
+        attempts.append(attempt)
+        break
+    result = {
+        "schema_version": "formalization-design27-proof-stage-1",
+        "status": status,
+        "accepted_semantic_sha256": accepted_semantic_sha256,
+        "submission_limit": proof_limit,
+        "submission_count": len(attempts),
+        "proof_time_limit_seconds": proof_cap,
+        "contestant_active_seconds": proof_active_seconds,
+        "validation_seconds_excluded": validation_seconds,
+        "dossier_seconds_excluded": dossier_seconds,
+        "usage": usage,
+        "net_new_tokens": _net_new_usage(usage)["net_new_tokens"],
+        "attempts": attempts,
+    }
+    write_json_atomic(condition_root / "proof-stage.json", result, mode=0o400)
+    return result
+
+
 def _run_statement_condition_attempts(
     *,
     args: argparse.Namespace,
@@ -1256,6 +1460,7 @@ def _run_statement_condition_attempts(
     terminal_status = "ATTEMPT_LIMIT_UNFAITHFUL"
     final_frozen: dict[str, Any] | None = None
     final_text = ""
+    proof_result: dict[str, Any] | None = None
     try:
         for attempt_number in range(1, int(args.submission_limit) + 1):
             remaining = float(args.time_limit_seconds) - cumulative_active_seconds
@@ -1664,6 +1869,30 @@ def _run_statement_condition_attempts(
             )
             attempt["status"] = "AUDIT_REJECTED"
             attempts.append(attempt)
+        if getattr(args, "proof_after_faithful", False):
+            if terminal_status == "ACCEPTED_FAITHFUL":
+                semantic_sha256 = attempts[-1].get("semantic_sha256")
+                if not isinstance(semantic_sha256, str) or not thread_id:
+                    raise BenchmarkError("accepted statement lacks a proof-stage identity")
+                proof_result = _run_frozen_proof_attempts(
+                    args=args, driver=driver, deployment=deployment, spec=spec,
+                    workspace=workspace, candidate=candidate,
+                    condition_root=condition_root, thread_id=thread_id,
+                    accepted_semantic_sha256=semantic_sha256,
+                    formalization_active_seconds=cumulative_active_seconds,
+                )
+            else:
+                proof_result = {
+                    "schema_version": "formalization-design27-proof-stage-1",
+                    "status": "NOT_STARTED_STATEMENT_NOT_FAITHFUL",
+                    "submission_count": 0,
+                    "contestant_active_seconds": 0.0,
+                    "net_new_tokens": 0,
+                    "attempts": [],
+                }
+                write_json_atomic(
+                    condition_root / "proof-stage.json", proof_result, mode=0o400,
+                )
     finally:
         driver.close(artifact_dir=condition_root / "session-close")
 
@@ -1672,8 +1901,16 @@ def _run_statement_condition_attempts(
     report = {
         "schema_version": "formalization-design17-statement-condition-1",
         "scientific_status": SCIENTIFIC_STATUS,
-        "benchmark_object": "FORMALIZED_STATEMENT_ONLY",
-        "source_contract": "statement-only-single-target-sorry",
+        "benchmark_object": (
+            "FAITHFUL_STATEMENT_THEN_FROZEN_PROOF"
+            if getattr(args, "proof_after_faithful", False)
+            else "FORMALIZED_STATEMENT_ONLY"
+        ),
+        "source_contract": (
+            "audited-statement-then-kernel-checked-frozen-proof"
+            if getattr(args, "proof_after_faithful", False)
+            else "statement-only-single-target-sorry"
+        ),
         "faithfulness_status": _condition_faithfulness_status(terminal_status),
         "result_status": terminal_status,
         "task_id": packet["task_id"],
@@ -1729,9 +1966,24 @@ def _run_statement_condition_attempts(
         "audit_seconds_excluded_from_contestant": cumulative_audit_seconds,
         "usage": cumulative_usage,
         "net_new_tokens": _net_new_usage(cumulative_usage)["net_new_tokens"],
+        "end_to_end_contestant_system_wall_seconds": (
+            retrieval_seconds + cumulative_active_seconds
+            + (proof_result or {}).get("contestant_active_seconds", 0.0)
+        ),
+        "end_to_end_net_new_tokens": (
+            _net_new_usage(cumulative_usage)["net_new_tokens"]
+            + (proof_result or {}).get("net_new_tokens", 0)
+        ),
+        "final_proof_candidate_lines": (
+            proof_result["attempts"][-1]["candidate"]["lines"]
+            if proof_result is not None
+            and proof_result.get("status") == "PROVED_FROZEN_STATEMENT"
+            else None
+        ),
         "audit_usage_excluded": cumulative_audit_usage,
         "audit_usage_complete": audit_usage_complete,
         "validation_pass": bool(attempts and attempts[-1]["validation_pass"]),
+        "proof_stage": proof_result,
         "output_root": str(condition_root),
     }
     write_json_atomic(condition_root / "report.json", report, mode=0o400)

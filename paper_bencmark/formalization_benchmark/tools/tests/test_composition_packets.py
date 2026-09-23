@@ -15,6 +15,37 @@ from composition_packets import build_composition_packet  # noqa: E402
 
 
 class CompositionPacketTests(unittest.TestCase):
+    def test_unrouted_open_snapshot_does_not_rank_or_expose_declarations(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            packet = root / "task.json"
+            packet.write_text(json.dumps({"task_id": "TEST-1"}), encoding="utf-8")
+            atlas = root / "declarations.jsonl"
+            atlas.write_text("not parsed by this policy\n", encoding="utf-8")
+            result, markdown = build_composition_packet(
+                source_packet_path=packet,
+                atlas_paths=[atlas],
+                corpus_id="test-corpus",
+                root_limit=0,
+                dependency_limit=0,
+                selection_policy="no-automatic-retrieval",
+                open_library_access=True,
+            )
+            self.assertEqual(result["retrieved_roots"], [])
+            self.assertEqual(result["retrieval_candidate_count"], 0)
+            self.assertFalse(result["policy"]["automatic"])
+            self.assertIn(b"No task-specific declarations", markdown)
+            with self.assertRaisesRegex(Exception, "requires open access"):
+                build_composition_packet(
+                    source_packet_path=packet,
+                    atlas_paths=[atlas],
+                    corpus_id="test-corpus",
+                    root_limit=0,
+                    dependency_limit=0,
+                    selection_policy="no-automatic-retrieval",
+                    open_library_access=False,
+                )
+
     def test_ranks_relevant_card_and_emits_bounded_packet(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)

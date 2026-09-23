@@ -1,0 +1,40 @@
+{
+  "schema_version": "pilot-27-proof-canary-admission-1",
+  "status": "ADMITTED_DEVELOPMENT",
+  "prior_admission_path": "paper_bencmark/formalization_benchmark/design20/ADMISSION_12.json",
+  "prior_admission_sha256": "f28979394e65a1d5436e40a971312dec340f61124d13e1efeb2d89aa827f980b",
+  "prior_skeleton_compile_path": "/hdd/alexgeorgantzas/highambench/pilot24-skeleton-verify-all-20260923-a/skeleton-compilation.json",
+  "prior_skeleton_compile_sha256": "3ced71f1dec9718a2ed51973e0bbb726de53b634a7e7706918003f21552d34fe",
+  "prior_campaign_path": "/hdd/alexgeorgantzas/highambench/pilot26-development-12-20260923-a",
+  "prior_campaign_sha256": "8f605dd182a5b2c513941cefc3a39d81594e25c61cbf58b19835083035a25655",
+  "selection_disclosure": "Each task was chosen with knowledge of Pilot 26 outcomes. The prior audited L candidate is private admission evidence only, never contestant input.",
+  "tasks": {
+    "FAB19-EQ3.5": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "prior_pair_report_sha256": "095afcf17188524fbefd9b7663e705d7065589c7d3801f999e24d069373a2191",
+      "prior_faithful_l_candidate_sha256": "b9189dafb09e3e85d4dd9615b2b675cdbc12f26509663db3adf595a1af2cce14",
+      "required_fp_model": true,
+      "required_target_dependency": ["NumStability.fl_recursiveSum", "NumStability.fl_higherPrecisionRecursiveSum"],
+      "difficulty": "hard",
+      "difficulty_reason": "nested working/extended precision, arbitrary blocks, backward-error representation, and final rounding"
+    },
+    "CAST08-FIXED3": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "prior_pair_report_sha256": "df946076d19b98334ef53bf09722773b4ab3190cb3e5bbddbbf8d86af3ad2ddd",
+      "prior_faithful_l_candidate_sha256": "394daf8d9a32f0c2914cde64c641ebbbcc04425ca0ec6de97284b4d00ccd6e68",
+      "required_fp_model": true,
+      "required_target_dependency": ["NumStability.fl_dotProduct", "NumStability.fl_recursiveSum"],
+      "difficulty": "medium",
+      "difficulty_reason": "three nested operation levels and a sharp gamma coefficient"
+    },
+    "FAB19-EQ3.6": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "prior_pair_report_sha256": "47e378c99038a8b31fbd4e660b8b1cd5652d707404b2419956c3469a5d74170e",
+      "prior_faithful_l_candidate_sha256": "7d60bff7f694517fea921c6351bdf7c8910ea4dd901b704f541d86f0694e229d",
+      "required_fp_model": true,
+      "required_target_dependency": ["NumStability.fl_recursiveSum", "NumStability.fl_kahanSum"],
+      "difficulty": "hard",
+      "difficulty_reason": "compensated accumulation composed with recursive block sums and a backward representation"
+    }
+  }
+}

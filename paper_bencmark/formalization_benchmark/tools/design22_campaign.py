@@ -21,6 +21,7 @@ from design20_lanes import LANE_CPUS, LANE_MEMORY_BYTES
 
 
 SCHEMA = "pilot-26-development-campaign-1"
+PROOF_SCHEMA = "pilot-27-proof-required-campaign-1"
 PAIR_SCRIPT = Path(__file__).with_name("design22_pair_lane.py")
 LANES = ("A", "B", "C")
 
@@ -39,25 +40,32 @@ def _controller_commit() -> str:
 def _inputs(args: argparse.Namespace) -> dict:
     corpus_path = getattr(args, "corpus", None) or CORPUS
     admission_path = getattr(args, "admission", None) or ADMISSION
+    task_root = getattr(args, "task_root", None) or ROOT
+    prompt_root = getattr(args, "prompt_root", None) or task_root / "prompts"
+    proof_mode = bool(getattr(args, "proof_after_faithful", False))
+    prompt_names = (
+        ("common", "library_appendix", "scout", "prove")
+        if proof_mode else ("common", "library_appendix", "scout_compact")
+    )
     corpus = load_json(corpus_path)
     schedule = corpus["scheduled_order"]
     if len(schedule) < 1 or len(schedule) != len(set(schedule)):
         raise BenchmarkError("development schedule must be nonempty with unique tasks")
     if not isinstance(args.pilot_id, str) or not args.pilot_id.startswith("pilot"):
         raise BenchmarkError("an explicit pilot identity is required")
-    return {
+    frozen = {
         "pilot_id": args.pilot_id,
         "controller_commit": _controller_commit(),
         "corpus_sha256": sha256_file(corpus_path),
         "admission_sha256": sha256_file(admission_path),
         "schedule": schedule,
         "condition_order_policy": "alternate by frozen zero-based schedule index",
-        "packets": {task: sha256_file(ROOT / "packets" / f"{task}.json")
+        "packets": {task: sha256_file(task_root / "packets" / f"{task}.json")
                     for task in schedule},
-        "sources": {task: load_json(ROOT / "packets" / f"{task}.json")["paper_pdf"]["sha256"]
+        "sources": {task: load_json(task_root / "packets" / f"{task}.json")["paper_pdf"]["sha256"]
                     for task in schedule},
-        "prompts": {name: sha256_file(ROOT / "prompts" / f"{name}.md")
-                    for name in ("common", "library_appendix", "scout_compact")},
+        "prompts": {name: sha256_file(prompt_root / f"{name}.md")
+                    for name in prompt_names},
         "audit_prompts": {
             name: sha256_file(ROOT.parent / "audit" / "prompts" / f"{name}.md")
             for name in ("blind_translation", "direct_judge", "roundtrip_judge",
@@ -73,6 +81,38 @@ def _inputs(args: argparse.Namespace) -> dict:
         "pair_runner_sha256": sha256_file(Path(__file__).with_name("design20_matched.py")),
         "lane_wrapper_sha256": sha256_file(PAIR_SCRIPT),
     }
+    if proof_mode:
+        required = (
+            "corpus", "admission", "task_root", "prompt_root",
+            "proof_time_limit_seconds", "proof_submission_limit",
+            "proof_prompt_path", "warm_root_schema_version",
+            "warm_scout_prompt_path",
+        )
+        missing = [name for name in required if getattr(args, name, None) is None]
+        if missing:
+            raise BenchmarkError(f"proof pilot missing explicit frozen inputs: {missing}")
+        if args.proof_time_limit_seconds <= 0 or args.proof_submission_limit < 1:
+            raise BenchmarkError("proof limits must be positive")
+        if (getattr(args, "selection_policy", None) != "no-automatic-retrieval"
+                or getattr(args, "root_limit", None) != 0
+                or getattr(args, "dependency_limit", None) != 0):
+            raise BenchmarkError("proof pilot requires a genuinely unrouted interface")
+        proof_prompt = getattr(args, "proof_prompt_path", None) or prompt_root / "prove.md"
+        scout_prompt = getattr(args, "warm_scout_prompt_path", None) or prompt_root / "scout.md"
+        frozen["proof_protocol"] = {
+            "enabled": True,
+            "selection_policy": args.selection_policy,
+            "root_limit": args.root_limit,
+            "dependency_limit": args.dependency_limit,
+            "proof_time_limit_seconds": args.proof_time_limit_seconds,
+            "proof_submission_limit": args.proof_submission_limit,
+            "proof_prompt_sha256": sha256_file(proof_prompt),
+            "scout_prompt_sha256": sha256_file(scout_prompt),
+            "warm_root_schema_version": args.warm_root_schema_version,
+        }
+        frozen["task_root"] = str(task_root.resolve())
+        frozen["prompt_root"] = str(prompt_root.resolve())
+    return frozen
 
 
 def _pair_command(args: argparse.Namespace, task_id: str, index: int, lane: str) -> list[str]:
@@ -93,6 +133,21 @@ def _pair_command(args: argparse.Namespace, task_id: str, index: int, lane: str)
         command.extend(("--corpus", str(args.corpus)))
     if getattr(args, "admission", None) is not None:
         command.extend(("--admission", str(args.admission)))
+    if getattr(args, "proof_after_faithful", False):
+        for flag, value in (
+            ("task-root", args.task_root),
+            ("prompt-root", args.prompt_root),
+            ("selection-policy", args.selection_policy),
+            ("root-limit", args.root_limit),
+            ("dependency-limit", args.dependency_limit),
+            ("proof-time-limit-seconds", args.proof_time_limit_seconds),
+            ("proof-submission-limit", args.proof_submission_limit),
+            ("proof-prompt-path", args.proof_prompt_path),
+            ("warm-root-schema-version", args.warm_root_schema_version),
+            ("warm-scout-prompt-path", args.warm_scout_prompt_path),
+        ):
+            command.extend(("--" + flag, str(value)))
+        command.append("--proof-after-faithful")
     return command
 
 
@@ -132,6 +187,13 @@ def _record_pair(args: argparse.Namespace, journal: dict, task_id: str,
         "r1_over_r0_contestant_system_wall_seconds": (
             pair.get("comparison", {}).get("r1_over_r0", {}).get(
                 "contestant_system_wall_seconds") if isinstance(pair, dict) else None),
+        "r1_over_r0_statement_lines": (
+            pair.get("comparison", {}).get("r1_over_r0", {}).get("candidate_lines")
+            if isinstance(pair, dict) else None
+        ),
+        "proof_pair_status": (
+            pair.get("proof_pair_status") if isinstance(pair, dict) else None
+        ),
         "treatment_uptake": uptake,
         "completed_at_utc": utc_now(),
     }
@@ -211,13 +273,14 @@ def run(args: argparse.Namespace) -> dict:
     if not args.output_root.is_absolute() or args.output_root.is_symlink():
         raise BenchmarkError("pilot output must be an absolute non-symlink path")
     frozen = _inputs(args)
+    schema = PROOF_SCHEMA if getattr(args, "proof_after_faithful", False) else SCHEMA
     identity = hashlib.sha256(canonical_json_bytes(frozen)).hexdigest()
     journal_path = args.output_root / "campaign.json"
     if args.resume_after_review:
         if not journal_path.is_file() or journal_path.is_symlink():
             raise BenchmarkError("first-review campaign does not exist")
         journal = load_json(journal_path)
-        if (journal.get("schema_version") != SCHEMA
+        if (journal.get("schema_version") != schema
                 or journal.get("status") != "PAUSED_FIRST_REVIEW"
                 or journal.get("inputs_sha256") != identity
                 or len(journal.get("pairs", [])) != 1):
@@ -234,7 +297,7 @@ def run(args: argparse.Namespace) -> dict:
         if args.output_root.exists():
             raise BenchmarkError("campaign already exists; never overwrite")
         args.output_root.mkdir(parents=True, mode=0o700)
-        journal = {"schema_version": SCHEMA, "status": "RUNNING_FIRST_PAIR",
+        journal = {"schema_version": schema, "status": "RUNNING_FIRST_PAIR",
                    "inputs": frozen, "inputs_sha256": identity, "pairs": [],
                    "created_at_utc": utc_now()}
         write_json_atomic(journal_path, journal, mode=0o400)
@@ -276,6 +339,17 @@ def main() -> int:
     parser.add_argument("--pilot-id", required=True)
     parser.add_argument("--corpus", type=Path)
     parser.add_argument("--admission", type=Path)
+    parser.add_argument("--task-root", type=Path)
+    parser.add_argument("--prompt-root", type=Path)
+    parser.add_argument("--selection-policy")
+    parser.add_argument("--root-limit", type=int)
+    parser.add_argument("--dependency-limit", type=int)
+    parser.add_argument("--proof-after-faithful", action="store_true")
+    parser.add_argument("--proof-time-limit-seconds", type=float)
+    parser.add_argument("--proof-submission-limit", type=int)
+    parser.add_argument("--proof-prompt-path", type=Path)
+    parser.add_argument("--warm-root-schema-version")
+    parser.add_argument("--warm-scout-prompt-path", type=Path)
     parser.add_argument("--resume-after-review", action="store_true")
     args = parser.parse_args()
     journal = run(args)

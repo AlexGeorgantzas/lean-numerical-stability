@@ -805,3 +805,29 @@ recurred. The same frozen campaign was resumed for its remaining eleven tasks
 in refilled three-lane mode. Monitor only the existing campaign at
 `/hdd/alexgeorgantzas/highambench/pilot26-development-12-20260923-a`;
 never launch an overlapping one or restart a measured task silently.
+
+---
+
+## 2026-09-24 — Codex — codex/pilot-27-proof-code-size — proof-required canary in preparation
+
+**Did:** Drafted a new Pilot 27 development canary with no task-specific
+automatic retriever, full read-only library access for L, one task-neutral
+warm L fork, unchanged blinded faithfulness audit, and a timed proof stage
+after an accepted statement. The prospective protocol and outcome-aware
+three-task canary are under `formalization_benchmark/design27/`. Pilot 26 is
+complete and remains immutable; its audited candidate artifacts are private
+admission evidence only.
+
+**Careful:** The prior Pilot 24 compile-smoke skeletons include placeholder
+`target : True` declarations, so they do not establish faithfulness. The Pilot
+27 admission verifier instead requires a prior independently audited,
+compiled candidate and direct FPModel/algorithm use. Pilot 27 is exploratory,
+not confirmatory. No Pilot 27 contestant pair has started as of this entry.
+The user subsequently *authorized* redemption of one available Codex usage
+reset credit when usage is nearly exhausted; the older account-boundary note
+above is superseded. ChatGPT sign-in remains required; no API billing.
+
+**Needs:** Freeze/deploy the new controller, verify canary admission and warm
+root on Titan, run the first pair alone and inspect it before continuing.
+Then prospectively admit and freeze a separate 10–15-task full corpus with
+genuine algorithm/error overlap and 2–4 hard tasks; preserve failures.

@@ -23,11 +23,26 @@ def main() -> int:
     parser.add_argument("--lane", required=True, choices=("A", "B", "C"))
     parser.add_argument("--corpus", type=Path)
     parser.add_argument("--admission", type=Path)
+    parser.add_argument("--task-root", type=Path)
+    parser.add_argument("--prompt-root", type=Path)
+    parser.add_argument("--selection-policy")
+    parser.add_argument("--root-limit", type=int)
+    parser.add_argument("--dependency-limit", type=int)
+    parser.add_argument("--proof-after-faithful", action="store_true")
+    parser.add_argument("--proof-time-limit-seconds", type=float)
+    parser.add_argument("--proof-submission-limit", type=int)
+    parser.add_argument("--proof-prompt-path", type=Path)
+    parser.add_argument("--warm-root-schema-version")
+    parser.add_argument("--warm-scout-prompt-path", type=Path)
     args = parser.parse_args()
-    if args.corpus is None:
-        delattr(args, "corpus")
-    if args.admission is None:
-        delattr(args, "admission")
+    for name in (
+        "corpus", "admission", "task_root", "prompt_root", "selection_policy",
+        "root_limit", "dependency_limit", "proof_time_limit_seconds",
+        "proof_submission_limit", "proof_prompt_path", "warm_root_schema_version",
+        "warm_scout_prompt_path",
+    ):
+        if getattr(args, name) is None:
+            delattr(args, name)
     launched = launch_or_activate(Path(__file__), lane=args.lane)
     if launched is not None:
         return launched
