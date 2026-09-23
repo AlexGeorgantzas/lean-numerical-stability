@@ -58,6 +58,11 @@ def _inputs(args: argparse.Namespace) -> dict:
                     for task in schedule},
         "prompts": {name: sha256_file(ROOT / "prompts" / f"{name}.md")
                     for name in ("common", "library_appendix", "scout_compact")},
+        "audit_prompts": {
+            name: sha256_file(ROOT.parent / "audit" / "prompts" / f"{name}.md")
+            for name in ("blind_translation", "direct_judge", "roundtrip_judge",
+                         "adjudicator")
+        },
         "deployment_sha256": sha256_file(args.deployment),
         "mathlib_atlas_sha256": sha256_file(args.mathlib_atlas / "declarations.jsonl"),
         "numstability_atlas_sha256": sha256_file(args.numstability_atlas / "declarations.jsonl"),

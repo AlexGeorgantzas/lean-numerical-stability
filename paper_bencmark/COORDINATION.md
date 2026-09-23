@@ -776,3 +776,22 @@ Codex reset credit. At about 3% weekly usage remaining, provide a complete
 fresh-chat handoff prompt for their second account and stop or coordinate
 without overlapping the still-running campaign. Codex sign-in, not API
 billing, is used for GPT-6 Sol/high formalizers and Astra/high auditors.
+
+---
+
+## 2026-09-23 — Codex — Pilot 25 paused; Pilot 26 prepared
+
+Pilot 25 is frozen at `PAUSED_CONCURRENT_INCIDENT` after seven of twelve
+scheduled tasks. Four pairs were audited faithful, two were ineligible, and
+one had an audit-system pair incident. Its final journal hash and all outcomes
+are in `formalization_benchmark/design20/PILOT25_PARTIAL_REVIEW.md`; do not
+resume or silently rerun any Pilot 25 measured task. The controller process
+and its active lane exited before Pilot 26 setup proceeded.
+
+Pilot 26 is a separate adaptive exploratory run with the same twelve source
+tasks and frozen library. Its prospective changes are condition-neutral safe
+exploration guidance, clearer audit output-field semantics with the strict
+validator retained, and three fixed 8-CPU/24-GiB lanes refilled on task
+completion. The corpus puts RUMP12-THM3.5 first as an incident canary. A fresh
+static preflight and hash-bound admission are required before its first pair.
+No result from Pilot 25 may be pooled into Pilot 26.
