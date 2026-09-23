@@ -735,6 +735,21 @@ class Design16MatchedTests(unittest.TestCase):
             self.assertEqual(result["command_count"], len(commands))
             self.assertEqual(result["access_policy"], "open-snapshot")
 
+    def test_open_snapshot_allows_only_exact_lean_path_read(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            events = Path(raw) / "events.jsonl"
+            events.write_text(json.dumps({
+                "params": {"item": {"type": "commandExecution", "command":
+                    "/usr/bin/bash -lc 'ls -la /workspace && lean --version && printenv LEAN_PATH'"}}
+            }) + "\n", encoding="utf-8")
+            self.assertTrue(_library_exploration_policy(events, open_snapshot=True)["pass"])
+            self.assertFalse(_library_exploration_policy(events, open_snapshot=False)["pass"])
+            events.write_text(json.dumps({
+                "params": {"item": {"type": "commandExecution", "command":
+                    "/usr/bin/bash -lc 'printenv LEAN_PATH HOME'"}}
+            }) + "\n", encoding="utf-8")
+            self.assertFalse(_library_exploration_policy(events, open_snapshot=True)["pass"])
+
     def test_library_exploration_policy_allows_workspace_compilation(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             events = Path(raw) / "events.jsonl"

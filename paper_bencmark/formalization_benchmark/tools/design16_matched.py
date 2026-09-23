@@ -33,6 +33,7 @@ from codex_driver import CodexDriver
 from common import (
     BenchmarkError,
     assert_no_credentials_in_tree,
+    discover_lean_declaration_names,
     freeze_candidate,
     load_json,
     make_repair_feedback,
@@ -1058,7 +1059,21 @@ def _library_exploration_policy(
             reasons.append("binary string-table inspection")
         if re.search(r"\bfind\s+/(?:\s|$)", lowered):
             reasons.append("root-filesystem search")
-        if "lean_path" in lowered:
+        # In the open-snapshot setting the exact compiler path is itself an
+        # authorized read-only inventory of the mounted libraries.  Permit
+        # only `printenv LEAN_PATH`, not broad environment enumeration or
+        # arbitrary compiler-path expansion.  Packet-only runs retain the
+        # historical stricter rule.
+        path_check_command = (
+            re.sub(
+                r"\bprintenv[ \t]+LEAN_PATH(?=[ \t]*(?:&&|;|['\"]?$))",
+                "",
+                command,
+                flags=re.IGNORECASE,
+            )
+            if open_snapshot else command
+        )
+        if "lean_path" in path_check_command.casefold():
             reasons.append("compiler search-path inspection")
         lean_sources = {
             value
@@ -1067,7 +1082,7 @@ def _library_exploration_policy(
         }
         if lean_sources and not open_snapshot:
             reasons.append("non-candidate Lean probe or source")
-        if re.search(r"\b(?:env|printenv)\b", lowered):
+        if re.search(r"\b(?:env|printenv)\b", path_check_command.casefold()):
             reasons.append("environment enumeration")
         lean_invocations = len(re.findall(r"(?<![A-Za-z0-9_./-])lean(?:\s|$)", command))
         exact_compile = re.search(
@@ -1183,6 +1198,15 @@ def _run_statement_condition_attempts(
     )
 
     open_snapshot = getattr(args, "library_access_policy", "packet-only") == "open-snapshot"
+    # The open snapshot has no access whitelist, but repair feedback must still
+    # suppress treatment-library names.  Use the same frozen source-name
+    # filter in both conditions so the feedback policy remains condition-neutral.
+    open_snapshot_feedback_identifiers = (
+        tuple(sorted(discover_lean_declaration_names(
+            deployment.library_source,
+            deployment.library_source.parent / "NumStability.lean",
+        ))) if open_snapshot else ()
+    )
     driver_class = CodexDriver if open_snapshot else StatementCodexDriver
     driver = driver_class(
         codex_binary=deployment.codex_binary,
@@ -1553,7 +1577,10 @@ def _run_statement_condition_attempts(
                 offline_shell=deployment.offline_shell,
                 toolchain_root=deployment.toolchain_root,
                 packages_root=deployment.packages_root,
-                forbidden_feedback_identifiers=_feedback_identifier_filter(interface),
+                forbidden_feedback_identifiers=(
+                    open_snapshot_feedback_identifiers if open_snapshot
+                    else _feedback_identifier_filter(interface)
+                ),
             )
             audit_started = time.perf_counter_ns()
             try:
