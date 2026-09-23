@@ -1,10 +1,12 @@
-# Pilot 19 source-resolved release — admitted; no measured task yet
+# Pilot 19 source-resolved release — paused after first measured pair
 
 Pilot 19 is a separate, prospective release of the Design-18 benchmark
 architecture. It is **admitted for measurement**. The previous Pilot-18
 draft, its source incidents, and all off-benchmark reports remain in the
 `codex/pilot-18-probabilistic` branch through commit `d73bbff01`. Neither
-pilot has generated a timed R0/R1 task pair. Do not pool either with Design 17.
+Pilot-18 nor the preceding Design-17 campaign is pooled with this pilot.
+The admitted Pilot-19 inputs are frozen at commit `51c99a469`; the first
+measured pair is retained even though it failed the early-review gate.
 
 ## Source decisions made before seeing any candidate
 
@@ -73,3 +75,26 @@ manifest and two selected packet files changed. No candidate or audit ran.
    on Titan before measurement. The frozen early-review order is `HM19-3-2`, `HALL21-3-3`,
    `CASTRO24-4-2`; inspect each early pair before proceeding through the other
    nine.
+
+## First measured pair and mandatory pause
+
+The campaign `/hdd/alexgeorgantzas/highambench/pilot19-campaign-cli0156-20260923-a`
+stopped after `HM19-3-2` with status `PAUSED_EARLY_REVIEW`. The immutable
+pair report SHA-256 is
+`4b10cebe587f69d05265630a719d8b67c8f375f79facdcba938113f539ec1356`.
+R0 ended `RETRIEVAL_INTERFACE_RULE_VIOLATION` after three submissions; R1
+ended `ACCEPTED_FAITHFUL` after two, but its accepted statement reached no
+NumStability declaration and imported no NumStability module. The pair is
+`AUDITED_PAIR_INELIGIBLE`: no treatment-effect time ratio is reported.
+
+The R0 source validator falsely treated an inductive constructor named
+`constant` and pattern references `.constant` as illicit constant
+declarations in submissions 1 and 2. Submission 3 then used scratch Lean
+`#print` probes, which the frozen retrieval-interface policy disallowed.
+R1's first submission compiled but referenced `NumStability.BasicOp.exact`,
+a lower-level definition in an exposed module absent from the selected
+declaration list. The condition-neutral feedback prompted R1 to remove the
+library import entirely in submission 2; that statement passed the full
+faithfulness audit. These are controller and interface observations, not a
+faithful R0/R1 comparison. No result is retroactively reclassified; any
+validator, tool-policy, or library-interface change requires a new pilot.
