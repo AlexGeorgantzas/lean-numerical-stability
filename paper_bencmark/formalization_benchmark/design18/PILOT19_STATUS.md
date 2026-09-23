@@ -28,23 +28,31 @@ signature interfaces, OLean closure, and one-`sorry` controller templates.
 The immutable report SHA-256 is
 `53f59e0975e11b68d73b7b39cbb8536b8c1d895bd1be592fe16442e1a6f8f160`.
 This is an infrastructure result, not evidence of contestant faithfulness or
-a treatment benefit. The new corpus/packet hashes require a fresh full-corpus
-route and compile preflight before admission.
+a treatment benefit. The new corpus passed a full twelve-task Titan routing
+preflight with exact prompt-prefix identity and no R0 treatment exposure.
+Under the fixed Titan envelope, the two changed packets passed a new
+corpus-mode static compile preflight in R0 and R1. Its immutable report is
+`/hdd/alexgeorgantzas/highambench/pilot19-compile-preflight-source-resolved-v1/compile-preflight.json`
+(SHA-256 `2f962fcff4f0655abbeec2700a6d6946011a9b1d4215d3406fe1314eaf48fe58`).
+The other ten packet files and the router/compiler code are byte-identical
+to the Pilot-18 prerelease that already passed static compilation; only the
+manifest and two selected packet files changed. No candidate or audit ran.
 
 ## Gates still closed
 
 1. The corpus has status
-   `SOURCE_RESOLVED_MODEL_AND_LEAKAGE_GATE_PENDING_NOT_RUN`. Both the campaign
+   `SOURCE_AND_LEAKAGE_REVIEWED_MODEL_GATE_PENDING_NOT_RUN`. Both the campaign
    and direct matched-pair entry points reject any status other than
    `ADMITTED_FOR_MEASUREMENT` **before** creating an output directory or
-   calling a model. A task-neutral semantic leakage review of the frozen
-   library is still needed; existing lexical/scoped screens are not a
-   certificate against a disguised target result.
+   calling a model. `PILOT19_LEAKAGE_SCREEN.md` records a bounded
+   pre-candidate content review that found components but no selected result.
+   It is an expert negative search, not a mathematical certificate against
+   every disguised declaration; discovered leakage remains an incident.
 2. Titan's ChatGPT-account Codex login rejected `gpt-6-sol`/`xhigh` twice
    with HTTP 400 and zero model tokens. No API credential is configured.
    Switching to API billing or a different formalizer is a user decision,
    never an automatic fallback.
-3. Once the two gates clear, run a successful provider qualification and
+3. Once the model gate clears, run a successful provider qualification and
    one-time R1 warm root before any timed pair. The frozen early-review order
    remains `HM19-3-2`, `HALL21-3-3`, `CASTRO24-4-2`; inspect each early pair
    before proceeding through the other nine.

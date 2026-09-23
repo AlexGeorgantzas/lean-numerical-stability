@@ -1,6 +1,6 @@
 {
   "schema_version": "probabilistic-corpus-release-1",
-  "status": "SOURCE_RESOLVED_MODEL_AND_LEAKAGE_GATE_PENDING_NOT_RUN",
+  "status": "SOURCE_AND_LEAKAGE_REVIEWED_MODEL_GATE_PENDING_NOT_RUN",
   "pilot_identity": "19-source-resolved",
   "scientific_claim": "marginal formalization value of a frozen NumStability snapshot when relevant components, but not the selected probabilistic result, are present",
   "formalizer_model": "gpt-6-sol",
