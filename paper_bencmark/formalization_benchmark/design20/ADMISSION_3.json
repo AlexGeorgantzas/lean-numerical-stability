@@ -1,0 +1,54 @@
+{
+  "schema_version": "pilot-20-development-admission-1",
+  "scope": "development canaries only; not held-out evaluation",
+  "static_preflight_path": "/hdd/alexgeorgantzas/highambench/pilot20-preflight-final-20260923/preflight.json",
+  "static_preflight_sha256": "278fec4ed846e8b81990093de3cc96d4784da4be5d661e75e61d33efba386ea8",
+  "private_skeleton_compile_path": "/hdd/alexgeorgantzas/highambench/pilot20-skeleton-verify-final-20260923/skeleton-compilation.json",
+  "private_skeleton_compile_sha256": "5cf36cca2eff6b925c62df9c13cfbe2e3dcc3c0f4554b11f847c42b149001282",
+  "tasks": {
+    "FAB19-EQ3.5": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "99e41110a27a8b26b9fdde1d51d09cdaec2975a569591eb381a434948913ac18",
+      "source_pdf_sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot20-source-review-FAB19-EQ3.5-corrected-20260923/source-contract-review.json",
+      "source_review_sha256": "36c41548037a0eaeb057605c8b0a8a0304b1fc4bcd3c0ae17669d227767f9551",
+      "direct_component_names": [
+        "NumStability.fl_recursiveSum",
+        "NumStability.fl_higherPrecisionRecursiveSum"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual review of frozen summation declarations found component definitions and related bounds, but not the blocked mixed-precision Eq. (3.5) result; this is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot20-admission-private/FAB19-EQ3.5-3.7-skeleton.lean",
+      "private_skeleton_sha256": "5fab82937c8671347e283086ef01e2efacde698d0ae965505512d299fe8b3e47"
+    },
+    "FAB19-EQ3.7": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "afac9cc546c5b4da6c80df7bb06d99ed97d744feb959e110e07fbad5a26d8118",
+      "source_pdf_sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot20-source-review-FAB19-EQ3.7-20260923/source-contract-review.json",
+      "source_review_sha256": "8babb29477c489235e6a00edf91cf3b5ec1d990e1b81393bcec3920e8fc51c66",
+      "direct_component_names": [
+        "NumStability.fl_recursiveSum",
+        "NumStability.fl_clog2PairwiseSum"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual review of frozen summation declarations found component definitions and related bounds, but not the blocked recursive/pairwise Eq. (3.7) result; this is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot20-admission-private/FAB19-EQ3.5-3.7-skeleton.lean",
+      "private_skeleton_sha256": "5fab82937c8671347e283086ef01e2efacde698d0ae965505512d299fe8b3e47"
+    },
+    "H20-8": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "722d28643343002f250688dc0dc8520b47bdc985c104914401bc851bf2980cdf",
+      "source_pdf_sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot20-source-review-H20-8-clean-20260923/source-contract-review.json",
+      "source_review_sha256": "48144f4807dd25c8bbd1bffa2d11a487889a500b67e2d569f28d0b07f4674ef6",
+      "direct_component_names": [
+        "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual review of the frozen least-squares declarations found the generic matrix-only backward-error functional and partial properties, but not the exercise's attained b-nonzero closed formula; this is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot20-admission-private/H20-8-attainment-skeleton.lean",
+      "private_skeleton_sha256": "d6a8b1004f9e2c9df8d3ea4cc4c4975ddb20a89779a6e738769b0dd3f993606b"
+    }
+  }
+}
