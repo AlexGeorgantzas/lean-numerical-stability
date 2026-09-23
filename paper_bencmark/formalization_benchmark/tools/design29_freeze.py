@@ -25,7 +25,7 @@ REQUIRED = {
     "FAB19-EQ3.5": ("algorithm_error", ["NumStability.fl_recursiveSum"]),
     "FAB19-EQ3.6": ("algorithm_error", ["NumStability.fl_kahanSum"]),
     "CAST08-FIXED3": ("algorithm_error", ["NumStability.fl_dotProduct"]),
-    "CAST08-PROP3.2": ("algorithm_error", ["NumStability.FPModel"]),
+    "CAST08-PROP3.2": ("algorithm_error", ["NumStability.fl_dotProduct"]),
     "RUMP12-THM3.4": ("finite_format", ["NumStability.FloatingPointFormat"]),
     "RUMP12-THM3.5": ("finite_format", ["NumStability.FloatingPointFormat"]),
     "LL07-THM4": ("finite_format", ["NumStability.polyDesc"]),
@@ -39,6 +39,7 @@ REQUIRED = {
 
 def build(*, corpus_path: Path, cast_source_review: Path,
           cast_audit_result: Path, cast_candidate: Path,
+          cast32_audit_result: Path, cast32_candidate: Path,
           pdf_root: Path) -> dict:
     corpus = load_json(corpus_path)
     schedule = corpus.get("scheduled_order", [])
@@ -86,6 +87,20 @@ def build(*, corpus_path: Path, cast_source_review: Path,
                 "private_audit_result_path": str(cast_audit_result.resolve()),
                 "private_audit_result_sha256": sha256_file(cast_audit_result),
             })
+        elif task_id == "CAST08-PROP3.2":
+            previous = prior.get("tasks", {}).get(task_id)
+            if not isinstance(previous, dict):
+                raise BenchmarkError(f"prior source admission lacks {task_id}")
+            task.update({
+                "collision_review_note": previous["target_collision_review_note"],
+                "source_review_path": previous["source_review_path"],
+                "source_review_sha256": previous["source_review_sha256"],
+                "evidence_kind": "new_private_audit",
+                "private_candidate_path": str(cast32_candidate.resolve()),
+                "private_candidate_sha256": sha256_file(cast32_candidate),
+                "private_audit_result_path": str(cast32_audit_result.resolve()),
+                "private_audit_result_sha256": sha256_file(cast32_audit_result),
+            })
         else:
             previous = prior.get("tasks", {}).get(task_id)
             if not isinstance(previous, dict):
@@ -110,8 +125,8 @@ def build(*, corpus_path: Path, cast_source_review: Path,
         "schema_version": SCHEMA,
         "status": "ADMITTED_DEVELOPMENT",
         "scope": (
-            "Ten outcome-aware exploratory tasks; five direct algorithm/"
-            "error-interface candidates and five foundational/finite-format "
+            "Ten outcome-aware exploratory tasks; six direct algorithm/"
+            "error-interface candidates and four foundational/finite-format "
             "cases. Not confirmatory; actual uptake and proof attrition remain outcomes."
         ),
         "prior_admission_path": str(PRIOR.relative_to(ROOT.parents[1])),
@@ -128,6 +143,8 @@ def main() -> int:
     parser.add_argument("--cast-source-review", required=True, type=Path)
     parser.add_argument("--cast-audit-result", required=True, type=Path)
     parser.add_argument("--cast-candidate", required=True, type=Path)
+    parser.add_argument("--cast32-audit-result", required=True, type=Path)
+    parser.add_argument("--cast32-candidate", required=True, type=Path)
     parser.add_argument("--pdf-root", required=True, type=Path)
     parser.add_argument("--output", required=True, type=Path)
     args = parser.parse_args()
@@ -138,6 +155,8 @@ def main() -> int:
         cast_source_review=args.cast_source_review,
         cast_audit_result=args.cast_audit_result,
         cast_candidate=args.cast_candidate,
+        cast32_audit_result=args.cast32_audit_result,
+        cast32_candidate=args.cast32_candidate,
         pdf_root=args.pdf_root,
     )
     write_json_atomic(args.output, record, mode=0o400)

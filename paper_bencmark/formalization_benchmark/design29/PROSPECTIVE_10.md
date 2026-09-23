@@ -17,7 +17,7 @@ with verified task-specific algorithm/error reuse.
 | FAB19-EQ3.5 | Mixed-precision blocked sum | `fl_recursiveSum`, `fl_higherPrecisionRecursiveSum` in Pilot 26; only FPModel/gamma in Pilot 27 | Potential overlap, actual Pilot 27 uptake failed |
 | FAB19-EQ3.6 | Compensated blocked sum | `fl_recursiveSum`, `fl_kahanSum` in Pilot 26 | Potential overlap; Pilot 28 canary pending |
 | CAST08-FIXED3 | Three-level superblock dot | `fl_dotProduct`, `fl_recursiveSum` in Pilot 26 | Potential overlap; Pilot 28 canary pending |
-| CAST08-PROP3.2 | General t-level superblock dot | FPModel/gamma in Pilot 26; private replacement uses `fl_dotProduct` | Private direct-reach and independent audit pending |
+| CAST08-PROP3.2 | General t-level superblock dot | FPModel/gamma in Pilot 26; private replacement directly reaches `fl_dotProduct` | Private direct-reach and independent audit pending |
 | CAST08-PROP3.1 | General t-level superblock sum | New private statement directly uses `fl_recursiveSum` | Local compile passed; exact-snapshot check and audit pending |
 | RUMP12-THM3.4 | Finite-format rounding | `FloatingPointFormat` representation in Pilot 26 | Foundational model only; no task-specific algorithm/error theorem |
 | RUMP12-THM3.5 | Finite-format rounding | `FloatingPointFormat` representation in Pilot 26 | Foundational model only; no task-specific algorithm/error theorem |
@@ -29,7 +29,7 @@ Before freezing a full run: finish the Pilot 28 early review; independently
 audit the new CAST08-PROP3.1 statement and the repaired CAST08-PROP3.2
 private statement; verify exact snapshot compilation and semantic direct
 reach; screen every target-result collision; and decide **prospectively**
-whether the five foundational/finite-format cases are a transparent secondary
+whether the four foundational/finite-format cases are a transparent secondary
 stratum or violate the user's strict FPModel preference. If they are excluded,
 there is not yet a ten-task corpus. Do not silently relabel them as strict
 algorithm tasks or pad a corpus to reach ten.
