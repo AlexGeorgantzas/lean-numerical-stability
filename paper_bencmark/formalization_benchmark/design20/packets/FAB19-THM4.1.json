@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "FAB19-THM4.1",
+  "scientific_role": "candidate_pending_independent_source_review",
+  "selected_result": "Blanchard–Higham–Mary Theorem 4.1: per-product backward-error representation for an inner product computed using FABsum",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Nicholas J. Higham", "Theo Mary"],
+    "title": "A Class of Fast and Accurate Summation Algorithms",
+    "venue": "MIMS EPrint 2019.6",
+    "year": 2019,
+    "source_url": "https://eprints.maths.manchester.ac.uk/2729/3/paper.pdf"
+  },
+  "paper_pdf": {
+    "path_basename": "FAB19.pdf",
+    "sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1"
+  },
+  "paper_locations": [
+    {"section": "Sections 2–3, Algorithms 2.1 and 3.1, Theorem 3.1", "printed_pages": "2–6", "pdf_pages": "3–7", "anchor": "Working-precision product error model, complete FABsum algorithm, and per-input summation backward-error constants epsilon_f, epsilon_a"},
+    {"section": "Section 4, Algorithm 4.1 and Theorem 4.1", "printed_pages": "8", "pdf_pages": "9", "anchor": "Apply FABsum to rounded products; computed dot product is sum x_i*y_i*(1+mu_i), with first-order coefficient u+epsilon_a(n/b)+epsilon_f(b)"}
+  ],
+  "task_clarification": [
+    "For each admissible n,b with b>0 dividing n, first compute rounded products z_i=fl(x_i*y_i), then apply full Algorithm 3.1 FABsum to those z_i using a paper-admissible FastSum and AccurateSum with their stated per-input backward-error contracts epsilon_f and epsilon_a.",
+    "Formalize existence of per-product perturbations mu_i such that the returned dot product equals sum_i x_i*y_i*(1+mu_i), uniformly bounded with the source's first-order coefficient u+epsilon_a(n/b)+epsilon_f(b) and the corresponding explicit higher-order terms or a mathematically justified finite-u strengthening.",
+    "The result is a generic Algorithm 4.1 theorem over the FastSum/AccurateSum contracts from Theorem 3.1, not only one preselected summation method. Source review must check whether those contracts alone suffice to specify the actual computation without assuming the target result."
+  ],
+  "scope_constraints": [
+    "Do not omit the initial rounded products or silently use exact products; retain arbitrary signs and cancellation.",
+    "Do not state only a scalar absolute forward-error bound; preserve the per-product backward-error representation.",
+    "Do not assume the complete dot-product bound as an input hypothesis; only the paper's lower-level FastSum/AccurateSum bounds are admissible.",
+    "The source's epsilon notation includes asymptotic O(u^2). If formalizing at fixed u, provide a precise finite-u coefficient with appropriate positivity and smallness guards; do not treat O(u^2) as a literal numeric constant.",
+    "Use genuine multiplication and addition operations from the floating-point model and the complete block algorithm; retain source overflow/underflow conditions."
+  ]
+}

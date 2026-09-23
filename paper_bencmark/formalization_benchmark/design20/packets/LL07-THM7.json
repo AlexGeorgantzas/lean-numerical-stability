@@ -1,0 +1,34 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "LL07-THM7",
+  "scientific_role": "candidate_pending_independent_source_review",
+  "selected_result": "Langlois–Louvet Theorem 7 and equation (16): a condition-number criterion guaranteeing faithful rounding by compensated Horner",
+  "bibliographic_source": {
+    "authors": ["Philippe Langlois", "Nicolas Louvet"],
+    "title": "Faithful Polynomial Evaluation with Compensated Horner Algorithm",
+    "venue": "technical report / arXiv:cs/0610122",
+    "year": 2007,
+    "source_url": "https://arxiv.org/pdf/cs/0610122"
+  },
+  "paper_pdf": {
+    "path_basename": "LL07-CompHorner.pdf",
+    "sha256": "acba19c03f7997d6fa0b5537d1b7a79491ae952f3425a4604e04c2be18fb929e"
+  },
+  "paper_locations": [
+    {"section": "Section 1.2", "printed_pages": "2–3", "pdf_pages": "2–3", "anchor": "Floating-point predecessor and successor, faithful rounding, round-to-nearest arithmetic, global no-overflow/no-underflow assumption"},
+    {"section": "Sections 2.3–2.4, Algorithms 5–6", "printed_pages": "6–7", "pdf_pages": "6–7", "anchor": "Exact residual polynomials and compensated Horner result"},
+    {"section": "Section 3.2, Theorem 7 and equation (16)", "printed_pages": "9", "pdf_pages": "9", "anchor": "cond(p,x) < ((1-u)/(2+u))*u*gamma_(2n)^(-2) implies faithful rounding"}
+  ],
+  "task_clarification": [
+    "For a degree n polynomial p with floating coefficients and a floating argument x, use the exact Algorithm 6 CompHorner result, with Algorithm 5 EFTHorner inside it.",
+    "Define cond(p,x)=tilde_p(x)/|p(x)| on the nonzero-evaluation domain. Under the strict equation (16) criterion cond(p,x) < ((1-u)/(2+u))*u/gamma_(2n)^2, the computed result is a faithful rounding of the exact p(x) in the paper's predecessor/successor sense.",
+    "Retain the source's round-to-nearest, no-overflow, and no-underflow assumptions and the mathematical meaning of the floating-point neighbour relation."
+  ],
+  "scope_constraints": [
+    "Do not replace CompHorner by ordinary Horner or by an unspecified algorithm satisfying a preassumed accuracy contract.",
+    "Do not replace faithful rounding with a relative-error or sign-only conclusion; preserve the predecessor/successor semantics.",
+    "Preserve the strict inequality and exact coefficient (1-u)/(2+u), including the gamma_(2n)^2 denominator.",
+    "The source's condition number requires p(x)≠0; include this as a well-definedness guard rather than silently defining a misleading value at zero.",
+    "The source's Theorem 7 statement does not repeat its global no-underflow/no-overflow assumptions; they still apply."
+  ]
+}

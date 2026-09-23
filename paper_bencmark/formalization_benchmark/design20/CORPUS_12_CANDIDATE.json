@@ -1,0 +1,26 @@
+{
+  "schema_version": "pilot-24-candidate-corpus-1",
+  "pilot_identity": "24-candidate-pending-admission",
+  "scientific_status": "EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "FAB19-EQ3.5",
+    "FAB19-EQ3.7",
+    "H20-8",
+    "RUMP12-THM3.4",
+    "RUMP12-THM3.5",
+    "RUMP12-THM4.3",
+    "FAB19-EQ3.6",
+    "CAST08-PROP3.2",
+    "LL07-THM4",
+    "LL07-THM7",
+    "FAB19-THM4.1",
+    "FAB19-THM4.2"
+  ],
+  "early_review_order": ["RUMP12-THM3.4"],
+  "independence_warning": "This queue is source-screened development work and includes correlated results from individual papers. It is not a held-out confirmatory sample.",
+  "admission_gate": "A task cannot run from this candidate file. Each one requires independent source review, exact direct library component, result absence review, and a private compiling full-domain sorry skeleton; excluded candidates must be replaced from the prospectively ordered reserves."
+}

@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "FAB19-THM4.2",
+  "scientific_role": "candidate_pending_independent_source_review",
+  "selected_result": "Blanchard–Higham–Mary Theorem 4.2: matrix–vector backward error and matrix–matrix forward error when each inner product uses FABsum",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Nicholas J. Higham", "Theo Mary"],
+    "title": "A Class of Fast and Accurate Summation Algorithms",
+    "venue": "MIMS EPrint 2019.6",
+    "year": 2019,
+    "source_url": "https://eprints.maths.manchester.ac.uk/2729/3/paper.pdf"
+  },
+  "paper_pdf": {
+    "path_basename": "FAB19.pdf",
+    "sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1"
+  },
+  "paper_locations": [
+    {"section": "Sections 2–3, Algorithms 2.1 and 3.1, Theorem 3.1", "printed_pages": "2–6", "pdf_pages": "3–7", "anchor": "FABsum block algorithm and lower-level summation backward-error constants"},
+    {"section": "Section 4, Algorithm 4.1 and Theorems 4.1–4.2", "printed_pages": "8", "pdf_pages": "9", "anchor": "Every matrix-vector or matrix-matrix entry computed by a full FABsum inner product; both labelled theorem conclusions"}
+  ],
+  "task_clarification": [
+    "For all compatible matrix dimensions and a positive block size b dividing the common inner-product length n, compute every entry of y_hat=Ax and C_hat=AB using the actual Algorithm 4.1 FABsum inner product, including rounded products, block FastSum, and AccurateSum.",
+    "Formalize both conclusions: y_hat=(A+Delta A)x with entrywise |Delta A| bounded by the appropriate source coefficient times |A|, and entrywise |C_hat-AB| bounded by the same coefficient times |A|*|B|.",
+    "Use Theorem 4.1's coefficient u+epsilon_a(n/b)+epsilon_f(b)+O(u^2) or a precise finite-u bound justifying it, with source-equivalent lower-level algorithm/error assumptions."
+  ],
+  "scope_constraints": [
+    "Both matrix-vector and matrix-matrix parts of Theorem 4.2 are required; a partial case split is unfaithful.",
+    "The matrix-vector conclusion is a structured backward-error statement with a single Delta A, not just a componentwise forward-error inequality.",
+    "The matrix-matrix conclusion uses the matrix product |A||B|, not the entrywise absolute value of AB or a norm bound.",
+    "Do not postulate either complete conclusion or the complete inner-product bound as a task-local axiom. Source-equivalent FastSum/AccurateSum contracts may be used only below the inner-product layer.",
+    "Do not narrow the dimensions, signs, cancellation behavior, block sizes, or source floating-point arithmetic domain."
+  ]
+}

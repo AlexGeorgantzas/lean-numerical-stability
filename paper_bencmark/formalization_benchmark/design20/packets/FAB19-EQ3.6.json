@@ -1,0 +1,49 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "FAB19-EQ3.6",
+  "scientific_role": "candidate_pending_independent_source_review",
+  "selected_result": "Blanchard–Higham–Mary equation (3.6): backward-error bound for FABsum with recursive working-precision block sums and compensated accumulation of their totals",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Nicholas J. Higham", "Theo Mary"],
+    "title": "A Class of Fast and Accurate Summation Algorithms",
+    "venue": "MIMS EPrint 2019.6",
+    "year": 2019,
+    "source_url": "https://eprints.maths.manchester.ac.uk/2729/3/paper.pdf"
+  },
+  "paper_pdf": {
+    "path_basename": "FAB19.pdf",
+    "sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1"
+  },
+  "paper_locations": [
+    {
+      "section": "Sections 2.1–2.2 and Algorithm 3.1",
+      "printed_pages": "2–4",
+      "pdf_pages": "3–5",
+      "anchor": "Standard floating-point model; recursive block summation; n is a positive multiple of b; full FABsum algorithm"
+    },
+    {
+      "section": "Section 2.4, Algorithm 2.1 and equation (2.7)",
+      "printed_pages": "3–4",
+      "pdf_pages": "4–5",
+      "anchor": "Compensated-summation state s,e and its per-input backward-error coefficient 2u+O(u²)"
+    },
+    {
+      "section": "Section 3.1, Theorem 3.1 and equation (3.6)",
+      "printed_pages": "5–6",
+      "pdf_pages": "6–7",
+      "anchor": "Specialization ε_f(b)=(b−1)u+O(u²), ε_a(k)=2u+O(u²), yielding (b+1)u+O(u²)"
+    }
+  ],
+  "task_clarification": [
+    "For n=k*b with k,b positive, compute every consecutive size-b block using working-precision recursive summation. Accumulate the k computed block totals using exactly Algorithm 2.1's compensated summation (initial s=e=0; for each total, z=s, y=fl(total+e), s=fl(z+y), e=fl(fl(z−s)+y)). The returned value is s, not s+e.",
+    "Formalize an exact per-input backward-error representation for the computed FABsum, with a uniform coefficient whose first-order term is (b+1)u independent of k. A precise finite-u bound implying that asymptotic form is acceptable as a strengthening only if the complete source algorithm and all paper cases are retained.",
+    "Cover both paper endpoint block sizes b=1 and b=n, as well as all intermediate positive block sizes dividing n."
+  ],
+  "scope_constraints": [
+    "Do not replace Algorithm 2.1 by a different compensated-summation variant, a single exact sum, or a postulated bound on the already-composed FABsum.",
+    "The conclusion is a backward-error representation for every input, not merely a forward-error inequality.",
+    "Do not narrow to one-sign, nonnegative, no-cancellation, fixed-size, or power-of-two inputs.",
+    "The source excludes overflow but says its summation bounds continue to hold when an underflowing addition or subtraction is exact. An independent source review must verify the compensated specialization's underflow domain; do not silently add no-underflow.",
+    "If giving a finite-u strengthening, state its exact coefficient and validity guards. The paper's O(u²) statement is not itself a fixed-u numeric bound."
+  ]
+}

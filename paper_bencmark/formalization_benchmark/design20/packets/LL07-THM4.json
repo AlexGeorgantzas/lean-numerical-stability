@@ -1,0 +1,35 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "LL07-THM4",
+  "scientific_role": "candidate_pending_independent_source_review",
+  "selected_result": "Langlois–Louvet Theorem 4 and equation (13): absolute forward-error bound for compensated Horner evaluation",
+  "bibliographic_source": {
+    "authors": ["Philippe Langlois", "Nicolas Louvet"],
+    "title": "Faithful Polynomial Evaluation with Compensated Horner Algorithm",
+    "venue": "technical report / arXiv:cs/0610122",
+    "year": 2007,
+    "source_url": "https://arxiv.org/pdf/cs/0610122"
+  },
+  "paper_pdf": {
+    "path_basename": "LL07-CompHorner.pdf",
+    "sha256": "acba19c03f7997d6fa0b5537d1b7a79491ae952f3425a4604e04c2be18fb929e"
+  },
+  "paper_locations": [
+    {"section": "Section 1.2", "printed_pages": "2–3", "pdf_pages": "2–3", "anchor": "IEEE-754 working precision, round-to-nearest, normalized floating coefficients and input, no overflow or underflow"},
+    {"section": "Section 2.3, Algorithm 5", "printed_pages": "6–7", "pdf_pages": "6–7", "anchor": "EFTHorner obtains the ordinary Horner value and two exact-error polynomials using TwoProd and TwoSum"},
+    {"section": "Section 2.4, Algorithm 6", "printed_pages": "7", "pdf_pages": "7", "anchor": "CompHorner evaluates the coefficientwise rounded sum of the two error polynomials by Horner, then adds the correction to the original result"},
+    {"section": "Section 3.1, Theorem 4 and equation (13)", "printed_pages": "8", "pdf_pages": "8", "anchor": "|CompHorner(p,x)-p(x)| ≤ u|p(x)|+gamma_(2n)^2 times the absolute-coefficient polynomial at |x|"}
+  ],
+  "task_clarification": [
+    "For every degree n polynomial p with floating-point coefficients and floating-point argument x, compute the complete EFTHorner and CompHorner algorithms of Algorithms 5–6, including TwoProd/TwoSum residuals, the coefficientwise rounded p_pi+p_sigma, its ordinary Horner evaluation, and the final rounded correction.",
+    "Under the source's no-overflow/no-underflow and gamma-valid arithmetic conditions, formalize |CompHorner(p,x)-p(x)| ≤ u*|p(x)|+gamma_(2*n)^2*tilde_p(x), where tilde_p(x)=sum_i |a_i|*|x|^i.",
+    "The target is the full forward-error inequality, not merely a statement about ordinary Horner, EFTHorner's exact decomposition, or an assumed abstract correction-error bound."
+  ],
+  "scope_constraints": [
+    "Retain all polynomial degrees and all floating coefficients and inputs in the source domain; do not narrow to positive coefficients, sign-stable evaluations, or a fixed degree.",
+    "Preserve the complete Algorithm 6 and the squared gamma_(2n) factor and non-strict inequality.",
+    "Do not assume the target bound in a model/interface hypothesis. A task-local EFT implementation is permitted, with only source-equivalent arithmetic laws.",
+    "The source globally assumes no underflow or overflow; do not silently drop these or add a stronger semantic restriction.",
+    "The source text writes the result for degree n, while Algorithm 5 forms degree n-1 residual polynomials; handle the n=0 endpoint explicitly and faithfully rather than making it vacuous."
+  ]
+}

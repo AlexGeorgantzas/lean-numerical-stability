@@ -16,10 +16,11 @@ from design20_matched import CORPUS, ROOT
 from design18_source_contract import MODEL, EFFORT, PROMPT
 
 
-def run_one(*, task_id: str, deployment_path: Path, output_root: Path) -> dict:
-    corpus = load_json(CORPUS)
+def run_one(*, task_id: str, deployment_path: Path, output_root: Path,
+            corpus_path: Path = CORPUS) -> dict:
+    corpus = load_json(corpus_path)
     if task_id not in corpus["scheduled_order"]:
-        raise BenchmarkError("task is outside the Pilot-20 development corpus")
+        raise BenchmarkError("task is outside the selected source-review corpus")
     packet_path = ROOT / "packets" / f"{task_id}.json"
     packet = load_json(packet_path)
     if packet.get("task_id") != task_id:
@@ -89,9 +90,10 @@ def main() -> int:
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--deployment", required=True, type=Path)
     parser.add_argument("--output-root", required=True, type=Path)
+    parser.add_argument("--corpus", type=Path, default=CORPUS)
     args = parser.parse_args()
     record = run_one(task_id=args.task_id, deployment_path=args.deployment,
-                     output_root=args.output_root)
+                     output_root=args.output_root, corpus_path=args.corpus)
     print(json.dumps({key: record[key] for key in
                       ("task_id", "status", "assessment", "turn_usage", "turn_wall_seconds")},
                      sort_keys=True))
