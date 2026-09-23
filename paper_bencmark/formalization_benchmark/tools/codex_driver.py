@@ -1056,6 +1056,11 @@ class CodexDriver:
             mode = path.stat(follow_symlinks=False).st_mode
             if not (stat.S_ISREG(mode) or stat.S_ISDIR(mode)):
                 raise BenchmarkError(f"special file in contestant workspace: {relative}")
+            # A warm Codex fork can materialize this empty top-level mount point
+            # while initializing its tool sandbox.  It carries no instructions or
+            # configuration; any content (or nested .codex path) remains forbidden.
+            if relative.parts == (".codex",) and path.is_dir() and not any(path.iterdir()):
+                continue
             if ".codex" in lowered or relative.name.casefold() in CONTROL_PROTECTED_TOP_LEVEL:
                 raise BenchmarkError(f"forbidden workspace control surface: {relative}")
 

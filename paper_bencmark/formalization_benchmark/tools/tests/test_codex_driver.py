@@ -490,6 +490,23 @@ class CodexDriverProtocolTests(unittest.TestCase):
         options.update(overrides)
         return CodexDriver(**options)  # type: ignore[arg-type]
 
+    def test_empty_top_level_codex_mount_point_is_inert(self) -> None:
+        (self.workspace / ".codex").mkdir()
+        CodexDriver._assert_safe_workspace(self.workspace)
+
+    def test_populated_codex_control_directory_is_rejected(self) -> None:
+        control = self.workspace / ".codex"
+        control.mkdir()
+        (control / "config.toml").write_text("model = 'test'\n", encoding="utf-8")
+        with self.assertRaisesRegex(Exception, "forbidden workspace control surface"):
+            CodexDriver._assert_safe_workspace(self.workspace)
+
+    def test_nested_empty_codex_directory_is_rejected(self) -> None:
+        nested = self.workspace / "nested" / ".codex"
+        nested.mkdir(parents=True)
+        with self.assertRaisesRegex(Exception, "forbidden workspace control surface"):
+            CodexDriver._assert_safe_workspace(self.workspace)
+
     def test_app_server_retains_private_auth_and_resumes_same_thread(self) -> None:
         schema = self.root / "schema.json"
         schema.write_text('{"type":"object"}\n', encoding="utf-8")

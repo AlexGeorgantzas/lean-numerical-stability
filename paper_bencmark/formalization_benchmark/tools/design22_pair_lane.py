@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Run one frozen Pilot-22 development pair inside its own Titan lane."""
+"""Run one frozen development pair inside its own Titan lane."""
 
 from __future__ import annotations
 
@@ -36,5 +36,5 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except (BenchmarkError, OSError, ValueError) as error:
-        print(f"Pilot-22 lane pair error: {error}", file=sys.stderr)
+        print(f"Development lane pair error: {error}", file=sys.stderr)
         raise SystemExit(2)

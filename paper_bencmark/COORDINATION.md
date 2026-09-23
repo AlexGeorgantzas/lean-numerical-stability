@@ -729,3 +729,21 @@ target-collision gate are still required before measured tasks.
 and `warm_root_schema_version="pilot-20-warm-root-1"` into a new frozen runner;
 perform a non-contestant Titan mount/search/import smoke test and review the
 new one-time scout dossier before launching any measured task.
+
+---
+
+## 2026-09-23 — Codex — Pilot 22 first-pair incident and prospective fix
+
+**Did:** Pilot 22 stopped at its mandatory first-pair gate with an unscored
+`PAIR_INCIDENT`: a warm-fork tool sandbox created an empty top-level `.codex`
+mount point, which the workspace safety scan rejected before freezing/auditing
+R1. R0's single candidate passed the full audit. The frozen Titan campaign and
+pair hashes and exact evidence are in
+`formalization_benchmark/design20/PILOT22_INCIDENT.md`; do not resume or edit
+Pilot 22.
+
+**Prospective fix:** The next controller permits only an empty top-level
+`.codex` directory. Populated or nested `.codex`, symlinks, and protected
+control files remain prohibited. The development campaign requires an explicit
+new pilot ID. Relevant unit tests pass. A new Pilot 23 must use a fresh output
+root and controller commit; no Pilot 22 outcome may be scored as a pair.

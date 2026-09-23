@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Frozen Pilot-22 canary, review pause, then two independent parallel lanes."""
+"""Frozen development canary, review pause, then two independent parallel lanes."""
 
 from __future__ import annotations
 
@@ -20,7 +20,6 @@ from design20_lanes import LANE_CPUS, LANE_MEMORY_BYTES
 
 
 SCHEMA = "pilot-22-development-campaign-1"
-PILOT_ID = "pilot22-open-snapshot-path-policy"
 PAIR_SCRIPT = Path(__file__).with_name("design22_pair_lane.py")
 
 
@@ -31,7 +30,7 @@ def _controller_commit() -> str:
     ).strip()
     if subprocess.run(["git", "diff", "--quiet", "HEAD"], cwd=repo,
                       check=False).returncode != 0:
-        raise BenchmarkError("Pilot-22 controller has tracked uncommitted changes")
+        raise BenchmarkError("development controller has tracked uncommitted changes")
     return commit
 
 
@@ -39,9 +38,11 @@ def _inputs(args: argparse.Namespace) -> dict:
     corpus = load_json(CORPUS)
     schedule = corpus["scheduled_order"]
     if len(schedule) != 3:
-        raise BenchmarkError("Pilot-22 development schedule must contain exactly three tasks")
+        raise BenchmarkError("development schedule must contain exactly three tasks")
+    if not isinstance(args.pilot_id, str) or not args.pilot_id.startswith("pilot"):
+        raise BenchmarkError("an explicit pilot identity is required")
     return {
-        "pilot_id": PILOT_ID,
+        "pilot_id": args.pilot_id,
         "controller_commit": _controller_commit(),
         "corpus_sha256": sha256_file(CORPUS),
         "admission_sha256": sha256_file(ADMISSION),
@@ -127,30 +128,30 @@ def _record_pair(args: argparse.Namespace, journal: dict, task_id: str,
 
 def run(args: argparse.Namespace) -> dict:
     if not args.output_root.is_absolute() or args.output_root.is_symlink():
-        raise BenchmarkError("Pilot-22 output must be an absolute non-symlink path")
+        raise BenchmarkError("pilot output must be an absolute non-symlink path")
     frozen = _inputs(args)
     identity = hashlib.sha256(canonical_json_bytes(frozen)).hexdigest()
     journal_path = args.output_root / "campaign.json"
     if args.resume_after_review:
         if not journal_path.is_file() or journal_path.is_symlink():
-            raise BenchmarkError("Pilot-22 first-review campaign does not exist")
+            raise BenchmarkError("first-review campaign does not exist")
         journal = load_json(journal_path)
         if (journal.get("schema_version") != SCHEMA
                 or journal.get("status") != "PAUSED_FIRST_REVIEW"
                 or journal.get("inputs_sha256") != identity
                 or len(journal.get("pairs", [])) != 1):
-            raise BenchmarkError("Pilot-22 frozen first-review inputs do not match")
+            raise BenchmarkError("frozen first-review inputs do not match")
         first = journal["pairs"][0]
         first_report = args.output_root / frozen["schedule"][0] / "pair-report.json"
         if (first.get("task_id") != frozen["schedule"][0]
                 or first.get("pair_report_sha256") != sha256_file(first_report)):
-            raise BenchmarkError("Pilot-22 first pair changed during review")
+            raise BenchmarkError("first pair changed during review")
         journal["status"] = "RUNNING_PARALLEL"
         journal["resumed_after_review_at_utc"] = utc_now()
         write_json_atomic(journal_path, journal, mode=0o400)
     else:
         if args.output_root.exists():
-            raise BenchmarkError("Pilot-22 campaign already exists; never overwrite")
+            raise BenchmarkError("campaign already exists; never overwrite")
         args.output_root.mkdir(parents=True, mode=0o700)
         journal = {"schema_version": SCHEMA, "status": "RUNNING_FIRST_PAIR",
                    "inputs": frozen, "inputs_sha256": identity, "pairs": [],
@@ -220,6 +221,7 @@ def main() -> int:
     for name in ("deployment", "mathlib-atlas", "numstability-atlas",
                  "model-qualification", "warm-root", "output-root"):
         parser.add_argument("--" + name, required=True, type=Path)
+    parser.add_argument("--pilot-id", required=True)
     parser.add_argument("--resume-after-review", action="store_true")
     args = parser.parse_args()
     journal = run(args)
@@ -234,5 +236,5 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except (BenchmarkError, OSError, ValueError) as error:
-        print(f"Pilot-22 campaign error: {error}", file=sys.stderr)
+        print(f"Development campaign error: {error}", file=sys.stderr)
         raise SystemExit(2)

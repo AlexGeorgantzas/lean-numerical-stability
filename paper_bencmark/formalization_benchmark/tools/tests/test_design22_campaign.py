@@ -16,6 +16,7 @@ class Pilot22CampaignTests(unittest.TestCase):
             numstability_atlas=Path("/tmp/numstability"),
             model_qualification=Path("/tmp/qualification.json"),
             warm_root=Path("/tmp/warm"), output_root=Path("/tmp/campaign"),
+            pilot_id="pilot23-empty-control-mount",
         )
         first = _pair_command(args, "FAB19-EQ3.5", 0, "A")
         second = _pair_command(args, "FAB19-EQ3.7", 1, "B")
