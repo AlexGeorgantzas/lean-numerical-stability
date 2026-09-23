@@ -98,6 +98,33 @@ in the frozen library; independent semantic collision review is still required.
 This pair is from a single paper and shares its recursive-block kernel, so
 its outcomes must not be counted as two independent source families.
 
+Another author-hosted source screened but **not admitted**: Xiaobo Liu,
+*Mixed-Precision Paterson–Stockmeyer Method for Evaluating Polynomials of
+Matrices*, Lemma 2.2 and Theorem 2.3,
+<https://eprints.maths.manchester.ac.uk/2888/1/paper.pdf>. The pinned library
+has a directly usable `fl_matMul` and an exact Paterson–Stockmeyer algorithm,
+but the printed Lemma 2.2 initializes `X̂₀ = X`, then says
+`X̂ₖ = fl(X̂ₖ₋₁ X)` for `k=1:t` while treating `X̂ₜ` as `X^t`; literally this
+recurrence gives `X^(t+1)` in exact arithmetic. The adjoining proof starts at
+`t=2`, suggesting a one-based intended recurrence. Do not silently repair
+this in a measured packet. Source-resolution review is needed before either
+that lemma or the dependent Theorem 2.3 is admitted. The inspected PDF is
+`design20/sources/LIU24-PS.pdf`, SHA-256
+`56e71da96e04d1a8c216a70207b856f993405d24334e3152b4d0d0c39d6ecdc7`.
+
+A separate **potential source family**, not yet admitted, is Langlois–Louvet,
+*Faithful Polynomial Evaluation with Compensated Horner Algorithm*,
+<https://arxiv.org/pdf/cs/0610122>, Algorithm 6 and Theorem 4. The target
+forward-error bound is `u|p(x)| + γ_(2n)^2 p̃(x)`. The frozen library has
+`fl_hornerDesc`, which Algorithm 6 can use for its correction-polynomial
+evaluation, but no `CompHorner`/`EFTHorner` implementation or result was found
+in the checked Horner module. Source faithfulness hinges on representing the
+actual error-free `TwoProd`/`TwoSum` transformations and their no-underflow
+conditions, rather than smuggling the final bound into an abstract EFT
+contract. The inspected PDF is `design20/sources/LL07-CompHorner.pdf`, SHA-256
+`acba19c03f7997d6fa0b5537d1b7a79491ae952f3425a4604e04c2be18fb929e`.
+No packet or compatibility skeleton is claimed yet.
+
 ## Three-lane resource gate
 
 Titan currently exposes 32 logical CPUs and about 94 GiB physical RAM. Its
