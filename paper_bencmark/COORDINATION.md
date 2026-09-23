@@ -795,3 +795,13 @@ validator retained, and three fixed 8-CPU/24-GiB lanes refilled on task
 completion. The corpus puts RUMP12-THM3.5 first as an incident canary. A fresh
 static preflight and hash-bound admission are required before its first pair.
 No result from Pilot 25 may be pooled into Pilot 26.
+
+Pilot 26's static preflight and admission passed all twelve tasks. Its first
+RUMP12-THM3.5 pair was audited faithful on both sides in one submission and
+is documented in `formalization_benchmark/design20/PILOT26_FIRST_REVIEW.md`.
+L was 1.061× slower in contestant-system time, 1.238× higher in net-new
+tokens, and 0.784× the candidate lines; no interface or audit-system incident
+recurred. The same frozen campaign was resumed for its remaining eleven tasks
+in refilled three-lane mode. Monitor only the existing campaign at
+`/hdd/alexgeorgantzas/highambench/pilot26-development-12-20260923-a`;
+never launch an overlapping one or restart a measured task silently.
