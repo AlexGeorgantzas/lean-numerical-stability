@@ -52,6 +52,13 @@ manifest and two selected packet files changed. No candidate or audit ran.
    with HTTP 400 and zero model tokens. No API credential is configured.
    Switching to API billing or a different formalizer is a user decision,
    never an automatic fallback.
+   A third off-benchmark, one-shot qualification used the **exact**
+   Design-17-v3 deployment that the Pilot-19 compiler uses. It again returned
+   HTTP 400, “The 'gpt-6-sol' model is not supported when using Codex with a
+   ChatGPT account,” in 3.02 seconds with zero tokens and no contestant work.
+   Its immutable record is
+   `/hdd/alexgeorgantzas/highambench/pilot19-model-gate-v1/qualification.json`
+   (SHA-256 `36f673d66264474eaaa6bc9f2de05886b84cf72c13505df324ce9642d1eb6ce2`).
 3. Once the model gate clears, run a successful provider qualification and
    one-time R1 warm root before any timed pair. The frozen early-review order
    remains `HM19-3-2`, `HALL21-3-3`, `CASTRO24-4-2`; inspect each early pair
