@@ -6,10 +6,21 @@ import unittest
 from unittest import mock
 
 from design22_campaign import ROOT, _pair_command, _pair_env, _run_refilled_lanes
+from design20_matched import _proof_pair_status
 from pair_controller import _environment_note
 
 
 class Pilot22CampaignTests(unittest.TestCase):
+    def test_proof_infrastructure_failure_is_distinct_from_unproved(self) -> None:
+        self.assertEqual(_proof_pair_status({
+            "R0": "PROOF_VALIDATION_INCIDENT",
+            "R1": "PROVED_FROZEN_STATEMENT",
+        }), "PROOF_STAGE_INCIDENT")
+        self.assertEqual(_proof_pair_status({
+            "R0": "PROOF_ATTEMPT_LIMIT",
+            "R1": "PROVED_FROZEN_STATEMENT",
+        }), "NOT_BOTH_PROVED")
+
     def test_shared_prompt_and_environment_explain_safe_exploration(self) -> None:
         common = (ROOT / "prompts" / "common.md").read_text()
         environment = _environment_note()
@@ -178,20 +189,25 @@ class Pilot22CampaignTests(unittest.TestCase):
             started.append(task)
             return FakeProcess(task)
 
+        incident_status = "PAIR_INCIDENT"
+
         def fake_record(_args, _journal, task, *_args2):
             finished.append(task)
-            return {"pair_status": "PAIR_INCIDENT" if task == "b"
+            return {"pair_status": incident_status if task == "b"
                     else "AUDITED_FAITHFUL_PAIR"}
 
-        with (mock.patch("design22_campaign.subprocess.Popen", side_effect=fake_popen),
-              mock.patch("design22_campaign._record_pair", side_effect=fake_record),
-              mock.patch("design22_campaign.write_json_atomic"),
-              mock.patch("design22_campaign.time.sleep")):
-            incident = _run_refilled_lanes(args, {"pairs": []},
-                                           ["first", "a", "b", "c", "d"])
-        self.assertTrue(incident)
-        self.assertEqual(started, ["a", "b", "c"])
-        self.assertEqual(set(finished), {"a", "b", "c"})
+        for incident_status in ("PAIR_INCIDENT", "PAIR_PROOF_INCIDENT"):
+            started.clear()
+            finished.clear()
+            with (mock.patch("design22_campaign.subprocess.Popen", side_effect=fake_popen),
+                  mock.patch("design22_campaign._record_pair", side_effect=fake_record),
+                  mock.patch("design22_campaign.write_json_atomic"),
+                  mock.patch("design22_campaign.time.sleep")):
+                incident = _run_refilled_lanes(args, {"pairs": []},
+                                               ["first", "a", "b", "c", "d"])
+            self.assertTrue(incident)
+            self.assertEqual(started, ["a", "b", "c"])
+            self.assertEqual(set(finished), {"a", "b", "c"})
 
 
 if __name__ == "__main__":

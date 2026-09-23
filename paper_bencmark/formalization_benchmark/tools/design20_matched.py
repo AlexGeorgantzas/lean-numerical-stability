@@ -27,6 +27,21 @@ AUDIT_MODEL = "gpt-6-astra"
 AUDIT_EFFORT = "high"
 
 
+def _proof_pair_status(proof_statuses: dict[str, str]) -> str:
+    if any(
+        status in {
+            "PROOF_FORMALIZER_INCIDENT", "PROOF_VALIDATION_INCIDENT",
+            "PROOF_DOSSIER_INCIDENT",
+        }
+        for status in proof_statuses.values()
+    ):
+        return "PROOF_STAGE_INCIDENT"
+    if all(status == "PROVED_FROZEN_STATEMENT"
+           for status in proof_statuses.values()):
+        return "BOTH_PROVED_FROZEN_STATEMENTS"
+    return "NOT_BOTH_PROVED"
+
+
 def run(args: argparse.Namespace) -> dict[str, Any]:
     task_root = getattr(args, "task_root", ROOT)
     prompt_root = getattr(args, "prompt_root", task_root / "prompts")
@@ -171,12 +186,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             for condition in ("R0", "R1")
         }
         pair["proof_statuses"] = proof_statuses
-        pair["proof_pair_status"] = (
-            "BOTH_PROVED_FROZEN_STATEMENTS"
-            if all(value == "PROVED_FROZEN_STATEMENT"
-                   for value in proof_statuses.values())
-            else "NOT_BOTH_PROVED"
-        )
+        pair["proof_pair_status"] = _proof_pair_status(proof_statuses)
+        if pair["proof_pair_status"] == "PROOF_STAGE_INCIDENT":
+            pair["status"] = "PAIR_PROOF_INCIDENT"
         pair["proof_comparison"] = {
             "effect_analysis_eligible": pair["proof_pair_status"] == "BOTH_PROVED_FROZEN_STATEMENTS",
             "r1_over_r0_proof_active_seconds": (

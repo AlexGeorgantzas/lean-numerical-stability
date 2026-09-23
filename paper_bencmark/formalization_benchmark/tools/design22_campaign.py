@@ -250,7 +250,7 @@ def _run_refilled_lanes(args: argparse.Namespace, journal: dict,
                                      process.returncode, stdout, stderr, companions)
                 del active[lane]
                 incident = incident or process.returncode != 0 or entry["pair_status"] in {
-                    "NO_PAIR_REPORT", "PAIR_INCIDENT",
+                    "NO_PAIR_REPORT", "PAIR_INCIDENT", "PAIR_PROOF_INCIDENT",
                 }
         return incident
     except Exception:
@@ -314,7 +314,9 @@ def run(args: argparse.Namespace) -> dict:
                                      result.stdout, result.stderr, [])
                 journal["status"] = (
                     "PAUSED_FIRST_REVIEW" if result.returncode == 0
-                    and entry["pair_status"] not in {"NO_PAIR_REPORT", "PAIR_INCIDENT"}
+                    and entry["pair_status"] not in {
+                        "NO_PAIR_REPORT", "PAIR_INCIDENT", "PAIR_PROOF_INCIDENT",
+                    }
                     else "PAUSED_FIRST_PAIR_INCIDENT"
                 )
             else:
