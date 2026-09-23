@@ -108,10 +108,25 @@ def inspect_pair(root: Path) -> dict[str, Any]:
     }
     for condition in ("R0", "R1"):
         turns: list[dict[str, Any]] = []
+        line_metrics: dict[str, Any] = {}
         for stage in ("submissions", "proof-submissions"):
             for path in sorted((root / condition / stage).glob("*/formalizer/events.jsonl")):
                 turns.append({"stage": stage, **inspect_events(path)})
-        result["conditions"][condition] = turns
+            validations = sorted((root / condition / stage).glob("*/validation.json"))
+            if validations:
+                final = load_json(validations[-1])
+                line_metrics[stage] = {
+                    "final_validation_path": str(validations[-1]),
+                    "validation_pass": final.get("pass") is True,
+                    "raw_lines": (final.get("candidate") or {}).get("lines"),
+                    "nonblank_code_lines": (
+                        final.get("source_check") or {}
+                    ).get("nonblank_code_lines"),
+                }
+        result["conditions"][condition] = {
+            "turns": turns,
+            "line_metrics": line_metrics,
+        }
     return result
 
 
