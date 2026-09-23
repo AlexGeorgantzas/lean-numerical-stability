@@ -1,0 +1,30 @@
+{
+  "schema_version": "pilot-26-development-corpus-1",
+  "pilot_identity": "26-development-interface-and-audit-schema",
+  "scientific_status": "EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "RUMP12-THM3.5",
+    "FAB19-EQ3.5",
+    "FAB19-EQ3.7",
+    "H20-8",
+    "RUMP12-THM3.4",
+    "FAB19-EQ3.6",
+    "CAST08-PROP3.2",
+    "CAST08-FIXED3",
+    "LL07-THM4",
+    "LL07-THM7",
+    "FAB19-THM4.1",
+    "FAB19-THM4.2"
+  ],
+  "early_review_order": ["RUMP12-THM3.5"],
+  "source_screening_record": "PILOT24_SOURCE_SCREEN_DECISIONS.md",
+  "excluded_before_measurement": ["RUMP12-THM4.3"],
+  "prior_pilot_review": "PILOT25_PARTIAL_REVIEW.md",
+  "prospective_change": "Condition-neutral explicit safe exploration commands and auditor field semantics; strict validator unchanged. Three fixed 8-CPU/24-GiB lanes are refilled on completion instead of waiting at a batch barrier. RUMP12-THM3.5 is the first canary because Pilot 25 exposed both interface and audit-schema incidents on it. No paper, source packet, library snapshot, model, attempt budget, or contestant clock change.",
+  "independence_warning": "This is an adaptive exploratory development corpus. Pilot 25 outcomes on some of these tasks were observed before Pilot 26 was designed. Preserve prior pilot artifacts separately; do not present Pilot 26 as held-out or pool paired effects across pilots.",
+  "admission_gate": "Every unchanged packet needs its hash-matching independent source review, target-absence/direct-component check, and compiling private sorry skeleton. Run a fresh twelve-task preflight against this corpus and bind its hash in a new admission record before launch."
+}

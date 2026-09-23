@@ -36,6 +36,10 @@ off-clock. Audit time and tokens are logged separately.
 Read `ENVIRONMENT.md` and `LIBRARY_API.md`. The latter is a ranked retrieval
 guide, not a gold theorem or an access whitelist. You may use the complete
 read-only source and declaration index of libraries mounted in your condition.
+Use `printenv LEAN_PATH` only if you need to inspect the compiler search path;
+do not enumerate the environment with `env` or bare `printenv`, or search the
+filesystem root with `find /`. Those commands invalidate a submission in both
+conditions. The exact compilation command is in `ENVIRONMENT.md`.
 Search deliberately: inspect a small number of relevant signatures/modules,
 then implement and compile. All task-time searches, Lean probes, and candidate
 edits are measured. No network access. Do not inspect another condition,

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Frozen development canary, review pause, then two independent parallel lanes."""
+"""Frozen development canary, review pause, then three refilled isolated lanes."""
 
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 from common import (BenchmarkError, canonical_json_bytes, load_json, sha256_file,
                     utc_now, write_bytes_atomic, write_json_atomic)
@@ -19,8 +20,9 @@ from design20_matched import CORPUS, ROOT
 from design20_lanes import LANE_CPUS, LANE_MEMORY_BYTES
 
 
-SCHEMA = "pilot-22-development-campaign-1"
+SCHEMA = "pilot-26-development-campaign-1"
 PAIR_SCRIPT = Path(__file__).with_name("design22_pair_lane.py")
+LANES = ("A", "B", "C")
 
 
 def _controller_commit() -> str:
@@ -133,6 +135,73 @@ def _record_pair(args: argparse.Namespace, journal: dict, task_id: str,
     return entry
 
 
+def _run_refilled_lanes(args: argparse.Namespace, journal: dict,
+                        schedule: list[str]) -> bool:
+    """Start a new pair on a freed lane without changing its hardware envelope.
+
+    On an incident, launch no further pairs, but allow all already-running pairs
+    to finish and seal before releasing the host lock.  Record every actual
+    co-scheduled companion, including one that completed earlier.
+    """
+    pending = iter(enumerate(schedule[1:], start=1))
+    active: dict[str, tuple[str, int, subprocess.Popen[bytes]]] = {}
+    overlaps: dict[str, set[str]] = {}
+    next_pair = next(pending, None)
+    incident = False
+    try:
+        while active or (next_pair is not None and not incident):
+            for lane in LANES:
+                if incident or next_pair is None or lane in active:
+                    continue
+                index, task = next_pair
+                companions = [item[0] for item in active.values()]
+                process = subprocess.Popen(
+                    _pair_command(args, task, index, lane), cwd=ROOT.parents[2],
+                    env=_pair_env(), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                )
+                active[lane] = (task, index, process)
+                overlaps.setdefault(task, set()).update(companions)
+                for companion in companions:
+                    overlaps.setdefault(companion, set()).add(task)
+                journal.setdefault("launches", []).append({
+                    "task_id": task, "scheduled_index": index, "lane": lane,
+                    "launched_at_utc": utc_now(),
+                })
+                write_json_atomic(args.output_root / "campaign.json", journal, mode=0o400)
+                next_pair = next(pending, None)
+            finished = [lane for lane, (_, _, process) in active.items()
+                        if process.poll() is not None]
+            if not finished:
+                time.sleep(0.2)
+                continue
+            for lane in finished:
+                task, index, process = active[lane]
+                stdout, stderr = process.communicate()
+                companions = sorted(overlaps.get(task, set()),
+                                    key=schedule.index)
+                entry = _record_pair(args, journal, task, index, lane,
+                                     process.returncode, stdout, stderr, companions)
+                del active[lane]
+                incident = incident or process.returncode != 0 or entry["pair_status"] in {
+                    "NO_PAIR_REPORT", "PAIR_INCIDENT",
+                }
+        return incident
+    except Exception:
+        # An orchestrator error does not orphan an already-launched measured
+        # pair.  Seal each sibling before the outer handler records the pause.
+        for lane, (task, index, process) in list(active.items()):
+            stdout, stderr = process.communicate()
+            if not any(item["task_id"] == task for item in journal["pairs"]):
+                try:
+                    _record_pair(args, journal, task, index, lane,
+                                 process.returncode, stdout, stderr,
+                                 sorted(overlaps.get(task, set()),
+                                        key=schedule.index))
+                except Exception:
+                    pass
+        raise
+
+
 def run(args: argparse.Namespace) -> dict:
     if not args.output_root.is_absolute() or args.output_root.is_symlink():
         raise BenchmarkError("pilot output must be an absolute non-symlink path")
@@ -165,7 +234,6 @@ def run(args: argparse.Namespace) -> dict:
                    "created_at_utc": utc_now()}
         write_json_atomic(journal_path, journal, mode=0o400)
 
-    launched: list[tuple[str, int, str, subprocess.Popen[bytes]]] = []
     try:
         with _host_lock():
             if not args.resume_after_review:
@@ -182,42 +250,8 @@ def run(args: argparse.Namespace) -> dict:
                     else "PAUSED_FIRST_PAIR_INCIDENT"
                 )
             else:
-                try:
-                    incident = False
-                    for start in range(1, len(frozen["schedule"]), 3):
-                        launched = []
-                        for index in range(start, min(start + 3, len(frozen["schedule"]))):
-                            lane = ("A", "B", "C")[index - start]
-                            task = frozen["schedule"][index]
-                            launched.append((task, index, lane, subprocess.Popen(
-                                _pair_command(args, task, index, lane), cwd=ROOT.parents[2],
-                                env=_pair_env(), stdout=subprocess.PIPE,
-                                stderr=subprocess.PIPE,
-                            )))
-                        for task, index, lane, process in launched:
-                            stdout, stderr = process.communicate()
-                            companion = [other for other, _, _, _ in launched if other != task]
-                            entry = _record_pair(args, journal, task, index, lane,
-                                                 process.returncode, stdout, stderr, companion)
-                            incident = incident or process.returncode != 0 or entry["pair_status"] in {
-                                "NO_PAIR_REPORT", "PAIR_INCIDENT",
-                            }
-                        if incident:
-                            break
-                    journal["status"] = "PAUSED_CONCURRENT_INCIDENT" if incident else "COMPLETE"
-                except Exception:
-                    # Keep the global host lock until every successfully
-                    # launched sibling has ended and its artifacts are sealed.
-                    for task, index, lane, process in launched:
-                        if not any(item["task_id"] == task for item in journal["pairs"]):
-                            stdout, stderr = process.communicate()
-                            try:
-                                _record_pair(args, journal, task, index, lane,
-                                             process.returncode, stdout, stderr,
-                                             [other for other, _, _, _ in launched if other != task])
-                            except Exception:
-                                pass
-                    raise
+                incident = _run_refilled_lanes(args, journal, frozen["schedule"])
+                journal["status"] = "PAUSED_CONCURRENT_INCIDENT" if incident else "COMPLETE"
     except Exception as error:
         journal["status"] = "PAUSED_CONTROLLER_INCIDENT"
         journal["incident"] = {"type": type(error).__name__, "message": str(error),
