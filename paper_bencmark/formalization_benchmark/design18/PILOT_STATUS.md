@@ -186,6 +186,20 @@ SHA-256 hashes are:
 These are still infrastructure checks, not formalizer attempts, audits, or
 benchmark outcomes. The two source-flagged tasks and the GPT-6 Sol gate remain.
 
+On the automated continuation, the two proposed source resolutions received
+an additional **proposal-only** static compile preflight on Titan. Both
+`HM19-3-4` with its disclosed `j=1:p` indexing correction and prospective
+`HI21-2-6` passed in R0 and R1 (signature rendering, OLean closure, and
+one-`sorry` template compilation). The immutable artifact is
+`/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-proposals-v1/compile-preflight.json`
+(SHA-256 `53f59e0975e11b68d73b7b39cbb8536b8c1d895bd1be592fe16442e1a6f8f160`).
+The check did not change the frozen corpus, generate a candidate, start a
+contestant clock, or run an auditor. The proposal-only mode is excluded from
+the measured campaign entry point. An attempted invocation with atlas file
+paths rather than atlas directories failed before an output root or compile
+action and was corrected; only the successful run produced the immutable
+report. The source-admission and GPT-6 Sol gates therefore remain.
+
 The present branch is preparation only. A successful routing preflight is
 not evidence of faster or more faithful formalization. Preserve all
 preflight/model-gate incidents and do not pool later Pilot-18 outcomes with

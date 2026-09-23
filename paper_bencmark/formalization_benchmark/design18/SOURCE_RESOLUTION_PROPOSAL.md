@@ -61,6 +61,29 @@ coverage, **not** yet a semantic non-leakage certificate. The replacement
 would need a fresh independent source-contract screen and a complete
 declaration-collision check before admission.
 
+The source PDF is now retained in `sources/HALLIPS21.pdf` at the hash above.
+Direct visual inspection of PDF page 2 (Model 1.1), pages 3–4 (Algorithm 2.1
+and tree height), and page 6 (Theorem 2.6) confirms the proposed packet's
+independence, domain, coefficient, two failure parameters, and all-orders
+claim. A scoped pre-candidate library inspection found the SumTree evaluation,
+RMS, and deterministic bounds in `Summation/Tree/Core.lean`, but no
+tree-specific high-probability bound there; the probability-bearing algorithm
+modules inspected concerned other algorithms. This is evidence of component
+support, **not** a complete semantic non-leakage certificate or an independent
+source-contract judgment.
+
+Both this packet and the corrected `HM19-3-4` packet passed a proposal-only
+controller compilation on Titan in R0 and R1. The check validated retrieved
+signature interfaces, OLean closure, and one-`sorry` templates; it created no
+candidate, timer, or audit and did not add either proposal to the measured
+corpus. Its immutable report is
+`/hdd/alexgeorgantzas/highambench/pilot18-compile-preflight-proposals-v1/compile-preflight.json`
+(SHA-256 `53f59e0975e11b68d73b7b39cbb8536b8c1d895bd1be592fe16442e1a6f8f160`).
+The HI21 route exposed `SumTree` and its statistical RMS bridge in R1,
+alongside generic FP/probability components; R0 exposed only Mathlib
+probability foundations. Those are static route observations, not evidence
+that the theorem is easy or that treatment helps.
+
 The authors' [2024 pairwise BC bound](https://arxiv.org/pdf/2304.05177),
 Theorem 3.2, is another plausible replacement. It directly matches the
 SumTree/RMS components, but its `log(n)` notation says "smallest integer
