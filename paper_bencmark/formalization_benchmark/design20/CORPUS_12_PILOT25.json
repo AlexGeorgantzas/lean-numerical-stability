@@ -1,0 +1,30 @@
+{
+  "schema_version": "pilot-25-development-corpus-1",
+  "pilot_identity": "25-development-retrieval-finite-format",
+  "scientific_status": "EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "RUMP12-THM3.4",
+    "FAB19-EQ3.5",
+    "FAB19-EQ3.7",
+    "H20-8",
+    "RUMP12-THM3.5",
+    "FAB19-EQ3.6",
+    "CAST08-PROP3.2",
+    "CAST08-FIXED3",
+    "LL07-THM4",
+    "LL07-THM7",
+    "FAB19-THM4.1",
+    "FAB19-THM4.2"
+  ],
+  "early_review_order": ["RUMP12-THM3.4"],
+  "source_screening_record": "PILOT24_SOURCE_SCREEN_DECISIONS.md",
+  "excluded_before_measurement": ["RUMP12-THM4.3"],
+  "prior_pilot_review": "PILOT24_EARLY_REVIEW.md",
+  "prospective_change": "Only task-neutral positive-title finite-format retrieval; no source, library, model, audit, clock, or schedule change.",
+  "independence_warning": "Correlated same-paper development corpus, three Pilot 23 canaries, and a first task previously observed in Pilot 24. This is not a held-out confirmatory sample. Preserve both pilot results separately.",
+  "admission_gate": "Every packet needs hash-matching independent source review, target-absence/direct-component check, and compiling private sorry skeleton; the new retrieval preflight must pass all twelve before launch."
+}

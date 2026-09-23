@@ -78,8 +78,13 @@ CORE = {
                     "NumStability.FiniteProbability.eventProb",
                     "NumStability.StatisticalRoundingErrorModel"),
 }
+FINITE_FORMAT_CORE = (
+    "NumStability.FloatingPointFormat",
+    "NumStability.FloatingPointFormat.finiteSystem",
+    "NumStability.FloatingPointFormat.nearestRoundingToFinite",
+)
 ROLE_ORDER = ("algorithm", "floating_point", "probability", "deterministic_error", "norm_or_bridge")
-ROLE_QUOTAS = {"algorithm": 2, "floating_point": 2, "probability": 4,
+ROLE_QUOTAS = {"algorithm": 2, "floating_point": 5, "probability": 4,
                "deterministic_error": 1, "norm_or_bridge": 1}
 
 
@@ -101,6 +106,19 @@ def _active_families(source_text: str) -> list[str]:
             if any(re.search(r"(?<![a-z])" + re.escape(
                 " ".join(re.sub(r"[-‐‑‒–—]", " ", alias.casefold()).split())
             ) + r"(?![a-z])", source) for alias in aliases)]
+
+
+def _needs_finite_format(source_text: str) -> bool:
+    """Recognize a public finite-format interface from positive title terms.
+
+    This does not infer the target theorem or inspect task identifiers. The
+    ordinary generic FP/gamma cards remain available alongside these cards.
+    """
+    source = " ".join(re.sub(r"[-‐‑‒–—]", " ", source_text.casefold()).split())
+    return any(phrase in source for phrase in (
+        "nearest rounding", "rounding to nearest", "faithful rounding",
+        "unit in the first place", "subnormal", "representable",
+    ))
 
 
 def _fallback_role(record: Mapping[str, Any]) -> str | None:
@@ -153,6 +171,8 @@ def select_component_roots(
         wanted["deterministic_error"].extend(support)
         if not strict_stochastic_roles or wants_probability:
             wanted["norm_or_bridge"].extend(BRIDGES.get(family, ()))
+    if _needs_finite_format(source_text):
+        wanted["floating_point"].extend(FINITE_FORMAT_CORE)
     wanted["floating_point"].extend(CORE["floating_point"])
     if wants_probability:
         wanted["probability"].extend(CORE["probability"])

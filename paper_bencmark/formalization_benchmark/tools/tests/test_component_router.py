@@ -207,6 +207,41 @@ class ComponentRouterTests(unittest.TestCase):
         self.assertEqual([entry["record"]["name"] for entry in selected[:2]],
                          list(names))
 
+    def test_nearest_rounding_title_exposes_finite_format_without_target(self) -> None:
+        names = (
+            "NumStability.fl_recursiveSum",
+            "NumStability.FloatingPointFormat",
+            "NumStability.FloatingPointFormat.finiteSystem",
+            "NumStability.FloatingPointFormat.nearestRoundingToFinite",
+            "NumStability.FPModel",
+            "NumStability.gamma",
+            "NumStability.recursiveSum_forward_error_bound",
+        )
+        ranked = [item(name, "def", "NumStability.Analysis.FloatingPointArithmetic", 20 - i)
+                  for i, name in enumerate(names)]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text="unrestricted recursive summation in rounding to nearest",
+            limit=12, strict_stochastic_roles=True,
+        )
+        selected_names = [entry["record"]["name"] for entry in selected]
+        self.assertEqual(selected_names[:6], list(names[:6]))
+        self.assertIn(names[6], selected_names)
+
+    def test_generic_rounding_title_does_not_add_finite_format_cards(self) -> None:
+        names = (
+            "NumStability.fl_hornerDesc", "NumStability.FPModel",
+            "NumStability.gamma", "NumStability.FloatingPointFormat",
+        )
+        ranked = [item(name, "def", "NumStability.Analysis.FloatingPointArithmetic", 20 - i)
+                  for i, name in enumerate(names)]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text="Horner forward error under a generic rounding model",
+            limit=12, strict_stochastic_roles=True,
+        )
+        self.assertNotIn(names[3], [entry["record"]["name"] for entry in selected])
+
 
 if __name__ == "__main__":
     unittest.main()
