@@ -59,3 +59,18 @@ prose, Figure 3.2, and Proposition 3.1 rather than the plainly defective
 Figure 3.1(a) carry loop. It may only be admitted if a fresh independent
 review accepts that interpretation. The printed program defect and a separate
 problem in the paper's supporting error-counter algebra remain disclosed.
+
+## Task-neutral retrieval vocabulary correction
+
+The off-benchmark candidate-V2 preflight exposed only `FPModel` and `gamma`
+for FAB19-EQ3.6, despite the frozen library containing the exact lower-level
+`fl_recursiveSum` and `fl_kahanSum` algorithms. The router recognized
+“recursive block” but missed “recursive working-precision block”, and had no
+family for the ordinary phrase “compensated accumulation”. Before any Pilot 24
+contestant ran, the router gained those generic aliases and the public
+`fl_kahanSum` anchor. It also maps “superblock dot product” to the existing
+two-level `fl_blockDotProduct` component, never to the unproved three- or
+t-level target. These additions are applied to the frozen atlas by the same
+rule for every task; they are not task-ID overrides or answer declarations.
+The candidate-V2 preflight is diagnostic only and cannot serve as final
+admission evidence after this code change or packet corrections.

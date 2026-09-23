@@ -182,6 +182,31 @@ class ComponentRouterTests(unittest.TestCase):
         self.assertEqual([entry["record"]["name"] for entry in selected],
                          ["NumStability.fl_clog2PairwiseSum"])
 
+    def test_composite_compensated_title_routes_both_algorithms(self) -> None:
+        names = ("NumStability.fl_recursiveSum", "NumStability.fl_kahanSum",
+                 "NumStability.FPModel")
+        ranked = [item(name, "def", "NumStability.Algorithms.Summation", 20 - i)
+                  for i, name in enumerate(names)]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text="recursive working-precision block sums and compensated accumulation",
+            limit=10, strict_stochastic_roles=True,
+        )
+        self.assertEqual([entry["record"]["name"] for entry in selected[:2]],
+                         list(names[:2]))
+
+    def test_superblock_title_routes_base_and_two_level_components(self) -> None:
+        names = ("NumStability.fl_dotProduct", "NumStability.fl_blockDotProduct")
+        ranked = [item(name, "def", "NumStability.Algorithms.DotProduct", 20 - i)
+                  for i, name in enumerate(names)]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text="three-level superblock dot product forward error",
+            limit=10, strict_stochastic_roles=True,
+        )
+        self.assertEqual([entry["record"]["name"] for entry in selected[:2]],
+                         list(names))
+
 
 if __name__ == "__main__":
     unittest.main()

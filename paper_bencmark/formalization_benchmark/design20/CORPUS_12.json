@@ -1,0 +1,29 @@
+{
+  "schema_version": "pilot-24-development-corpus-1",
+  "pilot_identity": "24-development-pre-admission",
+  "scientific_status": "EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "RUMP12-THM3.4",
+    "FAB19-EQ3.5",
+    "FAB19-EQ3.7",
+    "H20-8",
+    "RUMP12-THM3.5",
+    "FAB19-EQ3.6",
+    "CAST08-PROP3.2",
+    "CAST08-FIXED3",
+    "LL07-THM4",
+    "LL07-THM7",
+    "FAB19-THM4.1",
+    "FAB19-THM4.2"
+  ],
+  "early_review_order": ["RUMP12-THM3.4"],
+  "source_screening_record": "PILOT24_SOURCE_SCREEN_DECISIONS.md",
+  "excluded_before_measurement": ["RUMP12-THM4.3"],
+  "replacement_rule": "The first preordered reserve CAST08-FIXED3 replaced the excluded RUMP12-THM4.3 after an independent source-only counterexample, before any measured run.",
+  "independence_warning": "This development corpus contains correlated same-paper tasks and three prior Pilot 23 canaries. It is not a held-out confirmatory sample. Report direct treatment uptake per task and preserve no-use and unfavorable pairs.",
+  "admission_gate": "No task may run until its current packet passes fresh independent source review, a target-absence/direct-component check, and a compiling full-domain private sorry statement. A hash-bound admission record must cover all twelve before campaign launch."
+}
