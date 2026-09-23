@@ -25,6 +25,7 @@ from design16_matched import (  # noqa: E402
     _library_exploration_policy,
     _packet_treatment_allowlist,
     _prepare_warm_fork,
+    _proof_check_scratch_roots,
     _parse_signature_interface_report,
     _parse_signature_render_report,
     _signature_render_source,
@@ -69,6 +70,18 @@ def _write_atlas(root: Path, modules: list[str]) -> Path:
 
 
 class Design16MatchedTests(unittest.TestCase):
+    def test_proof_checkers_receive_existing_private_scratch_directories(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            attempt = Path(raw) / "proof-submissions" / "01"
+            attempt.mkdir(parents=True)
+            validation, dossier = _proof_check_scratch_roots(attempt)
+            self.assertEqual(validation, attempt / "validation-scratch")
+            self.assertEqual(dossier, attempt / "dossier-scratch")
+            self.assertTrue(validation.is_dir())
+            self.assertTrue(dossier.is_dir())
+            self.assertEqual(validation.stat().st_mode & 0o777, 0o700)
+            self.assertEqual(dossier.stat().st_mode & 0o777, 0o700)
+
     def test_resource_sampling_fails_without_cgroup_envelope(self) -> None:
         from design16_matched import make_parser, run
 

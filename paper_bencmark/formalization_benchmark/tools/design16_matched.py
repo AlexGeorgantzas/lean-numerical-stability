@@ -1170,6 +1170,15 @@ def _prepare_warm_fork(
     return state_root, warm_fork
 
 
+def _proof_check_scratch_roots(root: Path) -> tuple[Path, Path]:
+    """Create off-clock proof-check workdirs required by both checkers."""
+    validation_scratch = root / "validation-scratch"
+    dossier_scratch = root / "dossier-scratch"
+    validation_scratch.mkdir(mode=0o700)
+    dossier_scratch.mkdir(mode=0o700)
+    return validation_scratch, dossier_scratch
+
+
 def _run_frozen_proof_attempts(
     *,
     args: argparse.Namespace,
@@ -1293,11 +1302,12 @@ def _run_frozen_proof_attempts(
             status = attempt["status"]
             attempts.append(attempt)
             break
+        validation_scratch, dossier_scratch = _proof_check_scratch_roots(root)
         started = time.perf_counter_ns()
         validation = validate_candidate(
             root / "Candidate.lean",
             compiler_command=compiler_command(deployment, spec.compiler_condition),
-            scratch_root=root / "validation-scratch",
+            scratch_root=validation_scratch,
             timeout_seconds=float(args.validation_timeout_seconds),
             allow_single_target_sorry=False,
         )
@@ -1327,7 +1337,7 @@ def _run_frozen_proof_attempts(
                     Path(__file__).with_name("declaration_dossier.lean"),
                 ),
                 compiler_environment={}, extractor_environment={},
-                scratch_root=root / "dossier-scratch",
+                scratch_root=dossier_scratch,
                 timeout_seconds=float(args.validation_timeout_seconds),
                 allow_single_target_sorry=False,
             )
