@@ -1,0 +1,6 @@
+{
+  "schema_version": "pilot-29-prospective-source-review-corpus-1",
+  "scientific_status": "PROSPECTIVE_SCREENING_NOT_MEASURED",
+  "scheduled_order": ["CAST08-PROP3.1"],
+  "selection_disclosure": "This source-contract review is off-benchmark and does not admit or measure the task. The candidate was identified after Pilot 26 and Pilot 27 outcomes."
+}
