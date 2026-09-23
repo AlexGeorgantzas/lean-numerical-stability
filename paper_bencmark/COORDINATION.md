@@ -855,3 +855,29 @@ but the Titan controller stays pinned to `0256ec26f`. `design27/FULL_CORPUS_PROS
 is a prospective worklist, not an admitted 10-task corpus. H5-5 and H23-6
 have likely target-result leakage and are excluded. Preserve all Pilot 27
 canary outcomes, favorable or not, before minting any revised pilot.
+
+---
+
+## 2026-09-24 — Codex — Pilot 27 proof incident; Pilot 28 launched
+
+Pilot 27 is `PAUSED_FIRST_REVIEW` after `FAB19-EQ3.5`. Both conditions had
+audited faithful statements, but both timed proof submissions received
+`PROOF_VALIDATION_INCIDENT` because the frozen controller failed to create a
+scratch directory. A separate off-clock check of the unchanged proof files
+found that both compile without `sorry` and preserve the exact audited
+semantic hashes. This does not alter Pilot 27's measured proof status. The
+full incident and hashes are in
+`formalization_benchmark/design27/PILOT27_FIRST_PAIR_INCIDENT.md`.
+
+The L output is materially shorter in raw Lean source but reaches only the
+NumStability FP model and gamma utilities, not the relevant summation
+algorithms. Do not credit it under the strict algorithm/error uptake gate.
+The new Pilot 28 controller (`ff3261d90f3f71181169e9c67e0c8013906c31d0`)
+fixes proof scratch creation and pauses on proof infrastructure incidents.
+The new campaign `/hdd/alexgeorgantzas/highambench/pilot28-proof-canary-20260924-b`
+is `RUNNING_FIRST_PAIR`; it is exploratory, with fresh contestant
+conversations, the same three source tasks/prompts/warm root/snapshot, and an
+explicit first-pair review pause. An initial `-a` launch directory contained
+only a controller error log: pre-creating an output root caused the controller
+to refuse it; no measured pair ran there. Do not overlap or silently restart
+the `-b` campaign.
