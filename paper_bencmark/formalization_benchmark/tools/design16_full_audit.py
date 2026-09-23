@@ -101,6 +101,8 @@ def run_cli(args: argparse.Namespace) -> dict[str, Any]:
         "scientific_status": SCIENTIFIC_STATUS,
         "task_id": args.task_id,
         "candidate_sha256": private["candidate"]["sha256"],
+        "source_packet_sha256": sha256_file(source_packet),
+        "paper_sha256": sha256_file(paper),
         "candidate_semantic_sha256": semantic_sha256,
         "blind_dossier_sha256": sha256_file(dossier_path),
         "private_manifest_sha256": sha256_file(private_path),

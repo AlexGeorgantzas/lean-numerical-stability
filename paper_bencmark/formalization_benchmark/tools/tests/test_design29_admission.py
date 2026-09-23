@@ -49,6 +49,8 @@ class Pilot29AdmissionTests(unittest.TestCase):
             save(result, {
                 "task_id": "TEST",
                 "candidate_sha256": sha256_file(candidate),
+                "source_packet_sha256": sha256_file(packet),
+                "paper_sha256": sha256_file(paper),
                 "source_contract": "statement-only-single-target-sorry",
                 "condition_blind": True,
                 "attempt_blind": True,

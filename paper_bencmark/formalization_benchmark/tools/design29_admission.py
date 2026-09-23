@@ -102,6 +102,9 @@ def _verify_new_private(task_id: str, task: dict) -> None:
                              "private full audit")
     if (result.get("task_id") != task_id
             or result.get("candidate_sha256") != candidate_sha
+            or result.get("source_packet_sha256")
+            != task["source_packet_sha256"]
+            or result.get("paper_sha256") != task["source_pdf_sha256"]
             or result.get("source_contract")
             != "statement-only-single-target-sorry"
             or result.get("condition_blind") is not True
