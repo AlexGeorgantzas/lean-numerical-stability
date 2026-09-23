@@ -11,8 +11,10 @@ ROOT = Path(__file__).resolve().parents[1] / "design20"
 ADMISSION = ROOT / "ADMISSION_3.json"
 
 
-def verify_admission(task_id: str, *, packet_path: Path, paper: Path) -> dict:
-    record = load_json(ADMISSION)
+def verify_admission(task_id: str, *, packet_path: Path, paper: Path,
+                     admission_path: Path | None = None,
+                     corpus_path: Path | None = None) -> dict:
+    record = load_json(admission_path or ADMISSION)
     if record.get("schema_version") != "pilot-20-development-admission-1":
         raise BenchmarkError("Pilot-20 development admission is missing or malformed")
     tasks = record.get("tasks")
@@ -44,7 +46,8 @@ def verify_admission(task_id: str, *, packet_path: Path, paper: Path) -> dict:
         raise BenchmarkError("Pilot-20 static preflight changed")
     preflight = load_json(preflight_path)
     if (preflight.get("status") != "PASS"
-            or preflight.get("corpus_sha256") != sha256_file(ROOT / "CORPUS_3.json")):
+            or preflight.get("corpus_sha256") != sha256_file(
+                corpus_path or ROOT / "CORPUS_3.json")):
         raise BenchmarkError("Pilot-20 static preflight did not pass")
     try:
         checks = preflight["tasks"][task_id]

@@ -35,17 +35,19 @@ def _controller_commit() -> str:
 
 
 def _inputs(args: argparse.Namespace) -> dict:
-    corpus = load_json(CORPUS)
+    corpus_path = getattr(args, "corpus", None) or CORPUS
+    admission_path = getattr(args, "admission", None) or ADMISSION
+    corpus = load_json(corpus_path)
     schedule = corpus["scheduled_order"]
-    if len(schedule) != 3:
-        raise BenchmarkError("development schedule must contain exactly three tasks")
+    if len(schedule) < 1 or len(schedule) != len(set(schedule)):
+        raise BenchmarkError("development schedule must be nonempty with unique tasks")
     if not isinstance(args.pilot_id, str) or not args.pilot_id.startswith("pilot"):
         raise BenchmarkError("an explicit pilot identity is required")
     return {
         "pilot_id": args.pilot_id,
         "controller_commit": _controller_commit(),
-        "corpus_sha256": sha256_file(CORPUS),
-        "admission_sha256": sha256_file(ADMISSION),
+        "corpus_sha256": sha256_file(corpus_path),
+        "admission_sha256": sha256_file(admission_path),
         "schedule": schedule,
         "condition_order_policy": "alternate by frozen zero-based schedule index",
         "packets": {task: sha256_file(ROOT / "packets" / f"{task}.json")
@@ -68,7 +70,7 @@ def _inputs(args: argparse.Namespace) -> dict:
 
 def _pair_command(args: argparse.Namespace, task_id: str, index: int, lane: str) -> list[str]:
     order = "R0,R1" if index % 2 == 0 else "R1,R0"
-    return [
+    command = [
         sys.executable, str(PAIR_SCRIPT),
         "--deployment", str(args.deployment),
         "--mathlib-atlas", str(args.mathlib_atlas),
@@ -80,6 +82,11 @@ def _pair_command(args: argparse.Namespace, task_id: str, index: int, lane: str)
         "--condition-order", order,
         "--lane", lane,
     ]
+    if getattr(args, "corpus", None) is not None:
+        command.extend(("--corpus", str(args.corpus)))
+    if getattr(args, "admission", None) is not None:
+        command.extend(("--admission", str(args.admission)))
+    return command
 
 
 def _pair_env() -> dict[str, str]:
@@ -176,21 +183,27 @@ def run(args: argparse.Namespace) -> dict:
                 )
             else:
                 try:
-                    for index, lane in ((1, "B"), (2, "C")):
-                        task = frozen["schedule"][index]
-                        launched.append((task, index, lane, subprocess.Popen(
-                            _pair_command(args, task, index, lane), cwd=ROOT.parents[2],
-                            env=_pair_env(), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                        )))
                     incident = False
-                    for task, index, lane, process in launched:
-                        stdout, stderr = process.communicate()
-                        companion = [other for other, _, _, _ in launched if other != task]
-                        entry = _record_pair(args, journal, task, index, lane,
-                                             process.returncode, stdout, stderr, companion)
-                        incident = incident or process.returncode != 0 or entry["pair_status"] in {
-                            "NO_PAIR_REPORT", "PAIR_INCIDENT",
-                        }
+                    for start in range(1, len(frozen["schedule"]), 3):
+                        launched = []
+                        for index in range(start, min(start + 3, len(frozen["schedule"]))):
+                            lane = ("A", "B", "C")[index - start]
+                            task = frozen["schedule"][index]
+                            launched.append((task, index, lane, subprocess.Popen(
+                                _pair_command(args, task, index, lane), cwd=ROOT.parents[2],
+                                env=_pair_env(), stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                            )))
+                        for task, index, lane, process in launched:
+                            stdout, stderr = process.communicate()
+                            companion = [other for other, _, _, _ in launched if other != task]
+                            entry = _record_pair(args, journal, task, index, lane,
+                                                 process.returncode, stdout, stderr, companion)
+                            incident = incident or process.returncode != 0 or entry["pair_status"] in {
+                                "NO_PAIR_REPORT", "PAIR_INCIDENT",
+                            }
+                        if incident:
+                            break
                     journal["status"] = "PAUSED_CONCURRENT_INCIDENT" if incident else "COMPLETE"
                 except Exception:
                     # Keep the global host lock until every successfully
@@ -222,6 +235,8 @@ def main() -> int:
                  "model-qualification", "warm-root", "output-root"):
         parser.add_argument("--" + name, required=True, type=Path)
     parser.add_argument("--pilot-id", required=True)
+    parser.add_argument("--corpus", type=Path)
+    parser.add_argument("--admission", type=Path)
     parser.add_argument("--resume-after-review", action="store_true")
     args = parser.parse_args()
     journal = run(args)

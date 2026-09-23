@@ -40,6 +40,20 @@ class Pilot22CampaignTests(unittest.TestCase):
         self.assertNotIn("HIGHAMBENCH_HARDWARE_PROFILE", env)
         self.assertNotIn("HIGHAMBENCH_COMMAND_CGROUP_PROCS", env)
 
+    def test_expansion_pair_carries_frozen_corpus_and_admission(self) -> None:
+        args = argparse.Namespace(
+            deployment=Path("/tmp/deployment.json"),
+            mathlib_atlas=Path("/tmp/mathlib"),
+            numstability_atlas=Path("/tmp/numstability"),
+            model_qualification=Path("/tmp/qualification.json"),
+            warm_root=Path("/tmp/warm"), output_root=Path("/tmp/campaign"),
+            corpus=Path("/tmp/corpus12.json"), admission=Path("/tmp/admission12.json"),
+        )
+        command = _pair_command(args, "RUMP12-THM3.4", 3, "A")
+        self.assertEqual(command[command.index("--corpus") + 1], "/tmp/corpus12.json")
+        self.assertEqual(command[command.index("--admission") + 1], "/tmp/admission12.json")
+        self.assertEqual(command[command.index("--condition-order") + 1], "R1,R0")
+
 
 if __name__ == "__main__":
     unittest.main()

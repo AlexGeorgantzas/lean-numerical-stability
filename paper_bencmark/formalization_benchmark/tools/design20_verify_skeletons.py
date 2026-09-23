@@ -8,7 +8,7 @@ import json
 from pathlib import Path
 import sys
 
-from common import BenchmarkError, sha256_file, utc_now, write_json_atomic
+from common import BenchmarkError, load_json, sha256_file, utc_now, write_json_atomic
 from deployment import load_deployment
 from design16_matched import condition_spec
 from design18_envelope import launch_or_activate
@@ -44,8 +44,13 @@ def run(args: argparse.Namespace) -> dict:
               "tasks": {}, "created_at_utc": utc_now()}
     path = args.output_root / "skeleton-compilation.json"
     write_json_atomic(path, report, mode=0o400)
+    manifest = load_json(args.manifest) if getattr(args, "manifest", None) else SKELETONS
+    if (not isinstance(manifest, dict) or not manifest
+            or any(not isinstance(task, str) or not isinstance(name, str)
+                   or Path(name).name != name for task, name in manifest.items())):
+        raise BenchmarkError("private skeleton manifest is malformed")
     try:
-        for task_id, basename in SKELETONS.items():
+        for task_id, basename in manifest.items():
             source = args.private_root / basename
             scratch = args.output_root / task_id / "scratch"
             scratch.mkdir(parents=True, mode=0o700)
@@ -82,6 +87,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("deployment", "mathlib-atlas", "private-root", "output-root"):
         parser.add_argument("--" + name, required=True, type=Path)
+    parser.add_argument("--manifest", type=Path)
     result = run(parser.parse_args())
     print(json.dumps({"status": result["status"], "task_ids": list(result["tasks"])},
                      sort_keys=True))

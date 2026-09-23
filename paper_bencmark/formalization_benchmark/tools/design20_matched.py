@@ -28,7 +28,9 @@ AUDIT_EFFORT = "high"
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
-    corpus = load_json(CORPUS)
+    corpus_path = getattr(args, "corpus", CORPUS)
+    admission_path = getattr(args, "admission", None)
+    corpus = load_json(corpus_path)
     schedule = corpus["scheduled_order"]
     task_id = args.task_id.strip().upper()
     if task_id not in schedule:
@@ -69,7 +71,12 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         paper = deployment.pdf_root / packet["paper_pdf"]["path_basename"]
     if sha256_file(paper) != packet["paper_pdf"]["sha256"]:
         raise BenchmarkError("source PDF changed")
-    admission = verify_admission(task_id, packet_path=packet_path, paper=paper)
+    if admission_path is None:
+        admission = verify_admission(task_id, packet_path=packet_path, paper=paper)
+    else:
+        admission = verify_admission(task_id, packet_path=packet_path, paper=paper,
+                                     admission_path=admission_path,
+                                     corpus_path=corpus_path)
     common = (ROOT / "prompts" / "common.md").read_bytes()
     appendix = (ROOT / "prompts" / "library_appendix.md").read_bytes()
     prompts = {"R0": common, "R1": common + b"\n" + appendix}
@@ -158,6 +165,8 @@ def main() -> int:
         parser.add_argument("--" + name, required=True, type=Path)
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--condition-order", required=True)
+    parser.add_argument("--corpus", type=Path, default=CORPUS)
+    parser.add_argument("--admission", type=Path)
     pair = run(parser.parse_args())
     print(json.dumps({"task_id": pair["task_id"], "status": pair["status"],
                       "faithfulness_status": pair.get("faithfulness_status")},

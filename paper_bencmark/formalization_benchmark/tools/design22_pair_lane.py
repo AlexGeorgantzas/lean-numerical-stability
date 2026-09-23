@@ -21,7 +21,13 @@ def main() -> int:
     parser.add_argument("--task-id", required=True)
     parser.add_argument("--condition-order", required=True)
     parser.add_argument("--lane", required=True, choices=("A", "B", "C"))
+    parser.add_argument("--corpus", type=Path)
+    parser.add_argument("--admission", type=Path)
     args = parser.parse_args()
+    if args.corpus is None:
+        delattr(args, "corpus")
+    if args.admission is None:
+        delattr(args, "admission")
     launched = launch_or_activate(Path(__file__), lane=args.lane)
     if launched is not None:
         return launched

@@ -25,7 +25,8 @@ from lean_sandbox import compiler_command
 def run(args: argparse.Namespace) -> dict:
     if not args.output_root.is_absolute() or args.output_root.exists() or args.output_root.is_symlink():
         raise BenchmarkError("preflight output must be a new absolute directory")
-    corpus = load_json(CORPUS)
+    corpus_path = getattr(args, "corpus", CORPUS)
+    corpus = load_json(corpus_path)
     deployment = load_deployment(args.deployment)
     deployment, mathlib_atlas = bind_release_atlases(
         deployment, mathlib=args.mathlib_atlas, numstability=args.numstability_atlas,
@@ -35,7 +36,7 @@ def run(args: argparse.Namespace) -> dict:
              for key in ("R0", "R1")}
     args.output_root.mkdir(parents=True, mode=0o700)
     report = {"schema_version": "pilot-20-static-preflight-1", "status": "RUNNING",
-              "tasks": {}, "corpus_sha256": sha256_file(CORPUS),
+              "tasks": {}, "corpus_sha256": sha256_file(corpus_path),
               "hardware_before": snapshot_hardware(strict=True),
               "created_at_utc": utc_now()}
     report_path = args.output_root / "preflight.json"
@@ -124,6 +125,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     for name in ("deployment", "mathlib-atlas", "numstability-atlas", "output-root"):
         parser.add_argument("--" + name, required=True, type=Path)
+    parser.add_argument("--corpus", type=Path, default=CORPUS)
     report = run(parser.parse_args())
     print(json.dumps({"status": report["status"], "task_ids": list(report["tasks"])},
                      sort_keys=True))
