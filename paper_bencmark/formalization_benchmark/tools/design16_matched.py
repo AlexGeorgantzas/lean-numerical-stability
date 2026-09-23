@@ -951,6 +951,16 @@ def _treatment_interface_check(
     return result
 
 
+def _feedback_identifier_filter(interface: Mapping[str, Any]) -> tuple[str, ...]:
+    """Return a valid filter even when the library snapshot has no whitelist."""
+    allowed = interface.get("allowed_declarations")
+    if allowed is None:
+        return ()
+    if not isinstance(allowed, list) or any(not isinstance(name, str) for name in allowed):
+        raise BenchmarkError("treatment interface has malformed declaration names")
+    return tuple(allowed)
+
+
 def _statement_repair_feedback(validation: Mapping[str, Any]) -> dict[str, Any]:
     failure = validation.get("failure_code")
     mismatch = (
@@ -1543,7 +1553,7 @@ def _run_statement_condition_attempts(
                 offline_shell=deployment.offline_shell,
                 toolchain_root=deployment.toolchain_root,
                 packages_root=deployment.packages_root,
-                forbidden_feedback_identifiers=interface["allowed_declarations"],
+                forbidden_feedback_identifiers=_feedback_identifier_filter(interface),
             )
             audit_started = time.perf_counter_ns()
             try:

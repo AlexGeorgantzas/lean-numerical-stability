@@ -7,6 +7,7 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import sys
 
 from common import BenchmarkError, canonical_json_bytes, load_json, sha256_file, utc_now, write_json_atomic
@@ -16,12 +17,22 @@ from design20_matched import CORPUS, ROOT, run as run_pair
 from design20_admission import ADMISSION
 
 
-SCHEMA = "pilot-20-development-campaign-1"
+SCHEMA = "pilot-21-development-campaign-1"
+PILOT_ID = "pilot21-dev3-controller-nullfix"
 
 
 def _inputs(args: argparse.Namespace) -> dict:
     corpus = load_json(CORPUS)
+    controller_root = ROOT.parents[2]
+    controller_commit = subprocess.check_output(
+        ["git", "rev-parse", "--verify", "HEAD"],
+        cwd=controller_root, text=True,
+    ).strip()
+    if subprocess.run(["git", "diff", "--quiet", "HEAD"], cwd=controller_root).returncode != 0:
+        raise BenchmarkError("campaign controller has tracked uncommitted changes")
     return {
+        "pilot_id": PILOT_ID,
+        "controller_commit": controller_commit,
         "corpus_sha256": sha256_file(CORPUS),
         "admission_sha256": sha256_file(ADMISSION),
         "schedule": corpus["scheduled_order"],

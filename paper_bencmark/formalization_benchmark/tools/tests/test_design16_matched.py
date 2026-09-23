@@ -29,6 +29,7 @@ from design16_matched import (  # noqa: E402
     _parse_signature_render_report,
     _signature_render_source,
     _condition_faithfulness_status,
+    _feedback_identifier_filter,
     _run_statement_condition_attempts,
     _statement_pair_status,
     _submission_clock,
@@ -656,6 +657,15 @@ class Design16MatchedTests(unittest.TestCase):
             "signature_interface": interface,
         }
         self.assertEqual(_packet_treatment_allowlist(composition), (set(), set()))
+
+    def test_open_snapshot_has_valid_empty_feedback_identifier_filter(self) -> None:
+        self.assertEqual(_feedback_identifier_filter({"allowed_declarations": None}), ())
+        self.assertEqual(
+            _feedback_identifier_filter({"allowed_declarations": ["NumStability.FPModel"]}),
+            ("NumStability.FPModel",),
+        )
+        with self.assertRaises(BenchmarkError):
+            _feedback_identifier_filter({"allowed_declarations": "not-a-list"})
 
     def test_signature_render_uses_framed_command_frontend_output(self) -> None:
         exposed = [
