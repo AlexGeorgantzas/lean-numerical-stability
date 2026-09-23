@@ -38,6 +38,8 @@ def main() -> int:
         schema_version=SCHEMA,
         require_pilot18_corpus=False,
         required_final_terms=("FPModel", "BasicOp", "gamma", "gammaValid"),
+        model="gpt-6-sol", effort="high",
+        qualification_schema="pilot-20-model-qualification-1",
     )
     print(json.dumps({key: record[key] for key in
                      ("status", "model", "scout_usage", "scout_wall_seconds")},

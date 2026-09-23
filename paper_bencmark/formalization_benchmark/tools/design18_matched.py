@@ -32,14 +32,16 @@ AUDIT_MODEL = "gpt-6-astra"
 AUDIT_EFFORT = "high"
 
 
-def _qualified(path: Path, *, binary: Path, code_mode_host_sha256: str) -> dict:
+def _qualified(path: Path, *, binary: Path, code_mode_host_sha256: str,
+               model: str = MODEL, effort: str = EFFORT,
+               schema_version: str = "pilot-18-model-qualification-1") -> dict:
     if path.is_symlink() or not path.is_file():
         raise BenchmarkError("Pilot 18 model qualification is missing or unsafe")
     record = load_json(path)
-    if (record.get("schema_version") != "pilot-18-model-qualification-1"
+    if (record.get("schema_version") != schema_version
             or record.get("status") != "PASS"
-            or record.get("model") != MODEL
-            or record.get("reasoning_effort") != EFFORT
+            or record.get("model") != model
+            or record.get("reasoning_effort") != effort
             or record.get("codex_binary_sha256") != sha256_file(binary)
             or record.get("code_mode_host_sha256") != code_mode_host_sha256
             or record.get("qualification_prompt_sha256") != hashlib.sha256(

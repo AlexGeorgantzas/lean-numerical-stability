@@ -50,8 +50,10 @@ class Pilot18MatchedTests(unittest.TestCase):
     def test_unadmitted_release_stops_before_output_or_model(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             output = Path(raw) / "pair"
-            with self.assertRaisesRegex(BenchmarkError, "not admitted"):
-                run(types.SimpleNamespace(task_id="HM19-3-2", output_root=output))
+            with mock.patch.object(design18_matched, "require_release_admission",
+                                   side_effect=BenchmarkError("not admitted")):
+                with self.assertRaisesRegex(BenchmarkError, "not admitted"):
+                    run(types.SimpleNamespace(task_id="HM19-3-2", output_root=output))
             self.assertFalse(output.exists())
 
     def test_provider_free_pair_orchestration_preserves_prompt_prefix_and_order(self) -> None:

@@ -29,7 +29,9 @@ INPUT = {"integers": [2, 3, 5], "word": "PILOT"}
 EXPECTED = {"checksum": 160, "reversed": "TOLIP"}
 
 
-def qualify(*, deployment_path: Path, output_root: Path) -> dict:
+def qualify(*, deployment_path: Path, output_root: Path,
+            model: str = MODEL, effort: str = EFFORT,
+            schema_version: str = "pilot-18-model-qualification-1") -> dict:
     if output_root.exists() or output_root.is_symlink():
         raise BenchmarkError("Pilot 18 provider qualification is one-shot")
     deployment = load_deployment(deployment_path)
@@ -42,7 +44,7 @@ def qualify(*, deployment_path: Path, output_root: Path) -> dict:
         driver = CodexDriver(
             codex_binary=deployment.codex_binary,
             code_mode_host_sha256=deployment.code_mode_host_sha256,
-            model=MODEL, reasoning_effort=EFFORT, state_root=None,
+            model=model, reasoning_effort=effort, state_root=None,
             auth_file=deployment.auth_file, bwrap_binary=deployment.bwrap_binary,
             offline_shell=deployment.offline_shell,
             toolchain_root=deployment.toolchain_root, packages_root=deployment.packages_root,
@@ -58,8 +60,8 @@ def qualify(*, deployment_path: Path, output_root: Path) -> dict:
             driver.close(artifact_dir=output_root / "session-close")
     except Exception as error:
         write_json_atomic(output_root / "qualification.json", {
-            "schema_version": "pilot-18-model-qualification-1",
-            "status": "FAIL", "model": MODEL, "reasoning_effort": EFFORT,
+            "schema_version": schema_version,
+            "status": "FAIL", "model": model, "reasoning_effort": effort,
             "failure_kind": type(error).__name__, "failure_message": str(error),
             "codex_binary_sha256": sha256_file(deployment.codex_binary),
             "code_mode_host_sha256": deployment.code_mode_host_sha256,
@@ -75,9 +77,9 @@ def qualify(*, deployment_path: Path, output_root: Path) -> dict:
     passed = (turn.exit_code == 0 and not turn.timed_out and turn.usage_complete
               and answer == EXPECTED)
     record = {
-        "schema_version": "pilot-18-model-qualification-1",
+        "schema_version": schema_version,
         "status": "PASS" if passed else "FAIL",
-        "model": MODEL, "reasoning_effort": EFFORT,
+        "model": model, "reasoning_effort": effort,
         "codex_binary_sha256": sha256_file(deployment.codex_binary),
         "code_mode_host_sha256": deployment.code_mode_host_sha256,
         "qualification_prompt_sha256": hashlib.sha256(PROMPT.encode("utf-8")).hexdigest(),

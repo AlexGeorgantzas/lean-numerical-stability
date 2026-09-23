@@ -36,12 +36,14 @@ def prepare(*, deployment_path: Path, mathlib_atlas: Path,
             output_root: Path, scout_prompt: Path | None = None,
             schema_version: str = SCHEMA,
             require_pilot18_corpus: bool = True,
-            required_final_terms: tuple[str, ...] = ()) -> dict:
+            required_final_terms: tuple[str, ...] = (),
+            model: str = MODEL, effort: str = EFFORT,
+            qualification_schema: str = "pilot-18-model-qualification-1") -> dict:
     if require_pilot18_corpus:
         corpus, _packets, flags = check_corpus()
         if flags:
             raise BenchmarkError(f"source flags must be resolved before scouting: {flags}")
-        if corpus["formalizer_model"] != MODEL or corpus["formalizer_reasoning_effort"] != EFFORT:
+        if corpus["formalizer_model"] != model or corpus["formalizer_reasoning_effort"] != effort:
             raise BenchmarkError("Pilot 18 formalizer model changed")
     if output_root.exists() or output_root.is_symlink():
         raise BenchmarkError("warm-root output already exists; scouting is one-shot")
@@ -52,6 +54,7 @@ def prepare(*, deployment_path: Path, mathlib_atlas: Path,
     _qualified(
         model_qualification, binary=deployment.codex_binary,
         code_mode_host_sha256=deployment.code_mode_host_sha256,
+        model=model, effort=effort, schema_version=qualification_schema,
     )
     prompt = scout_prompt or DESIGN_ROOT / "prompts" / "scout.md"
     if not prompt.is_file() or prompt.is_symlink():
@@ -68,7 +71,7 @@ def prepare(*, deployment_path: Path, mathlib_atlas: Path,
     ).encode("utf-8"), mode=0o400)
     planned = {
         "schema_version": schema_version, "status": "SCOUTING",
-        "model": MODEL, "reasoning_effort": EFFORT,
+        "model": model, "reasoning_effort": effort,
         "source_task_material_available": False,
         "scout_prompt_sha256": sha256_file(prompt),
         "library_atlas_sha256": sha256_file(deployment.library_atlas / "declarations.jsonl"),
@@ -83,7 +86,7 @@ def prepare(*, deployment_path: Path, mathlib_atlas: Path,
         driver = CodexDriver(
             codex_binary=deployment.codex_binary,
             code_mode_host_sha256=deployment.code_mode_host_sha256,
-            model=MODEL, reasoning_effort=EFFORT,
+            model=model, reasoning_effort=effort,
             state_root=checkpoint / "state", auth_file=deployment.auth_file,
             bwrap_binary=deployment.bwrap_binary, offline_shell=deployment.offline_shell,
             toolchain_root=deployment.toolchain_root, packages_root=deployment.packages_root,

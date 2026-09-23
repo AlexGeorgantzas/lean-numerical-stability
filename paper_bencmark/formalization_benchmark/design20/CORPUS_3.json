@@ -1,0 +1,18 @@
+{
+  "schema_version": "pilot-20-development-corpus-1",
+  "pilot_identity": "20-development",
+  "scientific_status": "EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": ["FAB19-EQ3.5", "FAB19-EQ3.7", "H20-8"],
+  "early_review_order": ["FAB19-EQ3.5"],
+  "task_roles": {
+    "FAB19-EQ3.5": "source-corrected development canary: recursive blocks plus extended recursive accumulator",
+    "FAB19-EQ3.7": "same-paper correlated development canary: recursive blocks plus pairwise accumulator",
+    "H20-8": "previously exposed source-corrected development canary: least-squares matrix-only backward error"
+  },
+  "independence_warning": "The two FAB19 tasks share one source paper and algorithmic kernel; none of these three is a held-out confirmatory result.",
+  "admission_gate": "Full-domain source review, exact direct-use component, target-absence review, and private compiling sorry skeleton are required for every task before launch."
+}
