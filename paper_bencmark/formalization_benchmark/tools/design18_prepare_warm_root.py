@@ -33,12 +33,16 @@ SCHEMA = "pilot-18-warm-root-1"
 
 def prepare(*, deployment_path: Path, mathlib_atlas: Path,
             numstability_atlas: Path, model_qualification: Path,
-            output_root: Path) -> dict:
-    corpus, _packets, flags = check_corpus()
-    if flags:
-        raise BenchmarkError(f"source flags must be resolved before scouting: {flags}")
-    if corpus["formalizer_model"] != MODEL or corpus["formalizer_reasoning_effort"] != EFFORT:
-        raise BenchmarkError("Pilot 18 formalizer model changed")
+            output_root: Path, scout_prompt: Path | None = None,
+            schema_version: str = SCHEMA,
+            require_pilot18_corpus: bool = True,
+            required_final_terms: tuple[str, ...] = ()) -> dict:
+    if require_pilot18_corpus:
+        corpus, _packets, flags = check_corpus()
+        if flags:
+            raise BenchmarkError(f"source flags must be resolved before scouting: {flags}")
+        if corpus["formalizer_model"] != MODEL or corpus["formalizer_reasoning_effort"] != EFFORT:
+            raise BenchmarkError("Pilot 18 formalizer model changed")
     if output_root.exists() or output_root.is_symlink():
         raise BenchmarkError("warm-root output already exists; scouting is one-shot")
     deployment = load_deployment(deployment_path)
@@ -49,7 +53,7 @@ def prepare(*, deployment_path: Path, mathlib_atlas: Path,
         model_qualification, binary=deployment.codex_binary,
         code_mode_host_sha256=deployment.code_mode_host_sha256,
     )
-    prompt = DESIGN_ROOT / "prompts" / "scout.md"
+    prompt = scout_prompt or DESIGN_ROOT / "prompts" / "scout.md"
     if not prompt.is_file() or prompt.is_symlink():
         raise BenchmarkError("scout prompt is missing or unsafe")
     output_root.mkdir(parents=True, mode=0o700)
@@ -63,7 +67,7 @@ def prepare(*, deployment_path: Path, mathlib_atlas: Path,
         "Only the frozen library is mounted read-only.\n"
     ).encode("utf-8"), mode=0o400)
     planned = {
-        "schema_version": SCHEMA, "status": "SCOUTING",
+        "schema_version": schema_version, "status": "SCOUTING",
         "model": MODEL, "reasoning_effort": EFFORT,
         "source_task_material_available": False,
         "scout_prompt_sha256": sha256_file(prompt),
@@ -113,6 +117,16 @@ def prepare(*, deployment_path: Path, mathlib_atlas: Path,
                   "turn_wall_seconds": turn.wall_seconds, "completed_at_utc": utc_now()}
         write_json_atomic(output_root / "warm-root.json", failed, mode=0o400)
         raise BenchmarkError("the one-time GPT-6 Sol orientation did not complete")
+    final_message = (output_root / "scout-artifacts" / "last_message.txt").read_text(
+        encoding="utf-8"
+    )
+    missing_terms = [term for term in required_final_terms if term not in final_message]
+    if missing_terms:
+        write_json_atomic(output_root / "warm-root.json", {
+            **planned, "status": "FAILED", "failure_kind": "INCOMPLETE_ORIENTATION",
+            "missing_required_terms": missing_terms, "completed_at_utc": utc_now(),
+        }, mode=0o400)
+        raise BenchmarkError("one-time orientation omitted required foundational names")
     marker = checkpoint / ".state-network-violations.bin"
     if marker.exists() or marker.is_symlink():
         if marker.is_symlink() or not marker.is_file() or marker.stat().st_size:

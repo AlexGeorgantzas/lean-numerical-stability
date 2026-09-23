@@ -133,6 +133,18 @@ class Design16MatchedTests(unittest.TestCase):
             self.assertEqual(fork["fork_source_thread_id"], "source-thread")
             self.assertEqual(tree_manifest(treatment_root / "warm-seed"),
                              tree_manifest(checkpoint))
+            warm_record = warm_root / "warm-root.json"
+            pilot20 = json.loads(warm_record.read_text(encoding="utf-8"))
+            pilot20["schema_version"] = "pilot-20-warm-root-1"
+            warm_record.write_text(json.dumps(pilot20), encoding="utf-8")
+            args.warm_root_schema_version = "pilot-20-warm-root-1"
+            next_treatment = root / "pilot20-treatment"
+            next_treatment.mkdir()
+            _, next_fork = _prepare_warm_fork(
+                args=args, deployment=deployment, spec=treatment,
+                condition_root=next_treatment,
+            )
+            self.assertEqual(next_fork["fork_source_last_turn_id"], "source-turn")
 
     def test_statement_submission_clock_includes_return_to_freeze_gap(self) -> None:
         clock = _submission_clock(
@@ -269,6 +281,18 @@ class Design16MatchedTests(unittest.TestCase):
         self.assertEqual(result["forbidden_imports"], ["NumStability.Hidden"])
         self.assertEqual(
             result["forbidden_direct_declarations"], ["NumStability.hidden"]
+        )
+        open_result = _treatment_interface_check(
+            candidate_text="import NumStability.Hidden\n",
+            composition=composition,
+            private_dossier=private,
+            open_snapshot=True,
+        )
+        self.assertTrue(open_result["pass"])
+        self.assertEqual(open_result["access_policy"], "open-snapshot")
+        self.assertEqual(
+            open_result["observed_direct_numstability_declarations"],
+            ["NumStability.hidden"],
         )
         for source in (
             "public import NumStability.Hidden\n",
@@ -683,6 +707,23 @@ class Design16MatchedTests(unittest.TestCase):
             result = _library_exploration_policy(events)
             self.assertFalse(result["pass"])
             self.assertEqual(result["command_count"], 1)
+
+    def test_open_snapshot_allows_frozen_library_search_and_type_probe(self) -> None:
+        with tempfile.TemporaryDirectory() as raw:
+            events = Path(raw) / "events.jsonl"
+            commands = [
+                "rg gamma /library/NumStability",
+                "python3 /library-index/query.py gamma",
+                "rg matrix /packages/mathlib/Mathlib",
+                "lean Probe.lean",
+            ]
+            events.write_text("".join(json.dumps({
+                "params": {"item": {"type": "commandExecution", "command": command}}
+            }) + "\n" for command in commands), encoding="utf-8")
+            result = _library_exploration_policy(events, open_snapshot=True)
+            self.assertTrue(result["pass"])
+            self.assertEqual(result["command_count"], len(commands))
+            self.assertEqual(result["access_policy"], "open-snapshot")
 
     def test_library_exploration_policy_allows_workspace_compilation(self) -> None:
         with tempfile.TemporaryDirectory() as raw:

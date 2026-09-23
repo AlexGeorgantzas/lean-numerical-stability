@@ -75,6 +75,18 @@ class CompositionPacketTests(unittest.TestCase):
             self.assertIn(b"complete task-time retrieval interface", markdown)
             self.assertLessEqual(len(markdown), 8192)
             self.assertFalse(result["policy"]["task_time_search_permitted"])
+            open_result, open_markdown = build_composition_packet(
+                source_packet_path=packet,
+                atlas_paths=[atlas],
+                corpus_id="mathlib-plus-numstability",
+                root_limit=1,
+                maximum_markdown_bytes=8192,
+                open_library_access=True,
+            )
+            self.assertTrue(open_result["policy"]["task_time_search_permitted"])
+            self.assertFalse(open_result["policy"]["packet_is_exhaustive_interface"])
+            self.assertIn(b"starting suggestions, not an access whitelist", open_markdown)
+            self.assertNotIn(b"complete task-time retrieval interface", open_markdown)
             canonical = (
                 "NumStability.fl_rootProductEval_forward_error_bound : "
                 "NumStability.FPModel → Prop"

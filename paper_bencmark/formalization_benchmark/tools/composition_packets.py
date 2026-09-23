@@ -439,6 +439,7 @@ def build_composition_packet(
     maximum_markdown_bytes: int = 48 * 1024,
     exposed_signature_overrides: Mapping[str, str] | None = None,
     selection_policy: str = "legacy-coupled-title",
+    open_library_access: bool = False,
 ) -> tuple[dict[str, Any], bytes]:
     if not (1 <= root_limit <= 12):
         raise BenchmarkError("composition root limit must be between 1 and 12")
@@ -542,8 +543,8 @@ def build_composition_packet(
         "policy": {
             "automatic": True,
             "human_edits": False,
-            "task_time_search_permitted": False,
-            "packet_is_exhaustive_interface": True,
+            "task_time_search_permitted": open_library_access,
+            "packet_is_exhaustive_interface": not open_library_access,
             "exposed_signature_source": (
                 "elaborated-constant-type"
                 if exposed_signature_overrides is not None
@@ -551,13 +552,24 @@ def build_composition_packet(
             ),
         },
     }
+    access_note = (
+        [
+            "These cards are starting suggestions, not an access whitelist. The",
+            "frozen library source, compiled modules, and declaration index remain",
+            "available for read-only task-time search. You may import and use any",
+            "compatible declaration in the frozen snapshot. Search time is part of",
+            "the contestant clock. Do not assume that a retrieved card is faithful.",
+        ] if open_library_access else [
+            "This packet was generated automatically from the frozen source contract and",
+            "declaration atlas. It is the complete task-time retrieval interface. Do not",
+            "search library source or a broader index. Test the smallest compatible card",
+            "first; if none is semantically compatible, proceed without library reuse.",
+        ]
+    )
     lines = [
         f"# Frozen composition packet: {packet['task_id']} / {corpus_id}",
         "",
-        "This packet was generated automatically from the frozen source contract and",
-        "declaration atlas. It is the complete task-time retrieval interface. Do not",
-        "search library source or a broader index. Test the smallest compatible card",
-        "first; if none is semantically compatible, proceed without library reuse.",
+        *access_note,
         "",
         "The alignment rows are lexical warnings, not faithfulness judgments. In",
         "particular, `not-visible-in-signature` means the contestant must verify or",
@@ -582,7 +594,11 @@ def build_composition_packet(
         lines.extend(
             [
                 "No declaration route met the frozen coupled-concept threshold.",
-                "Do not search for a substitute. Formalize the task locally using Mathlib.",
+                (
+                    "You may still search the frozen libraries for compatible components."
+                    if open_library_access else
+                    "Do not search for a substitute. Formalize the task locally using Mathlib."
+                ),
                 "",
             ]
         )

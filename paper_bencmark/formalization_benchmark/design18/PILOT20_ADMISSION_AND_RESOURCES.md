@@ -45,6 +45,34 @@ remaining Pilot 19 probabilistic tasks likewise need per-task compatibility
 proofs; the old thematic component table is insufficient. Do not fill a
 twelve-task quota with non-overlapping tasks. A smaller honest corpus is better.
 
+## Prospective retrieval and warm-start policy
+
+Pilot 19's statement runner made the automatically retrieved packet an
+**exhaustive access whitelist**: only selected NumStability `.olean` modules
+were mounted, library source/index searches were rejected, and direct use of
+an unlisted declaration failed validation. This can suppress useful library
+support even when it exists. Its results remain unchanged.
+
+For Pilot 20, the packet is a **ranked starting guide, not an access boundary**.
+The L formalizer receives the entire pinned NumStability source, compiled
+snapshot, and declaration index read-only. It may query/search them and use
+any compatible declaration, including one the router missed. N analogously
+may search its full Mathlib source/index, but cannot see NumStability. The
+source packet, candidate-integrity rules, condition blindness of auditors,
+and target-result collision gate remain unchanged. Task-time search, Lean
+probes, and compilation are logged and charged to the formalizer clock; no
+task-specific declaration packet is supplied off-clock. Semantic dossiers
+record the actual direct NumStability declarations used, not name mentions.
+
+The one-time Pilot 20 L orientation prompt requests verified exact imports
+and types for task-neutral basics such as `FPModel`, `BasicOp`, `gamma`,
+`gammaValid`, and rounding tools. Its frozen conversation will be forked for
+each L task; scouting time/tokens are recorded once outside per-task metrics.
+The orientation is not a substitute for full library access. A new warm root
+and pilot identity must be frozen before measured work; Pilot 19's root is not
+retrofitted. The open-snapshot runner path and prompt are coded but no Pilot
+20 warm root or measured task has yet been launched under this policy.
+
 Promising *new* source to inspect, **not yet admitted**: Blanchard–Higham–Mary,
 *A Class of Fast and Accurate Summation Algorithms* (2019), §§3–4,
 <https://eprints.maths.manchester.ac.uk/2729/3/paper.pdf>. Its FABsum family

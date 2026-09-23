@@ -849,12 +849,14 @@ def _treatment_interface_check(
     candidate_text: str,
     composition: Mapping[str, Any],
     private_dossier: Mapping[str, Any],
+    open_snapshot: bool = False,
 ) -> dict[str, Any]:
-    """Verify that R1's target type uses only packet-exposed declarations.
+    """Log R1 direct uses; enforce the historical packet bound only when selected.
 
-    Transitive implementation dependencies of an exposed declaration are
-    permitted.  A declaration is rejected only when candidate-owned statement
-    code directly reaches an unlisted NumStability declaration.
+    Under packet-only access, transitive implementation dependencies of an
+    exposed declaration are permitted, but a candidate-owned direct use of an
+    unlisted NumStability declaration is rejected. Open-snapshot access logs
+    all direct uses without restricting them to retrieval cards.
     """
 
     allowed_names, exposed_modules, signature_modules = _packet_treatment_surfaces(
@@ -886,7 +888,9 @@ def _treatment_interface_check(
                 continue
             if module == "NumStability" or module.startswith("NumStability."):
                 imported_modules.add(module)
-    forbidden_imports = sorted(imported_modules - allowed_modules)
+    forbidden_imports = (
+        [] if open_snapshot else sorted(imported_modules - allowed_modules)
+    )
     raw = private_dossier.get("raw_semantic_report")
     if not isinstance(raw, Mapping):
         raise BenchmarkError("private semantic dossier omitted its raw report")
@@ -902,6 +906,7 @@ def _treatment_interface_check(
         and isinstance(item.get("owner_module"), str)
     }
     forbidden_declarations: set[str] = set()
+    observed_direct_declarations: set[str] = set()
     for edge in edges:
         if not isinstance(edge, Mapping):
             raise BenchmarkError("private semantic dossier edge is malformed")
@@ -921,16 +926,19 @@ def _treatment_interface_check(
                 child_owner == "NumStability"
                 or child_owner.startswith("NumStability.")
             )
-            and child not in allowed_names
         ):
-            forbidden_declarations.add(child)
+            observed_direct_declarations.add(child)
+            if not open_snapshot and child not in allowed_names:
+                forbidden_declarations.add(child)
     result = {
         "schema_version": "formalization-design17-treatment-interface-3",
-        "allowed_declarations": sorted(allowed_names),
+        "access_policy": "open-snapshot" if open_snapshot else "packet-only",
+        "allowed_declarations": None if open_snapshot else sorted(allowed_names),
         "packet_exposed_modules": sorted(exposed_modules),
         "signature_interface_modules": sorted(signature_modules),
-        "allowed_modules": sorted(allowed_modules),
+        "allowed_modules": None if open_snapshot else sorted(allowed_modules),
         "observed_numstability_imports": sorted(imported_modules),
+        "observed_direct_numstability_declarations": sorted(observed_direct_declarations),
         "noncanonical_import_lines": noncanonical_import_lines,
         "forbidden_imports": forbidden_imports,
         "forbidden_direct_declarations": sorted(forbidden_declarations),
@@ -996,19 +1004,19 @@ def _audit_usage(decision: Mapping[str, Any]) -> tuple[dict[str, int], bool]:
     return total, complete
 
 
-def _library_exploration_policy(events_path: Path) -> dict[str, Any]:
-    """Reject commands that inspect package/library storage outside the packet."""
+def _library_exploration_policy(
+    events_path: Path, *, open_snapshot: bool = False
+) -> dict[str, Any]:
+    """Retain safety checks; packet-path bans apply only to historical runs."""
 
     if not events_path.is_file() or events_path.is_symlink():
         raise BenchmarkError("formalizer event trace is missing or unsafe")
-    forbidden_fragments = (
-        "/packages",
-        "/library-olean",
-        "/library-index",
-        "/library/NumStability",
+    forbidden_fragments = () if open_snapshot else (
+        "/packages", "/library-olean", "/library-index", "/library/NumStability",
     )
     violations: list[dict[str, Any]] = []
     command_count = 0
+    library_search_commands = 0
     for line_number, line in enumerate(
         events_path.read_text(encoding="utf-8").splitlines(), 1
     ):
@@ -1027,6 +1035,10 @@ def _library_exploration_policy(events_path: Path) -> dict[str, Any]:
             continue
         command_count += 1
         lowered = command.casefold()
+        if any(path in lowered for path in (
+            "/library-index", "/library/numstability", "/packages",
+        )):
+            library_search_commands += 1
         reasons = [
             f"forbidden mounted path {fragment}"
             for fragment in forbidden_fragments
@@ -1043,7 +1055,7 @@ def _library_exploration_policy(events_path: Path) -> dict[str, Any]:
             for value in re.findall(r"(?<![A-Za-z0-9_./-])([A-Za-z0-9_./-]+\.lean)\b", command)
             if value != "Candidate.lean" and not value.endswith("/Candidate.lean")
         }
-        if lean_sources:
+        if lean_sources and not open_snapshot:
             reasons.append("non-candidate Lean probe or source")
         if re.search(r"\b(?:env|printenv)\b", lowered):
             reasons.append("environment enumeration")
@@ -1053,7 +1065,9 @@ def _library_exploration_policy(events_path: Path) -> dict[str, Any]:
             r"Candidate\.olean\s+Candidate\.lean(?:\s|[;&|'\"]|$)",
             command,
         )
-        if lean_invocations and (lean_invocations != 1 or exact_compile is None):
+        if not open_snapshot and lean_invocations and (
+            lean_invocations != 1 or exact_compile is None
+        ):
             reasons.append("noncanonical Lean invocation")
         if reasons:
             violations.append(
@@ -1067,7 +1081,9 @@ def _library_exploration_policy(events_path: Path) -> dict[str, Any]:
             )
     return {
         "schema_version": "formalization-design17-library-exploration-policy-1",
+        "access_policy": "open-snapshot" if open_snapshot else "packet-only",
         "command_count": command_count,
+        "library_path_command_count": library_search_commands,
         "violations": violations,
         "pass": not violations,
     }
@@ -1088,8 +1104,11 @@ def _prepare_warm_fork(
         warm_root = Path(warm_root_arg).expanduser().resolve()
         warm = load_json(warm_root / "warm-root.json")
         checkpoint = warm_root / "checkpoint"
+        expected_schema = getattr(
+            args, "warm_root_schema_version", "pilot-18-warm-root-1"
+        )
         if (
-            warm.get("schema_version") != "pilot-18-warm-root-1"
+            warm.get("schema_version") != expected_schema
             or warm.get("status") != "READY"
             or warm.get("model") != args.model
             or warm.get("reasoning_effort") != args.reasoning_effort
@@ -1153,7 +1172,9 @@ def _run_statement_condition_attempts(
         condition_root=condition_root,
     )
 
-    driver = StatementCodexDriver(
+    open_snapshot = getattr(args, "library_access_policy", "packet-only") == "open-snapshot"
+    driver_class = CodexDriver if open_snapshot else StatementCodexDriver
+    driver = driver_class(
         codex_binary=deployment.codex_binary,
         code_mode_host_sha256=deployment.code_mode_host_sha256,
         model=args.model,
@@ -1164,7 +1185,14 @@ def _run_statement_condition_attempts(
         offline_shell=deployment.offline_shell,
         toolchain_root=deployment.toolchain_root,
         packages_root=deployment.packages_root,
+        library_source=(
+            deployment.library_source if open_snapshot and spec.name == "R1" else None
+        ),
         library_olean=packet_library_olean,
+        library_atlas=(
+            (deployment.library_atlas if spec.name == "R1" else spec.atlas_paths[0].parent)
+            if open_snapshot else None
+        ),
         workspace_writable=True,
         protected_workspace_paths=[
             source,
@@ -1289,7 +1317,8 @@ def _run_statement_condition_attempts(
             if thread_identity_valid:
                 thread_id = returned_thread_id
             exploration_policy = _library_exploration_policy(
-                attempt_root / "formalizer" / "events.jsonl"
+                attempt_root / "formalizer" / "events.jsonl",
+                open_snapshot=open_snapshot,
             )
             write_json_atomic(
                 attempt_root / "library-exploration-policy.json",
@@ -1459,6 +1488,7 @@ def _run_statement_condition_attempts(
                 candidate_text=final_text,
                 composition=composition,
                 private_dossier=private,
+                open_snapshot=open_snapshot,
             )
             write_json_atomic(
                 attempt_root / "treatment-interface.json", interface, mode=0o400
@@ -1467,17 +1497,23 @@ def _run_statement_condition_attempts(
                 attempt_root / "treatment-interface.json"
             )
             if interface["pass"] is not True:
+                requirement = (
+                    "Library imports must use canonical Lean syntax."
+                    if open_snapshot else
+                    "The statement must use only declarations exposed by the "
+                    "frozen task-time retrieval packet."
+                )
+                mismatch = (
+                    "A NumStability import is malformed."
+                    if open_snapshot else
+                    "The statement directly uses or imports a declaration outside "
+                    "that bounded interface."
+                )
                 feedback = make_repair_feedback(
                     [
                         {
-                            "paper_requirement": (
-                                "The statement must use only declarations exposed by the "
-                                "frozen task-time retrieval packet."
-                            ),
-                            "candidate_mismatch": (
-                                "The statement directly uses or imports a declaration outside "
-                                "that bounded interface."
-                            ),
+                            "paper_requirement": requirement,
+                            "candidate_mismatch": mismatch,
                         }
                     ]
                 )
@@ -1623,6 +1659,9 @@ def _run_statement_condition_attempts(
         "audit_model": args.audit_model,
         "audit_reasoning_effort": args.audit_reasoning_effort,
         "route_status": composition["route_status"],
+        "library_access_policy": (
+            "open-snapshot" if open_snapshot else "packet-only"
+        ),
         "library_olean_visible": packet_library_olean is not None,
         "packet_olean_runtime": (
             dict(packet_runtime_manifest)
@@ -1674,6 +1713,11 @@ def _run_condition(
     prompt: bytes,
     output_root: Path,
 ) -> dict[str, Any]:
+    access_policy = getattr(args, "library_access_policy", "packet-only")
+    if access_policy not in {"packet-only", "open-snapshot"}:
+        raise BenchmarkError(f"unknown library access policy: {access_policy}")
+    if access_policy == "open-snapshot" and not args.statement_only:
+        raise BenchmarkError("open-snapshot is currently a statement-only policy")
     condition_root = output_root / spec.name
     condition_root.mkdir(mode=0o700)
 
@@ -1691,6 +1735,7 @@ def _run_condition(
         dependency_limit=int(args.dependency_limit),
         maximum_markdown_bytes=int(args.maximum_packet_bytes),
         selection_policy=getattr(args, "selection_policy", "legacy-coupled-title"),
+        open_library_access=access_policy == "open-snapshot",
     )
     rank_seconds = time.monotonic() - retrieval_started
     signature_started = time.monotonic()
@@ -1718,6 +1763,7 @@ def _run_condition(
         maximum_markdown_bytes=int(args.maximum_packet_bytes),
         exposed_signature_overrides=canonical_signatures,
         selection_policy=getattr(args, "selection_policy", "legacy-coupled-title"),
+        open_library_access=access_policy == "open-snapshot",
     )
     packet_render_seconds = time.monotonic() - packet_render_started
     if (
@@ -1739,7 +1785,11 @@ def _run_condition(
     _allowed_names, selected_treatment_modules = _packet_treatment_allowlist(
         composition
     )
-    if args.statement_only and spec.name == "R1" and selected_treatment_modules:
+    if args.statement_only and spec.name == "R1" and access_policy == "open-snapshot":
+        if spec.library_olean is None:
+            raise BenchmarkError("R1 has no frozen full-library OLean tree")
+        packet_library_olean = spec.library_olean
+    elif args.statement_only and spec.name == "R1" and selected_treatment_modules:
         if spec.library_olean is None:
             raise BenchmarkError("R1 packet selected NumStability without an OLean tree")
         packet_library_olean = condition_root / "packet-library-olean"
