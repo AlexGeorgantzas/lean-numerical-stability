@@ -15,6 +15,7 @@ from deployment import load_deployment
 from design18_atlas import bind_release_atlases
 from design16_matched import _condition_order, _run_condition, _statement_pair_status, condition_spec
 from design18_matched import _qualified
+from design20_admission import verify_admission
 from hardware import snapshot_hardware
 
 
@@ -68,6 +69,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         paper = deployment.pdf_root / packet["paper_pdf"]["path_basename"]
     if sha256_file(paper) != packet["paper_pdf"]["sha256"]:
         raise BenchmarkError("source PDF changed")
+    admission = verify_admission(task_id, packet_path=packet_path, paper=paper)
     common = (ROOT / "prompts" / "common.md").read_bytes()
     appendix = (ROOT / "prompts" / "library_appendix.md").read_bytes()
     prompts = {"R0": common, "R1": common + b"\n" + appendix}
@@ -83,6 +85,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         "audit_reasoning_effort": AUDIT_EFFORT,
         "source_packet_sha256": sha256_file(packet_path),
         "source_pdf_sha256": sha256_file(paper),
+        "admission_status": admission["status"],
         "condition_prompt_sha256": {key: hashlib.sha256(value).hexdigest()
                                     for key, value in prompts.items()},
         "r1_has_exact_r0_prompt_prefix": prompts["R1"].startswith(prompts["R0"]),

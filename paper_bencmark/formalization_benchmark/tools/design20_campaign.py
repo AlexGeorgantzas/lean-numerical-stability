@@ -13,6 +13,7 @@ from common import BenchmarkError, canonical_json_bytes, load_json, sha256_file,
 from design18_campaign import _host_lock, _treatment_uptake
 from design20_envelope import launch_or_activate
 from design20_matched import CORPUS, ROOT, run as run_pair
+from design20_admission import ADMISSION
 
 
 SCHEMA = "pilot-20-development-campaign-1"
@@ -22,6 +23,7 @@ def _inputs(args: argparse.Namespace) -> dict:
     corpus = load_json(CORPUS)
     return {
         "corpus_sha256": sha256_file(CORPUS),
+        "admission_sha256": sha256_file(ADMISSION),
         "schedule": corpus["scheduled_order"],
         "packets": {task: sha256_file(ROOT / "packets" / f"{task}.json")
                     for task in corpus["scheduled_order"]},
