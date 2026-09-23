@@ -747,3 +747,32 @@ Pilot 22.
 control files remain prohibited. The development campaign requires an explicit
 new pilot ID. Relevant unit tests pass. A new Pilot 23 must use a fresh output
 root and controller commit; no Pilot 22 outcome may be scored as a pair.
+
+---
+
+## 2026-09-23 — Codex — Pilot 24 preserved; Pilot 25 running
+
+**Did:** Admitted twelve prospectively screened development tasks, each with a
+source-only review, target-collision screen, direct-component preflight, and
+private Lean statement compilation. Pilot 24 ran the first pair only and is
+frozen at `PAUSED_FIRST_REVIEW`. Both RUMP12-THM3.4 statements were audited
+faithful on one submission; L directly used NumStability but was 1.390× slower
+and used 1.808× net-new tokens. Full immutable hashes and diagnosis are in
+`formalization_benchmark/design20/PILOT24_EARLY_REVIEW.md`. Do not resume it.
+
+**Prospective fix:** The task-neutral router now exposes public finite-format
+and nearest-rounding interfaces for positive titles calling for that model;
+Pilot 24's L trace showed it searching for and ultimately using those exact
+declarations without any initial card. The new Pilot 25 corpus/admission and
+12-task preflight are frozen at controller commit `9a27c4e44`. Active Titan
+campaign: `/hdd/alexgeorgantzas/highambench/pilot25-development-12-20260923-a`.
+It runs RUMP12-THM3.4 first and pauses for early review; if eligible, resume
+the **same** campaign with `--resume-after-review`, then three 8-CPU/24-GiB
+lanes run the other eleven tasks. Do not overlap campaigns or alter frozen
+inputs. Preserve all negative and no-use results.
+
+**Account boundary:** The user explicitly said not to redeem the available
+Codex reset credit. At about 3% weekly usage remaining, provide a complete
+fresh-chat handoff prompt for their second account and stop or coordinate
+without overlapping the still-running campaign. Codex sign-in, not API
+billing, is used for GPT-6 Sol/high formalizers and Astra/high auditors.
