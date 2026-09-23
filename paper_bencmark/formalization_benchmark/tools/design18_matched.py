@@ -21,7 +21,7 @@ from design18_atlas import bind_release_atlases
 from design16_matched import (
     _condition_order, _run_condition, _statement_pair_status, condition_spec,
 )
-from design18_preflight import DESIGN_ROOT, check_corpus
+from design18_preflight import DESIGN_ROOT, check_corpus, require_release_admission
 from design18_model_qualify import PROMPT as QUALIFICATION_PROMPT
 from hardware import snapshot_hardware
 
@@ -54,6 +54,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     corpus, packets, flags = check_corpus()
     if flags:
         raise BenchmarkError(f"source flags bar measured Pilot 18 runs: {flags}")
+    require_release_admission(corpus)
     task_id = args.task_id.strip().upper()
     if task_id not in corpus["scheduled_order"]:
         raise BenchmarkError("task is outside the Pilot 18 schedule")
@@ -101,7 +102,8 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     pair: dict[str, Any] = {
         "schema_version": "pilot-18-matched-pair-1",
         "status": "RUNNING", "task_id": task_id,
-        "scientific_status": "EXPLORATORY_UNTIL_CORPUS_AND_CONTROLLER_FROZEN",
+        "pilot_identity": corpus.get("pilot_identity", "18"),
+        "scientific_status": "EXPLORATORY_FROZEN_PILOT",
         "condition_order": list(expected_order),
         "model": MODEL, "reasoning_effort": EFFORT,
         "audit_model": AUDIT_MODEL, "audit_reasoning_effort": AUDIT_EFFORT,

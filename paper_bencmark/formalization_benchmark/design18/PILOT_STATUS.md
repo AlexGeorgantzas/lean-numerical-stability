@@ -1,5 +1,8 @@
 # Pilot 18 status — preflight, not a measured campaign
 
+Historical Pilot-18 status. Pilot 19's prospective source-resolved prerelease
+is tracked separately in `PILOT19_STATUS.md`; neither has a timed task pair.
+
 As of 2026-09-23 (Europe/Athens), **zero R0/R1 task pairs have been run**.
 No result from this design should be reported as a benchmark effect. The draft
 release is deliberately fail-closed while the gates below remain unresolved.

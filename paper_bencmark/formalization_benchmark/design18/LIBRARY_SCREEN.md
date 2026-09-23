@@ -24,7 +24,7 @@ Design-18 candidate exists.
 | `HM19-3-6`, `HM19-3-7` | `DoolittleLU`, `doolittle_backward_error`, `doolittle_solve_backward_error`, triangular solvers | Probabilistic operation trace and exact Higham–Mary event/coefficient; deterministic result families are components only if they do not imply the target probabilistic event. |
 | `HM19-3-8` | `fl_cholesky`, `CholeskyBackwardError`, `fl_cholesky_backward_error` | Stochastic Cholesky trace, square-root operation, and event aggregation. |
 | `HALL21-3-3` | `fl_recursiveSum`, exact partial sums, `FiniteProbability` event/expectation lemmas | Independent mean-zero rounded recurrence, maximal concentration, and all-orders product factor. |
-| `CASTRO24-4-1` | `SumTree`, `fl_pairwiseSum`, balanced-tree deterministic error bounds, `SumTree.statisticalRunningErrorContribution_rms_le` | SR execution with martingale concentration and the source's exact high-probability coefficient. RMS alone does not imply that conclusion. |
+| `HI21-2-6` | General `SumTree`, its exact/computed internal sums, deterministic error theory, and `SumTree.statisticalRunningErrorContribution_rms_le` | Independent stochastic execution on arbitrary trees, reverse martingale concentration, and the exact two-parameter all-orders high-probability coefficient. RMS alone does not imply that conclusion. |
 | `CASTRO24-4-2` | `fl_hornerDesc`, polynomial evaluation and deterministic Horner bounds | SR/Horner trace, martingale length, condition number, and high-probability conclusion. |
 
 Exact names above were found in the frozen declaration atlas. No name/signature
@@ -44,6 +44,15 @@ algorithm names (`dotProduct`, `fl_recursiveSum`, `fl_hornerDesc`,
 (case-insensitive). This is a lexical check, **not** a semantic collision
 certificate; it cannot rule out a theorem whose name/signature hides the
 algorithm behind an abstraction.
+
+For the selected `HI21-2-6` replacement, a scoped source inspection found
+`SumTree`'s statistical RMS lemmas and deterministic error bounds in
+`Summation/Tree/Core.lean`, but no tree-specific high-probability theorem
+there. A search across probability-bearing `NumStability/Algorithms` modules
+found RandNLA, test-matrix, and other algorithm results rather than a general
+summation-tree tail bound. This strengthens the component-not-result case,
+but is still a bounded human/lexical screen rather than an exhaustive semantic
+certificate under every possible declaration name.
 
 The largest predictable risk is representation: `FPModel` and most algorithms
 are deterministic, while the new papers quantify random execution traces.

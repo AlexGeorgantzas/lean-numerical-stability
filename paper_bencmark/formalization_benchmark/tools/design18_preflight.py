@@ -21,6 +21,11 @@ DESIGN_ROOT = Path(__file__).resolve().parents[1] / "design18"
 SOURCE_SCHEMA = "formalization-source-packet-2-draft"
 
 
+def require_release_admission(corpus: dict) -> None:
+    if corpus.get("status") != "ADMITTED_FOR_MEASUREMENT":
+        raise BenchmarkError("source-resolved release is not admitted for measurement")
+
+
 def check_corpus(
     *, design_root: Path = DESIGN_ROOT,
 ) -> tuple[dict, list[dict], list[str]]:
@@ -131,7 +136,7 @@ def main() -> int:
     )
     print(json.dumps({
         "schema_version": "pilot-18-provider-free-preflight-1",
-        "admission_status": "NOT_ADMITTED_SOURCE_FLAGS" if flags else "SOURCE_REVIEW_PENDING",
+        "admission_status": "NOT_ADMITTED_SOURCE_FLAGS" if flags else corpus.get("status"),
         "task_ids": corpus["task_ids"],
         "known_source_review_flags": flags,
         "model_gate": "not_checked_by_provider_free_preflight",

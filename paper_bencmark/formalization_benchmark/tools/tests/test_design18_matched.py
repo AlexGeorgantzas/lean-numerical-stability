@@ -47,10 +47,10 @@ class Pilot18MatchedTests(unittest.TestCase):
                 _qualified(record, binary=binary,
                            code_mode_host_sha256="a" * 64)
 
-    def test_unresolved_source_flags_stop_before_output_or_model(self) -> None:
+    def test_unadmitted_release_stops_before_output_or_model(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             output = Path(raw) / "pair"
-            with self.assertRaisesRegex(BenchmarkError, "source flags bar"):
+            with self.assertRaisesRegex(BenchmarkError, "not admitted"):
                 run(types.SimpleNamespace(task_id="HM19-3-2", output_root=output))
             self.assertFalse(output.exists())
 
@@ -112,7 +112,8 @@ class Pilot18MatchedTests(unittest.TestCase):
                     "submission_count": 1,
                 }
 
-            corpus = {"scheduled_order": ["OTHER", "TEST-1"]}
+            corpus = {"status": "ADMITTED_FOR_MEASUREMENT",
+                      "scheduled_order": ["OTHER", "TEST-1"]}
             with (
                 mock.patch.object(design18_matched, "DESIGN_ROOT", design),
                 mock.patch.object(design18_matched, "check_corpus", return_value=(corpus, [packet], [])),

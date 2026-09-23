@@ -1,9 +1,10 @@
-# Probabilistic formalization Pilot 18 — draft, not admitted for measurement
+# Probabilistic formalization Design 18 / Pilot 19 — not admitted for measurement
 
-The proposed twelve source results are recorded in `CORPUS_12.json`. This is
-not a runnable or frozen release until source validity, conclusion leakage,
-component coverage, provider qualification, and a provider-free end-to-end
-preflight pass. No Design-17 result is rewritten or pooled with this pilot.
+The twelve source results are recorded in `CORPUS_12.json`; source decisions
+made before any contestant run are in `PILOT19_STATUS.md`. This is not a
+runnable release until conclusion-leakage review, provider qualification, and
+a provider-free end-to-end preflight pass. No Design-17 or Pilot-18 result is
+rewritten or pooled with this pilot.
 
 ## Scientific object and conditions
 

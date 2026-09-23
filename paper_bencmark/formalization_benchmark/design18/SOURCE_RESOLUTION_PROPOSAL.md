@@ -1,10 +1,11 @@
-# Pilot 18 source-resolution proposal (unadopted)
+# Pilot 18 source-resolution proposal (historical; adopted into Pilot 19)
 
-This is a prospective source-quality decision, **not** a measured result or a
-change to `CORPUS_12.json`. Pilot 18 has zero timed R0/R1 pairs. Any adoption
-must produce a new frozen pilot identity, retain the old manifest and incident
-record, and rerun source, leakage, routing, and compile preflights before a
-contestant starts. No candidate output was used to select these options.
+This was a prospective source-quality decision, **not** a measured result.
+Pilot 19 adopted the two recommended source resolutions before any timed
+R0/R1 pair existed. The original Pilot-18 draft and incident record remain
+in the `codex/pilot-18-probabilistic` branch. The source-resolved manifest is
+in `CORPUS_12.json`; see `PILOT19_STATUS.md` for its still-closed admission
+gates. No candidate output was used to select these options.
 
 ## `HM19-3-4`: retain both conclusions with one disclosed indexing correction
 

@@ -1,6 +1,7 @@
 {
-  "schema_version": "probabilistic-corpus-draft-1",
-  "status": "SOURCE_AND_LEAKAGE_REVIEW_PENDING_NOT_RUN",
+  "schema_version": "probabilistic-corpus-release-1",
+  "status": "SOURCE_RESOLVED_MODEL_AND_LEAKAGE_GATE_PENDING_NOT_RUN",
+  "pilot_identity": "19-source-resolved",
   "scientific_claim": "marginal formalization value of a frozen NumStability snapshot when relevant components, but not the selected probabilistic result, are present",
   "formalizer_model": "gpt-6-sol",
   "formalizer_reasoning_effort": "xhigh",
@@ -17,6 +18,11 @@
       "sha256": "fe154eb68d177ffe9b608a84c0971dc76d9537e94e7ab661ba0b1085ce1b91ee",
       "url": "https://arxiv.org/pdf/2104.06531"
     },
+    "HI21": {
+      "file": "sources/HALLIPS21.pdf",
+      "sha256": "cce25923a86d5d2051a079ad4ae7ea965f1dde97ffb6d3bf6462d069968fd1c6",
+      "url": "https://arxiv.org/pdf/2107.01604"
+    },
     "CASTRO24": {
       "file": "sources/CASTRO24.pdf",
       "sha256": "cf626a8992853b705963d9e0ff9fdc4f3dce4def9c0f7bfa66c83ac9888e57d2",
@@ -28,7 +34,7 @@
     "HM19-3-2", "HALL21-3-3", "CASTRO24-4-2",
     "HM19-2-4", "HM19-3-1", "HM19-3-3", "HM19-3-4",
     "HM19-3-5", "HM19-3-6", "HM19-3-7", "HM19-3-8",
-    "CASTRO24-4-1"
+    "HI21-2-6"
   ],
   "condition_order_policy": "alternate R0,R1 then R1,R0 by zero-based scheduled index",
   "task_ids": [
@@ -42,12 +48,13 @@
     "HM19-3-7",
     "HM19-3-8",
     "HALL21-3-3",
-    "CASTRO24-4-1",
+    "HI21-2-6",
     "CASTRO24-4-2"
   ],
-  "known_source_review_flags": {
-    "HM19-3-4": "Printed (3.11) says j=1:n for p columns; the proof combines p instances. Resolve the source contract without silently changing the selected result.",
-    "CASTRO24-4-1": "Printed h=floor(log2 n) for a ceiling-split pairwise tree; check non-power-of-two domain and source validity before admission."
+  "known_source_review_flags": {},
+  "source_resolution": {
+    "HM19-3-4": "Retain both conclusions of Theorem 3.4; disclose printed j=1:n as j=1:p because B has p columns and the proof combines p instances.",
+    "HI21-2-6": "Prospectively replace CASTRO24-4-1 before any measured task. Preserve general summation trees and the exact Theorem 2.6 bound; original Castro packet is retained as superseded evidence."
   },
   "prior_campaign_policy": "All Design-17 evidence remains immutable and separate. No task in this draft is a consumed timed result."
 }

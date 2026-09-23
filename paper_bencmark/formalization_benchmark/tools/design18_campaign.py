@@ -20,7 +20,7 @@ from typing import Any, Callable
 from common import BenchmarkError, load_json, sha256_file, utc_now, write_json_atomic
 from design18_envelope import launch_or_activate
 from design18_matched import run as run_pair
-from design18_preflight import DESIGN_ROOT, check_corpus
+from design18_preflight import DESIGN_ROOT, check_corpus, require_release_admission
 
 
 SCHEMA = "pilot-18-campaign-1"
@@ -140,6 +140,7 @@ def _run_campaign_unlocked(args: argparse.Namespace, *, pair_runner: Callable,
     corpus, _packets, flags = check_corpus()
     if flags:
         raise BenchmarkError(f"source flags bar measured Pilot 18 runs: {flags}")
+    require_release_admission(corpus)
     if not args.output_root.is_absolute():
         raise BenchmarkError("campaign output must be an absolute path")
     if args.output_root.exists() or args.output_root.is_symlink():
@@ -149,7 +150,7 @@ def _run_campaign_unlocked(args: argparse.Namespace, *, pair_runner: Callable,
     journal = {
         "schema_version": SCHEMA,
         "status": "RUNNING",
-        "pilot": "18",
+        "pilot": corpus.get("pilot_identity", "18"),
         "scheduled_order": schedule,
         "corpus_sha256": sha256_file(DESIGN_ROOT / "CORPUS_12.json"),
         "early_review_order": corpus["early_review_order"],

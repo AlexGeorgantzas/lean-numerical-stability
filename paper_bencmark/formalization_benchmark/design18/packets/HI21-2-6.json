@@ -1,6 +1,6 @@
 {
   "schema_version": "formalization-source-packet-2-draft",
-  "status": "UNADOPTED_PROPOSAL_NOT_IN_CORPUS",
+  "status": "SOURCE_RESOLVED_PILOT_19_NOT_RUN",
   "task_id": "HI21-2-6",
   "selected_result": "Hallman–Ipsen Theorem 2.6: all-orders probabilistic forward-error bound for general summation trees",
   "bibliographic_source": {
