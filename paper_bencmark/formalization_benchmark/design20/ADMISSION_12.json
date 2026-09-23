@@ -1,0 +1,184 @@
+{
+  "schema_version": "pilot-20-development-admission-1",
+  "scope": "12-task exploratory development corpus; correlated same-paper tasks and prior canaries; not confirmatory",
+  "static_preflight_path": "/hdd/alexgeorgantzas/highambench/pilot24-preflight-final-20260923-a/preflight.json",
+  "static_preflight_sha256": "682b562cee7d94cb3b4d4b90d8b4145ab30911b4635e56031bb27a4b10a23b94",
+  "private_skeleton_compile_path": "/hdd/alexgeorgantzas/highambench/pilot24-skeleton-verify-all-20260923-a/skeleton-compilation.json",
+  "private_skeleton_compile_sha256": "3ced71f1dec9718a2ed51973e0bbb726de53b634a7e7706918003f21552d34fe",
+  "tasks": {
+    "RUMP12-THM3.4": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "f91a6d1c9ef559bbf9057954f0efd63f32a995a8f86666fa4efe0582d07b8712",
+      "source_pdf_sha256": "4b23ffc2f7588ddc5218b914e520acf6c6c1ba0ec07bdae221f3d692fc254706",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-RUMP12-THM3.4-20260923-a/source-contract-review.json",
+      "source_review_sha256": "9c02e8efa56348d04f01e9bb4b4c300caa22c3711a883dfaca20ea1d17cb8144",
+      "direct_component_names": [
+        "NumStability.fl_recursiveSum"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/RUMP12-THM3.4-3.5.lean",
+      "private_skeleton_sha256": "8c7005e05261803a89359c797d746e36b2cb61730bea5d63695ddf3b956e9629"
+    },
+    "FAB19-EQ3.5": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "99e41110a27a8b26b9fdde1d51d09cdaec2975a569591eb381a434948913ac18",
+      "source_pdf_sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot20-source-review-FAB19-EQ3.5-corrected-20260923/source-contract-review.json",
+      "source_review_sha256": "36c41548037a0eaeb057605c8b0a8a0304b1fc4bcd3c0ae17669d227767f9551",
+      "direct_component_names": [
+        "NumStability.fl_recursiveSum",
+        "NumStability.fl_higherPrecisionRecursiveSum"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual review of frozen summation declarations found component definitions and related bounds, but not the blocked mixed-precision Eq. (3.5) result; this is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/FAB19-EQ3.5-3.7-skeleton.lean",
+      "private_skeleton_sha256": "5fab82937c8671347e283086ef01e2efacde698d0ae965505512d299fe8b3e47"
+    },
+    "FAB19-EQ3.7": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "afac9cc546c5b4da6c80df7bb06d99ed97d744feb959e110e07fbad5a26d8118",
+      "source_pdf_sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot20-source-review-FAB19-EQ3.7-20260923/source-contract-review.json",
+      "source_review_sha256": "8babb29477c489235e6a00edf91cf3b5ec1d990e1b81393bcec3920e8fc51c66",
+      "direct_component_names": [
+        "NumStability.fl_recursiveSum",
+        "NumStability.fl_clog2PairwiseSum"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual review of frozen summation declarations found component definitions and related bounds, but not the blocked recursive/pairwise Eq. (3.7) result; this is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/FAB19-EQ3.5-3.7-skeleton.lean",
+      "private_skeleton_sha256": "5fab82937c8671347e283086ef01e2efacde698d0ae965505512d299fe8b3e47"
+    },
+    "H20-8": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "722d28643343002f250688dc0dc8520b47bdc985c104914401bc851bf2980cdf",
+      "source_pdf_sha256": "7ca85d5caf3ffd5ae90fb315e9b4e00912e174881bcf969e7ba0a7b3ce9ec814",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot20-source-review-H20-8-clean-20260923/source-contract-review.json",
+      "source_review_sha256": "48144f4807dd25c8bbd1bffa2d11a487889a500b67e2d569f28d0b07f4674ef6",
+      "direct_component_names": [
+        "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual review of the frozen least-squares declarations found the generic matrix-only backward-error functional and partial properties, but not the exercise's attained b-nonzero closed formula; this is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/H20-8-attainment-skeleton.lean",
+      "private_skeleton_sha256": "d6a8b1004f9e2c9df8d3ea4cc4c4975ddb20a89779a6e738769b0dd3f993606b"
+    },
+    "RUMP12-THM3.5": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "32ebd3f0cdb972839cec52292a0b8dfd4172c6d7c3f0338cd9f89784b6e5bbc8",
+      "source_pdf_sha256": "4b23ffc2f7588ddc5218b914e520acf6c6c1ba0ec07bdae221f3d692fc254706",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-RUMP12-THM3.5-20260923-v2/source-contract-review.json",
+      "source_review_sha256": "399f30afa9d0ec215636efdf5439ed4b6c93acdc7b2f5acda97f70e0cb17ed5c",
+      "direct_component_names": [
+        "NumStability.fl_recursiveSum"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/RUMP12-THM3.4-3.5.lean",
+      "private_skeleton_sha256": "8c7005e05261803a89359c797d746e36b2cb61730bea5d63695ddf3b956e9629"
+    },
+    "FAB19-EQ3.6": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "7a2d964407556ecc6a7bf97b62c1194904be4b46cfd56faf64c1f0e70bfc8fee",
+      "source_pdf_sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-FAB19-EQ3.6-20260923-a/source-contract-review.json",
+      "source_review_sha256": "967454730e8679b8102c993b9b438b1df079f49269544a6201b9ce26151e1c74",
+      "direct_component_names": [
+        "NumStability.fl_recursiveSum",
+        "NumStability.fl_kahanSum"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/FAB19-EQ3.6.lean",
+      "private_skeleton_sha256": "d0e4ad69420142f8255aa07ed61f5b92ace818d52bb85f9c6c4f2cfa932c9dea"
+    },
+    "CAST08-PROP3.2": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "febce0930ad9a3384b31911c78e3706b3973673e576d6e9930550551817d0f51",
+      "source_pdf_sha256": "ffdea8e2136c7f4226e4c0d382d512fef190cd207133a1a0c88c8ef7b9ebeeb2",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-CAST08-PROP3.2-20260923-v2/source-contract-review.json",
+      "source_review_sha256": "f7a9a54624b1e848e850d07aeb2946f4916b8966c50aa73707dd20715c8833bb",
+      "direct_component_names": [
+        "NumStability.fl_dotProduct",
+        "NumStability.fl_blockDotProduct"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/CAST08-PROP3.2-FIXED3.lean",
+      "private_skeleton_sha256": "eb40dc8ecebe4382801c5dc36f1ad1303eef7732317b9e074311191a7627f720"
+    },
+    "CAST08-FIXED3": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "24639a0ed59386b0a6c547f61fac18ad70e298ec89195c7e3f05e177ea7ccf17",
+      "source_pdf_sha256": "ffdea8e2136c7f4226e4c0d382d512fef190cd207133a1a0c88c8ef7b9ebeeb2",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-CAST08-FIXED3-20260923-v2/source-contract-review.json",
+      "source_review_sha256": "f0ad1745441fe56d09b0d7864246d5223fbcab73b75afeb08e4726fc6b0fd25b",
+      "direct_component_names": [
+        "NumStability.fl_dotProduct",
+        "NumStability.fl_blockDotProduct"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/CAST08-PROP3.2-FIXED3.lean",
+      "private_skeleton_sha256": "eb40dc8ecebe4382801c5dc36f1ad1303eef7732317b9e074311191a7627f720"
+    },
+    "LL07-THM4": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "460fd8a712e28cc529890932bc4162090b89133fbce3fae79e55dd185b26314e",
+      "source_pdf_sha256": "acba19c03f7997d6fa0b5537d1b7a79491ae952f3425a4604e04c2be18fb929e",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-LL07-THM4-20260923-v2/source-contract-review.json",
+      "source_review_sha256": "89f8b509a3d80205e144d5d0df39e2676d14b18b48c0eadea2cd26b3b7d33e68",
+      "direct_component_names": [
+        "NumStability.fl_hornerDesc"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/LL07-THM4-7.lean",
+      "private_skeleton_sha256": "31809bf2562c80985f62fb06a059b0d1c351d3ce908fc07cd085d81f52f6da8e"
+    },
+    "LL07-THM7": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "12d9de3e7846bf6c977c4c107a979dc3adebfd057408ebf0aa0e05114ca0bdda",
+      "source_pdf_sha256": "acba19c03f7997d6fa0b5537d1b7a79491ae952f3425a4604e04c2be18fb929e",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-LL07-THM7-20260923-v2/source-contract-review.json",
+      "source_review_sha256": "4eab11a900b50168e3dcb72504861a2396725c1f41389bbdcf5375712190ca36",
+      "direct_component_names": [
+        "NumStability.fl_hornerDesc"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/LL07-THM4-7.lean",
+      "private_skeleton_sha256": "31809bf2562c80985f62fb06a059b0d1c351d3ce908fc07cd085d81f52f6da8e"
+    },
+    "FAB19-THM4.1": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "5760ebbc84ff522061324d5bc3551b00b66f2fad17db49eb265b5fd4242afcb8",
+      "source_pdf_sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-FAB19-THM4.1-20260923-a/source-contract-review.json",
+      "source_review_sha256": "27dc8264a13a0894064205932faf2c98edb9da65cba63de86768fe085026ed94",
+      "direct_component_names": [
+        "NumStability.fl_dotProduct"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/FAB19-THM4.1-4.2.lean",
+      "private_skeleton_sha256": "9891fd35165e48a5ae2ee4635012d382fdf3fb2e3caf5cd58eb4b56441993dc2"
+    },
+    "FAB19-THM4.2": {
+      "status": "ADMITTED_DEVELOPMENT",
+      "source_packet_sha256": "48a991921f6402981bd25b7e7a38104e9411ed02b14fd85f84cfa81291f4b06c",
+      "source_pdf_sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1",
+      "source_review_path": "/hdd/alexgeorgantzas/highambench/pilot24-source-review-FAB19-THM4.2-20260923-a/source-contract-review.json",
+      "source_review_sha256": "e135cac03b8ba08b6d9c3860b11d1b834c28469e9a21cb802895c36edfbce85e",
+      "direct_component_names": [
+        "NumStability.fl_dotProduct",
+        "NumStability.fl_matVec"
+      ],
+      "target_collision_review": "NO_TARGET_RESULT_FOUND",
+      "target_collision_review_note": "Manual source/signature scan of the frozen NumStability snapshot found reusable algorithm/model/bound components but no selected composite or sharp target theorem. This scan is not a formal proof of absence.",
+      "private_skeleton_path": "/hdd/alexgeorgantzas/highambench/pilot24-admission-private/FAB19-THM4.1-4.2.lean",
+      "private_skeleton_sha256": "9891fd35165e48a5ae2ee4635012d382fdf3fb2e3caf5cd58eb4b56441993dc2"
+    }
+  }
+}
