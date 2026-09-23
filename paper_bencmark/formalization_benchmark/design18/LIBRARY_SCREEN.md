@@ -1,5 +1,13 @@
 # NumStability component screen — draft, before candidate results
 
+> Historical Pilot 18/19 screening record, **not** a Pilot 20 admission list.
+> The stricter post-Pilot-19 review in
+> [PILOT20_ADMISSION_AND_RESOURCES.md](PILOT20_ADMISSION_AND_RESOURCES.md)
+> found concrete source-result leakage in previously suggested Higham tasks
+> and no direct NumStability uptake in the first accepted L statement. Keep
+> this document for provenance; do not infer that topical entries below pass
+> the new direct-use/full-domain gate.
+
 The original screen used the frozen Design-17 schema-v3 NumStability atlas,
 independently copied from Titan and SHA-256 checked against its `atlas.json`.
 Its declaration file hash was

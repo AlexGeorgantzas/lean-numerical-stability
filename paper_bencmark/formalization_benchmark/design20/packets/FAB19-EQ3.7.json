@@ -1,0 +1,42 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "FAB19-EQ3.7",
+  "scientific_role": "candidate_pending_independent_source_review",
+  "selected_result": "Blanchard–Higham–Mary equation (3.7): backward-error bound for FABsum with recursive block sums and pairwise accumulation",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Nicholas J. Higham", "Theo Mary"],
+    "title": "A Class of Fast and Accurate Summation Algorithms",
+    "venue": "MIMS EPrint 2019.6",
+    "year": 2019,
+    "source_url": "https://eprints.maths.manchester.ac.uk/2729/3/paper.pdf"
+  },
+  "paper_pdf": {
+    "path_basename": "FAB19.pdf",
+    "sha256": "6a450af462ecb0479f8d96a7833e6c09ae915b678fbef4e86d5b373cde509ff1"
+  },
+  "paper_locations": [
+    {
+      "section": "Sections 2.2–2.3 and Algorithm 3.1",
+      "printed_pages": "3–4",
+      "pdf_pages": "4–5",
+      "anchor": "Blocked summation, arbitrary-length pairwise summation, FABsum algorithm, and n divisible by b"
+    },
+    {
+      "section": "Section 3.1, equation (3.7) and Theorem 3.1",
+      "printed_pages": "5–6",
+      "pdf_pages": "6–7",
+      "anchor": "Per-input backward-error representation with first-order coefficient b-1+ceil(log2(n/b))"
+    }
+  ],
+  "task_clarification": [
+    "Formalize equation (3.7) as a specialization of FABsum: for n=k*b with positive k and b, compute each size-b block by recursive working-precision summation, then use an arbitrary-length pairwise sum of the k computed block totals at the same precision.",
+    "For every vector of n real inputs, represent the computed value as the exact sum of x_i*(1+mu_i), with a uniform bound whose first-order coefficient is b-1+ceil(log2(k)). An explicit finite-u gamma-form bound that implies the paper's first-order statement is acceptable as a strengthening if it preserves the full source domain and algorithm.",
+    "The paper includes b=1 and b=n as special cases; do not restrict k to powers of two or omit either case."
+  ],
+  "scope_constraints": [
+    "Cover arbitrary positive k and b for which the standard gamma guards hold; pairwise accumulation may use exact zero padding, but it must not narrow the number of blocks to a power of two.",
+    "The conclusion is a backward-error representation for every input, not merely a forward absolute-error bound or a bound for one-signed inputs.",
+    "Use the actual recursive block and pairwise accumulation algorithms; do not assume an abstract bound on the already-composed FABsum as a hypothesis.",
+    "The asymptotic O(u^2) remainder is not itself a numeric inequality at arbitrary fixed u; any finite-u strengthening needs its exact coefficient and validity assumptions."
+  ]
+}

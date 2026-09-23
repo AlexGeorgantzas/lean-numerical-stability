@@ -13,6 +13,20 @@ from common import BenchmarkError, sha256_bytes, utc_now
 EXPECTED_LOGICAL_CPUS = 8
 EXPECTED_MEMORY_BYTES = 32 * 1024 * 1024 * 1024
 EXPECTED_TASKS_MAX = 512
+HARDWARE_PROFILE_ENV = "HIGHAMBENCH_HARDWARE_PROFILE"
+
+
+def _required_hardware_profile() -> tuple[list[int] | None, int, str]:
+    """Resolve only the frozen legacy profile or a prospective Pilot-20 lane."""
+    name = os.environ.get(HARDWARE_PROFILE_ENV)
+    if not name:
+        return None, EXPECTED_MEMORY_BYTES, "legacy-8cpu-32gib"
+    from design20_lanes import LANE_CPUS, LANE_MEMORY_BYTES
+
+    prefix = "pilot20-lane-"
+    if not name.startswith(prefix) or name[len(prefix):] not in LANE_CPUS:
+        raise BenchmarkError("unknown Titan hardware profile")
+    return list(LANE_CPUS[name[len(prefix):]]), LANE_MEMORY_BYTES, name
 
 
 def _expand_cpu_list(value: str) -> list[int]:
@@ -149,6 +163,7 @@ def verify_frozen_hardware_identity(
 
 
 def snapshot_hardware(*, strict: bool) -> dict[str, Any]:
+    required_cpus, required_memory_bytes, profile_name = _required_hardware_profile()
     affinity = (
         sorted(os.sched_getaffinity(0))
         if hasattr(os, "sched_getaffinity")
@@ -200,14 +215,19 @@ def snapshot_hardware(*, strict: bool) -> dict[str, Any]:
         "cpu_model_names": model_names,
         "cpuinfo_sha256": sha256_bytes(cpuinfo.encode("utf-8")) if cpuinfo else None,
         "required_logical_cpus": EXPECTED_LOGICAL_CPUS,
-        "required_memory_bytes": EXPECTED_MEMORY_BYTES,
+        "required_memory_bytes": required_memory_bytes,
         "required_tasks_max": EXPECTED_TASKS_MAX,
+        "hardware_profile": profile_name,
+        "required_affinity_cpus": required_cpus,
         "affinity_mutation_canary": mutation_canary,
         "strict": strict,
     }
     checks = {
         "linux_x86_64": platform.system() == "Linux" and platform.machine() == "x86_64",
         "affinity_exactly_8": len(affinity) == EXPECTED_LOGICAL_CPUS,
+        "affinity_matches_profile": (
+            required_cpus is None or affinity == required_cpus
+        ),
         "affinity_mutation_denied": mutation_canary.get("denied") is True,
         "cgroup_v2_present": cgroup is not None,
         "cgroup_cpuset_exactly_8_if_exposed": (
@@ -216,8 +236,9 @@ def snapshot_hardware(*, strict: bool) -> dict[str, Any]:
         "affinity_matches_cgroup_if_exposed": (
             not cpuset or set(affinity) == set(cpuset)
         ),
-        "memory_max_exactly_32_gib": memory_max == EXPECTED_MEMORY_BYTES,
-        "effective_memory_exactly_32_gib": effective_memory_max == EXPECTED_MEMORY_BYTES,
+        "memory_max_matches_profile": memory_max == required_memory_bytes,
+        "effective_memory_matches_profile":
+            effective_memory_max == required_memory_bytes,
         "memory_swap_disabled": swap_max_raw == "0",
         "tasks_max_exactly_512": pids_max_raw == str(EXPECTED_TASKS_MAX),
         "effective_tasks_max_exactly_512": effective_pids_max == EXPECTED_TASKS_MAX,
@@ -246,7 +267,10 @@ def host_cpu_allowlist() -> str:
     return ",".join(runs)
 
 
-def systemd_service_envelope_prefix(systemd_run: str) -> list[str]:
+def systemd_service_envelope_prefix(
+    systemd_run: str, *, cpus: str | None = None,
+    memory_bytes: int = EXPECTED_MEMORY_BYTES,
+) -> list[str]:
     """Build the synchronous delegated user-service prefix used on Titan.
 
     Ubuntu's systemd 252 rejects ``--wait`` together with ``--scope``.  A
@@ -259,7 +283,9 @@ def systemd_service_envelope_prefix(systemd_run: str) -> list[str]:
     inherited affinity; the generated-command wrapper adds a second boundary.
     """
 
-    cpus = host_cpu_allowlist()
+    cpus = host_cpu_allowlist() if cpus is None else cpus
+    if memory_bytes <= 0:
+        raise BenchmarkError("systemd service memory cap must be positive")
     return [
         systemd_run,
         "--user",
@@ -279,7 +305,7 @@ def systemd_service_envelope_prefix(systemd_run: str) -> list[str]:
         "--property",
         "SystemCallArchitectures=native",
         "--property",
-        f"MemoryMax={EXPECTED_MEMORY_BYTES}",
+        f"MemoryMax={memory_bytes}",
         "--property",
         "MemorySwapMax=0",
         "--property",

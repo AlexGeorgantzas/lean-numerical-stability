@@ -16,6 +16,7 @@ engineering evidence until a separate untouched campaign is predeclared.
 from __future__ import annotations
 
 import argparse
+from contextlib import nullcontext
 from dataclasses import dataclass
 import json
 import os
@@ -66,6 +67,7 @@ from pair_controller import (
 from prepare_candidate_audit import CandidateAuditError, prepare_candidate_audit
 from statement_codex_driver import StatementCodexDriver
 from hardware import snapshot_hardware
+from design20_telemetry import CgroupSampler, lane_service_cgroup
 
 
 SCIENTIFIC_STATUS = "UNSCORED_ENGINEERING_EXPLORATORY"
@@ -716,6 +718,21 @@ def _packet_treatment_surfaces(
         }
         if allowed != sorted(expected_interface_names):
             raise BenchmarkError("packet signature allowlist does not match its records")
+    # The public FPModel interface itself contains the BasicOp inductive.
+    # Its constructors and exact interpreter are foundational syntax, not
+    # hidden numerical results.  Pilot 19 exposed FPModel but rejected these
+    # members when a candidate used them to state the model faithfully.
+    # Grant only this closed, task-neutral family when FPModel is visible;
+    # do not grant other declarations from its module or import closure.
+    if "NumStability.FPModel" in names:
+        names.update({
+            "NumStability.BasicOp",
+            "NumStability.BasicOp.add",
+            "NumStability.BasicOp.sub",
+            "NumStability.BasicOp.mul",
+            "NumStability.BasicOp.div",
+            "NumStability.BasicOp.exact",
+        })
     return names, exposed_modules, signature_modules
 
 
@@ -1203,20 +1220,37 @@ def _run_statement_condition_attempts(
                 attempt_root / "hardware-before.json", hardware_before, mode=0o400
             )
             requested_thread_id = thread_id
-            turn = driver.run_turn(
-                prompt=turn_prompt,
-                workspace=workspace,
-                artifact_dir=attempt_root / "formalizer",
-                timeout_seconds=remaining,
-                thread_id=thread_id,
+            sample_hardware = bool(getattr(args, "sample_hardware", False))
+            cgroup = hardware_before.get("cgroup_v2_path")
+            if sample_hardware and not isinstance(cgroup, str):
+                raise BenchmarkError("resource sampling requires a lane cgroup")
+            command_procs = os.environ.get("HIGHAMBENCH_COMMAND_CGROUP_PROCS")
+            if sample_hardware and not command_procs:
+                raise BenchmarkError("resource sampling requires a command cgroup")
+            sampler = (
+                CgroupSampler(lane_service_cgroup(Path(cgroup), Path(command_procs)))
+                if sample_hardware else None
             )
-            freeze_started = time.perf_counter_ns()
-            frozen = freeze_candidate(
-                candidate,
-                attempt_root / "Candidate.lean",
-                auth_file=deployment.auth_file,
-            )
-            freeze_completed = time.perf_counter_ns()
+            with sampler if sampler is not None else nullcontext():
+                turn = driver.run_turn(
+                    prompt=turn_prompt,
+                    workspace=workspace,
+                    artifact_dir=attempt_root / "formalizer",
+                    timeout_seconds=remaining,
+                    thread_id=thread_id,
+                )
+                freeze_started = time.perf_counter_ns()
+                frozen = freeze_candidate(
+                    candidate,
+                    attempt_root / "Candidate.lean",
+                    auth_file=deployment.auth_file,
+                )
+                freeze_completed = time.perf_counter_ns()
+            resource_summary = None
+            if sampler is not None:
+                trace = attempt_root / "formalization-resources.jsonl"
+                summary = attempt_root / "formalization-resources.json"
+                resource_summary = sampler.write(trace, summary)
             freeze_seconds = (freeze_completed - freeze_started) / 1_000_000_000
             if (
                 turn.active_started_perf_ns is None
@@ -1333,6 +1367,7 @@ def _run_statement_condition_attempts(
                 "candidate": frozen,
                 "hardware_before": hardware_before,
                 "hardware_after": hardware_after,
+                "formalization_resources": resource_summary,
                 "validation_sha256": sha256_file(attempt_root / "validation.json"),
                 "validation_seconds_excluded": validation_seconds,
                 "validation_pass": validation.get("pass") is True,
@@ -1944,6 +1979,8 @@ def _run_condition(
 
 
 def run(args: argparse.Namespace) -> dict[str, Any]:
+    if getattr(args, "sample_hardware", False) and not args.require_titan_envelope:
+        raise BenchmarkError("hardware sampling requires the Titan cgroup envelope")
     if args.statement_only and not args.require_titan_envelope:
         raise BenchmarkError(
             "statement-only scientific runs require the authenticated Titan envelope"
@@ -2120,6 +2157,11 @@ def make_parser() -> argparse.ArgumentParser:
         "--statement-only",
         action="store_true",
         help="measure only statement formalization; require one final target sorry",
+    )
+    parser.add_argument(
+        "--sample-hardware",
+        action="store_true",
+        help="sample lane-cgroup CPU and RAM during each contestant turn",
     )
     return parser
 

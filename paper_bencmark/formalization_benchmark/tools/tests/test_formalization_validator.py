@@ -90,6 +90,18 @@ end HighamBenchCandidate
         inspection = inspect_candidate_source(source)
         self.assertTrue(inspection["pass"], inspection)
 
+    def test_constructor_and_projection_named_constant_are_not_declarations(self) -> None:
+        source = """\
+namespace HighamBenchCandidate
+inductive Expression where
+  | constant : Nat → Expression
+def sample : Expression := .constant 1
+theorem target : sample = Expression.constant 1 := by rfl
+end HighamBenchCandidate
+"""
+        inspection = inspect_candidate_source(source)
+        self.assertTrue(inspection["pass"], inspection)
+
     def test_rejects_every_integrity_escape(self) -> None:
         declarations = {
             "sorry": "def helper : True := by sorry",

@@ -110,6 +110,43 @@ class HardwareIdentityTests(unittest.TestCase):
         self.assertEqual(record["cgroup_cpuset_effective"], [])
         self.assertTrue(record["checks"]["cgroup_cpuset_exactly_8_if_exposed"])
 
+    def test_pilot20_profile_requires_its_exact_lane_and_24_gib(self) -> None:
+        lane = {0, 1, 2, 3, 16, 17, 18, 19}
+        memory = 24 * 1024 ** 3
+        with tempfile.TemporaryDirectory() as temporary:
+            cgroup = Path(temporary)
+            (cgroup / "memory.max").write_text(str(memory), encoding="ascii")
+            (cgroup / "memory.swap.max").write_text("0", encoding="ascii")
+            (cgroup / "pids.max").write_text(str(EXPECTED_TASKS_MAX), encoding="ascii")
+
+            def limits(_root: Path, filename: str) -> list[int]:
+                return [memory] if filename == "memory.max" else [EXPECTED_TASKS_MAX]
+
+            with mock.patch.dict("hardware.os.environ", {
+                "HIGHAMBENCH_HARDWARE_PROFILE": "pilot20-lane-A",
+            }, clear=True), mock.patch(
+                "hardware._cgroup_v2_path", return_value=cgroup
+            ), mock.patch(
+                "hardware._finite_ancestor_limits", side_effect=limits
+            ), mock.patch(
+                "hardware.os.sched_getaffinity", return_value=lane, create=True
+            ), mock.patch(
+                "hardware.platform.system", return_value="Linux"
+            ), mock.patch(
+                "hardware.platform.machine", return_value="x86_64"
+            ), mock.patch(
+                "hardware.affinity_mutation_canary",
+                return_value={"attempted": True, "denied": True, "errno": 1},
+            ):
+                record = snapshot_hardware(strict=True)
+                self.assertTrue(record["admitted"])
+                with mock.patch(
+                    "hardware.os.sched_getaffinity", return_value=set(range(8)),
+                    create=True,
+                ):
+                    with self.assertRaisesRegex(BenchmarkError, "affinity_matches_profile"):
+                        snapshot_hardware(strict=True)
+
 
 if __name__ == "__main__":
     unittest.main()

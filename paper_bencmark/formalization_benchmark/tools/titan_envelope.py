@@ -34,9 +34,17 @@ def _write_cgroup_value(path: Path, value: str) -> None:
 
 
 def prepare_command_cgroup(
-    *, proc_cgroup: Path = Path("/proc/self/cgroup"), cgroup_root: Path = Path("/sys/fs/cgroup")
+    *, proc_cgroup: Path = Path("/proc/self/cgroup"),
+    cgroup_root: Path = Path("/sys/fs/cgroup"),
+    outer_memory_bytes: int = EXPECTED_MEMORY_BYTES,
+    command_memory_bytes: int = COMMAND_MEMORY_BYTES,
+    control_memory_low_bytes: int = CONTROL_MEMORY_LOW_BYTES,
 ) -> Path:
     """Reserve the trusted control plane and bound every generated command tree."""
+
+    if not (0 < control_memory_low_bytes < outer_memory_bytes
+            and 0 < command_memory_bytes <= outer_memory_bytes):
+        raise BenchmarkError("invalid delegated cgroup memory partition")
 
     try:
         unified = [
@@ -65,12 +73,12 @@ def prepare_command_cgroup(
     commands.mkdir(exist_ok=False)
     _write_cgroup_value(control / "cgroup.procs", str(os.getpid()))
     _write_cgroup_value(scope / "cgroup.subtree_control", "+cpu +memory +pids")
-    _write_cgroup_value(control / "memory.max", str(EXPECTED_MEMORY_BYTES))
+    _write_cgroup_value(control / "memory.max", str(outer_memory_bytes))
     _write_cgroup_value(control / "memory.swap.max", "0")
     _write_cgroup_value(control / "pids.max", str(EXPECTED_TASKS_MAX))
-    _write_cgroup_value(control / "memory.low", str(CONTROL_MEMORY_LOW_BYTES))
+    _write_cgroup_value(control / "memory.low", str(control_memory_low_bytes))
     _write_cgroup_value(control / "cpu.weight", str(CONTROL_CPU_WEIGHT))
-    _write_cgroup_value(commands / "memory.max", str(COMMAND_MEMORY_BYTES))
+    _write_cgroup_value(commands / "memory.max", str(command_memory_bytes))
     _write_cgroup_value(commands / "memory.swap.max", "0")
     _write_cgroup_value(commands / "pids.max", str(COMMAND_TASKS_MAX))
     _write_cgroup_value(commands / "cpu.weight", str(COMMAND_CPU_WEIGHT))

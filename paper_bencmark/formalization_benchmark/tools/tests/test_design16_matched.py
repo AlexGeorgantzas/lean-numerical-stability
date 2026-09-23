@@ -68,6 +68,20 @@ def _write_atlas(root: Path, modules: list[str]) -> Path:
 
 
 class Design16MatchedTests(unittest.TestCase):
+    def test_resource_sampling_fails_without_cgroup_envelope(self) -> None:
+        from design16_matched import make_parser, run
+
+        args = make_parser().parse_args([
+            "--deployment", "/synthetic/deployment.json",
+            "--mathlib-atlas", "/synthetic/atlas",
+            "--task-id", "H20-8",
+            "--condition-order", "R0,R1",
+            "--output-root", "/synthetic/result",
+            "--sample-hardware",
+        ])
+        with self.assertRaisesRegex(BenchmarkError, "requires the Titan cgroup"):
+            run(args)
+
     def test_pilot18_warm_fork_copies_verified_checkpoint_only_for_r1(self) -> None:
         with tempfile.TemporaryDirectory() as raw:
             root = Path(raw)
@@ -325,6 +339,39 @@ class Design16MatchedTests(unittest.TestCase):
         )
         self.assertTrue(result["pass"])
 
+    def test_fpmodel_exposes_only_closed_basicop_foundations(self) -> None:
+        composition = {
+            "retrieved_roots": [{
+                "declaration": {
+                    "name": "NumStability.FPModel",
+                    "module": "NumStability.FloatingPoint.Model",
+                },
+                "dependencies": [],
+            }]
+        }
+        dependencies = [
+            {"name": name, "owner_module": "NumStability.FloatingPoint.Model"}
+            for name in (
+                "NumStability.BasicOp.add",
+                "NumStability.BasicOp.exact",
+                "NumStability.unlisted_result",
+            )
+        ]
+        private = {"raw_semantic_report": {
+            "dependencies": dependencies,
+            "edges": [
+                {"parent": "HighamBenchCandidate.target", "child": row["name"]}
+                for row in dependencies
+            ],
+        }}
+        result = _treatment_interface_check(
+            candidate_text="import NumStability.FloatingPoint.Model\n",
+            composition=composition,
+            private_dossier=private,
+        )
+        self.assertEqual(result["forbidden_direct_declarations"],
+                         ["NumStability.unlisted_result"])
+
     def test_treatment_interface_allows_frozen_signature_closure_only(self) -> None:
         composition = {
             "retrieved_roots": [
@@ -485,7 +532,14 @@ class Design16MatchedTests(unittest.TestCase):
         allowed, allowed_imports = _packet_treatment_allowlist(composition)
         self.assertEqual(
             allowed,
-            set(seed_names) | {name for name, _module, _kind in direct},
+            set(seed_names) | {name for name, _module, _kind in direct} | {
+                "NumStability.BasicOp",
+                "NumStability.BasicOp.add",
+                "NumStability.BasicOp.sub",
+                "NumStability.BasicOp.mul",
+                "NumStability.BasicOp.div",
+                "NumStability.BasicOp.exact",
+            },
         )
         self.assertEqual(allowed_imports, {"NumStability.H5.Packet"})
         excluded = {

@@ -469,7 +469,14 @@ def inspect_candidate_source(
     declarations = _declarations(tokens)
     issues: list[dict[str, Any]] = []
 
-    for token in tokens:
+    for index, token in enumerate(tokens):
+        # ``constant`` can also be an ordinary constructor or field name.
+        # Pilot 19 incorrectly rejected ``| constant`` and ``.constant`` in
+        # otherwise valid Lean.  These positions cannot introduce a new
+        # top-level ``constant`` declaration; keep rejecting that command.
+        if token.value == "constant" and index > 0 and \
+                tokens[index - 1].value in {"|", ".", "where"}:
+            continue
         if token.value in FORBIDDEN_TOKENS and not (
             allow_single_target_sorry and token.value == "sorry"
         ):

@@ -117,6 +117,54 @@ class ComponentRouterTests(unittest.TestCase):
         self.assertEqual([entry["record"]["name"] for entry in selected],
                          ["NumStability.DoolittleLU"])
 
+    def test_least_squares_backward_error_exposes_quantity_not_result(self) -> None:
+        names = (
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF",
+            "NumStability.RectLSNormalEquations",
+            "NumStability.RectLSNormalEquations.iff_isLeastSquaresMinimizer",
+            "NumStability.lsNormwiseBackwardErrorEtaF_tendsto_matrixOnlyEtaF_atTop",
+        )
+        ranked = [item(name, "def" if index < 2 else "theorem",
+                       "NumStability.Algorithms.LeastSquares.LSQRSolve", 20 - index)
+                  for index, name in enumerate(names)]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text="matrix-only least-squares backward error at zero vector",
+            limit=10,
+        )
+        self.assertEqual([entry["record"]["name"] for entry in selected[:3]],
+                         list(names[:3]))
+        self.assertNotIn(names[3], [entry["record"]["name"] for entry in selected])
+
+    def test_block_summation_routes_arbitrary_length_composition_components(self) -> None:
+        names = (
+            "NumStability.fl_recursiveSum",
+            "NumStability.fl_higherPrecisionRecursiveSum",
+            "NumStability.fl_clog2PairwiseSum",
+            "NumStability.clog2PairwiseSum_backward_error",
+            "NumStability.FPModel",
+            "NumStability.gamma",
+        )
+        ranked = [item(name, "theorem" if "backward_error" in name else "def",
+                       "NumStability.Algorithms.Summation", 20 - index)
+                  for index, name in enumerate(names)]
+        records = [entry["record"] for entry in ranked]
+        high = select_component_roots(
+            ranked, records=records,
+            source_text="recursive block sums and extended-precision recursive accumulation",
+            limit=10,
+        )
+        pair = select_component_roots(
+            ranked, records=records,
+            source_text="recursive block sums and pairwise accumulation",
+            limit=10,
+        )
+        self.assertEqual([entry["record"]["name"] for entry in high[:2]],
+                         [names[0], names[1]])
+        self.assertEqual([entry["record"]["name"] for entry in pair[:2]],
+                         [names[0], names[2]])
+        self.assertIn(names[3], [entry["record"]["name"] for entry in pair])
+
 
 if __name__ == "__main__":
     unittest.main()
