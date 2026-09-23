@@ -95,7 +95,11 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
     if getattr(args, "proof_after_faithful", False):
         if admission_path is None:
             raise BenchmarkError("proof pilot requires an explicit frozen admission")
-        from design27_admission import verify_admission as verify_proof_admission
+        admission_schema = load_json(admission_path).get("schema_version")
+        if admission_schema == "pilot-29-proof-development-admission-1":
+            from design29_admission import verify_admission as verify_proof_admission
+        else:
+            from design27_admission import verify_admission as verify_proof_admission
         admission = verify_proof_admission(
             task_id, packet_path=packet_path, paper=paper,
             admission_path=admission_path, corpus_path=corpus_path,
