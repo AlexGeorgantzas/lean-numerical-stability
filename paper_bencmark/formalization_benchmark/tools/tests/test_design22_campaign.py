@@ -63,6 +63,33 @@ class Pilot22CampaignTests(unittest.TestCase):
         self.assertEqual(command[command.index("--admission") + 1], "/tmp/admission12.json")
         self.assertEqual(command[command.index("--condition-order") + 1], "R1,R0")
 
+    def test_proof_pair_carries_unrouted_and_proof_limits(self) -> None:
+        args = argparse.Namespace(
+            deployment=Path("/tmp/deployment.json"),
+            mathlib_atlas=Path("/tmp/mathlib"),
+            numstability_atlas=Path("/tmp/numstability"),
+            model_qualification=Path("/tmp/qualification.json"),
+            warm_root=Path("/tmp/warm"), output_root=Path("/tmp/campaign"),
+            corpus=Path("/tmp/corpus.json"), admission=Path("/tmp/admission.json"),
+            task_root=Path("/tmp/tasks"), prompt_root=Path("/tmp/prompts"),
+            selection_policy="no-automatic-retrieval", root_limit=0,
+            dependency_limit=0, proof_after_faithful=True,
+            proof_time_limit_seconds=3600, proof_submission_limit=4,
+            proof_prompt_path=Path("/tmp/prompts/prove.md"),
+            warm_root_schema_version="pilot-27-warm-root-1",
+            warm_scout_prompt_path=Path("/tmp/prompts/scout.md"),
+        )
+        command = _pair_command(args, "FAB19-EQ3.5", 0, "A")
+        self.assertIn("--proof-after-faithful", command)
+        for flag, value in (
+            ("--selection-policy", "no-automatic-retrieval"),
+            ("--root-limit", "0"),
+            ("--dependency-limit", "0"),
+            ("--proof-time-limit-seconds", "3600"),
+            ("--warm-root-schema-version", "pilot-27-warm-root-1"),
+        ):
+            self.assertEqual(command[command.index(flag) + 1], value)
+
     def test_refills_a_freed_lane_without_waiting_for_slow_sibling(self) -> None:
         args = argparse.Namespace(
             deployment=Path("/tmp/deployment.json"),
