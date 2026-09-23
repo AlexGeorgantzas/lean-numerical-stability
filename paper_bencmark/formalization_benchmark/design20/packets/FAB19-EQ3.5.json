@@ -36,7 +36,7 @@
   ],
   "task_clarification": [
     "Formalize the equation (3.5) specialization of Algorithm 3.1, not the fully abstract FastSum/AccurateSum Theorem 3.1. For n = k*b with positive k and b, compute each size-b block by recursive summation at working unit roundoff u; recursively sum the k computed block totals at extended unit roundoff u^2; then round that accumulator once to working precision.",
-    "For every vector of n real inputs, the computed FABsum is exactly the sum of per-input perturbed values x_i*(1+mu_i), with a uniform bound on |mu_i| whose first-order coefficient in u is b, independent of k. A precise finite-u gamma-form bound that implies b*u + O(u^2) is acceptable as a strengthening if all paper cases and the complete algorithm are retained.",
+    "For every vector of n floating-point inputs representable in the working format, the computed FABsum is exactly the sum of per-input perturbed values x_i*(1+mu_i), with a uniform bound on |mu_i| whose first-order coefficient in u is b, independent of k. A precise finite-u gamma-form bound that implies b*u + O(u^2) is acceptable as a strengthening if all paper cases and the complete algorithm are retained.",
     "Represent the final working-precision rounding explicitly; it is not the same as the abstract FPModel operation fl_add 0 x, which is exact in this library.",
     "Rounding a value already representable in working precision must be exact. In particular, with one block (b=n), extended accumulation and the final rounding return the FastSum block value unchanged.",
     "The statement must cover the paper's b=1 and b=n special cases and all k,b>0 for which the floating-point error bounds are valid."
@@ -45,7 +45,7 @@
     "Do not narrow to nonnegative or no-cancellation inputs, a fixed block size, a fixed number of blocks, or a power-of-two number of blocks.",
     "The conclusion is a backward-error representation for every input, not merely a forward absolute-error bound.",
     "Use the actual recursive block algorithm, higher-precision recursive accumulator, and final working-precision rounding; do not assume an abstract bound on the already-composed FABsum as a hypothesis.",
-    "The source assumes n is divisible by b and invokes the standard no-overflow/no-underflow relative-error model and gamma-valid smallness guards. Keep the source's algorithm/model domain rather than silently extending to unsupported arithmetic.",
+    "The source assumes n is divisible by b and excludes overflow. It explicitly says its summation bounds continue to hold in the presence of underflow because an underflowing addition or subtraction is exact; do not add a no-underflow restriction. Use gamma-valid smallness guards where the finite-u strengthening needs them, and keep the paper's working-format input domain.",
     "A task-local representability predicate and exact-rounding law may be used to express nested-format semantics missing from the abstract FPModel; these laws must describe arithmetic, not assume the target FABsum error bound.",
     "The paper's asymptotic O(u^2) first-order statement is not itself a numeric inequality at an arbitrary fixed u. If giving a finite-u strengthening, state its exact coefficient and validity assumptions."
   ]
