@@ -42,3 +42,20 @@ overflow, underflow allowed, and the unguarded exact `(n−1)u` factor are all
 retained. It noted a minor strict-versus-nonstrict step in the published proof
 at n=2, not a defect in the theorem statement. Direct component, collision,
 and full-domain skeleton gates remain open.
+
+## Packet corrections pending fresh source review
+
+The first Langlois–Louvet Theorem 4 and 7 packet reviews found an unsupported
+2007 bibliography year in the pinned PDF. Both packets now use the PDF's arXiv
+v1 year 2006. The Theorem 7 reviewer additionally required the paper's
+implicit `2nu<1` gamma-validity condition and positive degree; those are now
+explicit. This does not weaken the selected criterion.
+
+The first Castaldo Proposition 3.2 and fixed-three-level packet reviews
+required the paper's explicit *no-underflow* assumption, correct Section 1.1
+model location, and accurate pointer-reset wording. The Proposition 3.2 packet
+now unambiguously selects the mathematical hierarchy supported by Section 3
+prose, Figure 3.2, and Proposition 3.1 rather than the plainly defective
+Figure 3.1(a) carry loop. It may only be admitted if a fresh independent
+review accepts that interpretation. The printed program defect and a separate
+problem in the paper's supporting error-counter algebra remain disclosed.

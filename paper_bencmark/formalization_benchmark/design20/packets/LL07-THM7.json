@@ -6,8 +6,8 @@
   "bibliographic_source": {
     "authors": ["Philippe Langlois", "Nicolas Louvet"],
     "title": "Faithful Polynomial Evaluation with Compensated Horner Algorithm",
-    "venue": "technical report / arXiv:cs/0610122",
-    "year": 2007,
+    "venue": "arXiv:cs/0610122v1 (PDF also bears a later title-block date)",
+    "year": 2006,
     "source_url": "https://arxiv.org/pdf/cs/0610122"
   },
   "paper_pdf": {
@@ -20,7 +20,7 @@
     {"section": "Section 3.2, Theorem 7 and equation (16)", "printed_pages": "9", "pdf_pages": "9", "anchor": "cond(p,x) < ((1-u)/(2+u))*u*gamma_(2n)^(-2) implies faithful rounding"}
   ],
   "task_clarification": [
-    "For a degree n polynomial p with floating coefficients and a floating argument x, use the exact Algorithm 6 CompHorner result, with Algorithm 5 EFTHorner inside it.",
+    "For every positive degree n polynomial p with floating coefficients and a floating argument x, use the exact Algorithm 6 CompHorner result, with Algorithm 5 EFTHorner inside it. The source defines gamma_k only for positive k and implicitly assumes k*u<1 whenever it is used; hence gamma_(2n) requires 2*n*u<1.",
     "Define cond(p,x)=tilde_p(x)/|p(x)| on the nonzero-evaluation domain. Under the strict equation (16) criterion cond(p,x) < ((1-u)/(2+u))*u/gamma_(2n)^2, the computed result is a faithful rounding of the exact p(x) in the paper's predecessor/successor sense.",
     "Retain the source's round-to-nearest, no-overflow, and no-underflow assumptions and the mathematical meaning of the floating-point neighbour relation."
   ],
@@ -28,6 +28,7 @@
     "Do not replace CompHorner by ordinary Horner or by an unspecified algorithm satisfying a preassumed accuracy contract.",
     "Do not replace faithful rounding with a relative-error or sign-only conclusion; preserve the predecessor/successor semantics.",
     "Preserve the strict inequality and exact coefficient (1-u)/(2+u), including the gamma_(2n)^2 denominator.",
+    "Require n>=1 and 2*n*u<1 as inherited from the source's gamma definition; do not invent a gamma_0 convention to make this criterion appear to cover constant polynomials.",
     "The source's condition number requires p(x)≠0; include this as a well-definedness guard rather than silently defining a misleading value at zero.",
     "The source's Theorem 7 statement does not repeat its global no-underflow/no-overflow assumptions; they still apply."
   ]

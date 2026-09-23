@@ -6,8 +6,8 @@
   "bibliographic_source": {
     "authors": ["Philippe Langlois", "Nicolas Louvet"],
     "title": "Faithful Polynomial Evaluation with Compensated Horner Algorithm",
-    "venue": "technical report / arXiv:cs/0610122",
-    "year": 2007,
+    "venue": "arXiv:cs/0610122v1 (PDF also bears a later title-block date)",
+    "year": 2006,
     "source_url": "https://arxiv.org/pdf/cs/0610122"
   },
   "paper_pdf": {
