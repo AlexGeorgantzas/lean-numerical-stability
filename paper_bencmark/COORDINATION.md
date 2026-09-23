@@ -831,3 +831,27 @@ above is superseded. ChatGPT sign-in remains required; no API billing.
 root on Titan, run the first pair alone and inspect it before continuing.
 Then prospectively admit and freeze a separate 10–15-task full corpus with
 genuine algorithm/error overlap and 2–4 hard tasks; preserve failures.
+
+---
+
+## 2026-09-24 — Codex — Pilot 27 first pair running
+
+The measured controller is frozen at commit `0256ec26f05cd4baefa7e0d68c9c0836902501d0`
+in Titan clone `/hdd/alexgeorgantzas/highambench/pilot27-controller-0256ec26f`.
+The single task-neutral GPT-6 Sol/high warm root is READY at
+`/hdd/alexgeorgantzas/highambench/pilot27-warm-root-20260923-a`.
+Campaign `/hdd/alexgeorgantzas/highambench/pilot27-proof-canary-20260923-a`
+is `RUNNING_FIRST_PAIR` on `FAB19-EQ3.5`, R0/N first. Its first two statements
+were audited unfaithful; its third was audited faithful and entered the timed
+proof stage. R1/L has not started. Do not edit the Titan controller clone,
+overlap another measured campaign, or silently restart this pair. The user
+explicitly authorized using the one Codex usage reset near exhaustion; it was
+redeemed once at 6% remaining (idempotency key
+`8d616b3a-6302-4afe-9e25-37178bde283f`). No reset credit remains. Use
+ChatGPT sign-in, not API billing or a second account.
+
+Current branch HEAD may advance for read-only diagnostics and corpus research,
+but the Titan controller stays pinned to `0256ec26f`. `design27/FULL_CORPUS_PROSPECTS.md`
+is a prospective worklist, not an admitted 10-task corpus. H5-5 and H23-6
+have likely target-result leakage and are excluded. Preserve all Pilot 27
+canary outcomes, favorable or not, before minting any revised pilot.
