@@ -121,12 +121,14 @@ def _fallback_role(record: Mapping[str, Any]) -> str | None:
 
 def select_component_roots(
     ranked: list[dict[str, Any]], *, records: list[dict[str, Any]],
-    source_text: str, limit: int
+    source_text: str, limit: int, strict_stochastic_roles: bool = False,
 ) -> list[dict[str, Any]]:
     """Prefer exact public API components, then bounded lexical fallback."""
     if limit < 1 or limit > 12:
         raise ValueError("component root limit must be between 1 and 12")
     active = _active_families(source_text)
+    wants_probability = any(word in source_text.casefold() for word in
+                            ("probability", "probabilistic", "random", "stochastic", "expectation"))
     by_name = {str(item["record"]["name"]): item for item in ranked}
     # Anchor lookup is against the complete frozen atlas. A foundational
     # definition need not lexically resemble the source to be relevant.
@@ -142,10 +144,10 @@ def select_component_roots(
         _, algorithms, support = FAMILIES[family]
         wanted["algorithm"].extend(algorithms)
         wanted["deterministic_error"].extend(support)
-        wanted["norm_or_bridge"].extend(BRIDGES.get(family, ()))
+        if not strict_stochastic_roles or wants_probability:
+            wanted["norm_or_bridge"].extend(BRIDGES.get(family, ()))
     wanted["floating_point"].extend(CORE["floating_point"])
-    if any(word in source_text.casefold() for word in
-           ("probability", "probabilistic", "random", "stochastic", "expectation")):
+    if wants_probability:
         wanted["probability"].extend(CORE["probability"])
 
     selected: list[dict[str, Any]] = []
@@ -169,6 +171,8 @@ def select_component_roots(
     # Absent declarations cannot be fabricated. The same condition-neutral
     # fallback works for Mathlib-only and union-corpus retrieval.
     for role in ROLE_ORDER:
+        if strict_stochastic_roles and role == "probability" and not wants_probability:
+            continue
         if role_counts[role]:
             continue
         if not active and role in {"algorithm", "deterministic_error"}:

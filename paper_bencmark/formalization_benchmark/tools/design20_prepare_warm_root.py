@@ -13,7 +13,7 @@ from design18_envelope import launch_or_activate
 from design18_prepare_warm_root import prepare
 
 
-PROMPT = Path(__file__).resolve().parents[1] / "design20" / "prompts" / "scout.md"
+PROMPT = Path(__file__).resolve().parents[1] / "design20" / "prompts" / "scout_compact.md"
 SCHEMA = "pilot-20-warm-root-1"
 
 

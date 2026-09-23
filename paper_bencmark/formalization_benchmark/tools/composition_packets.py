@@ -456,11 +456,13 @@ def build_composition_packet(
     ranked = rank_records(packet, records)
     if selection_policy == "legacy-coupled-title":
         roots = _select_roots(ranked, limit=root_limit)
-    elif selection_policy == "component-roles-1":
+    elif selection_policy in {"component-roles-1", "component-roles-contextual-2"}:
         from component_router import routing_anchor_text, select_component_roots
 
         roots = select_component_roots(
-            ranked, records=records, source_text=routing_anchor_text(packet), limit=root_limit
+            ranked, records=records, source_text=routing_anchor_text(packet),
+            limit=root_limit,
+            strict_stochastic_roles=selection_policy == "component-roles-contextual-2",
         )
     else:
         raise BenchmarkError(f"unknown composition selection policy: {selection_policy}")
@@ -499,7 +501,7 @@ def build_composition_packet(
     route_status = (
         "DIRECT_OR_COMPOSITION"
         if (
-            (selection_policy == "component-roles-1" and bool(cards))
+            (selection_policy in {"component-roles-1", "component-roles-contextual-2"} and bool(cards))
             or (title_anchor_pairs and max(anchor_counts, default=0) >= 2)
         )
         else "NO_ROUTE"
@@ -582,7 +584,7 @@ def build_composition_packet(
         ", ".join(f"`{term}`" for term in result["query_terms"]),
         "",
     ]
-    if selection_policy == "component-roles-1":
+    if selection_policy in {"component-roles-1", "component-roles-contextual-2"}:
         lines.extend([
             "A retrieved declaration may use a different probability space,",
             "rounding model, or algorithm representation from the paper. Do not",

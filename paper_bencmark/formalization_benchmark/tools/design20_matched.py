@@ -53,7 +53,7 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
             or warm.get("status") != "READY"
             or warm.get("model") != MODEL
             or warm.get("reasoning_effort") != EFFORT
-            or warm.get("scout_prompt_sha256") != sha256_file(ROOT / "prompts" / "scout.md")
+            or warm.get("scout_prompt_sha256") != sha256_file(ROOT / "prompts" / "scout_compact.md")
             or warm.get("library_atlas_sha256") != sha256_file(deployment.library_atlas / "declarations.jsonl")
             or warm.get("codex_binary_sha256") != sha256_file(deployment.codex_binary)
             or warm.get("code_mode_host_sha256") != deployment.code_mode_host_sha256
@@ -99,10 +99,10 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         validation_timeout_seconds=600, root_limit=12, dependency_limit=3,
         maximum_packet_bytes=64 * 1024, submission_limit=4,
         require_titan_envelope=True, statement_only=True,
-        selection_policy="component-roles-1", library_access_policy="open-snapshot",
+        selection_policy="component-roles-contextual-2", library_access_policy="open-snapshot",
         sample_hardware=True, warm_root=warm_root,
         warm_root_schema_version="pilot-20-warm-root-1",
-        warm_scout_prompt_path=ROOT / "prompts" / "scout.md",
+        warm_scout_prompt_path=ROOT / "prompts" / "scout_compact.md",
     )
     try:
         for condition in expected:

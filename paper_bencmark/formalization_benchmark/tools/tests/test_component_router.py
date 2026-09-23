@@ -165,6 +165,23 @@ class ComponentRouterTests(unittest.TestCase):
                          [names[0], names[2]])
         self.assertIn(names[3], [entry["record"]["name"] for entry in pair])
 
+    def test_contextual_policy_omits_stochastic_cards_for_deterministic_source(self) -> None:
+        ranked = [
+            item("NumStability.fl_clog2PairwiseSum", "def",
+                 "NumStability.Algorithms.Summation.Pairwise.Core", 30),
+            item("NumStability.FiniteProbability.eventProb", "def",
+                 "NumStability.Analysis.FiniteProbability", 29),
+            item("NumStability.SumTree.statisticalRunningErrorContribution_rms_le",
+                 "theorem", "NumStability.Algorithms.Summation.Tree.Core", 28),
+        ]
+        selected = select_component_roots(
+            ranked, records=[entry["record"] for entry in ranked],
+            source_text="pairwise summation deterministic backward error",
+            limit=10, strict_stochastic_roles=True,
+        )
+        self.assertEqual([entry["record"]["name"] for entry in selected],
+                         ["NumStability.fl_clog2PairwiseSum"])
+
 
 if __name__ == "__main__":
     unittest.main()

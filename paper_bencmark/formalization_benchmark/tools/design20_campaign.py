@@ -28,7 +28,7 @@ def _inputs(args: argparse.Namespace) -> dict:
         "sources": {task: load_json(ROOT / "packets" / f"{task}.json")["paper_pdf"]["sha256"]
                     for task in corpus["scheduled_order"]},
         "prompts": {name: sha256_file(ROOT / "prompts" / f"{name}.md")
-                    for name in ("common", "library_appendix", "scout")},
+                    for name in ("common", "library_appendix", "scout_compact")},
         "deployment_sha256": sha256_file(args.deployment),
         "mathlib_atlas_sha256": sha256_file(args.mathlib_atlas / "declarations.jsonl"),
         "numstability_atlas_sha256": sha256_file(args.numstability_atlas / "declarations.jsonl"),

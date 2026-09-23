@@ -61,7 +61,7 @@ def run(args: argparse.Namespace) -> dict:
                     atlas_paths=list(spec.atlas_paths), corpus_id=spec.corpus_id,
                     contract_additions=[], root_limit=12, dependency_limit=3,
                     maximum_markdown_bytes=64 * 1024,
-                    selection_policy="component-roles-1", open_library_access=True,
+                    selection_policy="component-roles-contextual-2", open_library_access=True,
                 )
                 interface = _derive_signature_interface(
                     deployment=deployment, composition=raw,
@@ -77,7 +77,7 @@ def run(args: argparse.Namespace) -> dict:
                     contract_additions=[], root_limit=12, dependency_limit=3,
                     maximum_markdown_bytes=64 * 1024,
                     exposed_signature_overrides=signatures,
-                    selection_policy="component-roles-1", open_library_access=True,
+                    selection_policy="component-roles-contextual-2", open_library_access=True,
                 )
                 if (composition["route_status"] != raw["route_status"]
                         or _packet_exposed_records(composition)
