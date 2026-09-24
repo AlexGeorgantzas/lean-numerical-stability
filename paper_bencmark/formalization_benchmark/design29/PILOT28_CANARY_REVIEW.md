@@ -20,7 +20,11 @@ measurements.
 The CAST08-FIXED3 result is the relevant-library proof-code canary: L's
 final Lean source is 156 raw lines (42.4%) shorter, and its total contestant
 time is 278 seconds (43.5%) lower; L uses 28.8% more net-new tokens. Its
-pair report SHA-256 is
+proof explicitly applies the frozen library's `dotProduct_backward_error`,
+`recursiveSum_backward_error`, and `gamma_mul` lemmas while composing the
+three-level bound. Thus the direct-use result is not merely an unused import
+or a task-name match. N proves its version without NumStability. Its pair
+report SHA-256 is
 `df9fcd70fffb7c8e7fa853aeb99a67005c10d6de4a264b255aeaab1dee48bc91`.
 FAB19-EQ3.5 is a smaller proof-code/time win but lacks task-specific
 algorithm uptake. Its pair report SHA-256 is
