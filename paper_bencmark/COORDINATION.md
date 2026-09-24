@@ -1133,3 +1133,30 @@ task sources, prompts, warm root, and resource plan, changing only to that
 correct deployment. Its first pair is the predeclared review canary. Do not
 reuse the failed Pilot 33 output root or interpret its empty pair as a task
 failure.
+
+---
+
+## 2026-09-24 — Codex — Pilot 34 canary passed and parallel schedule released
+
+The first sealed `CAST08-FIXED3` pair is hash-valid (pair report SHA-256
+`0f7b2d9600209bfe352f470671481e6bfbf5025ca23823e535b2dadc9b6772ea`).
+Both conditions produced audited faithful statements and one complete
+kernel-checked zero-`sorry` proof each. The pinned reporter helpers independently
+verified candidate, validation, decision, and proof-stage hashes; phase times
+reconciled with controller totals. L directly reached `NumStability.fl_dotProduct`
+and `fl_recursiveSum` in the elaborated statement, and its accepted proof term
+used those plus `dotProduct_backward_error` and
+`recursiveSum_backward_error`. Nonblank/noncomment proof code was 325 lines N
+versus 221 L; contestant-active total time 603.44 seconds N versus 386.63 L.
+Formalization time was 122.56 seconds N versus 112.06 L; proof time 480.88
+seconds N versus 274.56 L. Total net-new tokens were 110,585 N versus
+246,296 L, an unfavorable token result. This is one explicitly outcome-aware
+retained task, **not** a new independent win-rate estimate.
+
+The predeclared first-pair review gate passed. The same frozen Pilot 34
+campaign (input SHA-256 `920aa2579da97df2cdbad18d5dc33142d56a82cb06a29abae8ce0dc2405f6a42`)
+was resumed without rerunning the canary. It is `RUNNING_PARALLEL` across three
+8-CPU/24-GiB lanes, initially P14-T1, HI21-LEM2.2, and CAST08-PROP3.1. No
+other pair is yet sealed. The old Pilot 33 infrastructure incident remains
+preserved separately. Monitor the exact campaign and do not change its inputs
+or drop unfavorable results.
