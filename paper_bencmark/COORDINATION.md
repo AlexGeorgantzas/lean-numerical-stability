@@ -1042,3 +1042,28 @@ attempts; neither has a kernel-accepted proof. A prospective stricter prompt
 and controller-classification note are in `prospective_proof_no_holes/`.
 They are not wired into the active Pilot 31 run. Any use requires a new pilot
 identity, frozen prompt hash, and predeclared abstention/attempt semantics.
+
+---
+
+## 2026-09-24 — Codex — Pilot 33 high-overlap screening in progress
+
+The user requested a new 15–20-task, proof-required, outcome-aware development
+pilot, retaining previously favorable direct-use tasks but screening additional
+high-overlap tasks and 3–4 hard cases. `formalization_benchmark/design33/SCREENING.md`
+is a **worklist**, not an admission record or frozen campaign. Pilot 29/31/32
+artifacts are not to be modified or silently rerun. New P14 positive-sum,
+softmax, and absolute log-sum-exp private statement skeletons compile on the
+frozen Titan library and each passed a fresh condition-blind multi-role
+faithfulness audit. Their source packets and candidate skeletons remain private
+development evidence, never contestant inputs. Collision/source-contract
+sign-off and the rest of the corpus are outstanding. A Hallman–Ipsen theorem
+lead was rejected because a printed O(u²) final bound appears incompatible
+with a one-addition O(u) error; do not silently repair the paper. No Pilot 33
+measured task has launched.
+
+The formalizer driver already enforces disabled collaboration features and
+rejects any observed subagent/collaboration call; retain that attestation in
+the new pilot. The prospective no-hole proof prompt in
+`prospective_proof_no_holes/PROOF_PROMPT.md` is intended for the next identity.
+Titan's SSH endpoint timed out transiently during screening; no measured
+campaign was active, and access returned without modifying earlier artifacts.
