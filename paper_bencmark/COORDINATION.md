@@ -1113,3 +1113,23 @@ are not yet frozen measured inputs. No Pilot 33 task has run. Next: commit the
 controller and admission, seal inputs, preflight, then run the predeclared
 first-pair review. Retained favorable outcomes and eight-task P14 clustering
 must remain explicit in every result claim.
+
+---
+
+## 2026-09-24 — Codex — Pilot 33 preflight incident and Pilot 34 start
+
+Pilot 33's first pair exited before any contestant conversation or condition
+report. The controller had been pointed at `deployment-pilot-15-r1`, whose
+library index declaration count (47,679) does not match the frozen Pilot 18
+catalog (47,567); its journal is `PAUSED_FIRST_PAIR_INCIDENT` with no pair
+report. This is preserved as an infrastructure preflight incident, not a
+measured result or a task outcome. The Pilot 29-matching deployment
+`deployment-pilot19-cli0156` (SHA-256
+`016a3687fb3885846678d0e7c31c5c3e87ed1c03e3a224e7821af09696a09299`)
+passed atlas and model qualification preflight. A distinct campaign identity
+`pilot34-high-overlap` was launched with the same frozen fifteen-task design33
+corpus, admission, controller commit `cfec400f94f4b95701c15e08e7472428deb2558f`,
+task sources, prompts, warm root, and resource plan, changing only to that
+correct deployment. Its first pair is the predeclared review canary. Do not
+reuse the failed Pilot 33 output root or interpret its empty pair as a task
+failure.
