@@ -945,3 +945,27 @@ the other nine tasks if protocol permits. The known FAB19-EQ3.6 model-gap
 case is deliberately retained and disclosed in the frozen corpus; do not
 silently omit it if negative again. Report audited statement LOC for all
 faithful pairs and proof LOC only for both-proved pairs, with attrition.
+
+---
+
+## 2026-09-24 — Codex — Pilot 29 live campaign and Titan reachability incident
+
+The CAST08-FIXED3 first-pair review passed, and the **same** frozen Pilot 29
+campaign was resumed into three disjoint 8-logical-CPU/24-GiB/no-swap lanes.
+At the last hash-checked journal read (about 02:40 UTC), it was
+`RUNNING_PARALLEL` with seven scheduled tasks launched and five sealed pairs:
+CAST08-FIXED3, RUMP12-THM3.4, H20-8, and CAST08-PROP3.2 were audited faithful
+and both-proved; FAB19-EQ3.6 had two audited-faithful statements but neither
+proof completed within four submissions. LL07-THM4, RUMP12-THM3.5, and
+CAST08-PROP3.1 were active. The controller had not reported an infrastructure
+pause. Their partial condition states must not be treated as final pair
+results.
+
+Starting about 02:40 UTC, new SSH connections to Titan's last known address
+`184.146.91.134` timed out. The local internet connection works; Titan's
+current campaign state is **unknown** until the existing host is reachable or
+its new IP is provided. Do not launch an overlapping campaign, rerun a task,
+or classify this connectivity loss as a benchmark outcome. First recover
+read-only access and inspect the same campaign journal, pair hashes, and
+controller process. The user has been asked for a new IP if the public
+address changed.
