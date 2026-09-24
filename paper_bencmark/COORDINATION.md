@@ -1009,3 +1009,22 @@ N/L conversations; their prior partial artifacts remain untouched. A final
 ten-task report must identify the five preserved Pilot 29 pairs and five
 Pilot 31 pairs as a disclosed recovery composite, not one uninterrupted or
 confirmatory pilot. No Pilot 31 measurement has started as of this entry.
+
+---
+
+## 2026-09-24 — Codex — Pilot 31 recovery launched
+
+The frozen Pilot 31 controller checkout is
+`/hdd/alexgeorgantzas/highambench/pilot31-controller-cbd4b559` at commit
+`cbd4b559b2`. Its new campaign is
+`/hdd/alexgeorgantzas/highambench/pilot31-recovery-20260924-a`, input identity
+`6aacc9a5f0f1e711fd6f145daeae4db5651caf61bdb489c407a640f5dcee5e35`.
+The prior journal and all eight pair-report hashes passed the recovery gate.
+At launch the journal was `RUNNING_RECOVERY` with LL07-THM4, RUMP12-THM3.5,
+and CAST08-PROP3.1 in disjoint lanes A/B/C; LL07-THM7 and FAB19-EQ3.5 remain
+queued. The five Pilot 29 sealed pairs were not rerun. An existing thread
+heartbeat was updated to monitor this exact campaign and remain quiet while
+healthy. Do not start an overlapping campaign, alter the frozen controller,
+or infer final status from partial reports. A separate hash-checking ten-task
+composite reporter was committed after campaign launch but before any Pilot 31
+pair sealed; it does not participate in measurement.
