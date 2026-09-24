@@ -2,8 +2,8 @@
 """Read-only, hash-checked descriptive report for a proof-required campaign.
 
 The reporter is predeclared before Pilot 29 measurements. It never changes a
-campaign or silently excludes a task. Ratios are computed only for pairs in
-which both source-faithful statements were independently proved.
+campaign or silently excludes a task. Statement ratios require an audited
+faithful pair; proof ratios additionally require both frozen statements proved.
 """
 
 from __future__ import annotations
@@ -81,12 +81,14 @@ def _checked_candidate(candidate: dict) -> Path:
 
 def _condition(record: dict) -> dict:
     candidate = record.get("candidate")
+    statement_code_lines = None
     if isinstance(candidate, dict):
-        _checked_candidate(candidate)
+        statement_code_lines = _code_lines(_checked_candidate(candidate))
     proof = record.get("proof_stage", {})
     result = {
         "statement_status": record.get("result_status"),
         "statement_lines": record.get("candidate_lines"),
+        "statement_code_lines": statement_code_lines,
         "proof_status": proof.get("status"),
         "proof_raw_lines": None,
         "proof_code_lines": None,
@@ -167,17 +169,20 @@ def report(campaign_root: Path, admission_path: Path) -> dict:
             "N": _condition(conditions["R0"]) if "R0" in conditions else None,
             "L": _condition(conditions["R1"]) if "R1" in conditions else None,
         }
-        row["paired_proof_eligible"] = (
+        row["paired_statement_eligible"] = (
             row["pair_status"] == "AUDITED_FAITHFUL_PAIR"
-            and row["proof_pair_status"] == "BOTH_PROVED_FROZEN_STATEMENTS"
             and row["N"] is not None and row["L"] is not None
         )
+        row["paired_proof_eligible"] = (
+            row["paired_statement_eligible"]
+            and row["proof_pair_status"] == "BOTH_PROVED_FROZEN_STATEMENTS"
+        )
         rows.append(row)
+    faithful = [row for row in rows if row["paired_statement_eligible"]]
     eligible = [row for row in rows if row["paired_proof_eligible"]]
     summary = {
         "scheduled_tasks": len(rows),
-        "faithful_statement_pairs": sum(row["pair_status"] == "AUDITED_FAITHFUL_PAIR"
-                                         for row in rows),
+        "faithful_statement_pairs": len(faithful),
         "paired_complete_proofs": len(eligible),
         "L_direct_reach_tasks": sum(bool(row["direct_numstability_names"])
                                     for row in rows),
@@ -187,7 +192,25 @@ def report(campaign_root: Path, admission_path: Path) -> dict:
         "L_shorter_code_proof_tasks": sum(
             row["L"]["proof_code_lines"] < row["N"]["proof_code_lines"]
             for row in eligible),
+        "L_shorter_raw_statement_tasks": sum(
+            row["L"]["statement_lines"] < row["N"]["statement_lines"]
+            for row in faithful),
+        "L_shorter_code_statement_tasks": sum(
+            row["L"]["statement_code_lines"] < row["N"]["statement_code_lines"]
+            for row in faithful),
     }
+    for field in ("statement_lines", "statement_code_lines"):
+        n = sum(row["N"][field] for row in faithful)
+        l = sum(row["L"][field] for row in faithful)
+        ratios = [row["L"][field] / row["N"][field] for row in faithful
+                  if row["N"][field] > 0 and row["L"][field] > 0]
+        summary[field] = {
+            "N_sum": n, "L_sum": l, "L_over_N_sum": l / n if n else None,
+            "geometric_mean_L_over_N": (
+                math.exp(sum(map(math.log, ratios)) / len(ratios))
+                if ratios else None
+            ),
+        }
     for field in ("proof_raw_lines", "proof_code_lines",
                   "contestant_system_wall_seconds", "net_new_tokens",
                   "task_retrieval_seconds"):
