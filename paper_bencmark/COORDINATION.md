@@ -1028,3 +1028,17 @@ healthy. Do not start an overlapping campaign, alter the frozen controller,
 or infer final status from partial reports. A separate hash-checking ten-task
 composite reporter was committed after campaign launch but before any Pilot 31
 pair sealed; it does not participate in measurement.
+
+---
+
+## 2026-09-24 — Codex — prospective no-hole proof prompt; active pilot unchanged
+
+Inspection of the hash-frozen Pilot 31 proof prompt confirmed that it rejects
+`sorry` and `admit`, but ends by inviting a "best honest attempt" if proof is
+incomplete. The controller freezes `Candidate.lean` at the end of every timed
+turn, so an unchanged target `sorry` becomes a recorded **rejected** attempt.
+The LL07-THM4 L and RUMP12-THM3.5 N proof stages each had four such rejected
+attempts; neither has a kernel-accepted proof. A prospective stricter prompt
+and controller-classification note are in `prospective_proof_no_holes/`.
+They are not wired into the active Pilot 31 run. Any use requires a new pilot
+identity, frozen prompt hash, and predeclared abstention/attempt semantics.
