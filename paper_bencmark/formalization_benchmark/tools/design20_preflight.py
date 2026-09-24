@@ -34,6 +34,9 @@ def run(args: argparse.Namespace) -> dict:
     specs = {key: condition_spec(key, deployment=deployment,
                                  mathlib_atlas=mathlib_atlas)
              for key in ("R0", "R1")}
+    selection_policy = getattr(args, "selection_policy", "component-roles-contextual-2")
+    root_limit = getattr(args, "root_limit", 12)
+    dependency_limit = getattr(args, "dependency_limit", 3)
     args.output_root.mkdir(parents=True, mode=0o700)
     report = {"schema_version": "pilot-20-static-preflight-1", "status": "RUNNING",
               "tasks": {}, "corpus_sha256": sha256_file(corpus_path),
@@ -60,9 +63,10 @@ def run(args: argparse.Namespace) -> dict:
                 raw, _ = build_composition_packet(
                     source_packet_path=packet_path,
                     atlas_paths=list(spec.atlas_paths), corpus_id=spec.corpus_id,
-                    contract_additions=[], root_limit=12, dependency_limit=3,
+                    contract_additions=[], root_limit=root_limit,
+                    dependency_limit=dependency_limit,
                     maximum_markdown_bytes=64 * 1024,
-                    selection_policy="component-roles-contextual-2", open_library_access=True,
+                    selection_policy=selection_policy, open_library_access=True,
                 )
                 interface = _derive_signature_interface(
                     deployment=deployment, composition=raw,
@@ -75,10 +79,11 @@ def run(args: argparse.Namespace) -> dict:
                 composition, api = build_composition_packet(
                     source_packet_path=packet_path,
                     atlas_paths=list(spec.atlas_paths), corpus_id=spec.corpus_id,
-                    contract_additions=[], root_limit=12, dependency_limit=3,
+                    contract_additions=[], root_limit=root_limit,
+                    dependency_limit=dependency_limit,
                     maximum_markdown_bytes=64 * 1024,
                     exposed_signature_overrides=signatures,
-                    selection_policy="component-roles-contextual-2", open_library_access=True,
+                    selection_policy=selection_policy, open_library_access=True,
                 )
                 if (composition["route_status"] != raw["route_status"]
                         or _packet_exposed_records(composition)
@@ -126,6 +131,9 @@ def main() -> int:
     for name in ("deployment", "mathlib-atlas", "numstability-atlas", "output-root"):
         parser.add_argument("--" + name, required=True, type=Path)
     parser.add_argument("--corpus", type=Path, default=CORPUS)
+    parser.add_argument("--selection-policy", default="component-roles-contextual-2")
+    parser.add_argument("--root-limit", type=int, default=12)
+    parser.add_argument("--dependency-limit", type=int, default=3)
     report = run(parser.parse_args())
     print(json.dumps({"status": report["status"], "task_ids": list(report["tasks"])},
                      sort_keys=True))
