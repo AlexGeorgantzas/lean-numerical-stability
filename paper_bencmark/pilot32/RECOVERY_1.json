@@ -1,0 +1,21 @@
+{
+  "schema_version": "pilot-32-one-pair-recovery-1",
+  "identity": "pilot32-ll07-thm7-recovery",
+  "scientific_status": "OUTCOME_AWARE_INTERRUPTION_RECOVERY_NOT_CONFIRMATORY",
+  "pilot29_manifest": "paper_bencmark/pilot31/RECOVERY_5.json",
+  "pilot31_campaign_root": "/hdd/alexgeorgantzas/highambench/pilot31-recovery-20260924-a",
+  "pilot31_campaign_sha256": "7ce2be6e5cb98b6a9f30f2aee5f73f7b41115687dc3ac4e33d728bf9dc1a2c51",
+  "pilot31_input_identity_sha256": "6aacc9a5f0f1e711fd6f145daeae4db5651caf61bdb489c407a640f5dcee5e35",
+  "pilot31_sealed_pair_report_sha256": {
+    "CAST08-PROP3.1": "c0c97904ffd65bb72c5ec729f77037c4f9ff1286642ff37bbda38bd0c76f9a7a",
+    "RUMP12-THM3.5": "705cb3f168e90d7408c5097ba00dfb9856adbd01eb11bc98048ec608c68a6ffe",
+    "FAB19-EQ3.5": "ae38fec3a8a68c4bdc10152bbe1cba074e9fda35bc21fd6b9a768a0255eda480",
+    "LL07-THM4": "a5ade9f824b59f27c6ff207614a8f5217eebbd45bd785becd340461b837283be"
+  },
+  "pilot31_interrupted_pair_report_sha256": "c76e37b3d7fe99a461327a89773269aed5906472de36d21d924a4c148884ad19",
+  "remaining_task_id": "LL07-THM7",
+  "original_scheduled_index": 8,
+  "condition_order": "R0,R1",
+  "lane": "C",
+  "restart_disclosure": "Pilot 31 stopped during LL07-THM7. Its N condition reached a proof-attempt limit; L was interrupted during proof work. All partial artifacts remain in Pilot 31. Pilot 32 reruns only this unsealed pair with fresh N and L conversations, the unchanged source/corpus/prompts/library/model/limits, original order, and one 8-CPU/24-GiB lane. It neither combines partial turns nor claims an uninterrupted ten-task pilot."
+}
