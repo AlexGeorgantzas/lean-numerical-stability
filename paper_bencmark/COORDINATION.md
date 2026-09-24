@@ -881,3 +881,40 @@ explicit first-pair review pause. An initial `-a` launch directory contained
 only a controller error log: pre-creating an output root caused the controller
 to refuse it; no measured pair ran there. Do not overlap or silently restart
 the `-b` campaign.
+
+---
+
+## 2026-09-24 — Codex — Pilot 28 resumed; prospective Pilot 29 admitted
+
+Pilot 28's first `FAB19-EQ3.5` pair sealed with both statements independently
+audited faithful and both frozen statements proved without `sorry` under the
+fixed controller. Its L final proof source was 320 versus N's 333 raw lines;
+L total contestant-system time was about 625 versus 670 seconds, but L used
+163,341 versus N's 120,808 net-new tokens and directly reached only FPModel/
+gamma, not task-specific summation algorithms. The existing frozen Pilot 28
+campaign was resumed, not rerun. `CAST08-FIXED3` and `FAB19-EQ3.6` currently
+run in separate 8-CPU/24-GiB lanes. Their results must seal before another
+measured campaign starts.
+
+During FAB19-EQ3.6 N's timed proof stage, its formalizer produced a Lean-
+checked counterexample to its accepted but overgeneralized per-operation
+rounding model and did not replace the target `sorry` after four attempts.
+Do not relabel or repair this frozen output. Inspect the complete pair after
+L finishes; the event is both a proof-attrition finding and a warning that
+statement faithfulness auditing does not establish theorem truth.
+
+Prospective `formalization_benchmark/design29/CORPUS_10.json` and
+`ADMISSION_10.json` are committed on `codex/pilot-27-proof-code-size`. All
+ten tasks pass the exact Titan admission verifier in separate controller
+checkout `/hdd/alexgeorgantzas/highambench/pilot29-controller-e32032d`.
+The two Castaldo private candidate audits are faithful and show direct
+`fl_recursiveSum`/`fl_dotProduct` reach; see `design29/ADMISSION_SCREEN.md`.
+The source packet for CAST08-PROP3.1 explicitly discloses a defect in the
+printed pseudocode; its first source review was not used after the edit.
+The Pilot 29 corpus is outcome-aware exploratory, with four foundational
+finite-format/polynomial cases and one H20 error-interface case lacking
+FPModel; do not market it as ten strict FP-algorithm tasks. The predeclared
+analysis separately counts audited-faithful statement LOC for all eligible
+pairs, full-proof LOC for both-proved pairs, and proof attrition. No Pilot 29
+measurement has started. The one reset credit was already redeemed; none
+remains. Use ChatGPT sign-in, not API billing.
