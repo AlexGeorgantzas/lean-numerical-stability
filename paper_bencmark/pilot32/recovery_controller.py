@@ -102,6 +102,17 @@ def run(args: argparse.Namespace) -> dict:
     if shutil.disk_usage("/").free < MIN_ROOT_FREE_BYTES:
         raise BenchmarkError("system filesystem has less than 2 GiB free")
     frozen = _inputs(args)
+    unchanged_fields = (
+        "corpus_sha256", "admission_sha256", "schedule",
+        "condition_order_policy", "packets", "sources", "prompts",
+        "audit_prompts", "deployment_sha256", "mathlib_atlas_sha256",
+        "numstability_atlas_sha256", "qualification_sha256",
+        "warm_root_sha256", "lanes", "pair_runner_sha256",
+        "lane_wrapper_sha256", "proof_protocol",
+    )
+    for field in unchanged_fields:
+        if frozen.get(field) != pilot31["inputs"].get(field):
+            raise BenchmarkError(f"frozen input differs from Pilot 31: {field}")
     frozen.update({
         "recovery_manifest_sha256": sha256_file(args.recovery_manifest),
         "recovery_controller_sha256": sha256_file(Path(__file__)),
