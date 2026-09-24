@@ -1,0 +1,27 @@
+{
+  "schema_version": "pilot-31-recovery-composite-1",
+  "identity": "pilot31-five-pair-recovery",
+  "scientific_status": "OUTCOME_AWARE_INTERRUPTION_RECOVERY_NOT_CONFIRMATORY",
+  "source_campaign_root": "/hdd/alexgeorgantzas/highambench/pilot29-proof-development-20260924-a",
+  "source_campaign_sha256": "423bf0fe15961a0d731662a8927f21454d6792997cab2feb99a8a4186c05ca62",
+  "preserved_pair_report_sha256": {
+    "CAST08-FIXED3": "432d67b779a68c7849f851cda9e06a480c98a8b5a273ff09b339447e427d57fb",
+    "RUMP12-THM3.4": "6ba90e55ccc4980635737ec8979bde866530af5204dce3095bbe858360d0721b",
+    "FAB19-EQ3.6": "e1215f1b1e4dcd88b62e691b620bfccfa6766df7d7179116c253606daaabb4d3",
+    "CAST08-PROP3.2": "db025e81a70ddd877801016d8a26769bd5e378e3ab8c6b0e5f721bb1d9725651",
+    "H20-8": "4260eee707e061e8932465ada5a54bc71258e01dbc4ab658441ab7de57c7891b"
+  },
+  "interrupted_partial_pair_report_sha256": {
+    "LL07-THM4": "56b548af919c12dea183feac00e05f6f397130f67f8faa785b5ec9fe6dcd5211",
+    "RUMP12-THM3.5": "3f6d0da5821829e4b79cc341bafedc7a8eaf871c4409e4541b169264037bb842",
+    "CAST08-PROP3.1": "39711deb05721853dbe9a8a52e11a439350ceae41c23162c0c05ae68f032bdc1"
+  },
+  "remaining_task_order": [
+    "LL07-THM4",
+    "RUMP12-THM3.5",
+    "CAST08-PROP3.1",
+    "LL07-THM7",
+    "FAB19-EQ3.5"
+  ],
+  "restart_disclosure": "The first three tasks were running when Titan rebooted. Their partial artifacts remain in Pilot 29. Both conditions of each restarted pair use new conversations; no previous candidate, proof, audit feedback, or task-specific search content is supplied. The last two tasks had not started. These five are combined descriptively with five sealed Pilot 29 pairs, never represented as one uninterrupted pilot."
+}

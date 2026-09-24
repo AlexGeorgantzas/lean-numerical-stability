@@ -988,3 +988,24 @@ fresh, preserves known unfavorable outcomes, and remains outcome-aware
 exploratory. Do not splice Pilot 29 and Pilot 30 pairs into one pilot, and do
 not alter Pilot 29 artifacts. Preflight/freeze Pilot 30 separately before
 starting its first canary.
+
+---
+
+## 2026-09-24 — Codex — Pilot 31 five-pair recovery replaces unmeasured Pilot 30 plan
+
+The user explicitly rejected rerunning the five sealed Pilot 29 pairs and
+requested that the three reboot-interrupted tasks be restarted, then the two
+unstarted tasks completed. Pilot 30 **never launched a measured task**. Its
+static preflight was stopped during its first R0 template when this direction
+arrived; no Pilot 30 pair exists. Preserve its prospective commit as history,
+but do not execute its full-retry plan.
+
+The new recovery protocol, manifest, and controller are in `pilot31/`. It
+hash-verifies Pilot 29's frozen journal and five sealed/three partial pair
+reports, reuses the original ten-task corpus and condition-order indices,
+and launches only LL07-THM4, RUMP12-THM3.5, CAST08-PROP3.1, LL07-THM7, and
+FAB19-EQ3.5 under a distinct identity. The first three use entirely fresh
+N/L conversations; their prior partial artifacts remain untouched. A final
+ten-task report must identify the five preserved Pilot 29 pairs and five
+Pilot 31 pairs as a disclosed recovery composite, not one uninterrupted or
+confirmatory pilot. No Pilot 31 measurement has started as of this entry.
