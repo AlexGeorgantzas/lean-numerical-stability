@@ -1,0 +1,32 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P14-SHIFTED-WEIGHTED",
+  "selected_result": "Equation (4.5), termwise-weighted absolute error for shifted exponential summation",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Desmond J. Higham", "Nicholas J. Higham"],
+    "title": "Accurately Computing the Log-Sum-Exp and Softmax Functions",
+    "venue": "IMA Journal of Numerical Analysis",
+    "volume": "41",
+    "issue": "4",
+    "year": 2021,
+    "pages": "2311-2330",
+    "doi": "10.1093/imanum/draa038"
+  },
+  "paper_pdf": {
+    "path_basename": "P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+    "sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd"
+  },
+  "paper_locations": [
+    {"section": "Section 4", "printed_pages": "2321-2322", "pdf_pages": "11-12", "anchor": "Algorithm 4.1, shifted sum and the termwise error equation (4.5)"}
+  ],
+  "task_clarification": [
+    "For n=m+1>=2 real inputs choose any maximal entry a=x_k, permute it to the last position for notation, evaluate every nonmaximal shifted exponential using a rounded subtraction and a relative-error exponential, then recursively sum exactly those n-1 computed terms.",
+    "Formalize equation (4.5): absolute computed-minus-exact shifted-sum error is bounded to first order by u times the sum over i=1,...,n-1 of (1+a-x_i+n-i)*exp(x_i-a), plus a uniform O(u^2) remainder over admissible runs.",
+    "Keep the term-specific input gap and position count; equation (4.6)'s global relative bound is a distinct, coarser task."
+  ],
+  "scope_constraints": [
+    "Do not include the maximum as a zero summand, which would add a rounded operation absent from the analysis.",
+    "Preserve arbitrary signs of original x, any selected maximal index, every local shifted-exponential error, and the actual recursive summation.",
+    "Do not assume the desired termwise error bound in an execution certificate."
+  ]
+}

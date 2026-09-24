@@ -1,0 +1,32 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P14-SHIFTED-LOG",
+  "selected_result": "Equation (4.8), absolute shifted log-sum-exp intermediate error bound before final rounded addition",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Desmond J. Higham", "Nicholas J. Higham"],
+    "title": "Accurately Computing the Log-Sum-Exp and Softmax Functions",
+    "venue": "IMA Journal of Numerical Analysis",
+    "volume": "41",
+    "issue": "4",
+    "year": 2021,
+    "pages": "2311-2330",
+    "doi": "10.1093/imanum/draa038"
+  },
+  "paper_pdf": {
+    "path_basename": "P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+    "sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd"
+  },
+  "paper_locations": [
+    {"section": "Section 4", "printed_pages": "2321-2323", "pdf_pages": "11-13", "anchor": "Algorithm 4.1, equations (4.4)-(4.8), explicitly ignoring final delta_4"}
+  ],
+  "task_clarification": [
+    "For at least two real inputs and any selected maximal entry, compute the nonmaximal shifted exponential terms with local subtraction and exponential relative errors, and recursively sum them in the selected order.",
+    "Apply a relative-error log1p evaluation to the computed shifted sum, then add the exact selected maximum without rounding. This is precisely the intermediate expression in equation (4.8); the paper explicitly ignores the later final-addition error delta_4 for this displayed bound.",
+    "Formalize the absolute error bound |y-yHat| <= [log(1+s) + s/(1+s)*(n+xmax-xmin)]u + O(u^2), with a uniform quadratic remainder over admissible executions at fixed input/order."
+  ],
+  "scope_constraints": [
+    "Do not present the intermediate equation as a full final-output bound including the ignored rounded addition.",
+    "Do not omit the maximum from the input domain, sum it as a zero placeholder, or assume the desired conclusion.",
+    "Preserve local shifted-exponential and log1p errors and the actual recursive summation."
+  ]
+}

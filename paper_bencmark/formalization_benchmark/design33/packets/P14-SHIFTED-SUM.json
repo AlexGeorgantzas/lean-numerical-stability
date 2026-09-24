@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P14-SHIFTED-SUM",
+  "selected_result": "Equation (4.6) relative error for the shifted positive exponential sum",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Desmond J. Higham", "Nicholas J. Higham"],
+    "title": "Accurately Computing the Log-Sum-Exp and Softmax Functions",
+    "venue": "IMA Journal of Numerical Analysis",
+    "volume": "41",
+    "issue": "4",
+    "year": 2021,
+    "pages": "2311-2330",
+    "doi": "10.1093/imanum/draa038"
+  },
+  "paper_pdf": {
+    "path_basename": "P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+    "sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd"
+  },
+  "paper_locations": [
+    {"section": "Section 4", "printed_pages": "2320-2321", "pdf_pages": "10-11", "anchor": "Algorithm 4.1, max-shift selection and sum excluding the selected maximum"},
+    {"section": "Section 4", "printed_pages": "2321-2322", "pdf_pages": "11-12", "anchor": "Relative sum error equation (4.6)"}
+  ],
+  "task_clarification": [
+    "For at least two real inputs, choose a maximal entry a=x_k, omit that entry, and form the positive shifted sum s=sum_{i!=k} exp(x_i-a). The paper permutes the selected maximum to the last position only for its analysis; the formalization should cover any selected maximal entry and input order.",
+    "Compute each shifted exponential by a rounded subtraction followed by a relative-error exponential evaluation, and recursively sum the n-1 computed terms with one rounded addition per merge, starting from the first term.",
+    "Formalize equation (4.6): |sHat-s|/s <= (n + x_max - x_min)*u+O(u^2), with n the total input count, positive s, and a uniform quadratic remainder over admissible local errors at fixed input/order."
+  ],
+  "scope_constraints": [
+    "The chosen maximum may be any maximal index and the rest retain their original order up to the paper's notational permutation.",
+    "Do not sum a zero placeholder for the omitted maximum, because that adds a different rounded operation.",
+    "Preserve both local shifted-exponential rounding errors and actual recursive summation; do not assume the target bound."
+  ]
+}

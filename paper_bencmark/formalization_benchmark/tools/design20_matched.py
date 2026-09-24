@@ -96,7 +96,9 @@ def run(args: argparse.Namespace) -> dict[str, Any]:
         if admission_path is None:
             raise BenchmarkError("proof pilot requires an explicit frozen admission")
         admission_schema = load_json(admission_path).get("schema_version")
-        if admission_schema == "pilot-29-proof-development-admission-1":
+        if admission_schema == "pilot-33-high-overlap-admission-1":
+            from design33_admission import verify_admission as verify_proof_admission
+        elif admission_schema == "pilot-29-proof-development-admission-1":
             from design29_admission import verify_admission as verify_proof_admission
         else:
             from design27_admission import verify_admission as verify_proof_admission

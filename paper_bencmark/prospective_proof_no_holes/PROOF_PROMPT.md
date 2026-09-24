@@ -12,6 +12,11 @@ anywhere, or use unsafe/trust escapes. The checker requires a zero-hole Lean
 file that compiles and preserves the audited semantic hash. A Lean file that
 merely compiles with a `sorry` is **not** a successful proof.
 
+There are at most four total proof submissions (initial plus three repairs)
+within the cumulative contestant budget. Each submission is frozen before
+off-clock validation. If one is rejected, including for a remaining `sorry`,
+the same conversation receives diagnostics and may use its remaining attempts.
+
 Before declaring success, run the documented Lean compilation command on
 `Candidate.lean`, inspect the diagnostics, and verify that the entire file
 contains no proof hole. Do not call a partial derivation a completed proof.

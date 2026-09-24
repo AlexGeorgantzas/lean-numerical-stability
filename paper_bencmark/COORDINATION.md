@@ -1067,3 +1067,49 @@ the new pilot. The prospective no-hole proof prompt in
 `prospective_proof_no_holes/PROOF_PROMPT.md` is intended for the next identity.
 Titan's SSH endpoint timed out transiently during screening; no measured
 campaign was active, and access returned without modifying earlier artifacts.
+
+---
+
+## 2026-09-24 — Codex — Pilot 33 admission gate, still pre-measurement
+
+The prospective `design33/CORPUS_15.json` lists five explicitly outcome-aware
+favorable Pilot 29 tasks, eight source-screened P14 results, and two new
+Hallman–Ipsen summation-tree results. Four tasks are labeled hard before any
+Pilot 33 contestant run. The eight P14 tasks are highly correlated; a future
+report must disclose clustering rather than treat fifteen task IDs as fifteen
+independent papers. No Pilot 33 measurement has started. The controller now
+has a separate fail-closed admission schema, a strict four-attempt no-hole
+proof prompt, and a prospective reporter splitting formalization, proof, and
+total clocks/tokens while reading NumStability proof-term dependencies.
+
+Two screening incidents remain visible: the printed Hallman–Ipsen Theorem
+2.4's last bound was rejected; Lemma 2.3 was independently audited faithful
+but excluded because the library contains a dual exact local-error identity.
+An Eq. (2.7) candidate was rejected for a nonuniform Big-O coefficient, then
+another was rejected for importing `FPModel`'s extra zero-operand exactness.
+That second audit exposed the same source-domain narrowing in an earlier
+*accepted* Lemma 2.2 private skeleton; its acceptance is no longer sufficient
+for admission. Fresh full-domain relational candidates for both tasks compile
+and are under independent audit. All old candidate/audit artifacts are kept.
+Do not freeze or launch the 15-task campaign unless both new candidates pass
+and all collision/hashing gates are checked; otherwise replace a bad candidate
+under a new pre-measurement corpus version, not by silently relaxing the gate.
+
+---
+
+## 2026-09-24 — Codex — Pilot 33 admission passed, freeze pending
+
+The revised full-domain Hallman–Ipsen candidates passed fresh blind/direct/
+round-trip candidate audits: Lemma 2.2 faithful-stronger (audit SHA-256
+`83585e3ab9d2006a45d8a0469db23a521e94f0f39a1e9ba4ca334d588d3f2185`)
+and Eq. (2.7) faithful-equivalent (audit SHA-256
+`18352a7e3979c0b583f05c32d10ef0efba3222babeb55e50e7cc92f72c3a094a`).
+The earlier narrower or nonuniform candidates remain rejected/preserved. The
+new `design33/ADMISSION_15.json` fail-closed verifier passed for all 15 tasks
+on Titan against source PDF hashes, packet hashes, private audit records,
+direct elaborated NumStability reach, and prior Pilot 29 evidence. The source
+PDFs and scheduled packets are in a **provisional** staging directory; they
+are not yet frozen measured inputs. No Pilot 33 task has run. Next: commit the
+controller and admission, seal inputs, preflight, then run the predeclared
+first-pair review. Retained favorable outcomes and eight-task P14 clustering
+must remain explicit in every result claim.

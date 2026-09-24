@@ -1,0 +1,33 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "P14-ALT-SOFTMAX",
+  "selected_result": "Theorem 3.4 alternative unshifted softmax forward-error bound",
+  "bibliographic_source": {
+    "authors": ["Pierre Blanchard", "Desmond J. Higham", "Nicholas J. Higham"],
+    "title": "Accurately Computing the Log-Sum-Exp and Softmax Functions",
+    "venue": "IMA Journal of Numerical Analysis",
+    "volume": "41",
+    "issue": "4",
+    "year": 2021,
+    "pages": "2311-2330",
+    "doi": "10.1093/imanum/draa038"
+  },
+  "paper_pdf": {
+    "path_basename": "P14_Accurately computing the log-sum-exp and softmax functions.pdf",
+    "sha256": "7247047bc49218e001195edc8a2d66131eea7596d252503f34b0ace6328981cd"
+  },
+  "paper_locations": [
+    {"section": "Section 3", "printed_pages": "2316", "pdf_pages": "6", "anchor": "Algorithm 3.1 and unshifted log-sum-exp computation"},
+    {"section": "Section 3", "printed_pages": "2318-2319", "pdf_pages": "8-9", "anchor": "Equations (3.7)-(3.11) and Theorem 3.4"}
+  ],
+  "task_clarification": [
+    "For n>0 and x in R^n, let y=log(sum_i exp(x_i)) and g_j=exp(x_j-y). Compute yHat by unshifted Algorithm 3.1: relative-error exponential evaluations, recursive floating-point summation, and a final rounded logarithm.",
+    "For each j, evaluate the alternative division-free softmax formula by one rounded subtraction x_j-yHat and a relative-error exponential evaluation. Do not replace it with the basic exp(x_j)/sum_i exp(x_i) algorithm.",
+    "Formalize Theorem 3.4: ||gHat-g||_infinity/||g||_infinity <= (|y|+max_j |x_j-y|+n+2)*u+O(u^2). Interpret the O(u^2) remainder uniformly at fixed n,x over all admissible local errors, with an explicit C and positive radius independent of execution."
+  ],
+  "scope_constraints": [
+    "Keep the full x domain and n>0; ||g||_infinity is positive.",
+    "Represent every operation in the alternative execution and the absence of overflow/underflow through the source's relative-error model.",
+    "No premise may assume the desired relative output bound; no target-result declaration may be imported from NumStability."
+  ]
+}

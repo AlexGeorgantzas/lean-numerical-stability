@@ -1,0 +1,51 @@
+{
+  "schema_version": "pilot-33-high-overlap-corpus-1",
+  "pilot_identity": "pilot33-high-overlap-proof-development",
+  "scientific_status": "OUTCOME_AWARE_EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "CAST08-FIXED3",
+    "P14-T1",
+    "HI21-LEM2.2",
+    "CAST08-PROP3.1",
+    "P14-T2",
+    "RUMP12-THM3.4",
+    "P14-LOGSUMEXP",
+    "H20-8",
+    "P14-ALT-SOFTMAX",
+    "CAST08-PROP3.2",
+    "P14-SHIFTED-SUM",
+    "P14-SHIFTED-LOG",
+    "P14-SHIFTED-SOFTMAX",
+    "P14-SHIFTED-WEIGHTED",
+    "HI21-EQ2.7"
+  ],
+  "early_review_order": ["CAST08-FIXED3"],
+  "predeclared_hard_tasks": [
+    "CAST08-PROP3.1",
+    "CAST08-PROP3.2",
+    "HI21-LEM2.2",
+    "P14-SHIFTED-SOFTMAX"
+  ],
+  "selection_disclosure": "Five task IDs with known prior favorable both-proved L code-size and time outcomes are deliberately retained. Ten new tasks were source-screened on private candidates; eight are closely related results from one log-sum-exp/softmax paper and two are from a general summation-tree paper. This is clustered, exploratory development evidence, not an independent held-out effect estimate. The corpus is not admitted until every private audit and collision gate passes; no measured result may be dropped or silently rerun after launch.",
+  "task_roles": {
+    "CAST08-FIXED3": "prior favorable retained; three-level dot-product algorithm",
+    "P14-T1": "positive exponential-sum bound; new source-screened",
+    "HI21-LEM2.2": "hard general-tree exact error expansion; new source-screened",
+    "CAST08-PROP3.1": "hard prior favorable retained; t-level summation and optimality",
+    "P14-T2": "basic softmax forward bound; new source-screened",
+    "RUMP12-THM3.4": "prior favorable retained; finite-format summation",
+    "P14-LOGSUMEXP": "basic log-sum-exp absolute error; new source-screened",
+    "H20-8": "prior favorable retained; least-squares backward-error interface",
+    "P14-ALT-SOFTMAX": "alternative basic softmax forward bound; new source-screened",
+    "CAST08-PROP3.2": "hard prior favorable retained; t-level dot-product bound",
+    "P14-SHIFTED-SUM": "shifted exponential-sum relative bound; new source-screened",
+    "P14-SHIFTED-LOG": "shifted log-sum-exp intermediate; new source-screened",
+    "P14-SHIFTED-SOFTMAX": "hard shifted softmax forward bound; new source-screened",
+    "P14-SHIFTED-WEIGHTED": "termwise weighted shifted exponential-sum bound; correlated with shifted-sum task",
+    "HI21-EQ2.7": "uniform first-order general-tree summation expansion; new source-screened"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "HI21-LEM2.3",
+  "selected_result": "Lemma 2.3, second exact forward-error expansion for a general binary summation tree",
+  "bibliographic_source": {
+    "authors": ["Eric Hallman", "Ilse C. F. Ipsen"],
+    "title": "Deterministic and Probabilistic Error Bounds for Floating Point Summation Algorithms",
+    "venue": "arXiv preprint",
+    "year": 2021,
+    "source_url": "https://arxiv.org/pdf/2107.01604"
+  },
+  "paper_pdf": {
+    "path_basename": "HI21.pdf",
+    "sha256": "cce25923a86d5d2051a079ad4ae7ea965f1dde97ffb6d3bf6462d069968fd1c6"
+  },
+  "paper_locations": [
+    {"section": "Section 2.1", "printed_pages": "4-5", "pdf_pages": "4-5", "anchor": "Equation (2.1), definition of f_k, Lemma 2.3 equations (2.5) and (2.6)"}
+  ],
+  "task_clarification": [
+    "For any finite binary summation tree and signed real leaves, use a relative-error witness for each actual rounded internal addition. Let s_k be the exact partial sum at each node, e_k its computed-minus-exact error, and f_k the sum of its two child errors.",
+    "Formalize both exact Lemma 2.3 identities: e_k equals the sum over all internal descendants including k of (s_j+f_j)*delta_j, and f_k equals the same sum restricted to strict descendants of k. A recursively flattened list of those node-local terms is equivalent to the paper's node-order notation.",
+    "Preserve arbitrary tree shape and the one-leaf zero-error case. This is an exact deterministic identity, not a probabilistic or first-order statement."
+  ],
+  "scope_constraints": [
+    "The model must link each delta_j to the rounded addition of computed child operands and bound it by the unit roundoff.",
+    "Do not assume either target identity, omit internal nodes, or specialize to sequential summation.",
+    "Do not replace the source's (s_j+f_j) delta_j term with the Lemma 2.2 strict-ancestor product expression."
+  ]
+}

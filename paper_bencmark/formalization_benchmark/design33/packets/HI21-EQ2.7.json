@@ -1,0 +1,29 @@
+{
+  "schema_version": "formalization-source-packet-1",
+  "task_id": "HI21-EQ2.7",
+  "selected_result": "Equation (2.7), first-order expansion of general binary-tree summation error",
+  "bibliographic_source": {
+    "authors": ["Eric Hallman", "Ilse C. F. Ipsen"],
+    "title": "Deterministic and Probabilistic Error Bounds for Floating Point Summation Algorithms",
+    "venue": "arXiv preprint",
+    "year": 2021,
+    "source_url": "https://arxiv.org/pdf/2107.01604"
+  },
+  "paper_pdf": {
+    "path_basename": "HI21.pdf",
+    "sha256": "cce25923a86d5d2051a079ad4ae7ea965f1dde97ffb6d3bf6462d069968fd1c6"
+  },
+  "paper_locations": [
+    {"section": "Section 2.2", "printed_pages": "5", "pdf_pages": "5", "anchor": "Equation (2.7), first-order deterministic expansion derived after Theorem 2.4"}
+  ],
+  "task_clarification": [
+    "For arbitrary real leaves and arbitrary finite binary summation tree of height h, each internal addition obeys the standard relative-error equation on its computed child operands with |delta_k|<=u.",
+    "Formalize equation (2.7): final forward error equals the sum of exact internal partial sums s_k times their corresponding delta_k, up to a uniform O(h^2*u^2) remainder scaled to the fixed input vector. Include the one-leaf zero-error case.",
+    "This first-order expansion is selected independently of the printed last inequality in Theorem 2.4, which has a separate apparent typo; do not formalize that false inequality as part of this task."
+  ],
+  "scope_constraints": [
+    "Do not specialize to sequential or pairwise-only summation, nonnegative inputs, or a single tree shape.",
+    "The computed result must be an actual tree evaluation and local witnesses must be linked to each internal rounded addition.",
+    "Do not postulate the first-order expansion or hide the remainder in an unconstrained input."
+  ]
+}
