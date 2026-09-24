@@ -1,0 +1,35 @@
+{
+  "schema_version": "pilot-30-proof-development-corpus-1",
+  "pilot_identity": "pilot30-proof-development",
+  "scientific_status": "OUTCOME_AWARE_EXPLORATORY_DEVELOPMENT_NOT_CONFIRMATORY",
+  "formalizer_model": "gpt-6-sol",
+  "formalizer_reasoning_effort": "high",
+  "audit_model": "gpt-6-astra",
+  "audit_reasoning_effort": "high",
+  "scheduled_order": [
+    "CAST08-FIXED3",
+    "RUMP12-THM3.4",
+    "FAB19-EQ3.6",
+    "LL07-THM4",
+    "CAST08-PROP3.2",
+    "H20-8",
+    "RUMP12-THM3.5",
+    "CAST08-PROP3.1",
+    "LL07-THM7",
+    "FAB19-EQ3.5"
+  ],
+  "early_review_order": ["CAST08-FIXED3"],
+  "task_roles": {
+    "CAST08-FIXED3": "first canary; three-level dot-product algorithm",
+    "RUMP12-THM3.4": "finite-format recursive sum, unrestricted length",
+    "FAB19-EQ3.6": "hard compensated blocked sum; per-site model and proof-risk case",
+    "LL07-THM4": "full compensated Horner forward bound",
+    "CAST08-PROP3.2": "hard general t-level superblock dot bound",
+    "H20-8": "least-squares error-interface variety; no FPModel",
+    "RUMP12-THM3.5": "hard sharp recursive-sum bound and attainability",
+    "CAST08-PROP3.1": "hard t-level summation bound and optimality; new screened task",
+    "LL07-THM7": "faithful-rounding criterion for compensated Horner",
+    "FAB19-EQ3.5": "hard mixed-precision blocked sum; per-site model-risk case"
+  },
+  "selection_disclosure": "A prospective same-method retry of the entire frozen Pilot 29 schedule after Titan reboot interrupted that campaign. Pilot 26-29 outcomes are known, so this is outcome-aware exploratory engineering, not held-out confirmation. Pilot 29's five sealed pairs and three partial pairs remain separate evidence and are never spliced into Pilot 30. The known FAB19-EQ3.6 proof failure remains in the schedule. All ten Pilot 30 pairs must be reported, including failures and non-uptake."
+}

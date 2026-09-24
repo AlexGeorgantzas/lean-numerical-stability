@@ -969,3 +969,22 @@ or classify this connectivity loss as a benchmark outcome. First recover
 read-only access and inspect the same campaign journal, pair hashes, and
 controller process. The user has been asked for a new IP if the public
 address changed.
+
+---
+
+## 2026-09-24 — Codex — Pilot 29 reboot confirmed; Pilot 30 prospective successor
+
+Titan returned at the same IP. Read-only checks show a 07:37:38 UTC reboot
+and no surviving campaign/lane process. Pilot 29 is stale `RUNNING_PARALLEL`,
+not complete. Its five sealed pairs and three partial reports remain untouched;
+two tasks never started. The incident evidence and hashes are in
+`pilot30/PILOT29_REBOOT_INCIDENT.md` (outside the frozen release tree).
+The frozen controller supports no crash resume; Pilot 29's protocol requires a
+new identity after infrastructure failure. No measured task has been rerun.
+
+The prospective Pilot 30 same-method full retry is specified in
+`pilot30/PROTOCOL.md` and `pilot30/CORPUS_10.json`. It reruns all ten tasks
+fresh, preserves known unfavorable outcomes, and remains outcome-aware
+exploratory. Do not splice Pilot 29 and Pilot 30 pairs into one pilot, and do
+not alter Pilot 29 artifacts. Preflight/freeze Pilot 30 separately before
+starting its first canary.
