@@ -40,6 +40,8 @@ def run(args: argparse.Namespace) -> dict:
     args.output_root.mkdir(parents=True, mode=0o700)
     report = {"schema_version": "pilot-20-static-preflight-1", "status": "RUNNING",
               "tasks": {}, "corpus_sha256": sha256_file(corpus_path),
+              "selection_policy": selection_policy, "root_limit": root_limit,
+              "dependency_limit": dependency_limit,
               "hardware_before": snapshot_hardware(strict=True),
               "created_at_utc": utc_now()}
     report_path = args.output_root / "preflight.json"
