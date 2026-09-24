@@ -918,3 +918,30 @@ analysis separately counts audited-faithful statement LOC for all eligible
 pairs, full-proof LOC for both-proved pairs, and proof attrition. No Pilot 29
 measurement has started. The one reset credit was already redeemed; none
 remains. Use ChatGPT sign-in, not API billing.
+
+---
+
+## 2026-09-24 — Codex — Pilot 28 complete; Pilot 29 first pair running
+
+Pilot 28 finished all three canaries with terminal campaign hash
+`463e2db23fbc434928b038dd5ecbb1583677d67bd8776402776c3783518b7dd0`.
+Two pairs were faithfully formalized and completely proved on both sides;
+the third (FAB19-EQ3.6) had audited faithful statements but neither proof
+completed, and both proof turns generated Lean-checked counterexamples to
+their overpermissive rounding models. Full metrics and preserved negative
+finding are in `formalization_benchmark/design29/PILOT28_CANARY_REVIEW.md`.
+
+The exact ten-task Pilot 29 admission verifier passed on Titan and the
+no-automatic-retrieval static preflight passed all N/L templates (artifact
+SHA-256 `b889e356c20d2ae919f935837d6ab2bd75025ce1a620c7b4da9826a365b1eb7b`).
+Pilot 29 is now `RUNNING_FIRST_PAIR` at
+`/hdd/alexgeorgantzas/highambench/pilot29-proof-development-20260924-a`,
+frozen controller commit `b70877680c604076f30c5c216f45c0aff8ada54c`,
+inputs identity `59a816765dc398f2bb49eb7fca71e773c116edd6efb63fbfb55609e404f044c4`.
+The first task is CAST08-FIXED3. Do not launch another measured campaign,
+change its schedule/prompts/admission, or rerun a task. At the first-review
+pause inspect evidence and only then resume the same frozen campaign for
+the other nine tasks if protocol permits. The known FAB19-EQ3.6 model-gap
+case is deliberately retained and disclosed in the frozen corpus; do not
+silently omit it if negative again. Report audited statement LOC for all
+faithful pairs and proof LOC only for both-proved pairs, with attrition.
