@@ -210,6 +210,36 @@ class AuditControllerPolicyTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.temporary.cleanup()
 
+    def test_vacuous_material_implication_is_unfaithful(self) -> None:
+        for role in ("direct-judge", "roundtrip-judge"):
+            with self.subTest(role=role):
+                candidate = judgment(role)
+                candidate["semantic_checklist"][-1]["status"] = "fail"
+                candidate["implications"]["source_implies_candidate"]["verdict"] = "no"
+                candidate["classification"] = "unfaithful-different"
+                candidate["accepted"] = False
+                candidate["mismatches"] = [{
+                    "paper_requirement": "The source holds on an admissible case.",
+                    "candidate_mismatch": "The candidate is inconsistent there.",
+                    "severity": "major",
+                }]
+                _validate_judgment(
+                    candidate,
+                    role=role,
+                    paper_sha256=PAPER_HASH,
+                    semantic_sha256=SEMANTIC_HASH,
+                    dependencies=DEPENDENCIES,
+                )
+                candidate["semantic_checklist"][-1]["status"] = "pass"
+                with self.assertRaisesRegex(BenchmarkError, "classification contradicts"):
+                    _validate_judgment(
+                        candidate,
+                        role=role,
+                        paper_sha256=PAPER_HASH,
+                        semantic_sha256=SEMANTIC_HASH,
+                        dependencies=DEPENDENCIES,
+                    )
+
     def run_audit(self, controller: FakeAuditController, name: str) -> dict:
         return controller.run(
             task_id="P01-T2",

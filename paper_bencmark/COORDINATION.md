@@ -1160,3 +1160,30 @@ was resumed without rerunning the canary. It is `RUNNING_PARALLEL` across three
 other pair is yet sealed. The old Pilot 33 infrastructure incident remains
 preserved separately. Monitor the exact campaign and do not change its inputs
 or drop unfavorable results.
+
+---
+
+## 2026-09-25 — Codex — Pilot 34 audit-schema incident and Pilot 35 recovery freeze
+
+Pilot 34 stopped as `PAUSED_CONCURRENT_INCIDENT` after five launched pairs.
+Four are valid sealed pairs (`CAST08-FIXED3`, `HI21-LEM2.2`, `P14-T1`,
+`P14-T2`); `CAST08-PROP3.1` is a sealed `PAIR_INCIDENT`. No other task was
+launched. The source campaign SHA-256 is
+`adca7a20cb2814b41f981caceb2143092e4ae4b753255227e5235d2bc2911d03`.
+
+The CAST N candidate incorrectly used `Σ factors(i) − 1` where the paper
+requires `Σ(factors(i) − 1)`; at depth and block factor 2, its asserted
+attainment gives `3 = 2`. The round-trip judge explicitly marked S16
+nonvacuity failed and `unfaithful-different`, but its literal
+candidate-implies-source `yes` (vacuously) made the validator reject three
+fresh judgments as schema failures. This is an audit-system incident, not a
+contestant failure; N received no repair turn. L's valid half remains incident
+evidence and must not be combined with a fresh N attempt.
+
+`pilot35/RECOVERY_11.json` pins the source journal and all five reports.
+Pilot 35 will retain the four valid pairs and use a new controller/identity
+for a fresh CAST N/L pair plus ten never-started tasks, original schedule
+indices and condition order. The audit patch disallows vacuous strengthening,
+with focused regression tests. The predeclared composite report will include
+all fifteen tasks and separately disclose the Pilot 34 incident. It remains
+outcome-aware exploratory evidence, not a confirmatory win-rate estimate.

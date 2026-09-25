@@ -17,6 +17,10 @@ Extra assumptions, restricted domains, and vacuity are not strengthening.
 Partial case-split coverage is always unfaithful in Pilot-12, even though the
 method paper's appendix permits a score-2 partial-coverage exception.
 
+An inconsistent candidate can imply the source only vacuously. That is not
+faithful strengthening: mark substantive candidate-to-source coverage `no`,
+classify unfaithful-different, and explain the inconsistency as a mismatch.
+
 Choose faithful only when the candidate affirmatively covers every material
 source-admissible case. An unsupported successful-operation, defined-run,
 run-existence, or similar restriction is unfaithful without requiring a known

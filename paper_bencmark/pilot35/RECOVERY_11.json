@@ -1,0 +1,28 @@
+{
+  "schema_version": "pilot-35-recovery-manifest-1",
+  "source_campaign_root": "/hdd/alexgeorgantzas/highambench/pilot34-high-overlap-20260924-a",
+  "source_campaign_sha256": "adca7a20cb2814b41f981caceb2143092e4ae4b753255227e5235d2bc2911d03",
+  "source_inputs_sha256": "920aa2579da97df2cdbad18d5dc33142d56a82cb06a29abae8ce0dc2405f6a42",
+  "preserved_pair_report_sha256": {
+    "CAST08-FIXED3": "0f7b2d9600209bfe352f470671481e6bfbf5025ca23823e535b2dadc9b6772ea",
+    "HI21-LEM2.2": "4710629260b2e20460f1a2732c2833f2d03ae37051d6d6260f29894439e984ce",
+    "P14-T1": "914682e78bc718347c60fab07f8bc512796bb1a0c5147bba5bdf1d3f3cb65c5d",
+    "P14-T2": "ad28decb9abfcd5fe7f978eaa89c131161164a98b17faef3aa8b2415b7f01378"
+  },
+  "incident_pair_report_sha256": {
+    "CAST08-PROP3.1": "f12cd013c20cb393b6bc20fb7340de34a8bf8da5cefd6df9af4a61e49f15246f"
+  },
+  "recovery_task_order": [
+    "CAST08-PROP3.1",
+    "RUMP12-THM3.4",
+    "P14-LOGSUMEXP",
+    "H20-8",
+    "P14-ALT-SOFTMAX",
+    "CAST08-PROP3.2",
+    "P14-SHIFTED-SUM",
+    "P14-SHIFTED-LOG",
+    "P14-SHIFTED-SOFTMAX",
+    "P14-SHIFTED-WEIGHTED",
+    "HI21-EQ2.7"
+  ]
+}

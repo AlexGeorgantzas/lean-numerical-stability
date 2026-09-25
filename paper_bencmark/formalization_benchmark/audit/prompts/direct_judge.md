@@ -44,6 +44,12 @@ defined-run, run-existence, or other domain restriction is unfaithful unless
 the supplied semantics establish it for every source-admissible case. Do not
 require a known counterexample.
 
+For an inconsistent or vacuous candidate, fail S16 and classify it
+unfaithful-different, never faithful-stronger. Interpret the first implication
+as substantive coverage of source-admissible cases, so its verdict is `no`
+when the only literal implication is vacuous. Explain this distinction and
+the concrete inconsistency in the reasoning and mismatch fields.
+
 Keep `mismatches` and `uncertainties` empty when accepting a candidate as
 faithful-equivalent or faithful-stronger. A genuine strengthening is explained
 in `rationale`, not recorded as a mismatch. A concern about the source's proof

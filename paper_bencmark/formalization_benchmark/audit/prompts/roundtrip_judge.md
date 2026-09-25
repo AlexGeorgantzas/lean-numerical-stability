@@ -22,6 +22,12 @@ Added assumptions, restricted applicability, vacuity, and partial case-split
 coverage are not strengthening. Any unresolved implication or semantic check
 must request adjudication.
 
+For an inconsistent or vacuous translation, fail S16 and classify it
+unfaithful-different, never faithful-stronger. Interpret the first implication
+as substantive coverage of source-admissible cases, so its verdict is `no`
+when the only literal implication is vacuous. Explain this distinction and
+the concrete inconsistency in the reasoning and mismatch fields.
+
 Keep `mismatches` and `uncertainties` empty when accepting a translation as
 faithful-equivalent or faithful-stronger. Explain genuine strengthening in
 `rationale`, not as a mismatch. A concern about the source's proof that does

@@ -337,7 +337,17 @@ def _validate_judgment(
         value["implications"], allow_unclear=True
     )
     expected_classification = _classification_for_implications(*implication_pair)
-    if value["classification"] != expected_classification:
+    # An inconsistent candidate can imply the source only in the vacuous,
+    # material-implication sense. That is not faithful strengthening. Preserve
+    # the judge's literal implication record while requiring an explicit S16
+    # nonvacuity failure and an unfaithful-different classification.
+    vacuous_stronger = (
+        implication_pair == ("yes", "no")
+        and value["classification"] == "unfaithful-different"
+        and value["semantic_checklist"][-1]["id"] == "S16"
+        and value["semantic_checklist"][-1]["status"] == "fail"
+    )
+    if value["classification"] != expected_classification and not vacuous_stronger:
         raise BenchmarkError(f"{role} classification contradicts its implications")
     expected_accepted = value["classification"] in FAITHFUL_CLASSIFICATIONS
     if value["accepted"] != expected_accepted:
