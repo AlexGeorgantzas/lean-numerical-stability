@@ -42,7 +42,8 @@ class RecoveryPartitionTests(unittest.TestCase):
             "status": "PAUSED_CONCURRENT_INCIDENT",
             "inputs": inputs, "inputs_sha256": inputs_sha,
             "pairs": self.entries,
-            "launches": [{"task_id": task} for task in self.schedule[:5]],
+            # The reviewed canary was launched before parallel launch logging.
+            "launches": [{"task_id": task} for task in self.schedule[1:5]],
         }
         path = self.source / "campaign.json"
         path.write_text(json.dumps(prior))

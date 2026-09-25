@@ -47,8 +47,10 @@ def verify_source(manifest: dict, corpus: dict) -> tuple[Path, dict]:
             or recovery != [task for task in schedule if task not in preserved]
             or set(recovery) != set(schedule) - set(preserved)):
         raise BenchmarkError("recovery partition or ordering changed")
+    # Pilot 34's reviewed canary was launched before the parallel journal's
+    # `launches` list began. Its sealed entry is the only permitted exception.
     launched = {entry["task_id"] for entry in prior["launches"]}
-    if launched != set(entries):
+    if launched | {schedule[0]} != set(entries):
         raise BenchmarkError("Pilot 34 launched set differs from sealed reports")
     for task, digest in {**preserved, **incident}.items():
         report = source / task / "pair-report.json"
