@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.MatrixPowers.Spijker.PlanarAnalysis
-
-#check NumStability.continuous_spijkerProjectionDirection

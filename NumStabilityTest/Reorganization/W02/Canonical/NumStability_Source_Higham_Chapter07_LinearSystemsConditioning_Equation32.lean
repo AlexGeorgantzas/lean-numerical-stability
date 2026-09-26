@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Equation32
-
-#check NumStability.eq_7_32_subordinate_differentiable_system

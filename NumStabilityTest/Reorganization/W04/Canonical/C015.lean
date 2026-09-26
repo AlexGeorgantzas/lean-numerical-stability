@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.Underdetermined.QR.Givens.BackwardError.Core
-
-#check NumStability.higham21GivensQMethodOutput

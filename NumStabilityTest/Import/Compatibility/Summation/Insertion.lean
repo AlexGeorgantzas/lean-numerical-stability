@@ -1,4 +1,0 @@
-import NumStability.Algorithms.InsertionSum
-
-#check NumStability.IncreasingAbsList
-#check NumStability.fl_insertionPowersFour_eq_recursiveSum

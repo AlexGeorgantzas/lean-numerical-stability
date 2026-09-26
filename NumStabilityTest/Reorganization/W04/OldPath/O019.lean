@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21SNEClosure
-
-#check NumStability.higham21SNEHouseholderDeltaA

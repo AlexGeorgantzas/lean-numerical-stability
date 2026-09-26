@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator.All
-
-#check NumStability.NormEstimator.card_prod_fin_pos

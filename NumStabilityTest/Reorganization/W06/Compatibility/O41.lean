@@ -1,3 +1,0 @@
-import NumStability.Analysis.JordanNormalForm
-
-#check NumStability.IsNilpotentJordanForm

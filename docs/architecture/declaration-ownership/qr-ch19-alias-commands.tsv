@@ -1,3 +1,0 @@
-format	1
-NumStability.Theorem19_6.sourceConstructed_actual_closed_linearRate	NumStability.Algorithms.QR.Higham19Theorem6ActualSource	24	0	25	67	24	6	24	48	97E6B950735F4888EB8653A3C01B53DF9E099BDAC252141FD763AE3487648D0D	NumStability.Source.Higham.Chapter19.Theorem06.ActualSource
-NumStability.Theorem19_6.sourceConstructed_actual_rowwise_backward_error	NumStability.Algorithms.QR.Higham19Theorem6ActualSource	18	0	19	79	18	6	18	53	9B58D9D3D90C147A2F6A8CBD63D477D46B4A857FDE9B30E84901422E48B41159	NumStability.Source.Higham.Chapter19.Theorem06.ActualSource

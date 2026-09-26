@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19SensitivityClosure
-
-#check NumStability.H19Sensitivity.economyQR_scaledRVariation_frob_le_six_of_small

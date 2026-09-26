@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.Equation.VectorizationIdentities.KroneckerPermutation
-
-#check NumStability.higham16MatrixUnit

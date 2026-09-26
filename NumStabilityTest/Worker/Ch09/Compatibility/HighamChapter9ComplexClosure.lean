@@ -1,3 +1,0 @@
-import NumStability.Algorithms.HighamChapter9ComplexClosure
-
-#check NumStability.higham9_10_ComplexHessenbergStageBound

@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter19.StoredLoop.StrongModel
-
-#check NumStability.H19_Theorem19_13_firstPivot_exact_annihilation

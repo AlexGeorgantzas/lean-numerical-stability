@@ -1,3 +1,0 @@
-import NumStability.Algorithms.NormEstimation.OneNorm.GeneralIndex
-
-#check NumStability.NormEstimator.IsOneNormLowerEstimate

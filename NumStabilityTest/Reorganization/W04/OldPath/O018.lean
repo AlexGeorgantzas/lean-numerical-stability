@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21SNEActualOutput
-
-#check NumStability.Higham21SNEBackwardCoefficient_nonneg_of_gammaValid

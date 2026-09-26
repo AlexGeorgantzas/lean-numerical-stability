@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Problem06Rowwise
-
-#check NumStability.ch7RowwiseDataCondAtSolutionInf

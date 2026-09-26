@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter16.Section02.SylvesterAndLyapunovBackwardError.Equation10
-
-#check NumStability.H16_eq16_10_IsBackwardError

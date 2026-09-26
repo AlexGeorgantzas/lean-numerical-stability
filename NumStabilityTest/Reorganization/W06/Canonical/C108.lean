@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.VectorizationNotes.All
-
-#check NumStability.H16_notes_vecTransposePermutation_explicit_sum

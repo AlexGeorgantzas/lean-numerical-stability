@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.QR.GramSchmidtPolar
-
-#check NumStability.MGSProblem1912CSPolarInput.p11_gram_eq_id_sub_polarH_sq

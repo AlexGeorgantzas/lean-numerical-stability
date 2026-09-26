@@ -1,3 +1,0 @@
-import NumStability.Analysis.MatrixPowersKreiss
-
-#check NumStability.KreissResolventBound

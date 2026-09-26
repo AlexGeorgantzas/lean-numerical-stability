@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Sylvester.Higham16VecPermutationNotes
-
-#check NumStability.H16_notes_kronecker_mul_vecTransposePermutation

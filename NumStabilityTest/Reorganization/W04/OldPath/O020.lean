@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21SNEConditionTransfer
-
-#check NumStability.higham21SNEConditionDifferenceCoefficient

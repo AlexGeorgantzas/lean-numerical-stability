@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixPowersPseudospectralCriterion
-
-#check NumStability.eigenvalueModulus_lt_of_pseudospectralRadiusLt

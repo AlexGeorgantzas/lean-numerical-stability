@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.HouseholderClosure.Uniform
-
-#check NumStability.higham21SNEHouseholderSourceEnvelope

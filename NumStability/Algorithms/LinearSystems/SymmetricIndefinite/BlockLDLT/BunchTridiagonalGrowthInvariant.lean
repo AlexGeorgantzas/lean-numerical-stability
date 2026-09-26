@@ -16,11 +16,9 @@ Canonical owner materialized from the reviewed Chapter 11 route contract.
 Chapter 11, Theorem 11.7 — **bounded element growth for Bunch's symmetric
 tridiagonal pivoting (Algorithm 11.6), the derivation of `hfactor`.**
 
-This module begins the multi-session derivation that discharges the tridiagonal
-factor-norm hypothesis `hfactor` of `higham11_7_bunch_tridiagonal_backward_error`
-*from the algorithm* (Route B of
-`docs/source_coverage/higham_ch11_thm117_growth_blueprint.md`), replacing the
-assumed `TriPivotData`.
+This module begins the derivation that discharges the tridiagonal factor-norm
+hypothesis `hfactor` of `higham11_7_bunch_tridiagonal_backward_error` *from the
+algorithm*, replacing the assumed `TriPivotData`.
 
 Higham's Algorithm 11.6 uses a **fixed** scale `σ = ‖A‖_M =: M₀`, computed once at
 the start, in every stage's pivot test.  With that fixed scale the element growth
@@ -41,7 +39,7 @@ This file (session 1) establishes the foundational pieces:
     corner bounds into the uniform `≤ K·M₀` form.
 
 The schedule-level induction (the growth invariant) and the product-entry
-assembly are the subsequent sessions (see the blueprint).
+assembly are developed in the subsequent modules of this directory.
 
 No `sorry`/`admit`/`axiom`/`native_decide`.
 -/

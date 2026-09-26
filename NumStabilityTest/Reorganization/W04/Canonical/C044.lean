@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Equation07.ConditionTransfer
-
-#check NumStability.higham21SNEConditionDifferenceCoefficient

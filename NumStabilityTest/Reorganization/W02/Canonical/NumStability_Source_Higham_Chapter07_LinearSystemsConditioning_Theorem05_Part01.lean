@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem05.Part01
-
-#check NumStability.ch7ColumnEquilibratingScale1

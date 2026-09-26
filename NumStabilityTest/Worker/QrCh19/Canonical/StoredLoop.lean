@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter19.StoredLoop
-
-#check NumStability.H19_Theorem19_13_firstPivot_storedLoopPerturbation_frobNorm_le

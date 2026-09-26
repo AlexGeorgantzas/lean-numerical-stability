@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19Theorem6ActualSource
-
-#check NumStability.Theorem19_6.sourceConstructed_actual_closed_linearRate

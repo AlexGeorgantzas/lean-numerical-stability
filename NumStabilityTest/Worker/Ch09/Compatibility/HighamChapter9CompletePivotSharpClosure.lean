@@ -1,3 +1,0 @@
-import NumStability.Algorithms.HighamChapter9CompletePivotSharpClosure
-
-#check NumStability.higham9_14_CompletePivotGECPUTrace_diag_ne_zero

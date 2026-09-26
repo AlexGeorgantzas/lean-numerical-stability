@@ -17,7 +17,6 @@ __pycache__/
 *.aux
 *.log
 *.out
-/docs/benchmarking/higham_exercise_candidates.pdf
 thesis/
 references/
 References/

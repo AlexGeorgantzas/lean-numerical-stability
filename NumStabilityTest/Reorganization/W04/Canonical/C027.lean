@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.QRTransfer.EnvelopeTransfer
-
-#check NumStability.Higham21SNEAggregateQRMajorantCond2Bridge

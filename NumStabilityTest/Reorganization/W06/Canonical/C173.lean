@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter18.Section02.FinitePrecisionPowers.Theorems01And02.PseudospectralPackaging
-
-#check NumStability.higham_knight_18_2_pseudospectral

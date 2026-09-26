@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Corrections.Problem19_12.RoundedReplay
-
-#check NumStability.Higham21MGSSelectedRepair

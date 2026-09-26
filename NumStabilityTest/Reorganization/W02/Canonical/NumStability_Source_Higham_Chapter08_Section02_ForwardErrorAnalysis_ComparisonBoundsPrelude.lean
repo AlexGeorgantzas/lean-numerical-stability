@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter08.Section02.ForwardErrorAnalysis.ComparisonBoundsPrelude
-
-#check NumStability.higham8_6_diagDominantLower

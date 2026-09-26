@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter09.Section08
-
-#check NumStability.higham9_24_matrix_original_system_of_scaled_system

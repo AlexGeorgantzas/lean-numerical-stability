@@ -1,4 +1,0 @@
-import NumStability.Analysis.HighamChapter7Rectangular
-
-#check NumStability.higham7_3_rectangular
-#check NumStability.higham7RectResidual

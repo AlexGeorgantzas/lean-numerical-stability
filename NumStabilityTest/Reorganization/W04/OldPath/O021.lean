@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21SNEEnvelopeTransfer
-
-#check NumStability.Higham21SNEAggregateQRMajorantCond2Bridge

@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19Theorem5SourceClosure
-
-#check NumStability.Higham19Eq1914ColumnwiseBackwardError

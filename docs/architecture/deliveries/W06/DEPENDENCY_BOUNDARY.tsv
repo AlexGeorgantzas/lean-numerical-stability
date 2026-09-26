@@ -1,8 +1,0 @@
-format	1
-relationship	direct_imports	signature_edges	body_edges	union_pairs	handling
-W06_to_W05	13	4943	3218	5777	accepted canonical retargets applied in W06 owners; retained Higham16 exceptions preserved
-W06_to_W02	6	309	217	343	accepted canonical declaration owners preserved; three forbidden consumers requested for integration retarget
-W06_to_W10	1	0	3	3	CondEstimation historical import retained until W10
-W07_to_W06	3	0	4	4	future owners unchanged; future target is JordanScaling.RealDiagonal; historical MatrixPowers surface tested
-W09_to_W06	1	3	4	4	future owner unchanged; future target is Jordan.NormalForm.PrimaryDecomposition; historical JordanNormalForm surface tested
-W11_to_W06	3	70	180	181	future owners unchanged; future targets are the five typed CStarMatrix/OperatorLog/LiebTrace leaves; historical LiebTrace surface tested

@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21RankStability
-
-#check NumStability.higham21_theorem21_1_perturbed_gram_det_ne_zero_of_gram_det_ne_zero

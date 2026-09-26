@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Sylvester.Higham16Eq9EndToEnd
-
-#check NumStability.Wave14.H16_eq16_8_9_frobNormRect_le_gamma_dataScale_of_componentwise_product_budget

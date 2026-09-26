@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19Problem19_10
-
-#check NumStability.higham19Problem19_10ColumnDot

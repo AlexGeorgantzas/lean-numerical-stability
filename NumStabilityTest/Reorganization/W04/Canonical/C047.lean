@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Equation08.ProjectorNorm
-
-#check NumStability.higham21_eq21_8_projection_residual_norm_le_projectorFactor

@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter08.Problem02.ComparisonMatrixWitness.RatioWitness
-
-#check NumStability.higham8_2_ratioWitness

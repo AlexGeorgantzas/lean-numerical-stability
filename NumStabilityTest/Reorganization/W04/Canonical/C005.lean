@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.Underdetermined.MinimumNorm.Pseudoinverse.UnderdeterminedSpec
-
-#check NumStability.RectMoorePenrosePseudoinverse

@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19Thm6ColPivotFull
-
-#check NumStability.Wave20.EntrywiseStageBackwardError

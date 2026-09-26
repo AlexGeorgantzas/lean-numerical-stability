@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.AttainedMinima.All
-
-#check NumStability.add_then_scale_coeff_le_gamma

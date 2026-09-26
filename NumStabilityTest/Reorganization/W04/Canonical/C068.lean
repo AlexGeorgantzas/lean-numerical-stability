@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Theorem01.ComponentwisePerturbation.UnderdeterminedSpec
-
-#check NumStability.DemmelHighamPerturbation

@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Sylvester.Higham16QuasiRoundedSylvester
-
-#check NumStability.Wave15.H16_eq16_2_quasi_sylvesterVecCoeff_same_col_apply

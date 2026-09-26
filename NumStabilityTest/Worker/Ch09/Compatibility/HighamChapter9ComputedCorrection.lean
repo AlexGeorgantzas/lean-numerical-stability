@@ -1,3 +1,0 @@
-import NumStability.Algorithms.HighamChapter9ComputedCorrection
-
-#check NumStability.higham9_5_computedMultiplier_infNorm

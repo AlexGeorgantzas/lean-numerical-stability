@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.Theorem08Aliases
-
-#check NumStability.theorem7_8_bauer_scaledInfCondSet_sInf_eq_spectralRadius

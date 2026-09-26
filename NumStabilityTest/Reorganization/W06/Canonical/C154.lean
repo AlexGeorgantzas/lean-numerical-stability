@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter18.Section01.MatrixPowerBounds.NamedBounds.HenriciSharpConstant
-
-#check NumStability.centered_sq_eq_exactSharp

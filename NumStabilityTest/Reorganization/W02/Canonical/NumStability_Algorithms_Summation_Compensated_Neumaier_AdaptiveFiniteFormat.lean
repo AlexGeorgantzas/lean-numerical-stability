@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Summation.Compensated.Neumaier.AdaptiveFiniteFormat
-
-#check NumStability.NeumaierFFStepTrace

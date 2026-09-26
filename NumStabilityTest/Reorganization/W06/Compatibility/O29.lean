@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Sylvester.Higham16VecNorm
-
-#check NumStability.H16_eq16_23_sylvester_first_order_bound_diagonal_of_vecCoeff_entrywise_abs_ge

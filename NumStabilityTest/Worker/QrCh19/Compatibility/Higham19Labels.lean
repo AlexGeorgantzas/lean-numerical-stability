@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19Labels
-
-#check NumStability.H19_Lemma19_1_construction1_backward_error

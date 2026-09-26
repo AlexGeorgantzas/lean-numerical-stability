@@ -1,7 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.Conditioning.PracticalEstimator.All
-import NumStability.Algorithms.NormEstimation.OneNorm.All
-import NumStability.Algorithms.Sylvester.Higham16NormEstimator
-
-#check NumStability.NormEstimator.card_prod_fin_pos
-#check NumStability.NormEstimator.IsOneNormLowerEstimate
-#check NumStability.NormEstimator.H16_eq16_29_sylvester_practical_error_bound_with_norm1_estimator

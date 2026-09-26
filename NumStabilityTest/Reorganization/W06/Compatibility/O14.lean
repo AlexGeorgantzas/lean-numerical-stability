@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Sylvester.Higham16LyapunovSigmaMin
-
-#check NumStability.H16_eq16_26_SepLowerBound_lyapunov_of_sigmaMin

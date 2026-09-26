@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.ConvergenceCriterion
-
-#check NumStability.eigenvalueModulus_lt_of_pseudospectralRadiusLt

@@ -1,3 +1,0 @@
-import NumStability.Algorithms.LinearSystems.Underdetermined.SeminormalEquations.ForwardError.UnderdeterminedSolve
-
-#check NumStability.sne_forward_error_matches_q_method

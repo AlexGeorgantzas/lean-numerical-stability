@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter01.Problem10.TwoPassSampleVariance.Bounds
-
-#check NumStability.flSampleVarianceTwoPassProblem110MeanQuadraticBound_eq_zero_of_u_eq_zero

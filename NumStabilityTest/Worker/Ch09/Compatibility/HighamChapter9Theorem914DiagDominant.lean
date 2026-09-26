@@ -1,3 +1,0 @@
-import NumStability.Algorithms.HighamChapter9Theorem914DiagDominant
-
-#check NumStability.higham9_14_exists_threshold_actual_diagDominant_growth_bound_16

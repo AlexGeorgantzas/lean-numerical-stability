@@ -1,9 +1,0 @@
-import NumStability.Analysis.FunctionalCalculus.Resolvent.All
-import NumStability.Analysis.LinearOperators.Pseudospectra.Perturbation.All
-import NumStability.Analysis.LinearOperators.Pseudospectra.PowerBounds.All
-import NumStability.Analysis.LinearOperators.Pseudospectra.Resolvent.All
-
-#check NumStability.circleIntegral_pow_smul_pow_inv_eq
-#check NumStability.PseudospectralRadiusLt
-#check NumStability.isBounded_resolventPseudospectrum
-#check NumStability.dist_ge_one_div_norm_resolvent

@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter16.Section01.SylvesterEquation.Equation01
-
-#check NumStability.H16_eq16_1_matMulRect_square_eq_matMul

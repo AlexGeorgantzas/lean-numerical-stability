@@ -1,5 +1,0 @@
-import NumStability.Analysis.TrigCancellation
-
-#check NumStability.one_sub_cos_eq_two_sin_sq_half
-#check NumStability.problem_1_3_lawOfCosines_radicand_halfAngle
-#check NumStability.trigCancellationDirectScaled

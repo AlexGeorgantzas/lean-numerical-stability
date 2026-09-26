@@ -1,3 +1,0 @@
-import NumStability.Analysis.LinearOperators.MatrixPowers.Gautschi.All
-
-#check NumStability.gautschi_scaled_geometric_le

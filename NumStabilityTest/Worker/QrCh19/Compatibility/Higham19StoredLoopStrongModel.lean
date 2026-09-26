@@ -1,3 +1,0 @@
-import NumStability.Algorithms.QR.Higham19StoredLoopStrongModel
-
-#check NumStability.H19_Theorem19_13_firstPivot_exact_annihilation

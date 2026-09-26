@@ -1,3 +1,0 @@
-import NumStability.Analysis.MatrixPowersBaiDemmelGu
-
-#check NumStability.baiDemmelGuAlpha

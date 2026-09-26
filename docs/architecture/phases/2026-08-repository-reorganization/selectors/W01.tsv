@@ -1,5 +1,0 @@
-module	path
-NumStability.Analysis.CancellationOfRoundingErrors	NumStability/Analysis/CancellationOfRoundingErrors.lean
-NumStability.Analysis.FloatingPointArithmetic	NumStability/Analysis/FloatingPointArithmetic.lean
-NumStability.Analysis.IncreasingPrecision	NumStability/Analysis/IncreasingPrecision.lean
-NumStability.Analysis.InstabilityWithoutCancellation	NumStability/Analysis/InstabilityWithoutCancellation.lean

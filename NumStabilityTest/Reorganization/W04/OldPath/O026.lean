@@ -1,3 +1,0 @@
-import NumStability.Algorithms.Underdetermined.Higham21SNEUniform
-
-#check NumStability.higham21SNEHouseholderSourceEnvelope

@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter19.Theorem05.Nonbreakdown
-
-#check NumStability.fl_householderQR_R_diag_nonzero_of_source_left_inverse_small

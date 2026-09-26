@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter07.LinearSystemsConditioning.ConditionNumbers
-
-#check NumStability.ch7AmplifiedRhsEF_zero_le_const

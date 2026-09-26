@@ -1,3 +1,0 @@
-import NumStability.Source.Higham.Chapter21.Equation11.Equation
-
-#check NumStability.higham21Eq21_11QuadraticCoefficient

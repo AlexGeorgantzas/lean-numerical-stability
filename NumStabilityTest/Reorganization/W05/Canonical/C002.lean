@@ -1,3 +1,0 @@
-import NumStability.Algorithms.MatrixEquations.Sylvester.BackwardError.LyapunovSpectral
-
-#check NumStability.exists_lyapunovOptimalPerturbations

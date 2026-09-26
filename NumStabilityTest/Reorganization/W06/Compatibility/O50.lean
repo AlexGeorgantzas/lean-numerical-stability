@@ -1,3 +1,0 @@
-import NumStability.Analysis.MatrixPowersKreissSpijker
-
-#check NumStability.SpijkerArcLengthBound

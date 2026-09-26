@@ -1,3 +1,0 @@
-import NumStability.Algorithms.HighamChapter15Ch7PracticalBoundBridge
-
-#check NumStability.higham15_1_eq_7_31_practical_bound_bridge
