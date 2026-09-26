@@ -3422,7 +3422,7 @@ theorem higham22Hermite_basisCoefficientMatrix_mulVec_apply
     (higham22HermiteBasisCoefficientMatrix p).mulVec a i =
       (higham22BasisExpansion p a).coeff i := by
   simp [higham22HermiteBasisCoefficientMatrix, Matrix.mulVec, dotProduct,
-    higham22BasisExpansion, 
+    higham22BasisExpansion,
     mul_comm]
 
 theorem higham22Hermite_basisExpansion_injective
@@ -3871,14 +3871,14 @@ theorem higham22_algorithm22_3StageISweep_eq_upper_transpose_mulVec
   · rw [if_pos hi0]
     have hik1 : (i : ℕ) ≠ k + 1 := by omega
     have hnot : ¬(k + 2 ≤ (i : ℕ) ∧ (i : ℕ) ≤ k + (n - k)) := by omega
-    simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hik1, 
+    simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hik1,
       hnot, higham22FinExtend_apply]
   · rw [if_neg hi0]
     by_cases hi1 : (i : ℕ) = k + 1
     · rw [if_pos hi1]
       have hknot : ¬(k + 2 ≤ k ∧ k ≤ k + (n - k)) := by omega
       have hk1not : ¬(k + 2 ≤ k + 1 ∧ k + 1 ≤ k + (n - k)) := by omega
-      simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hi1, 
+      simp [higham22Algorithm22_3StageISweep, higham22_algorithm22_3StageIInner_apply, hi1,
         higham22FinExtend]
     · rw [if_neg hi1]
       have hi2 : k + 2 ≤ (i : ℕ) := by omega
@@ -8002,7 +8002,7 @@ theorem higham22_stageILowerFactor_diagonal_ne_zero {N : ℕ}
       have heq' : alpha i ≠
           higham22FinExtend alpha ((i : ℕ) - k - 1) := by
         simpa using heq
-      simp [higham22Algorithm22_2StageIStep, hik, 
+      simp [higham22Algorithm22_2StageIStep, hik,
         heq', higham22FinExtend_single, hsne]
       exact sub_ne_zero.mpr heq'
 
