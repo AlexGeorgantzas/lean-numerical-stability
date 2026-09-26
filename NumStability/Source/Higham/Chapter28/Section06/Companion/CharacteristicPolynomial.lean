@@ -1,4 +1,3 @@
-import NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.ExactTransforms.Core
 import NumStability.Source.Higham.Chapter28.Section06.Companion.Companion
 import NumStability.Source.Higham.Chapter28.Section06.Companion.Nonderogatory
 import NumStability.Upstream.Lindemann.AlgebraicPart

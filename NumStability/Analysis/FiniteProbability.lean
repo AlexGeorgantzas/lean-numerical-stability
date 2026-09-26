@@ -431,9 +431,7 @@ theorem expectationReal_mono (P : FiniteProbability Ω) {X Y : Ω → ℝ}
 repository-native finite probability law.
 
 This is the finite-probability wrapper around mathlib's
-`ConcaveOn.le_map_sum`.  It is useful for the Lieb/Tropp trace-MGF route, where
-Lieb's theorem supplies the concavity hypothesis and the probability weights
-come from `FiniteProbability`. -/
+`ConcaveOn.le_map_sum`. -/
 theorem expectationReal_le_of_concaveOn
     {E : Type*} [AddCommGroup E] [Module ℝ E]
     (P : FiniteProbability Ω) {s : Set E} {f : E → ℝ} {X : Ω → E}

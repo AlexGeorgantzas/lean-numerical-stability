@@ -147,8 +147,7 @@ theorem finiteTrace_rectMatMul_self_eq_sum_sq_finiteHermitianEigenvalues
   simp [finiteHermitianEigenvalues, Mmat, pow_two]
 
 /-- Matrix exponential of a repository-native finite real matrix, routed through
-    mathlib's matrix exponential.  This is the common interface for future
-    trace-MGF / matrix concentration proofs. -/
+    mathlib's matrix exponential. -/
 noncomputable def finiteMatrixExp {ι : Type*} [Fintype ι] [DecidableEq ι]
     (M : ι → ι → ℝ) : ι → ι → ℝ :=
   (@NormedSpace.exp (Matrix ι ι ℝ) Matrix.instRing
@@ -156,9 +155,8 @@ noncomputable def finiteMatrixExp {ι : Type*} [Fintype ι] [DecidableEq ι]
     (inferInstance : IsTopologicalRing (Matrix ι ι ℝ))
     (M : Matrix ι ι ℝ) : Matrix ι ι ℝ)
 
-/-- The matrix exponential of `L I` is `exp(L) I`.  The statement is written
-    in the repository's finite-matrix representation and with `Real.exp`, so it
-    can be used directly in trace-MGF bounds. -/
+/-- The matrix exponential of `L I` is `exp(L) I` in the repository's
+    finite-matrix representation. -/
 theorem finiteMatrixExp_smul_finiteIdMatrix {ι : Type*}
     [Fintype ι] [DecidableEq ι] (L : ℝ) :
     finiteMatrixExp (fun i j : ι => L * finiteIdMatrix i j) =
@@ -214,9 +212,8 @@ theorem finiteTrace_finiteMatrixExp_finiteDiagonal {ι : Type*}
   simp
 
 /-- Hermitian continuous-functional-calculus exponential for a repository-native
-    finite real symmetric matrix.  This is a spectral-calculus bridge for future
-    trace-MGF arguments; the power-series matrix exponential is still exposed
-    separately as `finiteMatrixExp`. -/
+    finite real symmetric matrix. The power-series matrix exponential remains
+    available separately as `finiteMatrixExp`. -/
 noncomputable def finiteHermitianCfcExp {ι : Type*}
     [Fintype ι] [DecidableEq ι]
     (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M) : ι → ι → ℝ :=
@@ -748,9 +745,7 @@ theorem opNorm2Le_of_finitePSD_of_finiteHermitianEigenvalues_le
       M hL hM hPSD hEig)
 
 /-- A scalar-identity Loewner upper bound gives the corresponding
-    trace-exponential scalar bound.  This is the deterministic final step that
-    converts a future matrix-CGF Loewner estimate into a scalar trace-MGF
-    estimate. -/
+    trace-exponential scalar bound. -/
 theorem finiteTrace_finiteMatrixExp_le_card_mul_exp_of_finiteLoewnerLe_smul_id
     {ι : Type*} [Fintype ι] [DecidableEq ι]
     (M : ι → ι → ℝ) (hM : IsSymmetricFiniteMatrix M) {c : ℝ}

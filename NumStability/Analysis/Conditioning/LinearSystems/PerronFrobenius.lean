@@ -1,4 +1,5 @@
 import Mathlib.Algebra.Order.GroupWithZero.Finset
+import Mathlib.Analysis.Normed.Algebra.GelfandFormula
 import Mathlib.LinearAlgebra.Basis.VectorSpace
 import Mathlib.LinearAlgebra.Charpoly.ToMatrix
 import Mathlib.LinearAlgebra.Eigenspace.Charpoly

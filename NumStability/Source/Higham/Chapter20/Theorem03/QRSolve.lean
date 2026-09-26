@@ -24,7 +24,6 @@ import NumStability.Algorithms.LinearSystems.Triangular.BackSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.DiagonalDominance
 import NumStability.Algorithms.LinearSystems.Triangular.ForwardSubstitution
 import NumStability.Algorithms.LinearSystems.Triangular.InverseBounds
-import NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.Core
 import NumStability.Analysis.MatrixAlgebra
 import NumStability.Analysis.MatrixNorms.Basic
 import NumStability.Analysis.MatrixSpectral
@@ -18853,14 +18852,10 @@ theorem storedDiagDominantComparisonCounterexample_signed_alpha_def :
             ⟨k, lt_of_lt_of_le hk (by omega : 2 ≤ 2)⟩ ⟨k, hk⟩) := by
   intro k hk
   interval_cases k
-  · have hsqrt9 : Real.sqrt (9 : ℝ) = 3 := by
-      rw [Real.sqrt_eq_iff_mul_self_eq_of_pos (by norm_num : (0 : ℝ) < 3)]
-      norm_num
-    norm_num [storedDiagDominantComparisonCounterexampleAlpha,
+  · norm_num [storedDiagDominantComparisonCounterexampleAlpha,
       storedDiagDominantComparisonCounterexampleSeq,
       activeMaxPivotRowMaxComparisonCounterexampleA0, signedHouseholderAlpha,
       householderTrailingNorm2Sq, vecNorm2Sq, householderTrailingPart]
-    exact hsqrt9.symm
   · norm_num [storedDiagDominantComparisonCounterexampleAlpha,
       storedDiagDominantComparisonCounterexampleSeq,
       storedDiagDominantComparisonCounterexampleA1, signedHouseholderAlpha,

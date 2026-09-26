@@ -2,6 +2,7 @@ import Mathlib.Algebra.Field.GeomSum
 import Mathlib.Algebra.Polynomial.Roots
 import Mathlib.Analysis.Complex.ExponentialBounds
 import Mathlib.Analysis.Complex.Trigonometric
+import Mathlib.Analysis.Matrix.Order
 import Mathlib.Analysis.SpecialFunctions.Trigonometric.Basic
 import Mathlib.Data.Fin.Tuple.Sort
 import Mathlib.Data.Finset.Max

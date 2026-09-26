@@ -29,9 +29,7 @@ open scoped BigOperators Matrix.Norms.Frobenius
 Canonical reusable module extracted without change from Higham20AlternativeBound, Higham20ResidualQuality, LSQRSolve.
 -/
 
-/-- Rectangular normal-equation Gram matrix `Aᵀ A`.  This duplicate of the
-    RandNLA-facing `lsNormalMatrix` is kept in the least-squares module so QR
-    solver facts do not depend on the RandNLA algorithm files. -/
+/-- Rectangular normal-equation Gram matrix `Aᵀ A`. -/
 noncomputable def rectLSGram {m n : ℕ}
     (A : Fin m → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   fun j k => ∑ i : Fin m, A i j * A i k
@@ -178,12 +176,12 @@ theorem lsObjective_matMulRect_right (m n p : ℕ)
       lsObjective A b (rectMatMulVec C y) := by
   exact lsObjective_rectMatMul_right A C b y
 /-- Normal-equation Gram matrix `A^T A` for a rectangular least-squares
-    instance.  This source-facing name is shared with the RandNLA layer. -/
+    instance. -/
 noncomputable def lsNormalMatrix {m n : ℕ}
     (A : Fin m → Fin n → ℝ) : Fin n → Fin n → ℝ :=
   rectLSGram A
 /-- Normal-equation right-hand side `A^T b` for a rectangular least-squares
-    instance.  This source-facing name is shared with the RandNLA layer. -/
+    instance. -/
 noncomputable def lsNormalRhs {m n : ℕ}
     (A : Fin m → Fin n → ℝ) (b : Fin m → ℝ) : Fin n → ℝ :=
   rectLSRhs A b
