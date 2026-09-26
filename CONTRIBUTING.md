@@ -1,8 +1,9 @@
 # Contributing to NumStability
 
-The `higham_v02` branch is a release package. Broad development and
-reorganization should happen on `main`; changes here should be limited to
-release-critical fixes that preserve the published API.
+The `higham_randnla_v02` branch is a release package for the Higham and RandNLA
+formalizations. Broad development and reorganization should happen on `main`;
+changes here should be limited to release-critical fixes that preserve the
+published API.
 
 ## Before changing modules
 
@@ -11,6 +12,11 @@ semantic `Algorithms` family. Put numbered source results, source aliases,
 corrections, and discrepancies under `NumStability/Source/<work>/`. Put copied
 or adapted external code under `NumStability/Upstream/<origin>/` and preserve
 its attribution and license.
+
+Place reusable algorithm-specific RandNLA results under
+`NumStability/Algorithms/RandomizedLinearAlgebra/` and paper-indexed endpoints
+under `NumStability/Source/DrineasMahoney/RandNLA2016/`. The historical
+`NumStability/Algorithms/RandNLA/` hierarchy is compatibility-only.
 
 Do not remove or rename a public declaration or import path from this release
 branch without an explicit compatibility decision. Prefer a thin forwarding

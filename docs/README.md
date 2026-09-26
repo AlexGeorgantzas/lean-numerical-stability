@@ -8,7 +8,8 @@ and source-audit records remain on the development branches.
 
 - [`LIBRARY_LOOKUP.md`](LIBRARY_LOOKUP.md) is the human-readable, structure-first
   map. It tells users and agents which subtree owns each kind of declaration,
-  lists the main domain imports, and indexes every Higham chapter.
+  lists the main domain imports, indexes every Higham chapter, and maps the
+  Drineas–Mahoney RandNLA case study.
 - [`LibraryLookupChecks.lean`](LibraryLookupChecks.lean) is the executable
   validation companion. Its narrow imports and representative `#check`
   commands verify that the documented navigation paths still work.

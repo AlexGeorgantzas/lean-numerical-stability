@@ -15,7 +15,7 @@ checks that their public declarations remain available.
 ## Fast Path
 
 1. Decide whether the result is reusable mathematics or correspondence to the
-   Higham book.
+   Higham book or the Drineas–Mahoney RandNLA case study.
 2. Start in `NumStability.Analysis` for general theory,
    `NumStability.Algorithms` for an algorithm or its error analysis,
    `NumStability.FloatingPoint` for the primitive arithmetic model, and
@@ -39,7 +39,9 @@ checks that their public declarations remain available.
 | `NumStability.FloatingPoint` | Floating-point models and operation laws. |
 | `NumStability.Analysis` | General error, norm, conditioning, perturbation, probability, and operator theory. |
 | `NumStability.Algorithms` | Numerical algorithms and their correctness or error results. |
-| `NumStability.Source` | Source correspondence for Higham's book. |
+| `NumStability.Algorithms.RandomizedLinearAlgebra` | Canonical randomized numerical linear algebra algorithms. |
+| `NumStability.Algorithms.RandNLA` | Historical RandNLA compatibility imports. |
+| `NumStability.Source` | Source correspondence for Higham and Drineas–Mahoney. |
 | `NumStability.Source.Higham` | All Higham chapter correspondence. |
 | `NumStability.All` | All supported library domains. |
 | `NumStability` | Package-wide convenience import; currently forwards to `NumStability.All`. |
@@ -53,6 +55,7 @@ checks that their public declarations remain available.
 | Reusable error definition or theorem | `NumStability/Analysis/` | Keep it independent of one named algorithm or publication. |
 | Algorithm, execution model, or algorithm-specific bound | `NumStability/Algorithms/` | Place it with the algorithm family it analyzes. |
 | Statement tied to a numbered Higham result | `NumStability/Source/Higham/` | State the source-facing result here and reuse canonical Analysis or Algorithms facts. |
+| Statement tied to the Drineas–Mahoney RandNLA case study | `NumStability/Source/DrineasMahoney/` | Keep paper-facing endpoints here and reusable RandNLA results under Algorithms. |
 | Imported prerequisite maintained locally | `NumStability/Upstream/` | Use only for an explicitly tracked upstream dependency. |
 
 Do not place a reusable theorem in `Source` merely because a publication uses
@@ -72,7 +75,7 @@ move a source-correspondence statement into a generic module.
 | Vector norms | `NumStability.Analysis.VectorNorms` | `complexVecLpNorm` and vector-norm theory |
 | Matrix norms | `NumStability.Analysis.MatrixNorms` | `complexMatrixLpNorm` and matrix-norm theory |
 | Rectangular rank factorizations | `NumStability.Analysis.SingularValues.RectangularRankFactorization` | `RectRankFactorization`, orthonormal-completion infrastructure |
-| Rectangular right-Gram SVD analysis | `NumStability.Analysis.SingularValues.RectangularGram` | `rectRightGram`, `rectRightGramBasisSingularValue` |
+| Rectangular right-Gram analysis | `NumStability.Analysis.SingularValues.RectangularGram` | `rectRightGram`, `rectRightGramBasisSingularValue` |
 | Residual and perturbation bounds | `NumStability.Analysis.PerturbationTheory` | `forward_error_from_residual`, `oettli_prager` |
 | Linear operators and spectra | `NumStability.Analysis.LinearOperators` | Operator, Schur, pseudospectral, and power theory |
 | Schur theory | `NumStability.Analysis.LinearOperators.Schur` | `schur_triangulation` |
@@ -109,6 +112,11 @@ move a source-correspondence statement into a generic module.
 | One-norm estimation | `NumStability.Algorithms.NormEstimation.OneNorm.LAPACK.Basic` | `lapackNormEstimator` |
 | p-norm power methods | `NumStability.Algorithms.NormEstimation.PNorm.PowerMethod.PNormPowerMethod` | `Ch15.PNormPair` |
 | Matrix powers | `NumStability.Algorithms.MatrixPowers` | Computation and error bounds for powers |
+| Elementwise randomized sampling | `NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.Elementwise.Core` | `ElementwiseSample`, sampling and floating-point update bounds |
+| Leverage-score sampling | `NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.LeverageScore.Core` | `HasOrthonormalColumns`, leverage-score Gram estimates |
+| RandNLA least-squares objectives | `NumStability.Algorithms.RandomizedLinearAlgebra.LeastSquaresSketching.Objectives.Core` | `IsLeastSquaresApproxMinimizer`, objective-preservation results |
+| RandNLA column sketches | `NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.Core` | `columnSketch`, `ColumnSketchHeadFactorization` |
+| CountSketch preconditioning | `NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.CountSketch.HashCollisionProbabilities` | Hash-collision probability results |
 
 ## Higham Source Map
 
@@ -153,6 +161,28 @@ Representative source-facing declarations include
 `higham16_problem16_2_lyapunov_spd_unique`,
 `higham22_vandermonde_det_ne_zero_iff`, and
 `higham24Radix2FFT_eq_dftApply`.
+
+## RandNLA Source Map
+
+Reusable randomized-linear-algebra definitions and theorems live under the
+canonical `NumStability.Algorithms.RandomizedLinearAlgebra` hierarchy.
+Statements indexed to the Drineas–Mahoney survey live under
+`NumStability.Source.DrineasMahoney.RandNLA2016`. The historical
+`NumStability.Algorithms.RandNLA` hierarchy is retained for compatibility; new
+code should use the canonical imports below.
+
+| Need | Canonical algorithm import | Source-facing import |
+| --- | --- | --- |
+| Elementwise sampling | `NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.Elementwise.Core` | `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.Sampling` |
+| Hit-count concentration | `NumStability.Algorithms.RandomizedLinearAlgebra.Concentration.HitCounts.Bounds` | `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm01.ElementwiseSampling.HitCountConcentration` |
+| Sampled Gram matrices | `NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.RowNorm.Gram` | `NumStability.Source.DrineasMahoney.RandNLA2016.Equation05.GramApproximation.SampledGramEndpoints` |
+| Leverage-score sampling | `NumStability.Algorithms.RandomizedLinearAlgebra.Sampling.LeverageScore.Core` | `NumStability.Source.DrineasMahoney.RandNLA2016.Equation07.SubspaceEmbedding.Leverage` |
+| Least-squares sketching | `NumStability.Algorithms.RandomizedLinearAlgebra.LeastSquaresSketching.Objectives.Core` | `NumStability.Source.DrineasMahoney.RandNLA2016.Equation08.LeastSquaresSketch.Endpoints` |
+| Low-rank approximation | `NumStability.Algorithms.RandomizedLinearAlgebra.LowRankApproximation.ColumnSketches.Core` | `NumStability.Source.DrineasMahoney.RandNLA2016.Equation09.LowRankApproximation.Endpoints` |
+| Randomized preconditioning | `NumStability.Algorithms.RandomizedLinearAlgebra.Preconditioning.ExactTransforms.Core` | `NumStability.Source.DrineasMahoney.RandNLA2016.Algorithm03.RandomProjectionPreconditioning.Preconditioning` |
+
+Representative source-facing declarations include `sqMagProb_sum_eq_one` and
+`rowSqNormProb_sum_eq_one`.
 
 ## Local Prerequisites
 

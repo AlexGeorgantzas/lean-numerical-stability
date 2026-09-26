@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - higham_v02
+      - higham_randnla_v02
   pull_request:
   workflow_dispatch:
 

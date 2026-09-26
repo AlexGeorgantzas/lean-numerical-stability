@@ -4,7 +4,9 @@ NumStability is a Lean 4 library for machine-checked floating-point error
 analysis and numerical stability. It provides reusable foundations for rounding
 error, summation, perturbation analysis, matrix computations, and numerical
 algorithms, together with source-facing formalizations from Nicholas J.
-Higham's *Accuracy and Stability of Numerical Algorithms* (2nd ed.).
+Higham's *Accuracy and Stability of Numerical Algorithms* (2nd ed.) and a
+randomized numerical linear algebra (RandNLA) case study based on work by
+Petros Drineas and Michael W. Mahoney.
 
 The core model is abstract: an `FPModel` supplies rounded arithmetic operations,
 a nonnegative unit roundoff, and the operation laws used by each theorem. This
@@ -19,7 +21,7 @@ Add the package to a downstream `lakefile.toml`:
 [[require]]
 name = "numStability"
 git = "https://github.com/AlexGeorgantzas/lean-numerical-stability"
-rev = "higham_v02"
+rev = "higham_randnla_v02"
 ```
 
 For a reproducible project, replace the branch name with the immutable release
@@ -53,10 +55,16 @@ and compilation.
 | `NumStability.FloatingPoint` | Floating-point foundations and IEEE-facing utilities |
 | `NumStability.Analysis` | Analysis, perturbation, norms, probability, and error bounds |
 | `NumStability.Algorithms` | Numerical algorithm families |
-| `NumStability.Source` | Source-specific theorem and equation correspondence |
+| `NumStability.Algorithms.RandomizedLinearAlgebra` | Canonical randomized sampling, concentration, low-rank, least-squares, and preconditioning families |
+| `NumStability.Algorithms.RandNLA` | Historical RandNLA compatibility facade |
+| `NumStability.Source` | Higham and Drineas–Mahoney source correspondence |
 | `NumStability.Source.Higham` | Higham chapter correspondence |
 | `NumStability.All` | Complete supported library surface |
 | `NumStability` | Compatibility entry point forwarding to `NumStability.All` |
+
+RandNLA paper-indexed correspondence is available through narrow modules under
+`NumStability.Source.DrineasMahoney.RandNLA2016`; that directory does not
+define a package-level aggregate import.
 
 Historical import paths retained for compatibility remain available through
 forwarding modules. New code should use the narrow semantic imports above.
@@ -91,12 +99,24 @@ NumStability/
   FloatingPoint/                   floating-point models and operation laws
   Analysis/                        reusable analysis and error bounds
   Algorithms/                      numerical algorithms
+    RandomizedLinearAlgebra/       canonical RandNLA algorithms
+    RandNLA/                       historical compatibility paths
   Source/                          source-facing correspondence
+    Higham/                        Higham chapter correspondence
+    DrineasMahoney/                RandNLA source correspondence
   Upstream/                        attributed adapted or backported code
 docs/
   LIBRARY_LOOKUP.md                human-readable module and declaration guide
   LibraryLookupChecks.lean         executable checks for documented API paths
 ```
+
+## References
+
+- N. J. Higham, *Accuracy and Stability of Numerical Algorithms*, 2nd ed.,
+  SIAM, 2002.
+- P. Drineas and M. W. Mahoney,
+  [“RandNLA: Randomized Numerical Linear Algebra”](https://dl.acm.org/doi/10.1145/2842602),
+  *Communications of the ACM* 59(6), 80–90, 2016.
 
 ## License
 
