@@ -1,6 +1,6 @@
 # Contributing to NumStability
 
-The `higham_v01` branch is a release package. Broad development and
+The `higham_v02` branch is a release package. Broad development and
 reorganization should happen on `main`; changes here should be limited to
 release-critical fixes that preserve the published API.
 
@@ -23,7 +23,7 @@ Run from the repository root:
 ```bash
 lake exe cache get
 lake build NumStability
-lake env lean examples/LibraryLookup.lean
+lake env lean docs/LibraryLookupChecks.lean
 ```
 
 Generated caches, benchmark output, local references, private agent files, and

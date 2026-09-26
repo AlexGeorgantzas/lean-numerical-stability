@@ -40,13 +40,13 @@ import NumStability.Source.Higham.Chapter22
 import NumStability.Source.Higham.Chapter24
 
 /-!
-Executable companion to `docs/LIBRARY_LOOKUP.md`.
+Executable validation companion to `docs/LIBRARY_LOOKUP.md`.
 
 This file deliberately uses representative narrow imports. It is a package
-smoke check and a set of searchable declaration examples, not an exhaustive
+smoke check and a set of searchable declaration checks, not an exhaustive
 inventory. Run it with:
 
-  lake env lean examples/LibraryLookup.lean
+  lake env lean docs/LibraryLookupChecks.lean
 -/
 
 open NumStability

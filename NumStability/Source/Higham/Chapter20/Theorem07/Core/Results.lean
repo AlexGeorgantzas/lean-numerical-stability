@@ -1910,13 +1910,6 @@ theorem sigmaCounter_sigma1 :
     householderTrailingColumnNorm2Sq, householderTrailingNorm2Sq,
     householderTrailingPart, vecNorm2Sq, Fin.sum_univ_two,
     sigmaCounter_swap1_11]
-  have h81 : Real.sqrt (81 : ℝ) = 9 := by
-    nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 81),
-      Real.sqrt_nonneg (81 : ℝ)]
-  have h64 : Real.sqrt (64 : ℝ) = 8 := by
-    nlinarith [Real.sq_sqrt (by norm_num : (0 : ℝ) ≤ 64),
-      Real.sqrt_nonneg (64 : ℝ)]
-  rw [h81, h64]
 theorem sigmaCounter_rawVector0_norm :
     vecNorm2
         (pivotedStoredQRRawVector subInflatedQuarterFPModel (m := 2) (n := 2)

@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-      - higham_v01
+      - higham_v02
   pull_request:
   workflow_dispatch:
 
@@ -32,4 +32,4 @@ jobs:
           test: false
           lint: false
       - name: Check public lookup surface
-        run: lake env lean examples/LibraryLookup.lean
+        run: lake env lean docs/LibraryLookupChecks.lean

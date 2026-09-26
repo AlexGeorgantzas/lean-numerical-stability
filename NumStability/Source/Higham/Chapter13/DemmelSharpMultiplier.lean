@@ -7,6 +7,7 @@ Authors: QED
 -/
 import NumStability.Algorithms.LinearSystems.LU.BlockLU.PositiveDefinite
 import NumStability.Source.Higham.Chapter13.Lemma10.SchurComplement
+import Mathlib.Analysis.Matrix.Order
 
 /-!
 # Higham Chapter 13: Demmel's sharp SPD block-multiplier bound

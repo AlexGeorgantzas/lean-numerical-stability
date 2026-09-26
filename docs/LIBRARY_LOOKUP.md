@@ -8,9 +8,9 @@ library. It answers two questions:
 
 It is intentionally curated rather than exhaustive. Use the module paths below
 to enter the relevant subtree, then search that subtree for the exact
-declaration. [`examples/LibraryLookup.lean`](../examples/LibraryLookup.lean) is
-the executable companion: it imports representative narrow modules and checks
-that their public declarations remain available.
+declaration. [`LibraryLookupChecks.lean`](LibraryLookupChecks.lean) is the
+executable validation companion: it imports representative narrow modules and
+checks that their public declarations remain available.
 
 ## Fast Path
 
@@ -166,7 +166,7 @@ source-coverage area. Import a required leaf such as
 Run the executable companion after changing imports, public names, or this map:
 
 ```sh
-lake env lean examples/LibraryLookup.lean
+lake env lean docs/LibraryLookupChecks.lean
 ```
 
 For an exact owner, search declarations rather than guessing from an aggregate
