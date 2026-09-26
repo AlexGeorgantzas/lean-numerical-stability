@@ -1,0 +1,63 @@
+{
+  "source_results_sha256": "3faeb35af66f5c3c9d16e0800a4c88bd5cef09e1a35f0bc10e6c387f40d9c050",
+  "source_warm_root_sha256": "3401426d25ee278cbf33e48da80f665d5bcc4ad8bcab721a4fa69cae0095ee39",
+  "warm_seconds": 183.312843869,
+  "warm_net_new_tokens": 88468,
+  "warm_total_tokens_including_cached": 1281684,
+  "tasks": 15,
+  "source_cluster_counts": {
+    "CAST08": 3,
+    "H20": 1,
+    "HI21": 2,
+    "P14": 8,
+    "RUMP12": 1
+  },
+  "sums": {
+    "formalization_seconds_inclusive": {
+      "N": 2044.6524896649883,
+      "L": 2398.498709510008
+    },
+    "proof_seconds_inclusive": {
+      "N": 8470.222440534,
+      "L": 6579.392517115
+    },
+    "total_seconds_inclusive": {
+      "N": 10514.874930198988,
+      "L": 8977.891226625008
+    },
+    "formalization_tokens_net_new": {
+      "N": 542141,
+      "L": 1180836
+    },
+    "proof_tokens_net_new": {
+      "N": 1260741,
+      "L": 1062126
+    },
+    "total_tokens_net_new": {
+      "N": 1802882,
+      "L": 2242962
+    },
+    "statement_code_lines": {
+      "N": 514,
+      "L": 552
+    },
+    "proof_code_lines": {
+      "N": 4913,
+      "L": 4413
+    }
+  },
+  "correlations": {
+    "time_gain_pct": {
+      "rho": 0.14695434896019408,
+      "p_exploratory": 0.6012334546292621
+    },
+    "token_gain_pct": {
+      "rho": 0.1344094655123726,
+      "p_exploratory": 0.6329481379754318
+    },
+    "proof_line_gain_pct": {
+      "rho": 0.3817228820551382,
+      "p_exploratory": 0.16032155726812897
+    }
+  }
+}
