@@ -1,0 +1,471 @@
+{
+  "status": "POST_HOC_OUTCOME_SELECTED_EXPLORATORY_NOT_HELD_OUT",
+  "selection_date": "2026-09-28",
+  "excluded_task_ids": [
+    "HI21-EQ2.7",
+    "P14-SHIFTED-SUM",
+    "P14-ALT-SOFTMAX",
+    "P14-SHIFTED-LOG",
+    "P14-SHIFTED-WEIGHTED"
+  ],
+  "selected_task_ids": [
+    "CAST08-FIXED3",
+    "P14-T1",
+    "HI21-LEM2.2",
+    "CAST08-PROP3.1",
+    "P14-T2",
+    "RUMP12-THM3.4",
+    "P14-LOGSUMEXP",
+    "H20-8",
+    "CAST08-PROP3.2",
+    "P14-SHIFTED-SOFTMAX"
+  ],
+  "source_sha256": {
+    "task_metrics.csv": "6fb419d1ba0b1fa168597ec4a1b37af0afae7d68ac60cc632d03f8964cfdd0ea",
+    "realized_reuse.csv": "08f049baa8e25d5d17f34e84babea01d7e4533746134f48958fb0457909fa4f7",
+    "primary_summary.json": "2b36b747e6b6f594750181d6216cf8cc72e0405486fa66bf5477b72bcaf5914f"
+  },
+  "groups": {
+    "all_15": {
+      "n": 15,
+      "task_ids": [
+        "CAST08-FIXED3",
+        "P14-T1",
+        "HI21-LEM2.2",
+        "CAST08-PROP3.1",
+        "P14-T2",
+        "RUMP12-THM3.4",
+        "P14-LOGSUMEXP",
+        "H20-8",
+        "P14-ALT-SOFTMAX",
+        "CAST08-PROP3.2",
+        "P14-SHIFTED-SUM",
+        "P14-SHIFTED-LOG",
+        "P14-SHIFTED-SOFTMAX",
+        "P14-SHIFTED-WEIGHTED",
+        "HI21-EQ2.7"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 2044.6524896649883,
+          "L": 2398.498709510008,
+          "gain_pct": -17.305934462388613
+        },
+        "proof_seconds_inclusive": {
+          "N": 8470.222440534,
+          "L": 6579.392517115,
+          "gain_pct": 22.323261717077095
+        },
+        "total_seconds_inclusive": {
+          "N": 10514.874930198988,
+          "L": 8977.891226625008,
+          "gain_pct": 14.617232385329888
+        },
+        "formalization_tokens_net_new": {
+          "N": 542141.0,
+          "L": 1180836.0,
+          "gain_pct": -117.80975797809057
+        },
+        "proof_tokens_net_new": {
+          "N": 1260741.0,
+          "L": 1062126.0,
+          "gain_pct": 15.753830485405011
+        },
+        "total_tokens_net_new": {
+          "N": 1802882.0,
+          "L": 2242962.0,
+          "gain_pct": -24.40980607715868
+        },
+        "statement_code_lines": {
+          "N": 514.0,
+          "L": 552.0,
+          "gain_pct": -7.392996108949417
+        },
+        "proof_code_lines": {
+          "N": 4913.0,
+          "L": 4413.0,
+          "gain_pct": 10.17708121310808
+        }
+      }
+    },
+    "selected_10": {
+      "n": 10,
+      "task_ids": [
+        "CAST08-FIXED3",
+        "P14-T1",
+        "HI21-LEM2.2",
+        "CAST08-PROP3.1",
+        "P14-T2",
+        "RUMP12-THM3.4",
+        "P14-LOGSUMEXP",
+        "H20-8",
+        "CAST08-PROP3.2",
+        "P14-SHIFTED-SOFTMAX"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 1389.138713963986,
+          "L": 1490.173969133008,
+          "gain_pct": -7.2732301067841005
+        },
+        "proof_seconds_inclusive": {
+          "N": 5589.789685315,
+          "L": 3919.989967096,
+          "gain_pct": 29.87231742556879
+        },
+        "total_seconds_inclusive": {
+          "N": 6978.928399278986,
+          "L": 5410.163936229008,
+          "gain_pct": 22.47858658661768
+        },
+        "formalization_tokens_net_new": {
+          "N": 399748.0,
+          "L": 980733.0,
+          "gain_pct": -145.33781282207792
+        },
+        "proof_tokens_net_new": {
+          "N": 873571.0,
+          "L": 734899.0,
+          "gain_pct": 15.874153331555192
+        },
+        "total_tokens_net_new": {
+          "N": 1273319.0,
+          "L": 1715632.0,
+          "gain_pct": -34.737014055393814
+        },
+        "statement_code_lines": {
+          "N": 333.0,
+          "L": 337.0,
+          "gain_pct": -1.2012012012012012
+        },
+        "proof_code_lines": {
+          "N": 3158.0,
+          "L": 2537.0,
+          "gain_pct": 19.664344521849273
+        }
+      }
+    },
+    "selected_prior_favorable_5": {
+      "n": 5,
+      "task_ids": [
+        "CAST08-FIXED3",
+        "CAST08-PROP3.1",
+        "RUMP12-THM3.4",
+        "H20-8",
+        "CAST08-PROP3.2"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 693.8362159739875,
+          "L": 747.3649964070079,
+          "gain_pct": -7.714901471073868
+        },
+        "proof_seconds_inclusive": {
+          "N": 3290.855535442,
+          "L": 1883.536018231,
+          "gain_pct": 42.764548672963265
+        },
+        "total_seconds_inclusive": {
+          "N": 3984.6917514159877,
+          "L": 2630.901014638008,
+          "gain_pct": 33.97479206006088
+        },
+        "formalization_tokens_net_new": {
+          "N": 192879.0,
+          "L": 480127.0,
+          "gain_pct": -148.92652906744644
+        },
+        "proof_tokens_net_new": {
+          "N": 492536.0,
+          "L": 484263.0,
+          "gain_pct": 1.6796741761008331
+        },
+        "total_tokens_net_new": {
+          "N": 685415.0,
+          "L": 964390.0,
+          "gain_pct": -40.70161872734037
+        },
+        "statement_code_lines": {
+          "N": 177.0,
+          "L": 161.0,
+          "gain_pct": 9.03954802259887
+        },
+        "proof_code_lines": {
+          "N": 1869.0,
+          "L": 1166.0,
+          "gain_pct": 37.61369716425896
+        }
+      }
+    },
+    "selected_new_5": {
+      "n": 5,
+      "task_ids": [
+        "P14-T1",
+        "HI21-LEM2.2",
+        "P14-T2",
+        "P14-LOGSUMEXP",
+        "P14-SHIFTED-SOFTMAX"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 695.3024979899985,
+          "L": 742.8089727260003,
+          "gain_pct": -6.832490156922339
+        },
+        "proof_seconds_inclusive": {
+          "N": 2298.934149873,
+          "L": 2036.453948865,
+          "gain_pct": 11.417473659369504
+        },
+        "total_seconds_inclusive": {
+          "N": 2994.2366478629983,
+          "L": 2779.262921591,
+          "gain_pct": 7.179583698750933
+        },
+        "formalization_tokens_net_new": {
+          "N": 206869.0,
+          "L": 500606.0,
+          "gain_pct": -141.9917919069556
+        },
+        "proof_tokens_net_new": {
+          "N": 381035.0,
+          "L": 250636.0,
+          "gain_pct": 34.22231553531828
+        },
+        "total_tokens_net_new": {
+          "N": 587904.0,
+          "L": 751242.0,
+          "gain_pct": -27.78310744611365
+        },
+        "statement_code_lines": {
+          "N": 156.0,
+          "L": 176.0,
+          "gain_pct": -12.820512820512821
+        },
+        "proof_code_lines": {
+          "N": 1289.0,
+          "L": 1371.0,
+          "gain_pct": -6.361520558572537
+        }
+      }
+    },
+    "excluded_5": {
+      "n": 5,
+      "task_ids": [
+        "P14-ALT-SOFTMAX",
+        "P14-SHIFTED-SUM",
+        "P14-SHIFTED-LOG",
+        "P14-SHIFTED-WEIGHTED",
+        "HI21-EQ2.7"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 655.5137757010023,
+          "L": 908.3247403770002,
+          "gain_pct": -38.566842383387524
+        },
+        "proof_seconds_inclusive": {
+          "N": 2880.4327552190002,
+          "L": 2659.402550019,
+          "gain_pct": 7.673506864533458
+        },
+        "total_seconds_inclusive": {
+          "N": 3535.9465309200023,
+          "L": 3567.727290396,
+          "gain_pct": -0.8987907254278819
+        },
+        "formalization_tokens_net_new": {
+          "N": 142393.0,
+          "L": 200103.0,
+          "gain_pct": -40.528677673762054
+        },
+        "proof_tokens_net_new": {
+          "N": 387170.0,
+          "L": 327227.0,
+          "gain_pct": 15.482346256166542
+        },
+        "total_tokens_net_new": {
+          "N": 529563.0,
+          "L": 527330.0,
+          "gain_pct": 0.4216684322734028
+        },
+        "statement_code_lines": {
+          "N": 181.0,
+          "L": 215.0,
+          "gain_pct": -18.784530386740332
+        },
+        "proof_code_lines": {
+          "N": 1755.0,
+          "L": 1876.0,
+          "gain_pct": -6.894586894586895
+        }
+      }
+    },
+    "selected_score_0": {
+      "n": 0,
+      "task_ids": [],
+      "metrics": {}
+    },
+    "selected_score_1": {
+      "n": 2,
+      "task_ids": [
+        "HI21-LEM2.2",
+        "P14-SHIFTED-SOFTMAX"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 254.1371043559984,
+          "L": 344.0014243090001,
+          "gain_pct": -35.3605665653287
+        },
+        "proof_seconds_inclusive": {
+          "N": 852.4814238399999,
+          "L": 863.103317228,
+          "gain_pct": -1.245997049431742
+        },
+        "total_seconds_inclusive": {
+          "N": 1106.6185281959984,
+          "L": 1207.104741537,
+          "gain_pct": -9.08047450685772
+        },
+        "formalization_tokens_net_new": {
+          "N": 84179.0,
+          "L": 210041.0,
+          "gain_pct": -149.5171004644864
+        },
+        "proof_tokens_net_new": {
+          "N": 143215.0,
+          "L": 110473.0,
+          "gain_pct": 22.862130363439583
+        },
+        "total_tokens_net_new": {
+          "N": 227394.0,
+          "L": 320514.0,
+          "gain_pct": -40.950948573840996
+        },
+        "statement_code_lines": {
+          "N": 66.0,
+          "L": 83.0,
+          "gain_pct": -25.757575757575758
+        },
+        "proof_code_lines": {
+          "N": 520.0,
+          "L": 542.0,
+          "gain_pct": -4.230769230769231
+        }
+      }
+    },
+    "selected_score_2": {
+      "n": 2,
+      "task_ids": [
+        "P14-T1",
+        "P14-T2"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 311.28664977400103,
+          "L": 305.93508861600185,
+          "gain_pct": 1.7191746455829386
+        },
+        "proof_seconds_inclusive": {
+          "N": 1018.269316454,
+          "L": 766.738147132,
+          "gain_pct": 24.701831358125073
+        },
+        "total_seconds_inclusive": {
+          "N": 1329.5559662280011,
+          "L": 1072.6732357480018,
+          "gain_pct": 19.320941502657085
+        },
+        "formalization_tokens_net_new": {
+          "N": 72305.0,
+          "L": 192299.0,
+          "gain_pct": -165.95532812391951
+        },
+        "proof_tokens_net_new": {
+          "N": 166245.0,
+          "L": 94348.0,
+          "gain_pct": 43.24761646966826
+        },
+        "total_tokens_net_new": {
+          "N": 238550.0,
+          "L": 286647.0,
+          "gain_pct": -20.162230140431774
+        },
+        "statement_code_lines": {
+          "N": 62.0,
+          "L": 66.0,
+          "gain_pct": -6.451612903225806
+        },
+        "proof_code_lines": {
+          "N": 565.0,
+          "L": 572.0,
+          "gain_pct": -1.238938053097345
+        }
+      }
+    },
+    "selected_score_3": {
+      "n": 6,
+      "task_ids": [
+        "CAST08-FIXED3",
+        "CAST08-PROP3.1",
+        "RUMP12-THM3.4",
+        "P14-LOGSUMEXP",
+        "H20-8",
+        "CAST08-PROP3.2"
+      ],
+      "metrics": {
+        "formalization_seconds_inclusive": {
+          "N": 823.7149598339865,
+          "L": 840.2374562080063,
+          "gain_pct": -2.005851196067839
+        },
+        "proof_seconds_inclusive": {
+          "N": 3719.038945021,
+          "L": 2290.148502736,
+          "gain_pct": 38.42095937709875
+        },
+        "total_seconds_inclusive": {
+          "N": 4542.753904854987,
+          "L": 3130.3859589440062,
+          "gain_pct": 31.090566988485506
+        },
+        "formalization_tokens_net_new": {
+          "N": 243264.0,
+          "L": 578393.0,
+          "gain_pct": -137.76349973691134
+        },
+        "proof_tokens_net_new": {
+          "N": 564111.0,
+          "L": 530078.0,
+          "gain_pct": 6.033032506013887
+        },
+        "total_tokens_net_new": {
+          "N": 807375.0,
+          "L": 1108471.0,
+          "gain_pct": -37.293203282241834
+        },
+        "statement_code_lines": {
+          "N": 205.0,
+          "L": 188.0,
+          "gain_pct": 8.292682926829269
+        },
+        "proof_code_lines": {
+          "N": 2073.0,
+          "L": 1423.0,
+          "gain_pct": 31.35552339604438
+        }
+      }
+    }
+  },
+  "one_time_L_warm_seconds": 183.312843869,
+  "one_time_L_warm_net_new_tokens": 88468,
+  "selected_10_with_one_time_L_warm": {
+    "total_seconds_N": 6978.928399278986,
+    "total_seconds_L": 5593.476780098008,
+    "time_gain_pct": 19.85192482164043,
+    "net_new_tokens_N": 1273319.0,
+    "net_new_tokens_L": 1804100.0,
+    "token_gain_pct": -41.684840955015986
+  }
+}
