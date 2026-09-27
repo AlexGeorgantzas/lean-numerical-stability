@@ -1,0 +1,1172 @@
+{
+  "source_reuse_sha256": "830c21a190dd71cd2bfa6ee6a5c89e4876c7c7e117e346d49b0210b4146215c8",
+  "heatmaps": {
+    "09a_reuse_formalization_gain": {
+      "x_edges_reuse_score": [
+        -0.5,
+        0.5,
+        1.5,
+        2.5,
+        3.5
+      ],
+      "y_edges_gain_pct": [
+        -60.0,
+        -50.0,
+        -40.0,
+        -30.0,
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0,
+        30.0
+      ],
+      "cells": [
+        {
+          "score": 1,
+          "gain_bin": [
+            -60.0,
+            -50.0
+          ],
+          "tasks": [
+            {
+              "task_id": "HI21-LEM2.2",
+              "gain_pct": -52.57860289717787
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -50.0,
+            -40.0
+          ],
+          "tasks": [
+            {
+              "task_id": "RUMP12-THM3.4",
+              "gain_pct": -47.578717014356265
+            }
+          ]
+        },
+        {
+          "score": 1,
+          "gain_bin": [
+            -30.0,
+            -20.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-SHIFTED-SOFTMAX",
+              "gain_pct": -23.07736821145821
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -20.0,
+            -10.0
+          ],
+          "tasks": [
+            {
+              "task_id": "H20-8",
+              "gain_pct": -11.902905352283753
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -10.0,
+            0.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-PROP3.1",
+              "gain_pct": -6.102373322009077
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            0.0,
+            10.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T1",
+              "gain_pct": 2.6224017324862903
+            },
+            {
+              "task_id": "P14-T2",
+              "gain_pct": 0.545111299843168
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            0.0,
+            10.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-FIXED3",
+              "gain_pct": 8.567067770600001
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            20.0,
+            30.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-LOGSUMEXP",
+              "gain_pct": 28.4929488530403
+            },
+            {
+              "task_id": "CAST08-PROP3.2",
+              "gain_pct": 20.190998679950752
+            }
+          ]
+        }
+      ]
+    },
+    "09b_reuse_proof_gain": {
+      "x_edges_reuse_score": [
+        -0.5,
+        0.5,
+        1.5,
+        2.5,
+        3.5
+      ],
+      "y_edges_gain_pct": [
+        -30.0,
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0,
+        30.0,
+        40.0,
+        50.0,
+        60.0,
+        70.0
+      ],
+      "cells": [
+        {
+          "score": 1,
+          "gain_bin": [
+            -30.0,
+            -20.0
+          ],
+          "tasks": [
+            {
+              "task_id": "HI21-LEM2.2",
+              "gain_pct": -27.277603351130427
+            }
+          ]
+        },
+        {
+          "score": 1,
+          "gain_bin": [
+            -10.0,
+            0.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-SHIFTED-SOFTMAX",
+              "gain_pct": -0.3241151085249163
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            0.0,
+            10.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-LOGSUMEXP",
+              "gain_pct": 5.03777694124325
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            10.0,
+            20.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T2",
+              "gain_pct": 17.868657907740108
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            30.0,
+            40.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T1",
+              "gain_pct": 34.11742592100222
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            30.0,
+            40.0
+          ],
+          "tasks": [
+            {
+              "task_id": "RUMP12-THM3.4",
+              "gain_pct": 30.843031098829144
+            },
+            {
+              "task_id": "CAST08-PROP3.2",
+              "gain_pct": 35.43705077704322
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            40.0,
+            50.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-FIXED3",
+              "gain_pct": 42.90349122780566
+            },
+            {
+              "task_id": "CAST08-PROP3.1",
+              "gain_pct": 46.36215608550516
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            60.0,
+            70.0
+          ],
+          "tasks": [
+            {
+              "task_id": "H20-8",
+              "gain_pct": 65.59334748863681
+            }
+          ]
+        }
+      ]
+    },
+    "09c_reuse_total_gain": {
+      "x_edges_reuse_score": [
+        -0.5,
+        0.5,
+        1.5,
+        2.5,
+        3.5
+      ],
+      "y_edges_gain_pct": [
+        -50.0,
+        -40.0,
+        -30.0,
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0,
+        30.0,
+        40.0,
+        50.0,
+        60.0
+      ],
+      "cells": [
+        {
+          "score": 1,
+          "gain_bin": [
+            -50.0,
+            -40.0
+          ],
+          "tasks": [
+            {
+              "task_id": "HI21-LEM2.2",
+              "gain_pct": -47.11291398316175
+            }
+          ]
+        },
+        {
+          "score": 1,
+          "gain_bin": [
+            -10.0,
+            0.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-SHIFTED-SOFTMAX",
+              "gain_pct": -3.7974440331566632
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            10.0,
+            20.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T2",
+              "gain_pct": 14.636309400955538
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            10.0,
+            20.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-LOGSUMEXP",
+              "gain_pct": 10.49653856152489
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            20.0,
+            30.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T1",
+              "gain_pct": 24.945738410282402
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            20.0,
+            30.0
+          ],
+          "tasks": [
+            {
+              "task_id": "RUMP12-THM3.4",
+              "gain_pct": 21.018297707970707
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            30.0,
+            40.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-FIXED3",
+              "gain_pct": 35.929523617185616
+            },
+            {
+              "task_id": "CAST08-PROP3.1",
+              "gain_pct": 35.46254062548555
+            },
+            {
+              "task_id": "CAST08-PROP3.2",
+              "gain_pct": 31.625166218268603
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            50.0,
+            60.0
+          ],
+          "tasks": [
+            {
+              "task_id": "H20-8",
+              "gain_pct": 55.539239724928755
+            }
+          ]
+        }
+      ]
+    },
+    "09d_reuse_tokens_gain": {
+      "x_edges_reuse_score": [
+        -0.5,
+        0.5,
+        1.5,
+        2.5,
+        3.5
+      ],
+      "y_edges_gain_pct": [
+        -200.0,
+        -175.0,
+        -150.0,
+        -125.0,
+        -100.0,
+        -75.0,
+        -50.0,
+        -25.0,
+        0.0,
+        25.0,
+        50.0
+      ],
+      "cells": [
+        {
+          "score": 1,
+          "gain_bin": [
+            -200.0,
+            -175.0
+          ],
+          "tasks": [
+            {
+              "task_id": "HI21-LEM2.2",
+              "gain_pct": -182.5549796185396
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -175.0,
+            -150.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-PROP3.2",
+              "gain_pct": -164.22339854561528
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -125.0,
+            -100.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-FIXED3",
+              "gain_pct": -122.72098385857034
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            -50.0,
+            -25.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T1",
+              "gain_pct": -47.86234464380068
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -50.0,
+            -25.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-PROP3.1",
+              "gain_pct": -33.627132926058565
+            }
+          ]
+        },
+        {
+          "score": 1,
+          "gain_bin": [
+            -25.0,
+            0.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-SHIFTED-SOFTMAX",
+              "gain_pct": -10.96124741542856
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            -25.0,
+            0.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T2",
+              "gain_pct": -4.243788450875294
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -25.0,
+            0.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-LOGSUMEXP",
+              "gain_pct": -18.137914070186948
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            0.0,
+            25.0
+          ],
+          "tasks": [
+            {
+              "task_id": "RUMP12-THM3.4",
+              "gain_pct": 0.08285917026237268
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            25.0,
+            50.0
+          ],
+          "tasks": [
+            {
+              "task_id": "H20-8",
+              "gain_pct": 39.11249171266603
+            }
+          ]
+        }
+      ]
+    },
+    "09e_reuse_proof_lines_gain": {
+      "x_edges_reuse_score": [
+        -0.5,
+        0.5,
+        1.5,
+        2.5,
+        3.5
+      ],
+      "y_edges_gain_pct": [
+        -30.0,
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0,
+        30.0,
+        40.0,
+        50.0
+      ],
+      "cells": [
+        {
+          "score": 1,
+          "gain_bin": [
+            -30.0,
+            -20.0
+          ],
+          "tasks": [
+            {
+              "task_id": "HI21-LEM2.2",
+              "gain_pct": -25.641025641025642
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            -30.0,
+            -20.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-LOGSUMEXP",
+              "gain_pct": -25.980392156862745
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            -20.0,
+            -10.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T1",
+              "gain_pct": -12.935323383084578
+            }
+          ]
+        },
+        {
+          "score": 1,
+          "gain_bin": [
+            -10.0,
+            0.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-SHIFTED-SOFTMAX",
+              "gain_pct": -2.494802494802495
+            }
+          ]
+        },
+        {
+          "score": 2,
+          "gain_bin": [
+            0.0,
+            10.0
+          ],
+          "tasks": [
+            {
+              "task_id": "P14-T2",
+              "gain_pct": 5.21978021978022
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            20.0,
+            30.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-PROP3.2",
+              "gain_pct": 25.53191489361702
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            30.0,
+            40.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-FIXED3",
+              "gain_pct": 32.0
+            },
+            {
+              "task_id": "H20-8",
+              "gain_pct": 31.275720164609055
+            }
+          ]
+        },
+        {
+          "score": 3,
+          "gain_bin": [
+            40.0,
+            50.0
+          ],
+          "tasks": [
+            {
+              "task_id": "CAST08-PROP3.1",
+              "gain_pct": 46.38069705093834
+            },
+            {
+              "task_id": "RUMP12-THM3.4",
+              "gain_pct": 44.40734557595993
+            }
+          ]
+        }
+      ]
+    },
+    "14a_formalization_vs_proof_gain": {
+      "x_edges_gain_pct": [
+        -60.0,
+        -50.0,
+        -40.0,
+        -30.0,
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0,
+        30.0
+      ],
+      "y_edges_gain_pct": [
+        -30.0,
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0,
+        30.0,
+        40.0,
+        50.0,
+        60.0,
+        70.0
+      ],
+      "task_key": {
+        "1": "CAST08-FIXED3",
+        "2": "P14-T1",
+        "3": "HI21-LEM2.2",
+        "4": "CAST08-PROP3.1",
+        "5": "P14-T2",
+        "6": "RUMP12-THM3.4",
+        "7": "P14-LOGSUMEXP",
+        "8": "H20-8",
+        "9": "CAST08-PROP3.2",
+        "10": "P14-SHIFTED-SOFTMAX"
+      },
+      "cells": [
+        {
+          "x_gain_bin": [
+            -60.0,
+            -50.0
+          ],
+          "y_gain_bin": [
+            -30.0,
+            -20.0
+          ],
+          "mean_reuse_score": 1.0,
+          "tasks": [
+            {
+              "number": 3,
+              "task_id": "HI21-LEM2.2",
+              "reuse_score": 1,
+              "x_gain_pct": -52.57860289717787,
+              "y_gain_pct": -27.277603351130427
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            -30.0,
+            -20.0
+          ],
+          "y_gain_bin": [
+            -10.0,
+            0.0
+          ],
+          "mean_reuse_score": 1.0,
+          "tasks": [
+            {
+              "number": 10,
+              "task_id": "P14-SHIFTED-SOFTMAX",
+              "reuse_score": 1,
+              "x_gain_pct": -23.07736821145821,
+              "y_gain_pct": -0.3241151085249163
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            20.0,
+            30.0
+          ],
+          "y_gain_bin": [
+            0.0,
+            10.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 7,
+              "task_id": "P14-LOGSUMEXP",
+              "reuse_score": 3,
+              "x_gain_pct": 28.4929488530403,
+              "y_gain_pct": 5.03777694124325
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            0.0,
+            10.0
+          ],
+          "y_gain_bin": [
+            10.0,
+            20.0
+          ],
+          "mean_reuse_score": 2.0,
+          "tasks": [
+            {
+              "number": 5,
+              "task_id": "P14-T2",
+              "reuse_score": 2,
+              "x_gain_pct": 0.545111299843168,
+              "y_gain_pct": 17.868657907740108
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            -50.0,
+            -40.0
+          ],
+          "y_gain_bin": [
+            30.0,
+            40.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 6,
+              "task_id": "RUMP12-THM3.4",
+              "reuse_score": 3,
+              "x_gain_pct": -47.578717014356265,
+              "y_gain_pct": 30.843031098829144
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            0.0,
+            10.0
+          ],
+          "y_gain_bin": [
+            30.0,
+            40.0
+          ],
+          "mean_reuse_score": 2.0,
+          "tasks": [
+            {
+              "number": 2,
+              "task_id": "P14-T1",
+              "reuse_score": 2,
+              "x_gain_pct": 2.6224017324862903,
+              "y_gain_pct": 34.11742592100222
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            20.0,
+            30.0
+          ],
+          "y_gain_bin": [
+            30.0,
+            40.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 9,
+              "task_id": "CAST08-PROP3.2",
+              "reuse_score": 3,
+              "x_gain_pct": 20.190998679950752,
+              "y_gain_pct": 35.43705077704322
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            -10.0,
+            0.0
+          ],
+          "y_gain_bin": [
+            40.0,
+            50.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 4,
+              "task_id": "CAST08-PROP3.1",
+              "reuse_score": 3,
+              "x_gain_pct": -6.102373322009077,
+              "y_gain_pct": 46.36215608550516
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            0.0,
+            10.0
+          ],
+          "y_gain_bin": [
+            40.0,
+            50.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 1,
+              "task_id": "CAST08-FIXED3",
+              "reuse_score": 3,
+              "x_gain_pct": 8.567067770600001,
+              "y_gain_pct": 42.90349122780566
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            -20.0,
+            -10.0
+          ],
+          "y_gain_bin": [
+            60.0,
+            70.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 8,
+              "task_id": "H20-8",
+              "reuse_score": 3,
+              "x_gain_pct": -11.902905352283753,
+              "y_gain_pct": 65.59334748863681
+            }
+          ]
+        }
+      ]
+    },
+    "14b_total_time_vs_tokens_gain": {
+      "x_edges_gain_pct": [
+        -50.0,
+        -40.0,
+        -30.0,
+        -20.0,
+        -10.0,
+        0.0,
+        10.0,
+        20.0,
+        30.0,
+        40.0,
+        50.0,
+        60.0
+      ],
+      "y_edges_gain_pct": [
+        -200.0,
+        -175.0,
+        -150.0,
+        -125.0,
+        -100.0,
+        -75.0,
+        -50.0,
+        -25.0,
+        0.0,
+        25.0,
+        50.0
+      ],
+      "task_key": {
+        "1": "CAST08-FIXED3",
+        "2": "P14-T1",
+        "3": "HI21-LEM2.2",
+        "4": "CAST08-PROP3.1",
+        "5": "P14-T2",
+        "6": "RUMP12-THM3.4",
+        "7": "P14-LOGSUMEXP",
+        "8": "H20-8",
+        "9": "CAST08-PROP3.2",
+        "10": "P14-SHIFTED-SOFTMAX"
+      },
+      "cells": [
+        {
+          "x_gain_bin": [
+            -50.0,
+            -40.0
+          ],
+          "y_gain_bin": [
+            -200.0,
+            -175.0
+          ],
+          "mean_reuse_score": 1.0,
+          "tasks": [
+            {
+              "number": 3,
+              "task_id": "HI21-LEM2.2",
+              "reuse_score": 1,
+              "x_gain_pct": -47.11291398316175,
+              "y_gain_pct": -182.5549796185396
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            30.0,
+            40.0
+          ],
+          "y_gain_bin": [
+            -175.0,
+            -150.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 9,
+              "task_id": "CAST08-PROP3.2",
+              "reuse_score": 3,
+              "x_gain_pct": 31.625166218268603,
+              "y_gain_pct": -164.22339854561528
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            30.0,
+            40.0
+          ],
+          "y_gain_bin": [
+            -125.0,
+            -100.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 1,
+              "task_id": "CAST08-FIXED3",
+              "reuse_score": 3,
+              "x_gain_pct": 35.929523617185616,
+              "y_gain_pct": -122.72098385857034
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            20.0,
+            30.0
+          ],
+          "y_gain_bin": [
+            -50.0,
+            -25.0
+          ],
+          "mean_reuse_score": 2.0,
+          "tasks": [
+            {
+              "number": 2,
+              "task_id": "P14-T1",
+              "reuse_score": 2,
+              "x_gain_pct": 24.945738410282402,
+              "y_gain_pct": -47.86234464380068
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            30.0,
+            40.0
+          ],
+          "y_gain_bin": [
+            -50.0,
+            -25.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 4,
+              "task_id": "CAST08-PROP3.1",
+              "reuse_score": 3,
+              "x_gain_pct": 35.46254062548555,
+              "y_gain_pct": -33.627132926058565
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            -10.0,
+            0.0
+          ],
+          "y_gain_bin": [
+            -25.0,
+            0.0
+          ],
+          "mean_reuse_score": 1.0,
+          "tasks": [
+            {
+              "number": 10,
+              "task_id": "P14-SHIFTED-SOFTMAX",
+              "reuse_score": 1,
+              "x_gain_pct": -3.7974440331566632,
+              "y_gain_pct": -10.96124741542856
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            10.0,
+            20.0
+          ],
+          "y_gain_bin": [
+            -25.0,
+            0.0
+          ],
+          "mean_reuse_score": 2.5,
+          "tasks": [
+            {
+              "number": 5,
+              "task_id": "P14-T2",
+              "reuse_score": 2,
+              "x_gain_pct": 14.636309400955538,
+              "y_gain_pct": -4.243788450875294
+            },
+            {
+              "number": 7,
+              "task_id": "P14-LOGSUMEXP",
+              "reuse_score": 3,
+              "x_gain_pct": 10.49653856152489,
+              "y_gain_pct": -18.137914070186948
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            20.0,
+            30.0
+          ],
+          "y_gain_bin": [
+            0.0,
+            25.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 6,
+              "task_id": "RUMP12-THM3.4",
+              "reuse_score": 3,
+              "x_gain_pct": 21.018297707970707,
+              "y_gain_pct": 0.08285917026237268
+            }
+          ]
+        },
+        {
+          "x_gain_bin": [
+            50.0,
+            60.0
+          ],
+          "y_gain_bin": [
+            25.0,
+            50.0
+          ],
+          "mean_reuse_score": 3.0,
+          "tasks": [
+            {
+              "number": 8,
+              "task_id": "H20-8",
+              "reuse_score": 3,
+              "x_gain_pct": 55.539239724928755,
+              "y_gain_pct": 39.11249171266603
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
