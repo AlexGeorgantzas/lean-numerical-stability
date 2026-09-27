@@ -29,7 +29,7 @@
 \caption{#2 All task values are derived from the sealed N/L pairs by the
 reproducible ten-task plotting script.\cite{taskledger,plotcode}}
 \end{figure}}
-\newcommand{\heatfig}[2]{%
+\newcommand{\gainfig}[2]{%
 \begin{figure}[p]\centering
 \includegraphics[width=.96\textwidth]{figures/#1.pdf}
 \caption{#2 All task values are derived from the sealed N/L pairs by the
@@ -280,20 +280,20 @@ substantive NumStability statement reach, and all ten had direct proof-term
 reach. Exact names, counts, and statement/proof surfaces are in the
 machine-readable declaration and reuse ledgers.\src{declscan,reuse,taskledger}
 
-The five score--gain heatmaps share one interpretation: the horizontal axis
-is realized reuse score, the vertical axis is the named N-to-L gain in
-percent, and darker cells contain more tasks. An occupied cell prints the
-exact gain values of its tasks, even when two fall in the same fixed-width
-bin. The empty score-zero column is shown rather than suppressed. Positive
-gain means L used less time, fewer tokens, or fewer proof lines. These are
-descriptive, binned views of ten observations, not fitted relationships.
-Their exact bin edges and task memberships are published.\src{heatmapcells,reuse}
+The five score--gain graphs plot every task as one numbered point. The
+horizontal axis is its integer realized-reuse score and the vertical axis
+is its exact N-to-L percentage gain. Tiny horizontal display offsets keep
+same-score points distinct; the task key gives each exact gain. The empty
+score-zero position remains visible. Positive gain means L used less time,
+fewer tokens, or fewer proof lines. These are descriptive scatter plots of
+ten observations, not fitted relationships. Exact plotted coordinates and
+task identities are published.\src{scatterpoints,reuse}
 
-\heatfig{09a_reuse_formalization_gain}{Reuse score versus formalization-time gain. Each occupied cell prints exact task gains in percent; shade encodes the number of tasks.}
-\heatfig{09b_reuse_proof_gain}{Reuse score versus proof-time gain, with the same cell convention.}
-\heatfig{09c_reuse_total_gain}{Reuse score versus total contestant-active-time gain, excluding the one-time warm-up.}
-\heatfig{09d_reuse_tokens_gain}{Reuse score versus total net-new-token gain. Negative values mean L used more tokens.}
-\heatfig{09e_reuse_proof_lines_gain}{Reuse score versus proof-code-line gain, computed from final kernel-accepted proofs.}
+\gainfig{09a_reuse_formalization_scatter}{Reuse score versus formalization-time gain. Each numbered point is one task; the adjacent key reports its exact gain.}
+\gainfig{09b_reuse_proof_scatter}{Reuse score versus proof-time gain, with the same task-number key.}
+\gainfig{09c_reuse_total_scatter}{Reuse score versus total contestant-active-time gain, excluding the one-time warm-up.}
+\gainfig{09d_reuse_tokens_scatter}{Reuse score versus total net-new-token gain. Negative values mean L used more tokens.}
+\gainfig{09e_reuse_proof_lines_scatter}{Reuse score versus proof-code-line gain, computed from final kernel-accepted proofs.}
 \compactfig{10_direct_declaration_scatter}{Distinct direct proof-term NumStability names against time, token, proof-line, and formalization-time gains. White numerals are the reuse scores. Rank coefficients are descriptive at $n=10$.}
 
 Within these ten, direct proof-name count has Spearman rank correlation
@@ -337,17 +337,15 @@ newly screened tasks alone, the corresponding coefficients are $+0.63$ and
 $-0.32$. These post-selection, tiny-group statistics must not be read as
 confirmatory significance tests.\src{summary,reuse,selection}
 
-The two gain--gain heatmaps put formalization against proof time, and total
-active time against total net-new tokens. Both axes are N-to-L percentage
-gains; zero lines separate improvement from regression. Cell shade gives the
-mean reuse score of the task(s) in that bin, and cell text gives each task
-number and its reuse score (R0--R3). The
-task-number key is printed inside each figure and exact memberships are in
-the heatmap ledger. Bins show coarse joint patterns; they do not create
-additional observations.\src{heatmapcells,taskledger}
+The two gain--gain scatter graphs put formalization against proof time, and
+total active time against total net-new tokens. Both axes are N-to-L
+percentage gains; zero lines separate improvement from regression. Marker
+color gives the task's reuse score, while its number links to the task key
+and the exact coordinates in the plotting ledger. No values are binned or
+smoothed.\src{scatterpoints,taskledger}
 
-\heatfig{14a_formalization_vs_proof_gain}{Formalization-time gain versus proof-time gain. Task numbers and reuse scores appear in occupied cells; the upper-right quadrant means L was faster in both phases.}
-\heatfig{14b_total_time_vs_tokens_gain}{Total active-time gain versus total net-new-token gain. The upper-right quadrant means L was faster and used fewer net-new tokens.}
+\gainfig{14a_formalization_vs_proof_scatter}{Formalization-time gain versus proof-time gain. Each point is a task; the upper-right quadrant means L was faster in both phases.}
+\gainfig{14b_total_time_vs_tokens_scatter}{Total active-time gain versus total net-new-token gain. The upper-right quadrant means L was faster and used fewer net-new tokens.}
 \fig{15_reuse_score_groups}{Aggregate gains within displayed score 1, 2, and 3 groups, with sample counts. Code-size improvement is substantial only in score 3; tokens are unfavorable in every score stratum.}
 \fig{16_attempts}{Frozen statement and proof submissions per task and condition, with the reuse score beside every task. Each stage allowed at most four submissions.}
 
@@ -497,7 +495,7 @@ Selected source registry & \path{ten_task_report/generated/source_registry.json}
 Warm scout & \path{thesis_report/evidence/warm-root.json}; SHA-256 begins \texttt{3401426d25ee278c}.\\
 Direct declarations & \path{ten_task_report/generated/declaration_scan.json}; exact elaborated names.\\
 Realized reuse & \path{ten_task_report/generated/realized_reuse.json}; task obligations and exact proof/statement witnesses.\\
-Heatmap cells & \path{ten_task_report/generated/heatmap_cells.json}; bin edges, occupied cells, exact tasks and gain values.\\
+Graph points & \path{ten_task_report/generated/scatter_points.json}; exact coordinates, reuse scores, and task IDs.\\
 Aggregate metrics & \path{ten_task_report/generated/summary.json}; all ten-task sums, score groups, source digests, and overhead.\\
 Selection disclosure & \path{thesis_report/posthoc_10/generated/summary.json}; dated, outcome-informed selection manifest.\\
 Measured pair evidence & Compressed Pilot 34/35 archives under \path{paper_bencmark/thesis_report/evidence/}; archive SHA-256 values in companion README.\\
@@ -531,7 +529,7 @@ Runtime snapshot & \path{thesis_report/evidence/runtime-snapshot.json}; SHA-256 
 \bibitem{declscan} This report's direct declaration ledger, \path{paper_bencmark/thesis_report/ten_task_report/generated/declaration_scan.json}.
 \bibitem{reusemap} Source-task-specific, post-outcome three-role rubric, \path{paper_bencmark/thesis_report/reuse_obligations.json}.
 \bibitem{reuse} This report's exact-witness reuse ledger, \path{paper_bencmark/thesis_report/ten_task_report/generated/realized_reuse.json}.
-\bibitem{heatmapcells} Exact bin edges and task memberships for the seven gain heatmaps, \path{paper_bencmark/thesis_report/ten_task_report/generated/heatmap_cells.json}.
+\bibitem{scatterpoints} Exact task coordinates for the seven gain scatter graphs, \path{paper_bencmark/thesis_report/ten_task_report/generated/scatter_points.json}.
 \bibitem{readme} Rebuild and source instructions, \path{paper_bencmark/thesis_report/ten_task_report/README.md}.
 \end{thebibliography}
 \end{document}

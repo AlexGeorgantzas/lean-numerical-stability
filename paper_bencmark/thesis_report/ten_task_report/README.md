@@ -4,9 +4,9 @@ This is a standalone report about the ten tasks named in the dated selection
 manifest. It covers the complete source-first N/L protocol, prompts, models,
 hardware, time/token/code metrics, warm-up accounting, declaration usage,
 realized-reuse scoring, audit overhead, task-level appendices, and limitations.
-Seven binned heatmaps compare reuse score with each requested gain, and
-formalization versus proof and total time versus net-new tokens. Their exact
-bin edges and members are in `generated/heatmap_cells.json`.
+Seven scatter graphs compare reuse score with each requested gain, and
+formalization versus proof and total time versus net-new tokens. Every point
+is one task; exact coordinates are in `generated/scatter_points.json`.
 
 Scientific status: **retrospective, outcome-informed development evidence**.
 The task set and three-role realized-reuse rubric were chosen/annotated after

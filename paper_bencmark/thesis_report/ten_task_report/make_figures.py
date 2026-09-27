@@ -215,133 +215,118 @@ def plot_cumulative(tasks: list[dict], seconds: float, tokens: int,
     save("12_cumulative_warm")
 
 
-def gain_edges(values: list[float], step: int) -> np.ndarray:
-    lower = step * np.floor(min(min(values), 0) / step)
-    upper = step * np.ceil(max(max(values), 0) / step)
-    return np.arange(lower, upper + step, step, dtype=float)
+SCORE_COLORS = {1: "#9c4c59", 2: "#966a21", 3: BLUE}
 
 
-def cell_color_map(max_count: int):
-    from matplotlib.colors import BoundaryNorm, ListedColormap
-
-    colors = ["#f3f5f6", "#bcd3e2", "#78a9c8", "#37759f", "#174969"]
-    assert max_count < len(colors), max_count
-    cmap = ListedColormap(colors[:max_count + 1])
-    norm = BoundaryNorm(np.arange(-.5, max_count + 1.5), cmap.N)
-    return cmap, norm
+def gain_limits(values: list[float]) -> tuple[float, float]:
+    lower, upper = min(min(values), 0), max(max(values), 0)
+    pad = max(5.0, .08 * (upper - lower))
+    return lower - pad, upper + pad
 
 
-def plot_score_gain_heatmap(scored: list[dict], key: str, label: str,
-                            step: int, filename: str) -> dict:
+def task_key(fig, scored: list[dict], x_key: str, y_key: str | None = None) -> None:
+    fig.text(.675, .89, "Task key", fontsize=9, fontweight="bold")
+    fig.text(.975, .89, "X / Y gain" if y_key else "Gain", fontsize=8,
+             ha="right", fontweight="bold")
+    for number, row in enumerate(scored, start=1):
+        y = .84 - (number - 1) * .066
+        fig.text(.675, y,
+                 f"{number}. {shared.short(row['task_id'], with_score=False)} (R{row['score']})",
+                 fontsize=7.5, color=SCORE_COLORS[row["score"]])
+        value = f"{row['gains'][x_key]:+.1f}"
+        if y_key:
+            value += f" / {row['gains'][y_key]:+.1f}"
+        fig.text(.975, y, value, fontsize=7.5, ha="right")
+
+
+def plot_score_gain_graph(scored: list[dict], key: str, label: str,
+                          filename: str) -> dict:
+    fig, ax = plt.subplots(figsize=(7.2, 4.8))
+    fig.subplots_adjust(left=.105, right=.63, top=.86, bottom=.17)
     values = [row["gains"][key] for row in scored]
-    yedges = gain_edges(values, step)
-    xedges = np.arange(-.5, 4.5, 1.0)
-    counts = np.zeros((len(yedges) - 1, 4), dtype=int)
-    members = [[[] for _ in range(4)] for _ in range(len(yedges) - 1)]
-    for row in scored:
-        score = row["score"]
-        value = row["gains"][key]
-        index = min(np.searchsorted(yedges, value, side="right") - 1,
-                    len(yedges) - 2)
-        counts[index, score] += 1
-        members[index][score].append((row["task_id"], value))
-    cmap, norm = cell_color_map(int(counts.max()))
-    fig, ax = plt.subplots(figsize=(7.2, 4.5))
-    mesh = ax.pcolormesh(xedges, yedges, counts, cmap=cmap, norm=norm,
-                         edgecolors="#d7dde1", linewidth=.7)
-    for yi, row in enumerate(members):
-        for score, occupants in enumerate(row):
-            if occupants:
-                gains = ", ".join(f"{v:+.1f}" for _, v in occupants)
-                ax.text(score, (yedges[yi] + yedges[yi + 1]) / 2, gains,
-                        ha="center", va="center", fontsize=8,
-                        color="white" if len(occupants) > 2 else "#17344b")
-    ax.axhline(0, color="#59636e", linewidth=1.1)
+    display_x = {i: float(row["score"]) for i, row in enumerate(scored)}
+    close_gain_threshold = max(8.0, .04 * (max(values) - min(values)))
+    for score in (0, 1, 2, 3):
+        peers = sorted((i for i, row in enumerate(scored) if row["score"] == score),
+                       key=lambda i: values[i])
+        clusters: list[list[int]] = []
+        for i in peers:
+            if not clusters or values[i] - values[clusters[-1][-1]] > close_gain_threshold:
+                clusters.append([i])
+            else:
+                clusters[-1].append(i)
+        for cluster in clusters:
+            for rank, i in enumerate(cluster):
+                display_x[i] = score + .18 * (rank - (len(cluster) - 1) / 2)
+    points = []
+    for number, row in enumerate(scored, start=1):
+        score, value = row["score"], row["gains"][key]
+        x = display_x[number - 1]
+        ax.scatter(x, value, s=170, c=SCORE_COLORS[score],
+                   edgecolors="white", linewidths=.8, zorder=3)
+        ax.text(x, value, str(number), ha="center", va="center",
+                color="white", fontsize=8, fontweight="bold", zorder=4)
+        points.append({"number": number, "task_id": row["task_id"],
+                       "reuse_score": score, "x_display_score": x,
+                       "gain_pct": value})
+    ax.axhline(0, color=GRAY, linewidth=1)
     ax.set_xticks((0, 1, 2, 3))
-    ax.set_xlim(-.5, 3.5)
-    ax.set_yticks(yedges)
+    ax.set_xlim(-.35, 3.4)
+    ax.set_ylim(*gain_limits(values))
     ax.set_xlabel("Realized reuse score (0-3)")
     ax.set_ylabel(label + " gain (%)")
-    ax.set_title("Reuse score versus " + label.lower() + " gain", loc="left",
-                 fontweight="bold")
-    cbar = fig.colorbar(mesh, ax=ax, ticks=np.arange(int(counts.max()) + 1),
-                        pad=.025, shrink=.86)
-    cbar.set_label("Tasks in cell")
-    fig.text(.5, .018,
-             "Positive gain = L improves on N. Cell labels give the exact task gain(s).",
+    short_titles = {
+        "formalization_time_gain_pct": "Reuse vs. formalization-time gain",
+        "proof_time_gain_pct": "Reuse vs. proof-time gain",
+        "total_time_gain_pct": "Reuse vs. total-time gain",
+        "total_tokens_gain_pct": "Reuse vs. token gain",
+        "proof_lines_gain_pct": "Reuse vs. proof-line gain",
+    }
+    ax.set_title(short_titles[key], loc="left", fontweight="bold")
+    ax.grid(alpha=.18)
+    ax.set_axisbelow(True)
+    task_key(fig, scored, key)
+    fig.text(.5, .055,
+             "Positive gain = L better. Small horizontal offsets separate equal-score tasks.",
              ha="center", fontsize=8)
-    fig.tight_layout(rect=(0, .045, 1, 1))
     save(filename)
-    return {"x_edges_reuse_score": xedges.tolist(), "y_edges_gain_pct": yedges.tolist(),
-            "cells": [{"score": score,
-                       "gain_bin": [yedges[yi], yedges[yi + 1]],
-                       "tasks": [{"task_id": task_id, "gain_pct": value}
-                                 for task_id, value in occupants]}
-                      for yi, row in enumerate(members)
-                      for score, occupants in enumerate(row) if occupants]}
+    return {"x_metric": "realized_reuse_score", "y_metric": key,
+            "horizontal_offset_display_only": True, "points": points}
 
 
-def plot_gain_pair_heatmap(scored: list[dict], x_key: str, x_label: str,
-                           x_step: int, y_key: str, y_label: str,
-                           y_step: int, filename: str) -> dict:
-    xedges = gain_edges([r["gains"][x_key] for r in scored], x_step)
-    yedges = gain_edges([r["gains"][y_key] for r in scored], y_step)
-    counts = np.zeros((len(yedges) - 1, len(xedges) - 1), dtype=int)
-    score_sums = np.zeros_like(counts, dtype=float)
-    members = [[[] for _ in range(len(xedges) - 1)]
-               for _ in range(len(yedges) - 1)]
-    for ordinal, row in enumerate(scored, start=1):
-        x = row["gains"][x_key]
-        y = row["gains"][y_key]
-        xi = min(np.searchsorted(xedges, x, side="right") - 1, len(xedges) - 2)
-        yi = min(np.searchsorted(yedges, y, side="right") - 1, len(yedges) - 2)
-        counts[yi, xi] += 1
-        score_sums[yi, xi] += row["score"]
-        members[yi][xi].append((ordinal, row["task_id"], row["score"], x, y))
-    mean_scores = np.divide(score_sums, counts, out=np.zeros_like(score_sums),
-                            where=counts > 0)
-    cmap = plt.cm.Blues.copy()
-    cmap.set_bad("#f3f5f6")
+def plot_gain_pair_graph(scored: list[dict], x_key: str, x_label: str,
+                         y_key: str, y_label: str, filename: str) -> dict:
     fig, ax = plt.subplots(figsize=(7.2, 4.8))
-    mesh = ax.pcolormesh(xedges, yedges, np.ma.masked_where(counts == 0, mean_scores),
-                         cmap=cmap, vmin=0, vmax=3,
-                         edgecolors="#d7dde1", linewidth=.7)
-    for yi, row in enumerate(members):
-        for xi, occupants in enumerate(row):
-            if occupants:
-                label = ", ".join(f"{number} (R{score})"
-                                  for number, _, score, _, _ in occupants)
-                ax.text((xedges[xi] + xedges[xi + 1]) / 2,
-                        (yedges[yi] + yedges[yi + 1]) / 2, label,
-                        ha="center", va="center", fontsize=7.3,
-                        color="white" if mean_scores[yi, xi] >= 2.8 else "#17344b")
-    ax.axhline(0, color="#59636e", linewidth=1.1)
-    ax.axvline(0, color="#59636e", linewidth=1.1)
-    ax.set_xticks(xedges)
-    ax.set_yticks(yedges)
+    fig.subplots_adjust(left=.105, right=.63, top=.86, bottom=.17)
+    x_values = [row["gains"][x_key] for row in scored]
+    y_values = [row["gains"][y_key] for row in scored]
+    points = []
+    for number, row in enumerate(scored, start=1):
+        score = row["score"]
+        x, y = row["gains"][x_key], row["gains"][y_key]
+        ax.scatter(x, y, s=170, c=SCORE_COLORS[score], edgecolors="white",
+                   linewidths=.8, zorder=3)
+        ax.text(x, y, str(number), ha="center", va="center", color="white",
+                fontsize=8, fontweight="bold", zorder=4)
+        points.append({"number": number, "task_id": row["task_id"],
+                       "reuse_score": score, "x_gain_pct": x, "y_gain_pct": y})
+    ax.axhline(0, color=GRAY, linewidth=1)
+    ax.axvline(0, color=GRAY, linewidth=1)
+    ax.set_xlim(*gain_limits(x_values))
+    ax.set_ylim(*gain_limits(y_values))
     ax.set_xlabel(x_label + " gain (%)")
     ax.set_ylabel(y_label + " gain (%)")
-    ax.set_title(x_label + " versus " + y_label.lower() + " gain", loc="left",
-                 fontweight="bold")
-    cbar = fig.colorbar(mesh, ax=ax, ticks=(1, 2, 3), pad=.025, shrink=.86)
-    cbar.set_label("Mean reuse score")
-    ids = [f"{i}={shared.short(row['task_id'], with_score=False)}"
-           for i, row in enumerate(scored, start=1)]
-    fig.text(.5, .045, "   ".join(ids[:5]), ha="center", fontsize=6.9)
-    fig.text(.5, .018, "   ".join(ids[5:]), ha="center", fontsize=6.9)
-    fig.tight_layout(rect=(0, .07, 1, 1))
+    short_title = ("Formalization vs. proof-time gain"
+                   if x_key == "formalization_time_gain_pct"
+                   else "Total-time vs. token gain")
+    ax.set_title(short_title, loc="left", fontweight="bold")
+    ax.grid(alpha=.18)
+    ax.set_axisbelow(True)
+    task_key(fig, scored, x_key, y_key)
+    fig.text(.5, .055, "Positive gain = L better on that axis. Color follows reuse score.",
+             ha="center", fontsize=8)
     save(filename)
-    return {"x_edges_gain_pct": xedges.tolist(), "y_edges_gain_pct": yedges.tolist(),
-            "task_key": {str(i): row["task_id"] for i, row in enumerate(scored, start=1)},
-            "cells": [{"x_gain_bin": [xedges[xi], xedges[xi + 1]],
-                       "y_gain_bin": [yedges[yi], yedges[yi + 1]],
-                       "mean_reuse_score": mean_scores[yi, xi],
-                       "tasks": [{"number": number, "task_id": task_id,
-                                  "reuse_score": score, "x_gain_pct": x,
-                                  "y_gain_pct": y}
-                                 for number, task_id, score, x, y in occupants]}
-                      for yi, row in enumerate(members)
-                      for xi, occupants in enumerate(row) if occupants]}
+    return {"x_metric": x_key, "y_metric": y_key, "points": points}
 
 
 def score_correlations(scored: list[dict]) -> dict:
@@ -546,33 +531,32 @@ def main() -> None:
     shared.phases(tasks, "tokens", "06_phase_tokens")
     plot_averages(tasks, seconds, tokens, scores)
     plot_code(tasks)
-    heatmaps = {}
-    for key, label, step, filename in (
-        ("formalization_time_gain_pct", "Formalization time", 10,
-         "09a_reuse_formalization_gain"),
-        ("proof_time_gain_pct", "Proof time", 10, "09b_reuse_proof_gain"),
-        ("total_time_gain_pct", "Total active time", 10, "09c_reuse_total_gain"),
-        ("total_tokens_gain_pct", "Total net-new tokens", 25,
-         "09d_reuse_tokens_gain"),
-        ("proof_lines_gain_pct", "Proof-code lines", 10,
-         "09e_reuse_proof_lines_gain"),
+    graphs = {}
+    for key, label, filename in (
+        ("formalization_time_gain_pct", "Formalization time",
+         "09a_reuse_formalization_scatter"),
+        ("proof_time_gain_pct", "Proof time", "09b_reuse_proof_scatter"),
+        ("total_time_gain_pct", "Total active time", "09c_reuse_total_scatter"),
+        ("total_tokens_gain_pct", "Total net-new tokens",
+         "09d_reuse_tokens_scatter"),
+        ("proof_lines_gain_pct", "Proof-code lines",
+         "09e_reuse_proof_lines_scatter"),
     ):
-        heatmaps[filename] = plot_score_gain_heatmap(reuse, key, label, step,
-                                                     filename)
+        graphs[filename] = plot_score_gain_graph(reuse, key, label, filename)
     direct_correlations = plot_direct_count(scans, scores)
     plot_cohorts(tasks, scores)
     plot_cumulative(tasks, seconds, tokens, scores)
     shared.hardware(tasks)
-    heatmaps["14a_formalization_vs_proof_gain"] = plot_gain_pair_heatmap(
-        reuse, "formalization_time_gain_pct", "Formalization time", 10,
-        "proof_time_gain_pct", "Proof time", 10,
-        "14a_formalization_vs_proof_gain")
-    heatmaps["14b_total_time_vs_tokens_gain"] = plot_gain_pair_heatmap(
-        reuse, "total_time_gain_pct", "Total active time", 10,
-        "total_tokens_gain_pct", "Total net-new tokens", 25,
-        "14b_total_time_vs_tokens_gain")
-    (GEN / "heatmap_cells.json").write_text(json.dumps({
-        "source_reuse_sha256": digest(REUSE), "heatmaps": heatmaps,
+    graphs["14a_formalization_vs_proof_scatter"] = plot_gain_pair_graph(
+        reuse, "formalization_time_gain_pct", "Formalization time",
+        "proof_time_gain_pct", "Proof time",
+        "14a_formalization_vs_proof_scatter")
+    graphs["14b_total_time_vs_tokens_scatter"] = plot_gain_pair_graph(
+        reuse, "total_time_gain_pct", "Total active time",
+        "total_tokens_gain_pct", "Total net-new tokens",
+        "14b_total_time_vs_tokens_scatter")
+    (GEN / "scatter_points.json").write_text(json.dumps({
+        "source_reuse_sha256": digest(REUSE), "graphs": graphs,
     }, indent=2) + "\n")
     correlations = score_correlations(reuse)
     plot_score_groups(tasks, scores)
