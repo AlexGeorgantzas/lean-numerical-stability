@@ -244,9 +244,8 @@ def reuse_summary(tasks, scored):
     for selection, allowed in (("all", lambda r: True),
                                ("new_only", lambda r: not r["outcome_aware_retained"])):
         groups[selection] = {}
-        for bucket, filt in (("0-1", lambda s: s <= 1),
-                             ("2", lambda s: s == 2),
-                             ("3", lambda s: s == 3)):
+        for bucket, filt in ((str(score), lambda s, score=score: s == score)
+                             for score in range(4)):
             indices = [i for i, r in enumerate(scored) if allowed(r) and filt(r["score"])]
             groups[selection][bucket] = group(indices)
     correlations = {}
@@ -277,8 +276,9 @@ def reuse_scatter(scored, summary):
                        edgecolor="white", linewidth=.7, zorder=3)
         ax.axhline(0, color=GRAY, linewidth=.8)
         ax.set_xticks([0, 1, 2, 3])
+        ax.tick_params(axis="x", labelbottom=True)
         ax.set_xlim(-.3, 3.3)
-        ax.set_xlabel("Source-obligation reuse roles (0–3)")
+        ax.set_xlabel("Realized reuse score (0-3)")
         ax.set_ylabel(ylabel)
         rho_all = summary["rank_associations"]["all"][key]["rho"]
         rho_new = summary["rank_associations"]["new_only"][key]["rho"]
@@ -293,15 +293,17 @@ def reuse_scatter(scored, summary):
 
 
 def reuse_strata(summary):
-    fig, axes = plt.subplots(1, 2, figsize=(10.2, 4.2))
+    fig, axes = plt.subplots(1, 2, figsize=(10.2, 4.8))
     for ax, label, title in zip(axes, ("proof_lines", "total_time"),
                                 ("Proof code", "Total active time")):
-        buckets = ("0-1", "2", "3")
+        buckets = ("0", "1", "2", "3")
         y = np.arange(len(buckets))
+        all_values = []
         for selection, delta, color, name in (("all", -.18, BLUE, "All 15"),
                                                ("new_only", .18, ORANGE, "New screened 10")):
             subset = summary["group_aggregates"][selection]
             vals = [subset[b][f"{label}_aggregate_gain_pct"] for b in buckets]
+            all_values.extend(vals)
             ax.barh(y + delta, vals, height=.33, color=color, label=name)
             for i, (b, v) in enumerate(zip(buckets, vals)):
                 ax.text(v + (1 if v >= 0 else -1), i + delta,
@@ -312,7 +314,8 @@ def reuse_strata(summary):
         ax.invert_yaxis()
         ax.set_xlabel("Aggregate N-to-L gain (%)")
         ax.set_title(title, fontweight="bold")
-        ax.set_xlim(-36, 43)
+        extent = max(abs(v) for v in all_values) + 23
+        ax.set_xlim(-extent, extent)
         ax.grid(axis="x", alpha=.18)
     handles, labels = axes[0].get_legend_handles_labels()
     fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, fontsize=8)
@@ -320,32 +323,44 @@ def reuse_strata(summary):
     save("16_realized_reuse_selection")
 
 
-def coverage_heatmap(rows):
+def coverage_heatmap(rows, scored):
+    assert [r["task_id"] for r in rows] == [r["task_id"] for r in scored]
     binary = np.array([[r["substantive_statement_count"] > 0,
                         r["algorithm_statement"], r["proof_count"] > 0,
                         r["error_proof"]] for r in rows], dtype=float)
+    scores = np.array([r["score"] for r in scored], dtype=int)
     gains = np.array([[r["formal_gain_pct"], r["proof_time_gain_pct"],
                        r["time_gain_pct"], r["token_gain_pct"],
                        r["proof_line_gain_pct"]] for r in rows])
-    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 7.5),
-                                   gridspec_kw={"width_ratios": [4, 5]}, sharey=True)
+    fig, (ax1, axscore, ax2) = plt.subplots(
+        1, 3, figsize=(12.4, 7.5),
+        gridspec_kw={"width_ratios": [4, 1.05, 5]}, sharey=True)
     ax1.imshow(binary, cmap=matplotlib.colors.ListedColormap(["#e7e9e9", GREEN]),
                vmin=0, vmax=1, aspect="auto")
+    axscore.imshow(scores[:, None],
+                   cmap=matplotlib.colors.ListedColormap(
+                       ["#e7e9e9", "#b9d9d0", "#69ad98", GREEN]),
+                   vmin=-.5, vmax=3.5, aspect="auto")
     im = ax2.imshow(gains, cmap="RdBu", vmin=-100, vmax=100, aspect="auto")
     ax1.set_yticks(range(len(rows)), [short(r["task_id"]) for r in rows], fontsize=8)
+    axscore.set_yticks(range(len(rows)))
     ax2.set_yticks(range(len(rows)))
     ax1.set_xticks(range(4), ["Substantive\nstatement", "Algorithm/format\nstatement",
                                "Any proof\nreach", "Error/bound\nproof"], fontsize=8)
+    axscore.set_xticks([0], ["Reuse\nscore"], fontsize=8)
     ax2.set_xticks(range(5), ["Formal\ntime", "Proof\ntime", "Total\ntime",
                                "Total\ntokens", "Proof\nlines"], fontsize=8)
     for i in range(len(rows)):
         for j in range(4):
             ax1.text(j, i, "yes" if binary[i, j] else "--", ha="center", va="center",
                      color="white" if binary[i, j] else GRAY, fontsize=7)
+        axscore.text(0, i, f"{scores[i]}/3", ha="center", va="center",
+                     color="white" if scores[i] == 3 else "#17212b", fontsize=8,
+                     fontweight="bold")
         for j in range(5):
             ax2.text(j, i, f"{gains[i,j]:+.0f}", ha="center", va="center", fontsize=7,
                      color="white" if abs(gains[i,j]) > 65 else "#17212b")
-    for ax in (ax1, ax2):
+    for ax in (ax1, axscore, ax2):
         ax.tick_params(length=0)
         ax.set_xticks(np.arange(-.5, len(ax.get_xticks()), 1), minor=True)
         ax.set_yticks(np.arange(-.5, len(rows), 1), minor=True)
@@ -531,7 +546,7 @@ def main():
     rows = declaration_scan(tasks)
     reuse_rubric, reuse_rows = realized_reuse(tasks, rows)
     reuse_stats = reuse_summary(tasks, reuse_rows)
-    coverage_heatmap(rows)
+    coverage_heatmap(rows, reuse_rows)
     scatter_overlap(rows)
     reuse_scatter(reuse_rows, reuse_stats)
     reuse_strata(reuse_stats)

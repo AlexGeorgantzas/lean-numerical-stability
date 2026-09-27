@@ -306,7 +306,7 @@ not a validated semantic overlap score. A greater number of reached
 declarations can reflect a longer proof or a larger helper dependency graph,
 not stronger mathematical usefulness.\src{plotcode,results35}
 
-\fig{09_coverage_heatmap}{Left: binary declaration-uptake indicators. Right: N-to-L gains, where blue/positive favors L and red/negative favors N. Both parts use the same task order. Uptake indicators are descriptive, not randomized treatments.}
+\fig{09_coverage_heatmap}{Left: binary declaration-uptake indicators. Centre: each task's realized-reuse breadth score, explicitly printed from 0/3 to 3/3. Right: N-to-L gains, where blue/positive favors L and red/negative favors N. All columns share task order. The score is a post-outcome diagnostic, not a randomized treatment.}
 \fig{10_overlap_scatter}{Distinct direct proof-term NumStability declarations versus paired gains and L statement submissions. Spearman coefficients are exploratory with $n=15$; outcome-aware retained tasks are orange. Proof submissions were all one; statement submissions were all one except HI21-EQ2.7 L, which used two.}
 
 The raw proof-declaration count had weak rank association with total-time
@@ -374,8 +374,8 @@ agent choices, and different proof strategies. Query overhead is not
 isolated by this score. Figures below retain the selected/new distinction,
 and the appendix lists every task score and paired gain.\src{realizedreuse,results35,evidencearchives}
 
-\fig{15_realized_reuse_scatter}{Task-level realized-reuse breadth versus N-to-L proof-code, proof-time, total-time, and net-new-token gains. Orange circles are prior favorable retained tasks; blue diamonds are newly screened tasks. Horizontal jitter only separates coincident scores. Rank coefficients are exploratory and descriptive.}
-\fig{16_realized_reuse_selection}{Aggregate gains by realized-reuse score bins, both pooled and restricted to the ten newly screened tasks. Each bar prints its sample count. The pooled high-score code/time advantage reverses in the new-only high-score subgroup.}
+\fig{15_realized_reuse_scatter}{Each point's horizontal position is its task's exact 0--3 realized-reuse score; vertical position is the N-to-L proof-code, proof-time, total-time, or net-new-token gain. Orange circles are prior favorable retained tasks; blue diamonds are newly screened tasks. Horizontal jitter only separates coincident scores. Rank coefficients are exploratory and descriptive.}
+\fig{16_realized_reuse_selection}{Aggregate gains at each displayed score (0, 1, 2, 3), both pooled and restricted to the ten newly screened tasks. Each bar prints its sample count; score 0 has one task. The pooled high-score code/time advantage reverses in the new-only high-score subgroup.}
 
 The observed library can demonstrably help: CAST08-FIXED3 reused dot and
 recursive-summation interfaces and reduced proof code from 325 to 221 lines;
