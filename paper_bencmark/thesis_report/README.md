@@ -47,10 +47,12 @@ scan, checks the packet SHA-256 values against admission, then writes
 table, and Figures 15–16. The JSON preserves each source obligation, exact
 witness, statement/proof surface, task outcome, subgroup aggregate, and
 exploratory rank association. It is a breadth index, not an estimated number
-of proof lines saved. Figure 9 prints every task's 0/3–3/3 score beside its
-declaration-uptake indicators, Figure 15 uses the exact score as the point's
-horizontal coordinate, and Figure 16 displays separate 0, 1, 2, and 3 score
-groups with their sample counts.
+of proof lines saved. Every task-labeled plot appends `(R=x/3)` to each task
+name. The declaration-uptake heatmap prints every task's 0/3–3/3 score beside
+its indicators; scatter points also print their score as a white numeral.
+Figures 15–16 use the exact score on the horizontal axis and in separate
+0, 1, 2, and 3 groups. Aggregate plots without a unique task score print the
+score distribution or the ordered task-score sequence.
 
 This annotation was authored *after* the outcomes were visible and was not
 blinded. Five favorable tasks were already selected for retention. Among all

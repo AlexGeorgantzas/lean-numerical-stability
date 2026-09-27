@@ -31,6 +31,7 @@ ORANGE = "#d27834"
 GREEN = "#267e67"
 RED = "#b94b55"
 GRAY = "#59636e"
+SCORE_BY_TASK = {}
 
 
 def sha(path: Path) -> str:
@@ -42,8 +43,27 @@ def save(name: str) -> None:
     plt.close()
 
 
-def short(s: str) -> str:
-    return s.replace("P14-SHIFTED-", "P14-S-").replace("P14-", "P14-")
+def short(s: str, with_score: bool = True) -> str:
+    label = s.replace("P14-SHIFTED-", "P14-S-")
+    if with_score:
+        assert s in SCORE_BY_TASK, s
+        label += f" (R={SCORE_BY_TASK[s]}/3)"
+    return label
+
+
+def score_distribution(tasks) -> str:
+    counts = {score: sum(SCORE_BY_TASK[t["task_id"]] == score for t in tasks)
+              for score in range(4)}
+    return "Reuse scores: " + ", ".join(f"{score}/3 x {counts[score]}" for score in range(4))
+
+
+def add_score_distribution(fig, tasks, bottom: float = .035) -> None:
+    fig.text(.5, bottom, score_distribution(tasks), ha="center", va="bottom", fontsize=8)
+
+
+def add_task_score_key(fig) -> None:
+    fig.text(.5, .012, "Task label (R=x/3): realized NumStability reuse score",
+             ha="center", va="bottom", fontsize=8)
 
 
 def pairbars(tasks, key, title, xlabel, name, warm_add=0.0, scale=1.0):
@@ -62,7 +82,8 @@ def pairbars(tasks, key, title, xlabel, name, warm_add=0.0, scale=1.0):
     ax.grid(axis="x", alpha=0.2)
     ax.set_axisbelow(True)
     ax.legend(loc="lower right", frameon=False)
-    fig.tight_layout()
+    add_task_score_key(fig)
+    fig.tight_layout(rect=(0, .045, 1, 1))
     save(name)
 
 
@@ -90,7 +111,8 @@ def phases(tasks, unit, name):
         ax.grid(axis="x", alpha=.2)
         ax.set_axisbelow(True)
     axes[1].legend(loc="lower right", frameon=False)
-    fig.tight_layout()
+    add_task_score_key(fig)
+    fig.tight_layout(rect=(0, .045, 1, 1))
     save(name)
 
 
@@ -122,7 +144,8 @@ def averages(tasks, warm_seconds, warm_tokens):
         ax.grid(axis="x", alpha=.2)
         ax.set_axisbelow(True)
     axes[0].legend(frameon=False)
-    fig.tight_layout()
+    add_score_distribution(fig, tasks)
+    fig.tight_layout(rect=(0, .07, 1, 1))
     save("07_averages")
 
 
@@ -272,8 +295,11 @@ def reuse_scatter(scored, summary):
             subset = [(i, r) for i, r in enumerate(scored) if r["outcome_aware_retained"] == retained]
             xs = [r["score"] + ((i % 5) - 2) * .045 for i, r in subset]
             ys = [r["gains"][f"{key}_gain_pct"] for _, r in subset]
-            ax.scatter(xs, ys, s=58, color=color, marker=marker, label=label,
+            ax.scatter(xs, ys, s=105, color=color, marker=marker, label=label,
                        edgecolor="white", linewidth=.7, zorder=3)
+            for x_value, y_value, (_, row) in zip(xs, ys, subset):
+                ax.text(x_value, y_value, str(row["score"]), ha="center", va="center",
+                        fontsize=6, color="white", fontweight="bold", zorder=4)
         ax.axhline(0, color=GRAY, linewidth=.8)
         ax.set_xticks([0, 1, 2, 3])
         ax.tick_params(axis="x", labelbottom=True)
@@ -314,7 +340,7 @@ def reuse_strata(summary):
         ax.invert_yaxis()
         ax.set_xlabel("Aggregate N-to-L gain (%)")
         ax.set_title(title, fontweight="bold")
-        extent = max(abs(v) for v in all_values) + 23
+        extent = max(abs(v) for v in all_values) + 35
         ax.set_xlim(-extent, extent)
         ax.grid(axis="x", alpha=.18)
     handles, labels = axes[0].get_legend_handles_labels()
@@ -342,7 +368,7 @@ def coverage_heatmap(rows, scored):
                        ["#e7e9e9", "#b9d9d0", "#69ad98", GREEN]),
                    vmin=-.5, vmax=3.5, aspect="auto")
     im = ax2.imshow(gains, cmap="RdBu", vmin=-100, vmax=100, aspect="auto")
-    ax1.set_yticks(range(len(rows)), [short(r["task_id"]) for r in rows], fontsize=8)
+    ax1.set_yticks(range(len(rows)), [short(r["task_id"], with_score=False) for r in rows], fontsize=8)
     axscore.set_yticks(range(len(rows)))
     ax2.set_yticks(range(len(rows)))
     ax1.set_xticks(range(4), ["Substantive\nstatement", "Algorithm/format\nstatement",
@@ -371,18 +397,30 @@ def coverage_heatmap(rows, scored):
     save("09_coverage_heatmap")
 
 
-def scatter_overlap(rows):
+def scatter_overlap(rows, tasks):
     x = np.array([r["proof_count"] for r in rows])
     ys = [("time_gain_pct", "Total time gain (%)"),
           ("token_gain_pct", "Net-new token gain (%)"),
           ("proof_line_gain_pct", "Proof-line gain (%)"),
-          ("formal_attempts_L", "L statement submissions")]
+          ("formal_gain_pct", "Formalization-time gain (%)")]
     fig, axes = plt.subplots(2, 2, figsize=(9.4, 7.3))
     for ax, (key, label) in zip(axes.flat, ys):
         y = np.array([r[key] for r in rows])
         colors = [ORANGE if r["retained"] else BLUE for r in rows]
-        ax.scatter(x, y, c=colors, s=50, edgecolor="white", linewidth=.7)
-        ax.axhline(0 if key != "formal_attempts_L" else 1, color=GRAY, linewidth=.8)
+        x_display = x.astype(float).copy()
+        coincident = {}
+        for i, pair in enumerate(zip(x, y)):
+            coincident.setdefault(pair, []).append(i)
+        for indices in coincident.values():
+            for rank, index in enumerate(indices):
+                x_display[index] += (rank - (len(indices) - 1) / 2) * .9
+        ax.scatter(x_display, y, c=colors, s=100, edgecolor="white", linewidth=.7,
+                   zorder=3)
+        for x_value, y_value, row in zip(x_display, y, rows):
+            ax.text(x_value, y_value, str(SCORE_BY_TASK[row["task_id"]]),
+                    ha="center", va="center", color="white", fontsize=6,
+                    fontweight="bold", zorder=4)
+        ax.axhline(0, color=GRAY, linewidth=.8)
         ax.set_xlabel("Distinct direct proof-term declarations")
         ax.set_ylabel(label)
         ax.grid(alpha=.18)
@@ -398,7 +436,8 @@ def scatter_overlap(rows):
                         plt.Line2D([], [], marker="o", linestyle="", color=BLUE,
                                    label="New screened")],
                loc="upper center", bbox_to_anchor=(.5, 1.025), ncol=2, frameon=False)
-    fig.tight_layout()
+    add_score_distribution(fig, tasks)
+    fig.tight_layout(rect=(0, .06, 1, .96))
     save("10_overlap_scatter")
 
 
@@ -422,7 +461,8 @@ def groups(tasks):
                     ha="left" if v >= 0 else "right", va="center", fontsize=8)
         ax.set_xlim(min(-40, min(gain)-10), max(50, max(gain)+10))
         ax.grid(axis="x", alpha=.2)
-    fig.tight_layout()
+    add_score_distribution(fig, tasks)
+    fig.tight_layout(rect=(0, .07, 1, 1))
     save("11_selection_strata")
 
 
@@ -438,16 +478,17 @@ def overlap_by_selection(tasks, rows):
                         if not t["outcome_aware_retained"] and not (r["algorithm_statement"] and r["error_proof"])]),
     ]
     fig, axes = plt.subplots(1, 3, figsize=(10, 3.5))
-    for ax, key, title in zip(axes,
+    for panel, (ax, key, title) in enumerate(zip(axes,
                               ["total_seconds_inclusive", "total_tokens_net_new", "proof_code_lines"],
-                              ["Total active time", "Net-new tokens", "Proof code"]):
+                              ["Total active time", "Net-new tokens", "Proof code"])):
         vals = []
         for _, taskset in subsets:
             n = sum(t["N"][key] for t in taskset)
             l = sum(t["L"][key] for t in taskset)
             vals.append(100 * (n-l)/n)
         ax.barh(range(3), vals, color=[GREEN if v >= 0 else RED for v in vals])
-        ax.set_yticks(range(3), [f"{name} (n={len(ts)})" for name,ts in subsets], fontsize=8)
+        labels = [f"{name} (n={len(ts)})" for name, ts in subsets] if panel == 0 else [""] * 3
+        ax.set_yticks(range(3), labels, fontsize=8)
         ax.invert_yaxis()
         ax.axvline(0, color=GRAY, linewidth=.8)
         ax.set_title(title, fontweight="bold")
@@ -457,7 +498,15 @@ def overlap_by_selection(tasks, rows):
             ax.text(v + (1 if v>=0 else -1), i, f"{v:+.1f}%", va="center",
                     ha="left" if v>=0 else "right", fontsize=8)
         ax.grid(axis="x", alpha=.2)
-    fig.tight_layout()
+    profiles = []
+    for name, taskset in subsets:
+        counts = {score: sum(SCORE_BY_TASK[t["task_id"]] == score for t in taskset)
+                  for score in range(4)}
+        present = ",".join(f"{score}x{counts[score]}" for score in range(4) if counts[score])
+        profiles.append(f"{name}: {present}")
+    fig.text(.5, .012, "Reuse scores by row (each /3) - " + "; ".join(profiles),
+             ha="center", va="bottom", fontsize=7)
+    fig.tight_layout(rect=(0, .07, 1, 1))
     save("14_overlap_selection_sensitivity")
 
 
@@ -478,7 +527,10 @@ def amortization(tasks, warm_seconds, warm_tokens):
         ax.set_ylabel(ylabel)
         ax.grid(alpha=.2)
     axes[0].legend(frameon=False, fontsize=8)
-    fig.tight_layout()
+    score_sequence = ", ".join(f"{SCORE_BY_TASK[t['task_id']]}/3" for t in tasks)
+    fig.text(.5, .012, "Task reuse scores in plotted order: " + score_sequence,
+             ha="center", va="bottom", fontsize=7)
+    fig.tight_layout(rect=(0, .07, 1, 1))
     save("12_cumulative_warm")
 
 
@@ -498,11 +550,13 @@ def hardware(tasks):
         ax.set_xlabel(label)
         ax.grid(axis="x", alpha=.2)
     axes[1].legend(frameon=False, fontsize=8)
-    fig.tight_layout()
+    add_task_score_key(fig)
+    fig.tight_layout(rect=(0, .045, 1, 1))
     save("13_hardware_peaks")
 
 
 def main():
+    global SCORE_BY_TASK
     FIG.mkdir(exist_ok=True)
     GENERATED.mkdir(exist_ok=True)
     data = json.loads(RESULTS.read_text())
@@ -512,6 +566,10 @@ def main():
     assert [t["task_id"] for t in tasks] == json.loads(
         (ROOT / "paper_bencmark/formalization_benchmark/design33/CORPUS_15.json").read_text()
     )["scheduled_order"]
+    rows = declaration_scan(tasks)
+    reuse_rubric, reuse_rows = realized_reuse(tasks, rows)
+    reuse_stats = reuse_summary(tasks, reuse_rows)
+    SCORE_BY_TASK = {r["task_id"]: r["score"] for r in reuse_rows}
     warm_seconds = warm["scout_wall_seconds"]
     usage = warm["scout_usage"]
     warm_tokens = usage["input_tokens"] - usage["cached_input_tokens"] + usage["output_tokens"]
@@ -541,13 +599,11 @@ def main():
         ax.set_title(title, fontweight="bold")
         ax.grid(axis="x", alpha=.2)
     axes[1].legend(frameon=False)
-    fig.tight_layout()
+    add_task_score_key(fig)
+    fig.tight_layout(rect=(0, .045, 1, 1))
     save("08_code_lines")
-    rows = declaration_scan(tasks)
-    reuse_rubric, reuse_rows = realized_reuse(tasks, rows)
-    reuse_stats = reuse_summary(tasks, reuse_rows)
     coverage_heatmap(rows, reuse_rows)
-    scatter_overlap(rows)
+    scatter_overlap(rows, tasks)
     reuse_scatter(reuse_rows, reuse_stats)
     reuse_strata(reuse_stats)
     groups(tasks)
