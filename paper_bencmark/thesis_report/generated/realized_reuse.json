@@ -1,0 +1,1024 @@
+{
+  "scientific_status": "POST_OUTCOME_EXPLORATORY_MANUAL_ANNOTATION_NOT_BLIND",
+  "rubric_sha256": "2c91c380c6e42efafd667d9c5cf6fca8ce42a87d452d7edca8c16e83f8280674",
+  "source_results_sha256": "3faeb35af66f5c3c9d16e0800a4c88bd5cef09e1a35f0bc10e6c387f40d9c050",
+  "rows": [
+    {
+      "task_id": "CAST08-FIXED3",
+      "source_cluster": "CAST08",
+      "outcome_aware_retained": true,
+      "source_packet_sha256": "24639a0ed59386b0a6c547f61fac18ad70e298ec89195c7e3f05e177ea7ccf17",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 9,
+      "roles": {
+        "foundation": {
+          "source_obligation": "relative-error floating-point model and gamma setting",
+          "witnesses": [
+            "NumStability.FPModel"
+          ],
+          "statement_witnesses": [
+            "NumStability.FPModel"
+          ],
+          "proof_witnesses": [
+            "NumStability.FPModel"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "rounded inner dot and recursive block sums",
+          "witnesses": [
+            "NumStability.fl_dotProduct",
+            "NumStability.fl_recursiveSum"
+          ],
+          "statement_witnesses": [
+            "NumStability.fl_dotProduct",
+            "NumStability.fl_recursiveSum"
+          ],
+          "proof_witnesses": [
+            "NumStability.fl_dotProduct",
+            "NumStability.fl_recursiveSum"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "dot-product and recursive-sum error components",
+          "witnesses": [
+            "NumStability.dotProduct_backward_error",
+            "NumStability.recursiveSum_backward_error"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.dotProduct_backward_error",
+            "NumStability.recursiveSum_backward_error"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": 8.567067770600001,
+        "proof_time_gain_pct": 42.90349122780566,
+        "total_time_gain_pct": 35.929523617185616,
+        "formalization_tokens_gain_pct": -171.9422098177639,
+        "proof_tokens_gain_pct": -98.42515431056606,
+        "total_tokens_gain_pct": -122.72098385857034,
+        "statement_lines_gain_pct": 11.363636363636363,
+        "proof_lines_gain_pct": 32.0
+      }
+    },
+    {
+      "task_id": "P14-T1",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "9fd32199f87e51def28269df3d24b9fda5fa7e7892e2fcff719d3a70f305c10b",
+      "score": 2,
+      "statement_roles": 2,
+      "proof_roles": 2,
+      "direct_proof_declaration_count": 7,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff floating-point model",
+          "witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "statement_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "proof_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "recursive sum of computed exponentials",
+          "witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "statement_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "proof_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "reusable summation error bound for the positive exponential sum",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": 2.6224017324862903,
+        "proof_time_gain_pct": 34.11742592100222,
+        "total_time_gain_pct": 24.945738410282402,
+        "formalization_tokens_gain_pct": -207.1232964979542,
+        "proof_tokens_gain_pct": 40.38094218033167,
+        "total_tokens_gain_pct": -47.86234464380068,
+        "statement_lines_gain_pct": -7.407407407407407,
+        "proof_lines_gain_pct": -12.935323383084578
+      }
+    },
+    {
+      "task_id": "HI21-LEM2.2",
+      "source_cluster": "HI21",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "03c570d3ef94fb3d82053419346010207d93987709846f3bb8934e3934c3a5fe",
+      "score": 1,
+      "statement_roles": 1,
+      "proof_roles": 1,
+      "direct_proof_declaration_count": 4,
+      "roles": {
+        "foundation": {
+          "source_obligation": "relative-error model for each rounded tree addition",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        },
+        "computation": {
+          "source_obligation": "arbitrary binary summation-tree representation",
+          "witnesses": [
+            "NumStability.SumTree"
+          ],
+          "statement_witnesses": [
+            "NumStability.SumTree"
+          ],
+          "proof_witnesses": [
+            "NumStability.SumTree"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "ancestor-product error expansion",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -52.57860289717787,
+        "proof_time_gain_pct": -27.277603351130427,
+        "total_time_gain_pct": -47.11291398316175,
+        "formalization_tokens_gain_pct": -228.52214793784535,
+        "proof_tokens_gain_pct": 33.01360057265569,
+        "total_tokens_gain_pct": -182.5549796185396,
+        "statement_lines_gain_pct": -38.46153846153846,
+        "proof_lines_gain_pct": -25.641025641025642
+      }
+    },
+    {
+      "task_id": "CAST08-PROP3.1",
+      "source_cluster": "CAST08",
+      "outcome_aware_retained": true,
+      "source_packet_sha256": "60a3ce84bb175fbce6fd46423646d16ac84af3044d920a32cd17eae5202fedcb",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 9,
+      "roles": {
+        "foundation": {
+          "source_obligation": "relative-error floating-point model and gamma setting",
+          "witnesses": [
+            "NumStability.FPModel"
+          ],
+          "statement_witnesses": [
+            "NumStability.FPModel"
+          ],
+          "proof_witnesses": [
+            "NumStability.FPModel"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "recursive summation within equal-block levels",
+          "witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "statement_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "proof_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "forward-error estimate for recursive sums",
+          "witnesses": [
+            "NumStability.recursiveSum_forward_error_bound"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.recursiveSum_forward_error_bound"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -6.102373322009077,
+        "proof_time_gain_pct": 46.36215608550516,
+        "total_time_gain_pct": 35.46254062548555,
+        "formalization_tokens_gain_pct": -157.65433259673705,
+        "proof_tokens_gain_pct": 35.66728397493991,
+        "total_tokens_gain_pct": -33.627132926058565,
+        "statement_lines_gain_pct": 2.5,
+        "proof_lines_gain_pct": 46.38069705093834
+      }
+    },
+    {
+      "task_id": "P14-T2",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "06ff32755a9a3704b720301044a6d9108f187183e8a1a7242ed221da3ab77ac6",
+      "score": 2,
+      "statement_roles": 0,
+      "proof_roles": 2,
+      "direct_proof_declaration_count": 13,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff model for local operations",
+          "witnesses": [
+            "NumStability.FPModel"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.FPModel"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "library implementation of the denominator summation",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        },
+        "analysis": {
+          "source_obligation": "suffix-product and gamma estimates for summation error",
+          "witnesses": [
+            "NumStability.sumSuffixErrorProduct_exists_theta_le_gamma",
+            "NumStability.prod_error_bound"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.sumSuffixErrorProduct_exists_theta_le_gamma",
+            "NumStability.prod_error_bound"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": 0.545111299843168,
+        "proof_time_gain_pct": 17.868657907740108,
+        "total_time_gain_pct": 14.636309400955538,
+        "formalization_tokens_gain_pct": -134.99006445984588,
+        "proof_tokens_gain_pct": 44.704516175856874,
+        "total_tokens_gain_pct": -4.243788450875294,
+        "statement_lines_gain_pct": -5.714285714285714,
+        "proof_lines_gain_pct": 5.21978021978022
+      }
+    },
+    {
+      "task_id": "RUMP12-THM3.4",
+      "source_cluster": "RUMP12",
+      "outcome_aware_retained": true,
+      "source_packet_sha256": "f91a6d1c9ef559bbf9057954f0efd63f32a995a8f86666fa4efe0582d07b8712",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 39,
+      "roles": {
+        "foundation": {
+          "source_obligation": "finite binary floating-point domain",
+          "witnesses": [
+            "NumStability.FloatingPointFormat.finiteSystem"
+          ],
+          "statement_witnesses": [
+            "NumStability.FloatingPointFormat.finiteSystem"
+          ],
+          "proof_witnesses": [
+            "NumStability.FloatingPointFormat.finiteSystem"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "rounding-to-nearest operation used by recursive summation",
+          "witnesses": [
+            "NumStability.FloatingPointFormat.nearestRoundingIn"
+          ],
+          "statement_witnesses": [
+            "NumStability.FloatingPointFormat.nearestRoundingIn"
+          ],
+          "proof_witnesses": [
+            "NumStability.FloatingPointFormat.nearestRoundingIn"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "normal-range signed relative-error witness",
+          "witnesses": [
+            "NumStability.FloatingPointFormat.nearestRoundingToFinite_signedRelErrorWitness_of_finiteNormalRange"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.FloatingPointFormat.nearestRoundingToFinite_signedRelErrorWitness_of_finiteNormalRange"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -47.578717014356265,
+        "proof_time_gain_pct": 30.843031098829144,
+        "total_time_gain_pct": 21.018297707970707,
+        "formalization_tokens_gain_pct": -200.89090685973738,
+        "proof_tokens_gain_pct": 44.0734692123387,
+        "total_tokens_gain_pct": 0.08285917026237268,
+        "statement_lines_gain_pct": 12.903225806451612,
+        "proof_lines_gain_pct": 44.40734557595993
+      }
+    },
+    {
+      "task_id": "P14-LOGSUMEXP",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "836fc44b5cad055e731e51419afcf81a68be45f3fb004fe8e95f0a2330d156de",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 8,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff model and gamma setting",
+          "witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "statement_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "proof_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "recursive sum of exponentials",
+          "witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "statement_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "proof_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "recursive-sum forward-error bound",
+          "witnesses": [
+            "NumStability.recursiveSum_forward_error_bound"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.recursiveSum_forward_error_bound"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": 28.4929488530403,
+        "proof_time_gain_pct": 5.03777694124325,
+        "total_time_gain_pct": 10.49653856152489,
+        "formalization_tokens_gain_pct": -95.03026694452714,
+        "proof_tokens_gain_pct": 35.99022004889976,
+        "total_tokens_gain_pct": -18.137914070186948,
+        "statement_lines_gain_pct": 3.5714285714285716,
+        "proof_lines_gain_pct": -25.980392156862745
+      }
+    },
+    {
+      "task_id": "H20-8",
+      "source_cluster": "H20",
+      "outcome_aware_retained": true,
+      "source_packet_sha256": "722d28643343002f250688dc0dc8520b47bdc985c104914401bc851bf2980cdf",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 26,
+      "roles": {
+        "foundation": {
+          "source_obligation": "Euclidean-vector and Frobenius-matrix norm interfaces",
+          "witnesses": [
+            "NumStability.vecNorm2",
+            "NumStability.frobNormRect"
+          ],
+          "statement_witnesses": [
+            "NumStability.vecNorm2",
+            "NumStability.frobNormRect"
+          ],
+          "proof_witnesses": [
+            "NumStability.vecNorm2",
+            "NumStability.frobNormRect"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "matrix-only least-squares backward-error functional",
+          "witnesses": [
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF"
+          ],
+          "statement_witnesses": [
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF"
+          ],
+          "proof_witnesses": [
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "feasibility and minimizer bounds used to evaluate the error",
+          "witnesses": [
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF_le_frobNorm_of_feasible",
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_zero_of_isLeastSquaresMinimizer"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF_le_frobNorm_of_feasible",
+            "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_zero_of_isLeastSquaresMinimizer"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -11.902905352283753,
+        "proof_time_gain_pct": 65.59334748863681,
+        "total_time_gain_pct": 55.539239724928755,
+        "formalization_tokens_gain_pct": 1.3964957204163406,
+        "proof_tokens_gain_pct": 56.39120611748349,
+        "total_tokens_gain_pct": 39.11249171266603,
+        "statement_lines_gain_pct": 20.0,
+        "proof_lines_gain_pct": 31.275720164609055
+      }
+    },
+    {
+      "task_id": "P14-ALT-SOFTMAX",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "e7d27363fa6f54c3f53e2743583845a6251564afe96b7baa953f99f641221a03",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 12,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff model for local operations",
+          "witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "statement_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "proof_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "recursive sum inside the alternative softmax algorithm",
+          "witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "statement_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "proof_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "recursive-sum backward-error component",
+          "witnesses": [
+            "NumStability.recursiveSum_backward_error"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.recursiveSum_backward_error"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": 20.054875681208642,
+        "proof_time_gain_pct": -5.738431244847436,
+        "total_time_gain_pct": -1.3790851437330491,
+        "formalization_tokens_gain_pct": 21.400299058844226,
+        "proof_tokens_gain_pct": -11.06648333092102,
+        "total_tokens_gain_pct": -4.078715710959242,
+        "statement_lines_gain_pct": -19.444444444444443,
+        "proof_lines_gain_pct": -15.66579634464752
+      }
+    },
+    {
+      "task_id": "CAST08-PROP3.2",
+      "source_cluster": "CAST08",
+      "outcome_aware_retained": true,
+      "source_packet_sha256": "febce0930ad9a3384b31911c78e3706b3973673e576d6e9930550551817d0f51",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 11,
+      "roles": {
+        "foundation": {
+          "source_obligation": "floating-point multiplication and gamma setting",
+          "witnesses": [
+            "NumStability.FPModel.fl_mul"
+          ],
+          "statement_witnesses": [
+            "NumStability.FPModel.fl_mul"
+          ],
+          "proof_witnesses": [
+            "NumStability.FPModel.fl_mul"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "recursive sums within the superblock dot product",
+          "witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "statement_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "proof_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "recursive-sum backward-error component",
+          "witnesses": [
+            "NumStability.recursiveSum_backward_error"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.recursiveSum_backward_error"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": 20.190998679950752,
+        "proof_time_gain_pct": 35.43705077704322,
+        "total_time_gain_pct": 31.625166218268603,
+        "formalization_tokens_gain_pct": -246.43863570109804,
+        "proof_tokens_gain_pct": -124.65627435697584,
+        "total_tokens_gain_pct": -164.22339854561528,
+        "statement_lines_gain_pct": 2.7027027027027026,
+        "proof_lines_gain_pct": 25.53191489361702
+      }
+    },
+    {
+      "task_id": "P14-SHIFTED-SUM",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "48a1fbbdf70d7430335db2b93aa8bf6f23f582d251eea25dd6ff1d5c55ee47e6",
+      "score": 0,
+      "statement_roles": 0,
+      "proof_roles": 0,
+      "direct_proof_declaration_count": 0,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff model for shifted exponential evaluations",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        },
+        "computation": {
+          "source_obligation": "recursive sum of shifted exponential terms",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        },
+        "analysis": {
+          "source_obligation": "library summation-error bound for the shifted sum",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": 1.2650355442732868,
+        "proof_time_gain_pct": 46.969204517147105,
+        "total_time_gain_pct": 39.316586240243005,
+        "formalization_tokens_gain_pct": 57.790284360189574,
+        "proof_tokens_gain_pct": 48.57554669729523,
+        "total_tokens_gain_pct": 51.29265852535294,
+        "statement_lines_gain_pct": 0.0,
+        "proof_lines_gain_pct": 10.315186246418339
+      }
+    },
+    {
+      "task_id": "P14-SHIFTED-LOG",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "34d9e76a267b8deb1c567c838e250bdabbcdd44182797a436b8ec3be6a8f8f79",
+      "score": 3,
+      "statement_roles": 2,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 11,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff model for shifted subtraction and log evaluation",
+          "witnesses": [
+            "NumStability.FPModel.fl_sub"
+          ],
+          "statement_witnesses": [
+            "NumStability.FPModel.fl_sub"
+          ],
+          "proof_witnesses": [
+            "NumStability.FPModel.fl_sub"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "recursive shifted-exponential sum",
+          "witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "statement_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "proof_witnesses": [
+            "NumStability.fl_recursiveSum"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "recursive-sum forward-error component",
+          "witnesses": [
+            "NumStability.recursiveSum_forward_error_bound"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.recursiveSum_forward_error_bound"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -83.23543692003678,
+        "proof_time_gain_pct": -1.1720926539567733,
+        "total_time_gain_pct": -13.54003489148757,
+        "formalization_tokens_gain_pct": 40.10413204829955,
+        "proof_tokens_gain_pct": 1.337458241189479,
+        "total_tokens_gain_pct": 14.78174679400985,
+        "statement_lines_gain_pct": -31.57894736842105,
+        "proof_lines_gain_pct": 5.764966740576496
+      }
+    },
+    {
+      "task_id": "P14-SHIFTED-SOFTMAX",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "673e6fc20c8e98c7e7ba9dc331903fe498e82716d4b51c3c7ffc647bf1a1e47c",
+      "score": 1,
+      "statement_roles": 1,
+      "proof_roles": 1,
+      "direct_proof_declaration_count": 3,
+      "roles": {
+        "foundation": {
+          "source_obligation": "infinity-norm interface for the normwise conclusion",
+          "witnesses": [
+            "NumStability.infNormVec"
+          ],
+          "statement_witnesses": [
+            "NumStability.infNormVec"
+          ],
+          "proof_witnesses": [
+            "NumStability.infNormVec"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "library computation of shifted exponentials and their rounded sum",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        },
+        "analysis": {
+          "source_obligation": "library error bound for shifted softmax",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -23.07736821145821,
+        "proof_time_gain_pct": -0.3241151085249163,
+        "total_time_gain_pct": -3.7974440331566632,
+        "formalization_tokens_gain_pct": -99.18906304694488,
+        "proof_tokens_gain_pct": 22.341628128899654,
+        "total_tokens_gain_pct": -10.96124741542856,
+        "statement_lines_gain_pct": -17.5,
+        "proof_lines_gain_pct": -2.494802494802495
+      }
+    },
+    {
+      "task_id": "P14-SHIFTED-WEIGHTED",
+      "source_cluster": "P14",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "76f9bf1805140509714619426b1014c5541c9a808932486e070b7c41af1d587b",
+      "score": 2,
+      "statement_roles": 0,
+      "proof_roles": 2,
+      "direct_proof_declaration_count": 8,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff model for shifted exponential evaluations",
+          "witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "library computation of the shifted recursive sum",
+          "witnesses": [],
+          "statement_witnesses": [],
+          "proof_witnesses": [],
+          "used": false
+        },
+        "analysis": {
+          "source_obligation": "suffix-product expansion and gamma witness for termwise error",
+          "witnesses": [
+            "NumStability.sumSuffixErrorProduct_exists_theta_le_gamma"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.sumSuffixErrorProduct_exists_theta_le_gamma"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -43.07020367675727,
+        "proof_time_gain_pct": -29.549493635916704,
+        "total_time_gain_pct": -32.51975969535135,
+        "formalization_tokens_gain_pct": -18.861758539893945,
+        "proof_tokens_gain_pct": 23.020484012217786,
+        "total_tokens_gain_pct": 16.83719914066198,
+        "statement_lines_gain_pct": -30.303030303030305,
+        "proof_lines_gain_pct": -30.689655172413794
+      }
+    },
+    {
+      "task_id": "HI21-EQ2.7",
+      "source_cluster": "HI21",
+      "outcome_aware_retained": false,
+      "source_packet_sha256": "c7514b30a0af01165dd1d5e653c85825debe988a0c8ad3897c3f452687bf5b3a",
+      "score": 3,
+      "statement_roles": 1,
+      "proof_roles": 3,
+      "direct_proof_declaration_count": 12,
+      "roles": {
+        "foundation": {
+          "source_obligation": "unit-roundoff model for tree additions",
+          "witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.FPModel.u"
+          ],
+          "used": true
+        },
+        "computation": {
+          "source_obligation": "arbitrary binary summation-tree representation",
+          "witnesses": [
+            "NumStability.SumTree"
+          ],
+          "statement_witnesses": [
+            "NumStability.SumTree"
+          ],
+          "proof_witnesses": [
+            "NumStability.SumTree"
+          ],
+          "used": true
+        },
+        "analysis": {
+          "source_obligation": "product-error bound used in first-order expansion",
+          "witnesses": [
+            "NumStability.prod_error_bound"
+          ],
+          "statement_witnesses": [],
+          "proof_witnesses": [
+            "NumStability.prod_error_bound"
+          ],
+          "used": true
+        }
+      },
+      "gains": {
+        "formalization_time_gain_pct": -101.60281081864588,
+        "proof_time_gain_pct": 19.174849384865276,
+        "total_time_gain_pct": -11.882725339070632,
+        "formalization_tokens_gain_pct": -468.1045072285741,
+        "proof_tokens_gain_pct": 8.932355338223308,
+        "total_tokens_gain_pct": -165.22526562715606,
+        "statement_lines_gain_pct": -13.157894736842104,
+        "proof_lines_gain_pct": -12.056737588652481
+      }
+    }
+  ],
+  "summary": {
+    "group_aggregates": {
+      "all": {
+        "0-1": {
+          "n": 3,
+          "retained_n": 0,
+          "proof_lines_N_sum": 869,
+          "proof_lines_L_sum": 855,
+          "proof_lines_aggregate_gain_pct": 1.6110471806674338,
+          "proof_time_N_sum": 1560.801816191,
+          "proof_time_L_sum": 1238.7312558590002,
+          "proof_time_aggregate_gain_pct": 20.634942693620435,
+          "formalization_time_N_sum": 396.5887385540042,
+          "formalization_time_L_sum": 484.6509947010029,
+          "formalization_time_aggregate_gain_pct": -22.204931100182293,
+          "total_time_N_sum": 1957.3905547450042,
+          "total_time_L_sum": 1723.3822505600028,
+          "total_time_aggregate_gain_pct": 11.955115631764476,
+          "total_tokens_N_sum": 353336,
+          "total_tokens_L_sum": 381857,
+          "total_tokens_aggregate_gain_pct": -8.07192021192293
+        },
+        "2": {
+          "n": 3,
+          "retained_n": 0,
+          "proof_lines_N_sum": 855,
+          "proof_lines_L_sum": 951,
+          "proof_lines_aggregate_gain_pct": -11.228070175438596,
+          "proof_time_N_sum": 1475.948556834,
+          "proof_time_L_sum": 1359.6592855210001,
+          "proof_time_aggregate_gain_pct": 7.8789515240590475,
+          "formalization_time_N_sum": 440.137067463001,
+          "formalization_time_L_sum": 490.28164364200666,
+          "formalization_time_aggregate_gain_pct": -11.392945490377475,
+          "total_time_N_sum": 1916.085624297001,
+          "total_time_L_sum": 1849.9409291630066,
+          "total_time_aggregate_gain_pct": 3.452074077235588,
+          "total_tokens_N_sum": 348402,
+          "total_tokens_L_sum": 378003,
+          "total_tokens_aggregate_gain_pct": -8.496219883927187
+        },
+        "3": {
+          "n": 9,
+          "retained_n": 5,
+          "proof_lines_N_sum": 3189,
+          "proof_lines_L_sum": 2607,
+          "proof_lines_aggregate_gain_pct": 18.250235183443085,
+          "proof_time_N_sum": 5433.472067509,
+          "proof_time_L_sum": 3981.001975735,
+          "proof_time_aggregate_gain_pct": 26.73189580672477,
+          "formalization_time_N_sum": 1207.926683647983,
+          "formalization_time_L_sum": 1423.5660711669989,
+          "formalization_time_aggregate_gain_pct": -17.85202615673469,
+          "total_time_N_sum": 6641.398751156983,
+          "total_time_L_sum": 5404.568046901999,
+          "total_time_aggregate_gain_pct": 18.623045394458792,
+          "total_tokens_N_sum": 1101144,
+          "total_tokens_L_sum": 1483102,
+          "total_tokens_aggregate_gain_pct": -34.687379670597124
+        }
+      },
+      "new_only": {
+        "0-1": {
+          "n": 3,
+          "retained_n": 0,
+          "proof_lines_N_sum": 869,
+          "proof_lines_L_sum": 855,
+          "proof_lines_aggregate_gain_pct": 1.6110471806674338,
+          "proof_time_N_sum": 1560.801816191,
+          "proof_time_L_sum": 1238.7312558590002,
+          "proof_time_aggregate_gain_pct": 20.634942693620435,
+          "formalization_time_N_sum": 396.5887385540042,
+          "formalization_time_L_sum": 484.6509947010029,
+          "formalization_time_aggregate_gain_pct": -22.204931100182293,
+          "total_time_N_sum": 1957.3905547450042,
+          "total_time_L_sum": 1723.3822505600028,
+          "total_time_aggregate_gain_pct": 11.955115631764476,
+          "total_tokens_N_sum": 353336,
+          "total_tokens_L_sum": 381857,
+          "total_tokens_aggregate_gain_pct": -8.07192021192293
+        },
+        "2": {
+          "n": 3,
+          "retained_n": 0,
+          "proof_lines_N_sum": 855,
+          "proof_lines_L_sum": 951,
+          "proof_lines_aggregate_gain_pct": -11.228070175438596,
+          "proof_time_N_sum": 1475.948556834,
+          "proof_time_L_sum": 1359.6592855210001,
+          "proof_time_aggregate_gain_pct": 7.8789515240590475,
+          "formalization_time_N_sum": 440.137067463001,
+          "formalization_time_L_sum": 490.28164364200666,
+          "formalization_time_aggregate_gain_pct": -11.392945490377475,
+          "total_time_N_sum": 1916.085624297001,
+          "total_time_L_sum": 1849.9409291630066,
+          "total_time_aggregate_gain_pct": 3.452074077235588,
+          "total_tokens_N_sum": 348402,
+          "total_tokens_L_sum": 378003,
+          "total_tokens_aggregate_gain_pct": -8.496219883927187
+        },
+        "3": {
+          "n": 4,
+          "retained_n": 0,
+          "proof_lines_N_sum": 1320,
+          "proof_lines_L_sum": 1441,
+          "proof_lines_aggregate_gain_pct": -9.166666666666666,
+          "proof_time_N_sum": 2142.616532067,
+          "proof_time_L_sum": 2097.465957504,
+          "proof_time_aggregate_gain_pct": 2.1072634270885167,
+          "formalization_time_N_sum": 514.0904676739956,
+          "formalization_time_L_sum": 676.201074759991,
+          "formalization_time_aggregate_gain_pct": -31.53347849834009,
+          "total_time_N_sum": 2656.706999740996,
+          "total_time_L_sum": 2773.667032263991,
+          "total_time_aggregate_gain_pct": -4.402443797317425,
+          "total_tokens_N_sum": 415729,
+          "total_tokens_L_sum": 518712,
+          "total_tokens_aggregate_gain_pct": -24.771666157520887
+        }
+      }
+    },
+    "rank_associations": {
+      "all": {
+        "proof_lines": {
+          "rho": 0.368750608805264,
+          "p_exploratory": 0.1762111916657257,
+          "n": 15
+        },
+        "proof_time": {
+          "rho": 0.2127407358491908,
+          "p_exploratory": 0.44651410224090315,
+          "n": 15
+        },
+        "formalization_time": {
+          "rho": 0.13574885049424554,
+          "p_exploratory": 0.6295323804276769,
+          "n": 15
+        },
+        "total_time": {
+          "rho": 0.1985580201259114,
+          "p_exploratory": 0.47807034378278146,
+          "n": 15
+        },
+        "total_tokens": {
+          "rho": -0.11548782803241785,
+          "p_exploratory": 0.6819123836353014,
+          "n": 15
+        }
+      },
+      "new_only": {
+        "proof_lines": {
+          "rho": -0.24154385594221672,
+          "p_exploratory": 0.5013860017050226,
+          "n": 10
+        },
+        "proof_time": {
+          "rho": -0.1461975970176575,
+          "p_exploratory": 0.6869410188538527,
+          "n": 10
+        },
+        "formalization_time": {
+          "rho": 0.019069251784911846,
+          "p_exploratory": 0.9583011771342631,
+          "n": 10
+        },
+        "total_time": {
+          "rho": -0.15891043154093204,
+          "p_exploratory": 0.6610294238996188,
+          "n": 10
+        },
+        "total_tokens": {
+          "rho": -0.11441551070947108,
+          "p_exploratory": 0.7529668597266073,
+          "n": 10
+        }
+      }
+    }
+  }
+}

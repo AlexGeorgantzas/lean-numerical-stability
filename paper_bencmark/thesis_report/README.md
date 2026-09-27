@@ -20,7 +20,7 @@ latexmk -pdf -interaction=nonstopmode -halt-on-error -outdir=../../output/pdf re
 ```
 
 The compiled deliverable is `output/pdf/report.pdf` at the repository root.
-All figures, the task CSV, declaration scan, summary JSON, and table fragments
+All figures, the task CSV, declaration scan, realized-reuse ledger, summary JSON, and table fragments
 are regenerated directly from:
 
 - `paper_bencmark/pilot35/RESULTS_15.json` — SHA-256
@@ -32,6 +32,30 @@ The script checks the task IDs against the frozen scheduled order in
 `design33/CORPUS_15.json`. Positive gain is `(N - L) / N`; a negative value
 favors N. The warm-inclusive per-task panels allocate the *single* warm-scout
 cost evenly over fifteen tasks, whereas the cumulative panel charges it once.
+
+## Realized NumStability reuse analysis
+
+`reuse_obligations.json` supplies a transparent, source-task-specific rubric:
+each task has a foundation, computation/interface, and analytical obligation.
+The score is the number (0–3) of roles for which a task-relevant exact
+NumStability declaration occurs in the final elaborated L statement or
+kernel-checked proof term. The analytical witness must occur in the proof.
+Imports, textual mentions, and transitive-only dependencies do not score.
+`make_figures.py` validates every chosen witness against the final declaration
+scan, checks the packet SHA-256 values against admission, then writes
+`generated/realized_reuse.json`, `generated/realized_reuse.csv`, an appendix
+table, and Figures 15–16. The JSON preserves each source obligation, exact
+witness, statement/proof surface, task outcome, subgroup aggregate, and
+exploratory rank association. It is a breadth index, not an estimated number
+of proof lines saved.
+
+This annotation was authored *after* the outcomes were visible and was not
+blinded. Five favorable tasks were already selected for retention. Among all
+nine score-3 tasks, L has 18.3% fewer proof lines and 18.6% lower active time;
+among the four *new* score-3 tasks, L instead has 9.2% more proof lines and
+4.4% higher active time. These opposing views must be reported together.
+Neither declaration count nor the new score demonstrates a monotone or causal
+"more use produces greater savings" relation in this development corpus.
 
 ## Protocol, inputs, and raw result evidence
 

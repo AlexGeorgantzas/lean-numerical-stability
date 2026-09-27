@@ -1,0 +1,87 @@
+{
+  "schema_version": "realized-reuse-obligations-1",
+  "scientific_status": "POST_OUTCOME_EXPLORATORY_MANUAL_ANNOTATION_NOT_BLIND",
+  "definition": "A role is covered only when a task-relevant exact NumStability witness occurs in the final elaborated L statement or kernel-checked proof term. An import, textual mention, or transitive-only dependency is not evidence. Three roles per task make the score a 0-3 breadth index, not an estimate of Lean lines saved or causal library coverage.",
+  "roles": {
+    "foundation": "Source-relevant numeric domain, floating-point model, gamma, or norm interface",
+    "computation": "Source-relevant algorithm, rounding operation, tree, or task-domain error-functional interface",
+    "analysis": "Source-relevant proved error/bound or mathematical bridge used in the proof"
+  },
+  "tasks": {
+    "CAST08-FIXED3": {
+      "foundation": {"obligation": "relative-error floating-point model and gamma setting", "witnesses": ["NumStability.FPModel"]},
+      "computation": {"obligation": "rounded inner dot and recursive block sums", "witnesses": ["NumStability.fl_dotProduct", "NumStability.fl_recursiveSum"]},
+      "analysis": {"obligation": "dot-product and recursive-sum error components", "witnesses": ["NumStability.dotProduct_backward_error", "NumStability.recursiveSum_backward_error"]}
+    },
+    "P14-T1": {
+      "foundation": {"obligation": "unit-roundoff floating-point model", "witnesses": ["NumStability.FPModel.u"]},
+      "computation": {"obligation": "recursive sum of computed exponentials", "witnesses": ["NumStability.fl_recursiveSum"]},
+      "analysis": {"obligation": "reusable summation error bound for the positive exponential sum", "witnesses": []}
+    },
+    "HI21-LEM2.2": {
+      "foundation": {"obligation": "relative-error model for each rounded tree addition", "witnesses": []},
+      "computation": {"obligation": "arbitrary binary summation-tree representation", "witnesses": ["NumStability.SumTree"]},
+      "analysis": {"obligation": "ancestor-product error expansion", "witnesses": []}
+    },
+    "CAST08-PROP3.1": {
+      "foundation": {"obligation": "relative-error floating-point model and gamma setting", "witnesses": ["NumStability.FPModel"]},
+      "computation": {"obligation": "recursive summation within equal-block levels", "witnesses": ["NumStability.fl_recursiveSum"]},
+      "analysis": {"obligation": "forward-error estimate for recursive sums", "witnesses": ["NumStability.recursiveSum_forward_error_bound"]}
+    },
+    "P14-T2": {
+      "foundation": {"obligation": "unit-roundoff model for local operations", "witnesses": ["NumStability.FPModel"]},
+      "computation": {"obligation": "library implementation of the denominator summation", "witnesses": []},
+      "analysis": {"obligation": "suffix-product and gamma estimates for summation error", "witnesses": ["NumStability.sumSuffixErrorProduct_exists_theta_le_gamma", "NumStability.prod_error_bound"]}
+    },
+    "RUMP12-THM3.4": {
+      "foundation": {"obligation": "finite binary floating-point domain", "witnesses": ["NumStability.FloatingPointFormat.finiteSystem"]},
+      "computation": {"obligation": "rounding-to-nearest operation used by recursive summation", "witnesses": ["NumStability.FloatingPointFormat.nearestRoundingIn"]},
+      "analysis": {"obligation": "normal-range signed relative-error witness", "witnesses": ["NumStability.FloatingPointFormat.nearestRoundingToFinite_signedRelErrorWitness_of_finiteNormalRange"]}
+    },
+    "P14-LOGSUMEXP": {
+      "foundation": {"obligation": "unit-roundoff model and gamma setting", "witnesses": ["NumStability.FPModel.u"]},
+      "computation": {"obligation": "recursive sum of exponentials", "witnesses": ["NumStability.fl_recursiveSum"]},
+      "analysis": {"obligation": "recursive-sum forward-error bound", "witnesses": ["NumStability.recursiveSum_forward_error_bound"]}
+    },
+    "H20-8": {
+      "foundation": {"obligation": "Euclidean-vector and Frobenius-matrix norm interfaces", "witnesses": ["NumStability.vecNorm2", "NumStability.frobNormRect"]},
+      "computation": {"obligation": "matrix-only least-squares backward-error functional", "witnesses": ["NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF"]},
+      "analysis": {"obligation": "feasibility and minimizer bounds used to evaluate the error", "witnesses": ["NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF_le_frobNorm_of_feasible", "NumStability.lsNormwiseBackwardErrorMatrixOnlyEtaF_eq_zero_of_isLeastSquaresMinimizer"]}
+    },
+    "P14-ALT-SOFTMAX": {
+      "foundation": {"obligation": "unit-roundoff model for local operations", "witnesses": ["NumStability.FPModel.u"]},
+      "computation": {"obligation": "recursive sum inside the alternative softmax algorithm", "witnesses": ["NumStability.fl_recursiveSum"]},
+      "analysis": {"obligation": "recursive-sum backward-error component", "witnesses": ["NumStability.recursiveSum_backward_error"]}
+    },
+    "CAST08-PROP3.2": {
+      "foundation": {"obligation": "floating-point multiplication and gamma setting", "witnesses": ["NumStability.FPModel.fl_mul"]},
+      "computation": {"obligation": "recursive sums within the superblock dot product", "witnesses": ["NumStability.fl_recursiveSum"]},
+      "analysis": {"obligation": "recursive-sum backward-error component", "witnesses": ["NumStability.recursiveSum_backward_error"]}
+    },
+    "P14-SHIFTED-SUM": {
+      "foundation": {"obligation": "unit-roundoff model for shifted exponential evaluations", "witnesses": []},
+      "computation": {"obligation": "recursive sum of shifted exponential terms", "witnesses": []},
+      "analysis": {"obligation": "library summation-error bound for the shifted sum", "witnesses": []}
+    },
+    "P14-SHIFTED-LOG": {
+      "foundation": {"obligation": "unit-roundoff model for shifted subtraction and log evaluation", "witnesses": ["NumStability.FPModel.fl_sub"]},
+      "computation": {"obligation": "recursive shifted-exponential sum", "witnesses": ["NumStability.fl_recursiveSum"]},
+      "analysis": {"obligation": "recursive-sum forward-error component", "witnesses": ["NumStability.recursiveSum_forward_error_bound"]}
+    },
+    "P14-SHIFTED-SOFTMAX": {
+      "foundation": {"obligation": "infinity-norm interface for the normwise conclusion", "witnesses": ["NumStability.infNormVec"]},
+      "computation": {"obligation": "library computation of shifted exponentials and their rounded sum", "witnesses": []},
+      "analysis": {"obligation": "library error bound for shifted softmax", "witnesses": []}
+    },
+    "P14-SHIFTED-WEIGHTED": {
+      "foundation": {"obligation": "unit-roundoff model for shifted exponential evaluations", "witnesses": ["NumStability.FPModel.u"]},
+      "computation": {"obligation": "library computation of the shifted recursive sum", "witnesses": []},
+      "analysis": {"obligation": "suffix-product expansion and gamma witness for termwise error", "witnesses": ["NumStability.sumSuffixErrorProduct_exists_theta_le_gamma"]}
+    },
+    "HI21-EQ2.7": {
+      "foundation": {"obligation": "unit-roundoff model for tree additions", "witnesses": ["NumStability.FPModel.u"]},
+      "computation": {"obligation": "arbitrary binary summation-tree representation", "witnesses": ["NumStability.SumTree"]},
+      "analysis": {"obligation": "product-error bound used in first-order expansion", "witnesses": ["NumStability.prod_error_bound"]}
+    }
+  }
+}

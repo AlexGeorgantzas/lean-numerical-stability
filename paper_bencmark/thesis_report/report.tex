@@ -22,7 +22,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small NumStability benchmark | evidence report}
-\fancyhead[R]{\small 26 September 2026}
+\fancyhead[R]{\small 27 September 2026}
 \fancyfoot[C]{\thepage}
 \newcommand{\src}[1]{\textsuperscript{\cite{#1}}}
 \newcommand{\fig}[2]{%
@@ -34,7 +34,7 @@ the reproducible plotting script, unless another source is named.\cite{results35
 \title{\vspace{-13mm}\textbf{NumStability in AI-Assisted Lean Formalization and Proof}\\[2mm]
 \large A reproducible, exploratory 15-task N/L benchmark report}
 \author{HighamBench evidence report}
-\date{26 September 2026}
+\date{27 September 2026}
 \begin{document}
 \maketitle
 \begin{abstract}
@@ -52,7 +52,8 @@ and proof was faster in L. These figures are descriptive development evidence,
 and eight new tasks come from one paper. The ten new tasks alone show 6.7\%
 \emph{more} L proof lines. A declaration-level scan and stratified heatmap show
 real reuse, but do not support a simple monotone claim that more declaration
-reach always yields larger gains.\src{results35,warmroot,corpus33,plotcode}
+reach always yields larger gains. A source-task-specific realized-reuse score
+also fails that monotone test among the ten newly screened tasks.\src{results35,warmroot,corpus33,plotcode,reusemap}
 \end{abstract}
 
 \section{Question, scope, and scientific status}
@@ -331,6 +332,51 @@ clear boundary to generalization.\src{results35,corpus33,plotcode}
 \fig{11_selection_strata}{Aggregate N-to-L gains partitioned by the predeclared selection disclosure. Positive proof-code and time gains in the full sample are concentrated in five outcome-aware retained tasks.}
 \fig{14_overlap_selection_sensitivity}{Sensitivity of the apparent overlap pattern to task selection. ``Both'' means the transparent algorithm/format-statement and error/bound-proof tags are both present. The new-only overlap subgroup has negative proof-code and time gains; this is an exploratory diagnostic, not a causal subgroup effect.}
 
+\subsection{Source-task-specific realized reuse}
+
+To measure how much the L agent \emph{actually used} NumStability, we add a
+three-role breadth index for each task: (1) a source-relevant numeric domain,
+floating-point model, gamma, or norm \emph{foundation}; (2) a computation,
+rounding, tree, or domain-functional \emph{interface}; and (3) a proved
+error/bound or mathematical \emph{analysis} component. Each role scores one
+only if an exact, task-relevant witness occurs in the final elaborated L
+statement or kernel-accepted proof term. The analytical witness must occur in
+the proof. Imports, text-only mentions, and transitive-only dependencies
+score zero. The score is therefore an ordinal 0--3 measure of \emph{realized
+reuse breadth}, not a count of imported modules, a measure of potential
+library coverage, or an estimate of saved lines. The task-specific source
+obligation, exact witness names, and statement/proof surfaces are published
+in the machine-readable rubric and ledger.\src{reusemap,realizedreuse,declscan,packets33}
+
+The rubric was written \emph{after} seeing the outcomes, by an annotator not
+blind to the results. It is transparent and validated against the archived
+source-packet hashes and direct-declaration scan, but is not an independently
+blinded or prospective exposure measure. The fixed three-role taxonomy limits
+the inflation caused by many low-level helper names; it cannot measure how
+many proof steps any one declaration displaced. Distinct direct proof-name
+count remains a sensitivity measure, not the primary score.\src{reusemap,realizedreuse,plotcode}
+
+Nine tasks score 3, three score 2, two score 1, and one scores 0. Across all
+fifteen, the nine score-3 tasks show 18.3\% fewer L proof-code lines and
+18.6\% less L active time. However, all five previously favorable retained
+tasks are in that group. Within the \emph{four new} score-3 tasks, L has
+9.2\% \emph{more} proof lines and 4.4\% \emph{more} active time. The new-only
+rank associations between score and gain are negative for proof lines
+($\rho=-0.24$) and total time ($\rho=-0.16$); all fifteen pooled give
+$\rho=+0.37$ and $+0.20$, respectively. These descriptive coefficients are
+small-sample and post-outcome; neither establishes an increasing benefit with
+greater reuse.\src{realizedreuse,results35,plotcode}
+
+One direct counterexample to a simple rule is P14-SHIFTED-SUM: score 0, yet L
+is shorter and faster. Conversely, the score-3 new subgroup contains slower
+and longer L proofs. Realized use and speed can both reflect task difficulty,
+agent choices, and different proof strategies. Query overhead is not
+isolated by this score. Figures below retain the selected/new distinction,
+and the appendix lists every task score and paired gain.\src{realizedreuse,results35,evidencearchives}
+
+\fig{15_realized_reuse_scatter}{Task-level realized-reuse breadth versus N-to-L proof-code, proof-time, total-time, and net-new-token gains. Orange circles are prior favorable retained tasks; blue diamonds are newly screened tasks. Horizontal jitter only separates coincident scores. Rank coefficients are exploratory and descriptive.}
+\fig{16_realized_reuse_selection}{Aggregate gains by realized-reuse score bins, both pooled and restricted to the ten newly screened tasks. Each bar prints its sample count. The pooled high-score code/time advantage reverses in the new-only high-score subgroup.}
+
 The observed library can demonstrably help: CAST08-FIXED3 reused dot and
 recursive-summation interfaces and reduced proof code from 325 to 221 lines;
 CAST08-PROP3.1 used summation/error declarations and reduced 373 to 200;
@@ -422,6 +468,23 @@ and JSON retain exact precision.\src{results35,plotcode}
 \end{longtable}
 \end{landscape}
 
+\section{Realized-reuse task ledger}
+
+Foundation (F), computation/interface (C), and analysis (A) are the three
+source-obligation roles. A yes means at least one exact witness was reached in
+the L statement or proof; the JSON ledger gives every witness and surface.
+Positive gain favors L. This is a post-outcome diagnostic, not a blind
+coverage score.\src{reusemap,realizedreuse,results35}
+
+\begin{landscape}\small
+\begin{longtable}{@{}lrcccrrrr@{}}
+\caption{Realized-reuse breadth and paired gains (percent). Exact values and evidence witnesses are in \texttt{generated/realized\_reuse.json}.\cite{reusemap,realizedreuse,results35}}\label{tab:reuse}\\
+\toprule Task & Score & F & C & A & Proof lines & Proof time & Total time & Total tokens\\\midrule\endfirsthead
+\toprule Task & Score & F & C & A & Proof lines & Proof time & Total time & Total tokens\\\midrule\endhead
+\input{generated/realized_reuse_table.tex}
+\end{longtable}
+\end{landscape}
+
 \section{Declaration-usage index}
 
 This compact index groups exact names into readable families. The generated
@@ -454,6 +517,7 @@ Final result & \path{paper_bencmark/pilot35/RESULTS_15.json}; SHA-256 begins \te
 Warm root & \path{thesis_report/evidence/warm-root.json}; SHA-256 begins \texttt{3401426d25ee278c}.\\
 Frozen task set & \path{formalization_benchmark/design33/CORPUS_15.json} and \path{ADMISSION_15.json}, both under \path{paper_bencmark/}.\\
 Pair evidence & Two compressed Pilot 34/35 archives under \path{paper_bencmark/thesis_report/evidence/}; exact names and hashes in README.\\
+Realized reuse & \path{thesis_report/reuse_obligations.json}, \path{generated/realized_reuse.json}, and \path{generated/realized_reuse.csv}; post-outcome three-role annotation and exact witness validation.\\
 Library build & \path{thesis_report/evidence/library-build-record.json}; SHA-256 begins \texttt{6f4581380982e51f}.\\
 Runtime snapshot & \path{thesis_report/evidence/runtime-snapshot.json}; SHA-256 begins \texttt{9fac78511309a591}.\\
 Controller commits & Pilot 34 \texttt{cfec400f94f4b957}; Pilot 35 \texttt{789c7b5b7513d178}; full commits in archived campaign JSON.\\
@@ -482,6 +546,8 @@ Controller commits & Pilot 34 \texttt{cfec400f94f4b957}; Pilot 35 \texttt{789c7b
 \bibitem{reporter35} Frozen composite reporter, \path{paper_bencmark/pilot35/composite_report.py}.
 \bibitem{depcheck} Elaborated proof dependency scanner, \path{paper_bencmark/formalization_benchmark/tools/design33_proof_dependencies.lean}; scanner digest in final result.
 \bibitem{declscan} Generated declaration ledger, \path{paper_bencmark/thesis_report/generated/declaration_scan.json}.
+\bibitem{reusemap} Post-outcome, source-task-specific three-role reuse rubric and exact-name annotations, \path{paper_bencmark/thesis_report/reuse_obligations.json}.
+\bibitem{realizedreuse} Generated and exact-witness-validated realized-reuse ledger and subgroup calculations, \path{paper_bencmark/thesis_report/generated/realized_reuse.json} and \path{realized_reuse.csv}.
 \bibitem{buildrecord} NumStability full build record, \path{paper_bencmark/thesis_report/evidence/library-build-record.json}.
 \bibitem{libsnapshot} Library snapshot, \path{paper_bencmark/thesis_report/evidence/library-snapshot.json}.
 \bibitem{runtimesnapshot} Runtime snapshot, \path{paper_bencmark/thesis_report/evidence/runtime-snapshot.json}.

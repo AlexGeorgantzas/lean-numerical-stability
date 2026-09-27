@@ -74,7 +74,28 @@ def main() -> None:
             actual = sum(t[condition][field] for t in tasks)
             claimed = sums[key][f"{condition}_sum"]
             check(abs(actual - claimed) < 1e-5, f"aggregate {key} {condition}")
-    print("PASS: primary sources, 4+11 pair identities, archive safety, and key sums")
+    reuse_path = HERE / "generated/realized_reuse.json"
+    check(reuse_path.exists(), "realized-reuse ledger present")
+    if reuse_path.exists():
+        reuse = json.loads(reuse_path.read_text())
+        rubric = HERE / "reuse_obligations.json"
+        check(reuse["rubric_sha256"] == sha(rubric.read_bytes()), "reuse rubric SHA-256")
+        check(reuse["source_results_sha256"] == sha((ROOT / "paper_bencmark/pilot35/RESULTS_15.json").read_bytes()),
+              "reuse result SHA-256")
+        rows = reuse["rows"]
+        check([r["task_id"] for r in rows] == [t["task_id"] for t in tasks], "reuse task order")
+        for task, row in zip(tasks, rows):
+            statement = set(task["direct_statement_numstability_names"])
+            proof = set(task["L"]["proof_term_numstability_names"])
+            for role, evidence in row["roles"].items():
+                check(all(name in statement | proof for name in evidence["witnesses"]),
+                      f"reuse witness: {task['task_id']} {role}")
+                if role == "analysis":
+                    check(all(name in proof for name in evidence["witnesses"]),
+                          f"analysis witness in proof: {task['task_id']}")
+            check(row["score"] == sum(v["used"] for v in row["roles"].values()),
+                  f"reuse score: {task['task_id']}")
+    print("PASS: primary sources, 4+11 pair identities, archive safety, key sums, and reuse ledger")
 
 
 if __name__ == "__main__":

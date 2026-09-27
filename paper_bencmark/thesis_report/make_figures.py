@@ -23,6 +23,7 @@ HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
 RESULTS = ROOT / "paper_bencmark/pilot35/RESULTS_15.json"
 WARM = HERE / "evidence/warm-root.json"
+REUSE_OBLIGATIONS = HERE / "reuse_obligations.json"
 FIG = HERE / "figures"
 GENERATED = HERE / "generated"
 BLUE = "#24547a"
@@ -156,6 +157,167 @@ def declaration_scan(tasks):
             "proof_line_gain_pct": 100 * (t["N"]["proof_code_lines"] - t["L"]["proof_code_lines"]) / t["N"]["proof_code_lines"],
         })
     return rows
+
+
+def realized_reuse(tasks, declaration_rows):
+    """Score direct, task-relevant L reuse using the published post-run rubric.
+
+    This is deliberately an ordinal breadth score, not a count of imported or
+    transitively reached declarations, nor a causal/pre-run coverage measure.
+    """
+    rubric = json.loads(REUSE_OBLIGATIONS.read_text())
+    roles = ("foundation", "computation", "analysis")
+    assert rubric["schema_version"] == "realized-reuse-obligations-1"
+    assert set(rubric["tasks"]) == {t["task_id"] for t in tasks}
+    admission = json.loads((ROOT / "paper_bencmark/formalization_benchmark/design33/ADMISSION_15.json").read_text())
+    scored = []
+    for task, scan in zip(tasks, declaration_rows):
+        task_id = task["task_id"]
+        assert scan["task_id"] == task_id
+        packet = ROOT / f"paper_bencmark/formalization_benchmark/design33/packets/{task_id}.json"
+        assert sha(packet) == admission["tasks"][task_id]["source_packet_sha256"]
+        spec = rubric["tasks"][task_id]
+        assert set(spec) == set(roles)
+        statement = set(scan["statement_names"])
+        proof = set(scan["proof_names"])
+        covered = {}
+        for role in roles:
+            entry = spec[role]
+            assert entry["obligation"] and isinstance(entry["witnesses"], list)
+            witnesses = entry["witnesses"]
+            assert len(witnesses) == len(set(witnesses))
+            assert all(name.startswith("NumStability.") for name in witnesses)
+            assert all(name in statement | proof for name in witnesses), (task_id, role)
+            if role == "analysis":
+                assert all(name in proof for name in witnesses), task_id
+            covered[role] = {
+                "source_obligation": entry["obligation"],
+                "witnesses": witnesses,
+                "statement_witnesses": [name for name in witnesses if name in statement],
+                "proof_witnesses": [name for name in witnesses if name in proof],
+                "used": bool(witnesses),
+            }
+        n, l = task["N"], task["L"]
+        gains = {}
+        for label, key in (
+            ("formalization_time", "formalization_seconds_inclusive"),
+            ("proof_time", "proof_seconds_inclusive"),
+            ("total_time", "total_seconds_inclusive"),
+            ("formalization_tokens", "formalization_tokens_net_new"),
+            ("proof_tokens", "proof_tokens_net_new"),
+            ("total_tokens", "total_tokens_net_new"),
+            ("statement_lines", "statement_code_lines"),
+            ("proof_lines", "proof_code_lines"),
+        ):
+            gains[f"{label}_gain_pct"] = 100 * (n[key] - l[key]) / n[key]
+        scored.append({
+            "task_id": task_id,
+            "source_cluster": task["source_cluster"],
+            "outcome_aware_retained": bool(task["outcome_aware_retained"]),
+            "source_packet_sha256": sha(packet),
+            "score": sum(covered[role]["used"] for role in roles),
+            "statement_roles": sum(bool(covered[role]["statement_witnesses"]) for role in roles),
+            "proof_roles": sum(bool(covered[role]["proof_witnesses"]) for role in roles),
+            "direct_proof_declaration_count": scan["proof_count"],
+            "roles": covered,
+            "gains": gains,
+        })
+    return rubric, scored
+
+
+def reuse_summary(tasks, scored):
+    def group(indices):
+        ts = [tasks[i] for i in indices]
+        out = {"n": len(ts), "retained_n": sum(t["outcome_aware_retained"] for t in ts)}
+        for label, key in (("proof_lines", "proof_code_lines"),
+                           ("proof_time", "proof_seconds_inclusive"),
+                           ("formalization_time", "formalization_seconds_inclusive"),
+                           ("total_time", "total_seconds_inclusive"),
+                           ("total_tokens", "total_tokens_net_new")):
+            n = sum(t["N"][key] for t in ts)
+            l = sum(t["L"][key] for t in ts)
+            out[f"{label}_N_sum"] = n
+            out[f"{label}_L_sum"] = l
+            out[f"{label}_aggregate_gain_pct"] = 100 * (n - l) / n if n else None
+        return out
+    groups = {}
+    for selection, allowed in (("all", lambda r: True),
+                               ("new_only", lambda r: not r["outcome_aware_retained"])):
+        groups[selection] = {}
+        for bucket, filt in (("0-1", lambda s: s <= 1),
+                             ("2", lambda s: s == 2),
+                             ("3", lambda s: s == 3)):
+            indices = [i for i, r in enumerate(scored) if allowed(r) and filt(r["score"])]
+            groups[selection][bucket] = group(indices)
+    correlations = {}
+    for selection, allowed in (("all", lambda r: True),
+                               ("new_only", lambda r: not r["outcome_aware_retained"])):
+        rows = [r for r in scored if allowed(r)]
+        correlations[selection] = {}
+        for label in ("proof_lines", "proof_time", "formalization_time", "total_time", "total_tokens"):
+            rho, p = spearmanr([r["score"] for r in rows],
+                               [r["gains"][f"{label}_gain_pct"] for r in rows])
+            correlations[selection][label] = {"rho": float(rho), "p_exploratory": float(p), "n": len(rows)}
+    return {"group_aggregates": groups, "rank_associations": correlations}
+
+
+def reuse_scatter(scored, summary):
+    panels = (("proof_lines", "Proof-code gain (%)"),
+              ("proof_time", "Proof-time gain (%)"),
+              ("total_time", "Total active-time gain (%)"),
+              ("total_tokens", "Net-new-token gain (%)"))
+    fig, axes = plt.subplots(2, 2, figsize=(10.2, 7.6), sharex=True)
+    for ax, (key, ylabel) in zip(axes.flat, panels):
+        for retained, color, marker, label in ((False, BLUE, "D", "New screened"),
+                                                (True, ORANGE, "o", "Prior favorable retained")):
+            subset = [(i, r) for i, r in enumerate(scored) if r["outcome_aware_retained"] == retained]
+            xs = [r["score"] + ((i % 5) - 2) * .045 for i, r in subset]
+            ys = [r["gains"][f"{key}_gain_pct"] for _, r in subset]
+            ax.scatter(xs, ys, s=58, color=color, marker=marker, label=label,
+                       edgecolor="white", linewidth=.7, zorder=3)
+        ax.axhline(0, color=GRAY, linewidth=.8)
+        ax.set_xticks([0, 1, 2, 3])
+        ax.set_xlim(-.3, 3.3)
+        ax.set_xlabel("Source-obligation reuse roles (0–3)")
+        ax.set_ylabel(ylabel)
+        rho_all = summary["rank_associations"]["all"][key]["rho"]
+        rho_new = summary["rank_associations"]["new_only"][key]["rho"]
+        ax.text(.02, .98, f"Rank rho: all {rho_all:+.2f}; new {rho_new:+.2f}",
+                transform=ax.transAxes, ha="left", va="top", fontsize=8,
+                bbox=dict(facecolor="white", edgecolor="none", alpha=.85))
+        ax.grid(alpha=.18)
+    handles, labels = axes[0, 0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False)
+    fig.tight_layout(rect=(0, 0, 1, .96))
+    save("15_realized_reuse_scatter")
+
+
+def reuse_strata(summary):
+    fig, axes = plt.subplots(1, 2, figsize=(10.2, 4.2))
+    for ax, label, title in zip(axes, ("proof_lines", "total_time"),
+                                ("Proof code", "Total active time")):
+        buckets = ("0-1", "2", "3")
+        y = np.arange(len(buckets))
+        for selection, delta, color, name in (("all", -.18, BLUE, "All 15"),
+                                               ("new_only", .18, ORANGE, "New screened 10")):
+            subset = summary["group_aggregates"][selection]
+            vals = [subset[b][f"{label}_aggregate_gain_pct"] for b in buckets]
+            ax.barh(y + delta, vals, height=.33, color=color, label=name)
+            for i, (b, v) in enumerate(zip(buckets, vals)):
+                ax.text(v + (1 if v >= 0 else -1), i + delta,
+                        f"{v:+.1f}% (n={subset[b]['n']})", va="center",
+                        ha="left" if v >= 0 else "right", fontsize=8)
+        ax.axvline(0, color=GRAY, linewidth=.8)
+        ax.set_yticks(y, [f"Score {b}" for b in buckets])
+        ax.invert_yaxis()
+        ax.set_xlabel("Aggregate N-to-L gain (%)")
+        ax.set_title(title, fontweight="bold")
+        ax.set_xlim(-36, 43)
+        ax.grid(axis="x", alpha=.18)
+    handles, labels = axes[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc="upper center", ncol=2, frameon=False, fontsize=8)
+    fig.tight_layout(rect=(0, 0, 1, .92), w_pad=3)
+    save("16_realized_reuse_selection")
 
 
 def coverage_heatmap(rows):
@@ -367,8 +529,12 @@ def main():
     fig.tight_layout()
     save("08_code_lines")
     rows = declaration_scan(tasks)
+    reuse_rubric, reuse_rows = realized_reuse(tasks, rows)
+    reuse_stats = reuse_summary(tasks, reuse_rows)
     coverage_heatmap(rows)
     scatter_overlap(rows)
+    reuse_scatter(reuse_rows, reuse_stats)
+    reuse_strata(reuse_stats)
     groups(tasks)
     overlap_by_selection(tasks, rows)
     amortization(tasks, warm_seconds, warm_tokens)
@@ -393,6 +559,30 @@ def main():
                         row[key] = t[c][key[2:]]
             w.writerow(row)
     (GENERATED / "declaration_scan.json").write_text(json.dumps(rows, indent=2) + "\n")
+    (GENERATED / "realized_reuse.json").write_text(json.dumps({
+        "scientific_status": reuse_rubric["scientific_status"],
+        "rubric_sha256": sha(REUSE_OBLIGATIONS),
+        "source_results_sha256": sha(RESULTS),
+        "rows": reuse_rows,
+        "summary": reuse_stats,
+    }, indent=2) + "\n")
+    with (GENERATED / "realized_reuse.csv").open("w", newline="") as f:
+        columns = ["task_id", "source_cluster", "outcome_aware_retained", "score",
+                   "foundation", "computation", "analysis", "statement_roles", "proof_roles",
+                   "direct_proof_declaration_count", "proof_lines_gain_pct", "proof_time_gain_pct",
+                   "formalization_time_gain_pct", "total_time_gain_pct", "total_tokens_gain_pct"]
+        writer = csv.DictWriter(f, fieldnames=columns, lineterminator="\n")
+        writer.writeheader()
+        for r in reuse_rows:
+            writer.writerow({
+                **{key: r[key] for key in ("task_id", "source_cluster", "outcome_aware_retained",
+                                            "score", "statement_roles", "proof_roles",
+                                            "direct_proof_declaration_count")},
+                **{role: int(r["roles"][role]["used"]) for role in
+                   ("foundation", "computation", "analysis")},
+                **{f"{label}_gain_pct": r["gains"][f"{label}_gain_pct"] for label in
+                   ("proof_lines", "proof_time", "formalization_time", "total_time", "total_tokens")},
+            })
     def esc(value):
         return str(value).replace("\\", r"\textbackslash{}").replace("_", r"\_").replace("%", r"\%")
 
@@ -436,6 +626,16 @@ def main():
                 return ", ".join(labels[:3]) if labels else "none"
             cols = [esc(r["task_id"]), families(substantive), str(len(substantive)),
                     families(proof), str(len(proof))]
+            f.write(" & ".join(cols) + r" \\" + "\n")
+    with (GENERATED / "realized_reuse_table.tex").open("w") as f:
+        for r in reuse_rows:
+            cols = [esc(r["task_id"]), str(r["score"]),
+                    *["yes" if r["roles"][role]["used"] else "--" for role in
+                      ("foundation", "computation", "analysis")],
+                    f'{r["gains"]["proof_lines_gain_pct"]:+.0f}',
+                    f'{r["gains"]["proof_time_gain_pct"]:+.0f}',
+                    f'{r["gains"]["total_time_gain_pct"]:+.0f}',
+                    f'{r["gains"]["total_tokens_gain_pct"]:+.0f}']
             f.write(" & ".join(cols) + r" \\" + "\n")
     stats = {
         "source_results_sha256": sha(RESULTS),
